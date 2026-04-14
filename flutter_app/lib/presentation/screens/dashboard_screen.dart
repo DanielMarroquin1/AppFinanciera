@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../widgets/rewards_shop_modal.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -33,44 +34,78 @@ class DashboardScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
+                      '¡Increíble! Estás en racha 🔥',
+                      style: TextStyle(
+                        color: isDark ? Colors.orange[400] : Colors.orange[800],
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
                       'Aquí está tu resumen financiero',
                       style: TextStyle(
                         color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        fontSize: 12,
                       ),
                     ),
                   ],
                 ),
-                // Streak Badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    gradient: isDark 
-                        ? const LinearGradient(colors: [Color(0xFF7C2D12), Color(0xFF7F1D1D)]) 
-                        : const LinearGradient(colors: [Color(0xFFFFF7ED), Color(0xFFFEF2F2)]),
-                    border: Border.all(
-                      color: isDark ? const Color(0xFFC2410C) : const Color(0xFFFDBA74),
-                      width: 2,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        LucideIcons.flame, 
-                        color: isDark ? const Color(0xFFF97316) : const Color(0xFFEA580C),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '5',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C),
+                // Streak Badge & Rewards
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        gradient: isDark 
+                            ? const LinearGradient(colors: [Color(0xFF7C2D12), Color(0xFF7F1D1D)]) 
+                            : const LinearGradient(colors: [Color(0xFFFFF7ED), Color(0xFFFEF2F2)]),
+                        border: Border.all(
+                          color: isDark ? const Color(0xFFC2410C) : const Color(0xFFFDBA74),
+                          width: 2,
                         ),
-                      )
-                    ],
-                  ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            LucideIcons.flame, 
+                            color: isDark ? const Color(0xFFF97316) : const Color(0xFFEA580C),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '5',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: () => RewardsShopModal.show(context, points: 150),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.amber[900]?.withValues(alpha: 0.3) : Colors.amber[100],
+                          border: Border.all(
+                            color: Colors.amber,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Icon(
+                          LucideIcons.shoppingBag,
+                          color: isDark ? Colors.amber[400] : Colors.amber[700],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

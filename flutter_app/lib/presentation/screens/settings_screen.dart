@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:go_router/go_router.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/modals/edit_profile_modal.dart';
 import '../widgets/modals/color_palette_modal.dart';
@@ -300,7 +301,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
             // Logout
             InkWell(
-              onTap: () {},
+              onTap: () {
+                context.go('/login');
+              },
               borderRadius: BorderRadius.circular(16),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 16),

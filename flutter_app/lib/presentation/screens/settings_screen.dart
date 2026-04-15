@@ -76,7 +76,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               const Row(children: [Icon(Icons.circle, size: 6, color: Colors.white), SizedBox(width: 8), Text('Salario', style: TextStyle(color: Colors.white))]),
                               const SizedBox(height: 16),
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  EditProfileModal.show(context);
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
                                   foregroundColor: const Color(0xFFDC2626),
@@ -118,8 +120,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: isDark 
-                      ? [const Color(0xFF581C87), const Color(0xFF1E3A8A)] // purple-900 to blue-900
-                      : [const Color(0xFF9333EA), const Color(0xFF2563EB)], // purple-600 to blue-600
+                      ? [const Color(0xFF581C87), const Color(0xFF1E3A8A)] 
+                      : [const Color(0xFF9333EA), const Color(0xFF2563EB)], 
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -156,12 +158,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (context) => const EditProfileModal(),
-                      );
+                      EditProfileModal.show(context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white.withValues(alpha: isDark ? 0.1 : 0.2),
@@ -202,12 +199,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () { 
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (context) => const PremiumModal(),
-                        );
+                        PremiumModal.show(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
@@ -250,7 +242,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               isPro: true,
               items: [
                 _buildSettingItem(isDark, icon: LucideIcons.palette, iconBg: isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF), iconColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), title: 'Paleta de Colores', subtitle: 'Personaliza tus colores', onTap: () {
-                  showModalBottomSheet(context: context, isScrollControlled: true, backgroundColor: Colors.transparent, builder: (context) => const ColorPaletteModal());
+                  ColorPaletteModal.show(context);
                 }),
               ],
             ),
@@ -302,7 +294,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             // Logout
             InkWell(
               onTap: () {
-                context.go('/login');
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('¿Cerrar sesión?'),
+                    content: const Text('Tendrás que ingresar tus credenciales nuevamente.'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+                      TextButton(onPressed: () => context.go('/login'), child: const Text('Cerrar Sesión', style: TextStyle(color: Colors.red))),
+                    ],
+                  ),
+                );
               },
               borderRadius: BorderRadius.circular(16),
               child: Container(

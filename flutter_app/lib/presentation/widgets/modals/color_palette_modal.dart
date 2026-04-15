@@ -4,6 +4,13 @@ import 'package:lucide_icons/lucide_icons.dart';
 class ColorPaletteModal extends StatefulWidget {
   const ColorPaletteModal({super.key});
 
+  static Future<void> show(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) => const ColorPaletteModal(),
+    );
+  }
+
   @override
   State<ColorPaletteModal> createState() => _ColorPaletteModalState();
 }

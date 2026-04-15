@@ -4,6 +4,15 @@ import 'package:lucide_icons/lucide_icons.dart';
 class AddIncomeModal extends StatefulWidget {
   const AddIncomeModal({super.key});
 
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const AddIncomeModal(),
+    );
+  }
+
   @override
   State<AddIncomeModal> createState() => _AddIncomeModalState();
 }

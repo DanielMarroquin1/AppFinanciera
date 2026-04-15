@@ -1,29 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../widgets/modals/expenses_filter_modal.dart';
+import '../widgets/modals/voice_expense_modal.dart';
+import '../widgets/modals/category_detail_modal.dart';
+import '../widgets/modals/add_debt_modal.dart';
 
-class ExpensesScreen extends StatelessWidget {
+class ExpensesScreen extends StatefulWidget {
   const ExpensesScreen({super.key});
+
+  @override
+  State<ExpensesScreen> createState() => _ExpensesScreenState();
+}
+
+class _ExpensesScreenState extends State<ExpensesScreen> {
+  String selectedMonth = 'Febrero';
+  String selectedCategory = 'Todas';
+
+  final expenses = [
+    {'category': '🍔 Comida', 'amount': 450.50, 'percentage': 35, 'color': const Color(0xFFF43F5E)},
+    {'category': '🚗 Transporte', 'amount': 280.00, 'percentage': 22, 'color': const Color(0xFF0EA5E9)},
+    {'category': '🏠 Hogar', 'amount': 520.00, 'percentage': 40, 'color': const Color(0xFF6366F1)},
+    {'category': '🎮 Entretenimiento', 'amount': 150.00, 'percentage': 12, 'color': const Color(0xFFD946EF)},
+    {'category': '💊 Salud', 'amount': 95.00, 'percentage': 7, 'color': const Color(0xFF10B981)},
+  ];
+
+  final recentExpensesTree = [
+    {
+      'date': 'Hoy',
+      'items': [
+        {'icon': '🛒', 'name': 'Walmart', 'time': '10:30 AM', 'amount': 45.50, 'category': 'Hogar'},
+      ]
+    },
+    {
+      'date': 'Ayer',
+      'items': [
+        {'icon': '🚕', 'name': 'Uber', 'time': '6:15 PM', 'amount': 12.00, 'category': 'Transporte'},
+        {'icon': '☕', 'name': 'Starbucks', 'time': '8:00 AM', 'amount': 8.50, 'category': 'Comida'},
+      ]
+    },
+    {
+      'date': '2 de Febrero',
+      'items': [
+        {'icon': '🍕', 'name': 'Pizza Hut', 'time': '8:00 PM', 'amount': 32.00, 'category': 'Comida'},
+        {'icon': '⚡', 'name': 'Luz (CFE)', 'time': '12:00 PM', 'amount': 245.00, 'category': 'Servicios'},
+        {'icon': '🎬', 'name': 'Netflix', 'time': '9:00 AM', 'amount': 15.00, 'category': 'Entretenimiento'},
+      ]
+    }
+  ];
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    final expenses = [
-      {'category': '🍔 Comida', 'amount': 450.50, 'percentage': 35, 'color': const Color(0xFFF43F5E)}, // rose-500
-      {'category': '🚗 Transporte', 'amount': 280.00, 'percentage': 22, 'color': const Color(0xFF0EA5E9)}, // sky-500
-      {'category': '🏠 Hogar', 'amount': 520.00, 'percentage': 40, 'color': const Color(0xFF6366F1)}, // indigo-500
-      {'category': '🎮 Entretenimiento', 'amount': 150.00, 'percentage': 12, 'color': const Color(0xFFD946EF)}, // fuchsia-500
-      {'category': '💊 Salud', 'amount': 95.00, 'percentage': 7, 'color': const Color(0xFF10B981)}, // emerald-500
-    ];
-
-    final recentExpenses = [
-      {'icon': '🛒', 'name': 'Walmart', 'date': 'Hoy', 'amount': 45.50},
-      {'icon': '🚕', 'name': 'Uber', 'date': 'Ayer', 'amount': 12.00},
-      {'icon': '☕', 'name': 'Starbucks', 'date': 'Ayer', 'amount': 8.50},
-      {'icon': '🍕', 'name': 'Pizza Hut', 'date': '2 Ene', 'amount': 32.00},
-      {'icon': '⚡', 'name': 'Luz (CFE)', 'date': '1 Ene', 'amount': 245.00},
-      {'icon': '🎬', 'name': 'Netflix', 'date': '1 Ene', 'amount': 139.00},
-    ];
 
     return Scaffold(
       backgroundColor: Colors.transparent, // Handled by AppShell
@@ -43,7 +70,7 @@ class ExpensesScreen extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Febrero 2026',
+              '$selectedMonth 2026${selectedCategory != 'Todas' ? ' • $selectedCategory' : ''}',
               style: TextStyle(
                 color: isDark ? Colors.grey[400] : Colors.grey[600],
               ),
@@ -80,71 +107,34 @@ class ExpensesScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Container(
-                  width: 48, height: 48,
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF4338CA) : const Color(0xFF4F46E5), // indigo-700 : indigo-600
-                    borderRadius: BorderRadius.circular(16),
+                InkWell(
+                  onTap: () async {
+                    final filters = await showModalBottomSheet<Map<String, String>>(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => const ExpensesFilterModal(),
+                    );
+                    if (filters != null) {
+                      setState(() {
+                        selectedMonth = filters['month']!;
+                        selectedCategory = filters['category']!;
+                      });
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    width: 48, height: 48,
+                    decoration: BoxDecoration(
+                      color: (selectedCategory != 'Todas' || selectedMonth != 'Febrero') 
+                          ? const Color(0xFFEC4899) // pink active filter
+                          : (isDark ? const Color(0xFF4338CA) : const Color(0xFF4F46E5)), 
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Center(child: Icon(LucideIcons.filter, color: Colors.white, size: 20)),
                   ),
-                  child: const Center(child: Icon(LucideIcons.filter, color: Colors.white, size: 20)),
                 )
               ],
-            ),
-            const SizedBox(height: 24),
-
-            // AI Help Banner (Premium)
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: isDark 
-                    ? const LinearGradient(colors: [Color(0x33312E81), Color(0x33064E3B)]) // indigo-900/40 to emerald-900/40
-                    : const LinearGradient(colors: [Color(0xFFE0E7FF), Color(0xFFD1FAE5)]), // indigo-100 to emerald-100
-                border: Border.all(
-                  color: isDark ? const Color(0xFF3730A3) : const Color(0xFFC7D2FE), // indigo-800 to indigo-200
-                  width: 2,
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(LucideIcons.sparkles, color: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5)),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Ayuda con IA para Gastos',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(color: const Color(0xFFF59E0B), borderRadius: BorderRadius.circular(12)),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(LucideIcons.crown, color: Colors.white, size: 12),
-                            SizedBox(width: 4),
-                            Text('PRO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Obtén consejos personalizados para reducir gastos y optimizar tu presupuesto',
-                    style: TextStyle(
-                      color: isDark ? Colors.grey[300] : Colors.grey[700],
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
             ),
             const SizedBox(height: 24),
 
@@ -167,7 +157,7 @@ class ExpensesScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Total de Gastos', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                  Text('Total de Gastos - $selectedMonth', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
                   const SizedBox(height: 8),
                   const Text('\$2,550.00', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
@@ -197,46 +187,50 @@ class ExpensesScreen extends StatelessWidget {
             Text('Gastos por Categoría', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
             const SizedBox(height: 12),
             ...expenses.map((expense) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                  border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(expense['category'] as String, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
-                        Text('\$${(expense['amount'] as double).toStringAsFixed(2)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      height: 8,
-                      width: double.infinity,
-                      decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(8)),
-                      child: FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
-                        widthFactor: ((expense['percentage'] as int) / 100).clamp(0.0, 1.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: expense['color'] as Color,
-                            borderRadius: BorderRadius.circular(8),
+              return InkWell(
+                onTap: () => CategoryDetailModal.show(context, categoryData: expense),
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                    border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(expense['category'] as String, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.w500)),
+                          Text('\$${(expense['amount'] as double).toStringAsFixed(2)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        height: 8,
+                        width: double.infinity,
+                        decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(8)),
+                        child: FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: ((expense['percentage'] as int) / 100).clamp(0.0, 1.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: expense['color'] as Color,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text('${expense['percentage']}% del total', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                    )
-                  ],
+                      const SizedBox(height: 4),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text('${expense['percentage']}% del total', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      )
+                    ],
+                  ),
                 ),
               );
             }).toList(),
@@ -245,60 +239,11 @@ class ExpensesScreen extends StatelessWidget {
             // Installments / Cuotas Activas
             Text('Deudas y Cuotas Activas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
             const SizedBox(height: 12),
-            Container(
-              margin: const EdgeInsets.only(bottom: 24),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48, height: 48,
-                    decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(12)),
-                    child: const Center(child: Text('📱', style: TextStyle(fontSize: 24))),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('iPhone 15 Pro', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 14)),
-                            Text('\$65.00/cuota', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          height: 6,
-                          width: double.infinity,
-                          decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(8)),
-                          child: FractionallySizedBox(
-                            alignment: Alignment.centerLeft,
-                            widthFactor: 4 / 12,
-                            child: Container(decoration: BoxDecoration(color: const Color(0xFFF59E0B), borderRadius: BorderRadius.circular(8))),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text('4 de 12 cuotas', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Recent Transactions
-            Text('Historial de Gastos', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
-            const SizedBox(height: 12),
-            ...recentExpenses.map((expense) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 8),
+            InkWell(
+              onTap: () => AddDebtModal.show(context),
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 24),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF1F2937) : Colors.white,
@@ -310,24 +255,90 @@ class ExpensesScreen extends StatelessWidget {
                   children: [
                     Container(
                       width: 48, height: 48,
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Center(child: Text(expense['icon'] as String, style: const TextStyle(fontSize: 24))),
+                      decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(12)),
+                      child: const Center(child: Text('📱', style: TextStyle(fontSize: 24))),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(expense['name'] as String, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
-                          const SizedBox(height: 2),
-                          Text(expense['date'] as String, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('iPhone 15 Pro', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 14)),
+                              Text('\$65.00/cuota', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            height: 6,
+                            width: double.infinity,
+                            decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(8)),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: 4 / 12,
+                              child: Container(decoration: BoxDecoration(color: const Color(0xFFF59E0B), borderRadius: BorderRadius.circular(8))),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text('4 de 12 cuotas (Pulsa para editar)', style: TextStyle(color: Colors.grey, fontSize: 12)),
                         ],
                       ),
                     ),
-                    Text('-\$${(expense['amount'] as double).toStringAsFixed(2)}', style: TextStyle(color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+            ),
+
+            // Redesigned Recent Transactions History
+            Text('Historial de Gastos', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
+            const SizedBox(height: 12),
+            ...recentExpensesTree.map((dayGroup) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      dayGroup['date'] as String,
+                      style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                    const SizedBox(height: 12),
+                    ...(dayGroup['items'] as List<dynamic>).map((expense) {
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48, height: 48,
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(child: Text(expense['icon'] as String, style: const TextStyle(fontSize: 22))),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(expense['name'] as String, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w600)),
+                                  const SizedBox(height: 2),
+                                  Text('${expense['category']} • ${expense['time']}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                ],
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text('-\$${(expense['amount'] as double).toStringAsFixed(2)}', style: TextStyle(color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), fontWeight: FontWeight.bold, fontSize: 16)),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
                   ],
                 ),
               );
@@ -337,7 +348,7 @@ class ExpensesScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () => VoiceExpenseModal.show(context),
         backgroundColor: Colors.transparent,
         elevation: 10,
         child: Container(
@@ -347,6 +358,13 @@ class ExpensesScreen extends StatelessWidget {
             gradient: isDark 
                 ? const LinearGradient(colors: [Color(0xFF4F46E5), Color(0xFF10B981)])
                 : const LinearGradient(colors: [Color(0xFF4F46E5), Color(0xFF10B981)]),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF4F46E5).withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              )
+            ]
           ),
           child: const Icon(LucideIcons.mic, color: Colors.white),
         ),

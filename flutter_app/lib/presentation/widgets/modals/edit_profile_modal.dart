@@ -5,6 +5,15 @@ import 'avatar_selector_modal.dart';
 class EditProfileModal extends StatefulWidget {
   const EditProfileModal({super.key});
 
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const EditProfileModal(),
+    );
+  }
+
   @override
   State<EditProfileModal> createState() => _EditProfileModalState();
 }

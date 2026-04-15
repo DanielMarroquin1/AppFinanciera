@@ -6,6 +6,7 @@ import '../../presentation/screens/expenses_screen.dart';
 import '../../presentation/screens/savings_screen.dart';
 import '../../presentation/screens/settings_screen.dart';
 import '../../presentation/screens/statistics_screen.dart';
+import '../../presentation/screens/debts_screen.dart';
 import '../../presentation/widgets/app_shell.dart';
 
 // Definición de GlobalKeys para enrutamiento anidado
@@ -38,6 +39,10 @@ class AppRouter {
           GoRoute(
             path: '/savings',
             builder: (context, state) => const SavingsScreen(),
+          ),
+          GoRoute(
+            path: '/debts',
+            builder: (context, state) => const DebtsScreen(),
           ),
           GoRoute(
             path: '/settings',

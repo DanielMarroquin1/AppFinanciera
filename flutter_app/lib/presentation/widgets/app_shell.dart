@@ -19,7 +19,7 @@ class AppShell extends StatelessWidget {
     int currentIndex = 0;
     if (location == '/dashboard') currentIndex = 0;
     if (location == '/expenses') currentIndex = 1;
-    if (location == '/savings') currentIndex = 3;
+    if (location == '/debts') currentIndex = 3;
     if (location == '/settings') currentIndex = 4;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -104,7 +104,7 @@ class AppShell extends StatelessWidget {
               _buildNavItem(context, 'Inicio', LucideIcons.home, currentIndex == 0, '/dashboard'),
               _buildNavItem(context, 'Gastos', LucideIcons.trendingUp, currentIndex == 1, '/expenses'),
               const SizedBox(width: 48), // Space for FAB
-              _buildNavItem(context, 'Ahorros', LucideIcons.target, currentIndex == 3, '/savings'),
+              _buildNavItem(context, 'Deudas', LucideIcons.creditCard, currentIndex == 3, '/debts'),
               _buildNavItem(context, 'Ajustes', LucideIcons.settings, currentIndex == 4, '/settings'),
             ],
           ),

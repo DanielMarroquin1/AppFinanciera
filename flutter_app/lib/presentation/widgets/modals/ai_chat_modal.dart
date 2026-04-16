@@ -4,6 +4,18 @@ import 'package:lucide_icons/lucide_icons.dart';
 class AIChatModal extends StatefulWidget {
   const AIChatModal({super.key});
 
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 40),
+        child: const AIChatModal(),
+      ),
+    );
+  }
+
   @override
   State<AIChatModal> createState() => _AIChatModalState();
 }

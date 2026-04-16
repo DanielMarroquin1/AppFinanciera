@@ -1,8 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../widgets/rewards_shop_modal.dart';
+import '../widgets/modals/add_expense_modal.dart';
+import '../widgets/modals/add_income_modal.dart';
+import '../widgets/modals/streak_modal.dart';
+import '../widgets/modals/budget_limit_modal.dart';
+import '../widgets/modals/ai_chat_modal.dart';
+import '../widgets/modals/transactions_list_modal.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  int _budgetLimitPercentage = 80; // Mock default state for the budget limit
 
   @override
   Widget build(BuildContext context) {
@@ -33,44 +47,82 @@ class DashboardScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
+                      '¡Increíble! Estás en racha 🔥',
+                      style: TextStyle(
+                        color: isDark ? Colors.orange[400] : Colors.orange[800],
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
                       'Aquí está tu resumen financiero',
                       style: TextStyle(
                         color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        fontSize: 12,
                       ),
                     ),
                   ],
                 ),
-                // Streak Badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    gradient: isDark 
-                        ? const LinearGradient(colors: [Color(0xFF7C2D12), Color(0xFF7F1D1D)]) 
-                        : const LinearGradient(colors: [Color(0xFFFFF7ED), Color(0xFFFEF2F2)]),
-                    border: Border.all(
-                      color: isDark ? const Color(0xFFC2410C) : const Color(0xFFFDBA74),
-                      width: 2,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        LucideIcons.flame, 
-                        color: isDark ? const Color(0xFFF97316) : const Color(0xFFEA580C),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '5',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C),
+                // Streak Badge & Rewards
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    InkWell(
+                      onTap: () => StreakModal.show(context, streak: 5),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        gradient: isDark 
+                            ? const LinearGradient(colors: [Color(0xFF7C2D12), Color(0xFF7F1D1D)]) 
+                            : const LinearGradient(colors: [Color(0xFFFFF7ED), Color(0xFFFEF2F2)]),
+                        border: Border.all(
+                          color: isDark ? const Color(0xFFC2410C) : const Color(0xFFFDBA74),
+                          width: 2,
                         ),
-                      )
-                    ],
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            LucideIcons.flame, 
+                            color: isDark ? const Color(0xFFF97316) : const Color(0xFFEA580C),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '5',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
                   ),
+                  const SizedBox(width: 8),
+                    InkWell(
+                      onTap: () => RewardsShopModal.show(context, points: 150),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.amber[900]?.withValues(alpha: 0.3) : Colors.amber[100],
+                          border: Border.all(
+                            color: Colors.amber,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Icon(
+                          LucideIcons.shoppingBag,
+                          color: isDark ? Colors.amber[400] : Colors.amber[700],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -148,32 +200,45 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Alert Banner
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF78350F).withValues(alpha: 0.3) : const Color(0xFFFFFBEB),
-                border: Border.all(
-                  color: isDark ? const Color(0xFF92400E) : const Color(0xFFFDE68A),
-                  width: 2,
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  Icon(LucideIcons.alertCircle, color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706)),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(text: '¡Cuidado! ', style: TextStyle(fontWeight: FontWeight.bold)),
-                          TextSpan(text: 'Estás cerca del límite de tu presupuesto mensual.'),
-                        ],
-                      ),
-                      style: TextStyle(color: Color(0xFF92400E)), // Matches amber-900
-                    ),
+            InkWell(
+              onTap: () async {
+                final newValue = await BudgetLimitModal.show(context, initialValue: _budgetLimitPercentage);
+                if (newValue != null) {
+                  setState(() {
+                    _budgetLimitPercentage = newValue;
+                  });
+                }
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF78350F).withValues(alpha: 0.3) : const Color(0xFFFFFBEB),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF92400E) : const Color(0xFFFDE68A),
+                    width: 2,
                   ),
-                ],
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Icon(LucideIcons.alertCircle, color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            const TextSpan(text: '¡Cuidado! ', style: TextStyle(fontWeight: FontWeight.bold)),
+                            TextSpan(text: 'Has alcanzado el $_budgetLimitPercentage% del límite mensual.'),
+                          ],
+                        ),
+                        style: const TextStyle(color: Color(0xFF92400E)), // Matches amber-900
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(LucideIcons.pencil, size: 16, color: isDark ? const Color(0xFF92400E) : const Color(0xFFD97706)),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -184,37 +249,45 @@ class DashboardScreen extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF14532D).withValues(alpha: 0.3) : const Color(0xFFF0FDF4),
-                      border: Border.all(color: isDark ? const Color(0xFF166534) : const Color(0xFFBBF7D0), width: 2),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(LucideIcons.trendingUp, color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A)),
-                        const SizedBox(height: 8),
-                        Text('Ingreso', style: TextStyle(color: isDark ? const Color(0xFFBBF7D0) : const Color(0xFF14532D), fontSize: 12)),
-                      ],
+                  child: InkWell(
+                    onTap: () => AddIncomeModal.show(context),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF14532D).withValues(alpha: 0.3) : const Color(0xFFF0FDF4),
+                        border: Border.all(color: isDark ? const Color(0xFF166534) : const Color(0xFFBBF7D0), width: 2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(LucideIcons.trendingUp, color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A)),
+                          const SizedBox(height: 8),
+                          Text('Ingreso', style: TextStyle(color: isDark ? const Color(0xFFBBF7D0) : const Color(0xFF14532D), fontSize: 12)),
+                        ],
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.3) : const Color(0xFFFEF2F2),
-                      border: Border.all(color: isDark ? const Color(0xFF991B1B) : const Color(0xFFFECACA), width: 2),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(LucideIcons.trendingDown, color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626)),
-                        const SizedBox(height: 8),
-                        Text('Gasto', style: TextStyle(color: isDark ? const Color(0xFFFECACA) : const Color(0xFF7F1D1D), fontSize: 12)),
-                      ],
+                  child: InkWell(
+                    onTap: () => AddExpenseModal.show(context),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.3) : const Color(0xFFFEF2F2),
+                        border: Border.all(color: isDark ? const Color(0xFF991B1B) : const Color(0xFFFECACA), width: 2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(LucideIcons.trendingDown, color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626)),
+                          const SizedBox(height: 8),
+                          Text('Gasto', style: TextStyle(color: isDark ? const Color(0xFFFECACA) : const Color(0xFF7F1D1D), fontSize: 12)),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -223,21 +296,24 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Investment Assistant
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isDark 
-                      ? [const Color(0xFF15803D), const Color(0xFF047857)] // green-700 to emerald-700
-                      : [const Color(0xFF16A34A), const Color(0xFF059669)], // green-600 to emerald-600
+            InkWell(
+              onTap: () => AIChatModal.show(context),
+              borderRadius: BorderRadius.circular(24),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark 
+                        ? [const Color(0xFF15803D), const Color(0xFF047857)] // green-700 to emerald-700
+                        : [const Color(0xFF16A34A), const Color(0xFF059669)], // green-600 to emerald-600
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))
+                  ]
                 ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))
-                ]
-              ),
-              child: Stack(
-                children: [
+                child: Stack(
+                  children: [
                   Positioned(
                     top: 0, right: 0,
                     child: Container(
@@ -281,7 +357,8 @@ class DashboardScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+          ),
+          const SizedBox(height: 24),
 
             // Recent Transactions (simulated)
             Row(
@@ -289,7 +366,7 @@ class DashboardScreen extends StatelessWidget {
               children: [
                 Text('Transacciones Recientes', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () => TransactionsListModal.show(context),
                   child: Text('Ver todas', style: TextStyle(color: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5), fontSize: 12)),
                 )
               ],

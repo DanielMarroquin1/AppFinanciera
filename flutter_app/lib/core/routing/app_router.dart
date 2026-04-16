@@ -16,7 +16,7 @@ final _shellNavigatorKey = GlobalKey<NavigatorState>();
 class AppRouter {
   static final router = GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/dashboard', // TODO: Implement Redirect based on auth
+    initialLocation: '/login', // TODO: Implement Redirect based on auth
     routes: [
       GoRoute(
         path: '/login',

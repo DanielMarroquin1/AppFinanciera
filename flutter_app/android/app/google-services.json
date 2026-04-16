@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "164540827567",
+    "project_id": "zentai-9b38a",
+    "storage_bucket": "zentai-9b38a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:164540827567:android:ad037635c866960386915a",
+        "android_client_info": {
+          "package_name": "com.marro.appfinanciera.flutter_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMtI8eoEC8e3kMn_c4Vh5IfYVT6zrU7DA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

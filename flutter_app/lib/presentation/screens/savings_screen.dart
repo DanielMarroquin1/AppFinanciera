@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../widgets/modals/add_saving_goal_modal.dart';
+import '../widgets/modals/add_funds_modal.dart';
+import '../widgets/modals/saving_guide_modal.dart';
+import '../widgets/modals/ai_chat_modal.dart';
 
-class SavingsScreen extends StatelessWidget {
+class SavingsScreen extends StatefulWidget {
   const SavingsScreen({super.key});
 
+  @override
+  State<SavingsScreen> createState() => _SavingsScreenState();
+}
+
+class _SavingsScreenState extends State<SavingsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -15,8 +24,8 @@ class SavingsScreen extends StatelessWidget {
         'current': 2500.0,
         'goal': 5000.0,
         'colors': isDark 
-            ? [const Color(0xFF1E3A8A), const Color(0xFF164E63)] // blue-900 to cyan-900
-            : [const Color(0xFF3B82F6), const Color(0xFF06B6D4)], // blue-500 to cyan-500
+            ? [const Color(0xFF1E3A8A), const Color(0xFF164E63)] 
+            : [const Color(0xFF3B82F6), const Color(0xFF06B6D4)], 
       },
       {
         'name': 'Fondo de Emergencia',
@@ -24,8 +33,8 @@ class SavingsScreen extends StatelessWidget {
         'current': 8500.0,
         'goal': 10000.0,
         'colors': isDark 
-            ? [const Color(0xFF14532D), const Color(0xFF064E3B)] // green-900 to emerald-900
-            : [const Color(0xFF22C55E), const Color(0xFF10B981)], // green-500 to emerald-500
+            ? [const Color(0xFF14532D), const Color(0xFF064E3B)] 
+            : [const Color(0xFF22C55E), const Color(0xFF10B981)], 
       },
       {
         'name': 'Nueva Laptop',
@@ -33,8 +42,8 @@ class SavingsScreen extends StatelessWidget {
         'current': 1200.0,
         'goal': 2500.0,
         'colors': isDark 
-            ? [const Color(0xFF581C87), const Color(0xFF831843)] // purple-900 to pink-900
-            : [const Color(0xFFA855F7), const Color(0xFFEC4899)], // purple-500 to pink-500
+            ? [const Color(0xFF581C87), const Color(0xFF831843)] 
+            : [const Color(0xFFA855F7), const Color(0xFFEC4899)], 
       },
       {
         'name': 'Auto Nuevo',
@@ -42,8 +51,8 @@ class SavingsScreen extends StatelessWidget {
         'current': 15000.0,
         'goal': 50000.0,
         'colors': isDark 
-            ? [const Color(0xFF7C2D12), const Color(0xFF7F1D1D)] // orange-900 to red-900
-            : [const Color(0xFFF97316), const Color(0xFFEF4444)], // orange-500 to red-500
+            ? [const Color(0xFF7C2D12), const Color(0xFF7F1D1D)] 
+            : [const Color(0xFFF97316), const Color(0xFFEF4444)], 
       },
     ];
 
@@ -78,8 +87,8 @@ class SavingsScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: isDark 
-                      ? [const Color(0xFF166534), const Color(0xFF064E3B)] // green-800 to emerald-900
-                      : [const Color(0xFF16A34A), const Color(0xFF059669)], // green-600 to emerald-600
+                      ? [const Color(0xFF166534), const Color(0xFF064E3B)] 
+                      : [const Color(0xFF16A34A), const Color(0xFF059669)], 
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -160,7 +169,7 @@ class SavingsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () => SavingGuideModal.show(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isDark ? const Color(0xFF7E22CE) : const Color(0xFF9333EA),
                       foregroundColor: Colors.white,
@@ -176,7 +185,7 @@ class SavingsScreen extends StatelessWidget {
 
             // Add New Goal Button
             InkWell(
-              onTap: () {},
+              onTap: () => AddSavingGoalModal.show(context),
               borderRadius: BorderRadius.circular(16),
               child: Container(
                 padding: const EdgeInsets.all(16),
@@ -238,13 +247,13 @@ class SavingsScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(goal['name'] as String, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
+                              Text(goal['name'] as String, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.bold)),
                               const SizedBox(height: 4),
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.baseline,
                                 textBaseline: TextBaseline.alphabetic,
                                 children: [
-                                  Text('\$${(goal['current'] as double).toStringAsFixed(0)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18)),
+                                  Text('\$${(goal['current'] as double).toStringAsFixed(0)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
                                   const SizedBox(width: 4),
                                   Text('de \$${(goal['goal'] as double).toStringAsFixed(0)}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                                 ],
@@ -259,7 +268,7 @@ class SavingsScreen extends StatelessWidget {
                               color: isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Text('¡Logrado!', style: TextStyle(color: isDark ? const Color(0xFF86EFAC) : const Color(0xFF15803D), fontSize: 12)),
+                            child: Text('¡Logrado!', style: TextStyle(color: isDark ? const Color(0xFF86EFAC) : const Color(0xFF15803D), fontSize: 12, fontWeight: FontWeight.bold)),
                           )
                       ],
                     ),
@@ -287,13 +296,13 @@ class SavingsScreen extends StatelessWidget {
                       children: [
                         Text('${percentage.toStringAsFixed(0)}% completado', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () => AddFundsModal.show(context, goalName: goal['name'] as String),
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
                             minimumSize: const Size(50, 30),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          child: Text('Agregar fondos', style: TextStyle(color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), fontSize: 12)),
+                          child: Text('Agregar fondos', style: TextStyle(color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), fontSize: 12, fontWeight: FontWeight.bold)),
                         )
                       ],
                     )
@@ -306,14 +315,21 @@ class SavingsScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () => AIChatModal.show(context),
         backgroundColor: Colors.transparent,
         elevation: 10,
         child: Container(
           width: 56, height: 56,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: const LinearGradient(colors: [Color(0xFFA855F7), Color(0xFFEC4899)]), // purple to pink
+            gradient: const LinearGradient(colors: [Color(0xFFA855F7), Color(0xFFEC4899)]), 
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFA855F7).withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              )
+            ]
           ),
           child: const Icon(LucideIcons.sparkles, color: Colors.white),
         ),

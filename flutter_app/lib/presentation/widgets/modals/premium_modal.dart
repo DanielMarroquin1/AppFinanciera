@@ -4,6 +4,15 @@ import 'package:lucide_icons/lucide_icons.dart';
 class PremiumModal extends StatefulWidget {
   const PremiumModal({super.key});
 
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const PremiumModal(),
+    );
+  }
+
   @override
   State<PremiumModal> createState() => _PremiumModalState();
 }

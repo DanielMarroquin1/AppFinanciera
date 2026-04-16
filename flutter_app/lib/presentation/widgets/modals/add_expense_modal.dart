@@ -4,6 +4,15 @@ import 'package:lucide_icons/lucide_icons.dart';
 class AddExpenseModal extends StatefulWidget {
   const AddExpenseModal({super.key});
 
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const AddExpenseModal(),
+    );
+  }
+
   @override
   State<AddExpenseModal> createState() => _AddExpenseModalState();
 }

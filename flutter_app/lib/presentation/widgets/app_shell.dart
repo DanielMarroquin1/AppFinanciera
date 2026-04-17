@@ -6,6 +6,8 @@ import '../../presentation/widgets/quick_actions_menu.dart';
 import '../../presentation/widgets/modals/add_income_modal.dart';
 import '../../presentation/widgets/modals/add_expense_modal.dart';
 import '../../presentation/widgets/modals/ai_chat_modal.dart';
+import '../../presentation/widgets/modals/add_saving_goal_modal.dart';
+import '../../presentation/widgets/rewards_shop_modal.dart';
 
 class AppShell extends StatelessWidget {
   final Widget child;
@@ -53,6 +55,17 @@ class AppShell extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 builder: (context) => const AddExpenseModal(),
               );
+            } else if (action == 'savings-goal') {
+              AddSavingGoalModal.show(context);
+            } else if (action == 'rewards-shop') {
+              RewardsShopModal.show(context, points: 150);
+            } else if (action == 'fixed-expense') {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => const AddExpenseModal(isFixed: true),
+              );
             } else if (action == 'ai-chat') {
               showModalBottomSheet(
                 context: context,
@@ -60,8 +73,6 @@ class AppShell extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 builder: (context) => const AIChatModal(),
               );
-            } else {
-              print('Selected action: $action');
             }
           }
         },

@@ -15,8 +15,32 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
-  int _budgetLimitPercentage = 80; // Mock default state for the budget limit
+class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProviderStateMixin {
+  int _budgetLimitPercentage = 80;
+  late AnimationController _fireAnimController;
+
+  // Mock badge data
+  final List<Map<String, String>> unlockedBadges = [
+    {'id': 'first-save', 'emoji': '🎯', 'name': 'Primer Ahorro'},
+    {'id': 'week-streak', 'emoji': '🔥', 'name': 'Racha Semanal'},
+    {'id': 'budget-control', 'emoji': '✅', 'name': 'Bajo Control'},
+    {'id': 'profile-complete', 'emoji': '👤', 'name': 'Perfil Completo'},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fireAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _fireAnimController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,34 +58,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '¡Hola, María! 👋',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '¡Hola, María! 👋',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '¡Increíble! Estás en racha 🔥',
-                      style: TextStyle(
-                        color: isDark ? Colors.orange[400] : Colors.orange[800],
-                        fontWeight: FontWeight.w600,
+                      const SizedBox(height: 4),
+                      Text(
+                        '¡Increíble! Estás en racha 🔥',
+                        style: TextStyle(
+                          color: isDark ? Colors.orange[400] : Colors.orange[800],
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Aquí está tu resumen financiero',
-                      style: TextStyle(
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
-                        fontSize: 12,
+                      const SizedBox(height: 2),
+                      Text(
+                        'Aquí está tu resumen financiero',
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          fontSize: 12,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 // Streak Badge & Rewards
                 Row(
@@ -70,39 +96,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     InkWell(
                       onTap: () => StreakModal.show(context, streak: 5),
                       borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        gradient: isDark 
-                            ? const LinearGradient(colors: [Color(0xFF7C2D12), Color(0xFF7F1D1D)]) 
-                            : const LinearGradient(colors: [Color(0xFFFFF7ED), Color(0xFFFEF2F2)]),
-                        border: Border.all(
-                          color: isDark ? const Color(0xFFC2410C) : const Color(0xFFFDBA74),
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            LucideIcons.flame, 
-                            color: isDark ? const Color(0xFFF97316) : const Color(0xFFEA580C),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '5',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C),
+                      child: AnimatedBuilder(
+                        animation: _fireAnimController,
+                        builder: (context, child) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            gradient: isDark 
+                                ? const LinearGradient(colors: [Color(0xFF7C2D12), Color(0xFF7F1D1D)]) 
+                                : const LinearGradient(colors: [Color(0xFFFFF7ED), Color(0xFFFEF2F2)]),
+                            border: Border.all(
+                              color: isDark ? const Color(0xFFC2410C) : const Color(0xFFFDBA74),
+                              width: 2,
                             ),
-                          )
-                        ],
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFF97316).withValues(alpha: 0.3 + (_fireAnimController.value * 0.2)),
+                                blurRadius: 8 + (_fireAnimController.value * 8),
+                                spreadRadius: _fireAnimController.value * 2,
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Transform.scale(
+                                scale: 1.0 + (_fireAnimController.value * 0.1),
+                                child: Icon(
+                                  LucideIcons.flame, 
+                                  color: isDark ? const Color(0xFFF97316) : const Color(0xFFEA580C),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '5',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C),
+                                ),
+                              )
+                            ],
+                          ),
+                        );
+                        },
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     InkWell(
                       onTap: () => RewardsShopModal.show(context, points: 150),
                       borderRadius: BorderRadius.circular(16),
@@ -239,6 +280,75 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Icon(LucideIcons.pencil, size: 16, color: isDark ? const Color(0xFF92400E) : const Color(0xFFD97706)),
                   ],
                 ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Badges Section (Insignias Desbloqueadas)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Insignias Desbloqueadas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                TextButton(
+                  onPressed: () => RewardsShopModal.show(context, points: 150),
+                  child: Text('Ver todas', style: TextStyle(color: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5), fontSize: 12)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 100,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: unlockedBadges.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final badge = unlockedBadges[index];
+                  return Container(
+                    width: 88,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: isDark
+                            ? [const Color(0xFF78350F).withValues(alpha: 0.3), const Color(0xFF7C2D12).withValues(alpha: 0.3)]
+                            : [const Color(0xFFFFFBEB), const Color(0xFFFFF7ED)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF92400E) : const Color(0xFFFCD34D),
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF78350F).withValues(alpha: 0.5) : const Color(0xFFFEF3C7),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Center(child: Text(badge['emoji']!, style: const TextStyle(fontSize: 20))),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          badge['name']!,
+                          style: TextStyle(
+                            color: isDark ? const Color(0xFFFCD34D) : const Color(0xFF78350F),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 24),
@@ -399,6 +509,76 @@ class _DashboardScreenState extends State<DashboardScreen> {
               subtitle: '15 Ene, 2026',
               amount: '+\$3,500.00',
               amountColor: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A),
+            ),
+            const SizedBox(height: 24),
+
+            // Achievements Card (¡Logro Desbloqueado!)
+            InkWell(
+              onTap: () => RewardsShopModal.show(context, points: 150),
+              borderRadius: BorderRadius.circular(24),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? [const Color(0xFFD97706), const Color(0xFFC2410C)]
+                        : [const Color(0xFFFBBF24), const Color(0xFFF97316)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 10, offset: const Offset(0, 4))
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(LucideIcons.gift, color: Colors.white, size: 24),
+                            SizedBox(width: 12),
+                            Text('¡Logro Desbloqueado!', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        Text('Ver todos →', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Has ahorrado por 7 días consecutivos. ¡Sigue así! 🎉',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      height: 8,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: FractionallySizedBox(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: 0.75,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '75% para el próximo nivel',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 80), // for bottom nav padding
           ],

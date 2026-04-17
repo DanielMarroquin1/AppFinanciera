@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class AddExpenseModal extends StatefulWidget {
-  const AddExpenseModal({super.key});
+  final bool isFixed;
+  const AddExpenseModal({super.key, this.isFixed = false});
 
-  static Future<void> show(BuildContext context) {
+  static Future<void> show(BuildContext context, {bool isFixed = false}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const AddExpenseModal(),
+      builder: (context) => AddExpenseModal(isFixed: isFixed),
     );
   }
 
@@ -67,10 +68,10 @@ class _AddExpenseModalState extends State<AddExpenseModal> {
                         Container(
                           width: 40, height: 40,
                           decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
-                          child: const Icon(LucideIcons.trendingDown, color: Colors.white, size: 24),
+                          child: Icon(widget.isFixed ? LucideIcons.receipt : LucideIcons.trendingDown, color: Colors.white, size: 24),
                         ),
                         const SizedBox(width: 12),
-                        const Text('Nuevo Gasto', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                        Text(widget.isFixed ? 'Gasto Fijo' : 'Nuevo Gasto', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     IconButton(
@@ -80,7 +81,7 @@ class _AddExpenseModalState extends State<AddExpenseModal> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text('Registra tus gastos para tener mejor control', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                Text(widget.isFixed ? 'Registra gastos recurrentes como renta, servicios, etc.' : 'Registra tus gastos para tener mejor control', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
               ],
             ),
           ),
@@ -219,7 +220,7 @@ class _AddExpenseModalState extends State<AddExpenseModal> {
                       child: Container(
                         alignment: Alignment.center,
                         constraints: const BoxConstraints(minHeight: 50),
-                        child: const Text('Agregar Gasto', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: Text(widget.isFixed ? 'Agregar Gasto Fijo' : 'Agregar Gasto', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ),

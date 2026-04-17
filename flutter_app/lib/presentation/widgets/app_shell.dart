@@ -57,6 +57,8 @@ class AppShell extends StatelessWidget {
               );
             } else if (action == 'savings-goal') {
               AddSavingGoalModal.show(context);
+            } else if (action == 'my-savings') {
+              context.go('/savings');
             } else if (action == 'rewards-shop') {
               RewardsShopModal.show(context, points: 150);
             } else if (action == 'fixed-expense') {

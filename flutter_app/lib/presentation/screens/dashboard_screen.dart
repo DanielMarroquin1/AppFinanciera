@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../widgets/rewards_shop_modal.dart';
 import '../widgets/modals/add_expense_modal.dart';
@@ -7,15 +8,16 @@ import '../widgets/modals/streak_modal.dart';
 import '../widgets/modals/budget_limit_modal.dart';
 import '../widgets/modals/ai_chat_modal.dart';
 import '../widgets/modals/transactions_list_modal.dart';
+import '../providers/color_palette_provider.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProviderStateMixin {
+class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTickerProviderStateMixin {
   int _budgetLimitPercentage = 80;
   late AnimationController _fireAnimController;
 
@@ -45,6 +47,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final paletteGradient = ref.watch(colorPaletteProvider.notifier).getGradient(isDark);
 
     return Scaffold(
       backgroundColor: Colors.transparent, // Background handled by AppShell
@@ -174,9 +177,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: isDark 
-                      ? [const Color(0xFF312E81), const Color(0xFF065F46)] // indigo-900 to emerald-800
-                      : [const Color(0xFF4338CA), const Color(0xFF059669)], // indigo-700 to emerald-600
+                  colors: paletteGradient,
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -291,7 +292,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 Text('Insignias Desbloqueadas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
                 TextButton(
                   onPressed: () => RewardsShopModal.show(context, points: 150),
-                  child: Text('Ver todas', style: TextStyle(color: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5), fontSize: 12)),
+                  child: Text('Ver todas', style: TextStyle(color: paletteGradient[0], fontSize: 12)),
                 ),
               ],
             ),
@@ -363,7 +364,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     onTap: () => AddIncomeModal.show(context),
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF14532D).withValues(alpha: 0.3) : const Color(0xFFF0FDF4),
                         border: Border.all(color: isDark ? const Color(0xFF166534) : const Color(0xFFBBF7D0), width: 2),
@@ -371,21 +372,21 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       ),
                       child: Column(
                         children: [
-                          Icon(LucideIcons.trendingUp, color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A)),
-                          const SizedBox(height: 8),
-                          Text('Ingreso', style: TextStyle(color: isDark ? const Color(0xFFBBF7D0) : const Color(0xFF14532D), fontSize: 12)),
+                          Icon(LucideIcons.trendingUp, color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A), size: 22),
+                          const SizedBox(height: 6),
+                          Text('Ingreso', style: TextStyle(color: isDark ? const Color(0xFFBBF7D0) : const Color(0xFF14532D), fontSize: 11, fontWeight: FontWeight.w500)),
                         ],
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: InkWell(
                     onTap: () => AddExpenseModal.show(context),
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.3) : const Color(0xFFFEF2F2),
                         border: Border.all(color: isDark ? const Color(0xFF991B1B) : const Color(0xFFFECACA), width: 2),
@@ -393,9 +394,31 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       ),
                       child: Column(
                         children: [
-                          Icon(LucideIcons.trendingDown, color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626)),
-                          const SizedBox(height: 8),
-                          Text('Gasto', style: TextStyle(color: isDark ? const Color(0xFFFECACA) : const Color(0xFF7F1D1D), fontSize: 12)),
+                          Icon(LucideIcons.trendingDown, color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), size: 22),
+                          const SizedBox(height: 6),
+                          Text('Gasto', style: TextStyle(color: isDark ? const Color(0xFFFECACA) : const Color(0xFF7F1D1D), fontSize: 11, fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => AddIncomeModal.show(context, isFixed: true),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E3A5F).withValues(alpha: 0.3) : const Color(0xFFEFF6FF),
+                        border: Border.all(color: isDark ? const Color(0xFF1D4ED8) : const Color(0xFFBFDBFE), width: 2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(LucideIcons.repeat, color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), size: 22),
+                          const SizedBox(height: 6),
+                          Text('Ingreso Fijo', style: TextStyle(color: isDark ? const Color(0xFFBFDBFE) : const Color(0xFF1E3A8A), fontSize: 11, fontWeight: FontWeight.w500)),
                         ],
                       ),
                     ),
@@ -413,9 +436,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: isDark 
-                        ? [const Color(0xFF15803D), const Color(0xFF047857)] // green-700 to emerald-700
-                        : [const Color(0xFF16A34A), const Color(0xFF059669)], // green-600 to emerald-600
+                    colors: paletteGradient,
                   ),
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
@@ -477,7 +498,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 Text('Transacciones Recientes', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
                 TextButton(
                   onPressed: () => TransactionsListModal.show(context),
-                  child: Text('Ver todas', style: TextStyle(color: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5), fontSize: 12)),
+                  child: Text('Ver todas', style: TextStyle(color: paletteGradient[0], fontSize: 12)),
                 )
               ],
             ),
@@ -520,9 +541,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: isDark
-                        ? [const Color(0xFFD97706), const Color(0xFFC2410C)]
-                        : [const Color(0xFFFBBF24), const Color(0xFFF97316)],
+                    colors: [paletteGradient[0], paletteGradient.length > 1 ? paletteGradient[1] : paletteGradient[0]],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),

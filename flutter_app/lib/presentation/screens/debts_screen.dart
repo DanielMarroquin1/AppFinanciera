@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../providers/color_palette_provider.dart';
 
 class Debt {
   final String id;
@@ -27,14 +29,14 @@ class Debt {
   bool get isCompleted => paidInstallments >= totalInstallments;
 }
 
-class DebtsScreen extends StatefulWidget {
+class DebtsScreen extends ConsumerStatefulWidget {
   const DebtsScreen({super.key});
 
   @override
-  State<DebtsScreen> createState() => _DebtsScreenState();
+  ConsumerState<DebtsScreen> createState() => _DebtsScreenState();
 }
 
-class _DebtsScreenState extends State<DebtsScreen> {
+class _DebtsScreenState extends ConsumerState<DebtsScreen> {
   final List<Debt> _debts = [
     Debt(
       id: '1', name: 'Laptop HP', emoji: '💻',
@@ -317,6 +319,7 @@ class _DebtsScreenState extends State<DebtsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final paletteGradient = ref.watch(colorPaletteProvider.notifier).getGradient(isDark);
 
     final activeDebts = _debts.where((d) => !d.isCompleted).toList();
     final completedDebts = _debts.where((d) => d.isCompleted).toList();
@@ -342,9 +345,7 @@ class _DebtsScreenState extends State<DebtsScreen> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: isDark
-                      ? [const Color(0xFF7F1D1D), const Color(0xFF831843)]
-                      : [const Color(0xFFF43F5E), const Color(0xFFDB2777)],
+                  colors: paletteGradient,
                   begin: Alignment.topLeft, end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(24),

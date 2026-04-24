@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/theme_provider.dart';
+import '../providers/color_palette_provider.dart';
 import '../widgets/modals/edit_profile_modal.dart';
 import '../widgets/modals/color_palette_modal.dart';
 import '../widgets/modals/premium_modal.dart';
@@ -23,6 +24,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final paletteGradient = ref.watch(colorPaletteProvider.notifier).getGradient(isDark);
 
     return Scaffold(
       backgroundColor: Colors.transparent, // Handled by AppShell
@@ -121,9 +123,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: isDark 
-                      ? [const Color(0xFF581C87), const Color(0xFF1E3A8A)] 
-                      : [const Color(0xFF9333EA), const Color(0xFF2563EB)], 
+                  colors: paletteGradient,
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),

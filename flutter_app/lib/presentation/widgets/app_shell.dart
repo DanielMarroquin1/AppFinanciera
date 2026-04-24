@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/theme/app_colors.dart';
 import '../../presentation/widgets/quick_actions_menu.dart';
-import '../../presentation/widgets/modals/add_income_modal.dart';
-import '../../presentation/widgets/modals/add_expense_modal.dart';
 import '../../presentation/widgets/modals/ai_chat_modal.dart';
 import '../../presentation/widgets/modals/add_saving_goal_modal.dart';
 import '../../presentation/widgets/rewards_shop_modal.dart';
+import '../../presentation/providers/color_palette_provider.dart';
 
-class AppShell extends StatelessWidget {
+class AppShell extends ConsumerWidget {
   final Widget child;
 
   const AppShell({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // Determine current route using go_router inside GoRouterState
     final String location = GoRouterState.of(context).uri.path;
     int currentIndex = 0;
@@ -25,6 +25,8 @@ class AppShell extends StatelessWidget {
     if (location == '/settings') currentIndex = 4;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final palette = ref.watch(colorPaletteProvider);
+    final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
     
     return Scaffold(
       backgroundColor: isDark 
@@ -41,33 +43,12 @@ class AppShell extends StatelessWidget {
           );
           if (action != null) {
             if (!context.mounted) return;
-            if (action == 'income') {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => const AddIncomeModal(),
-              );
-            } else if (action == 'expense') {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => const AddExpenseModal(),
-              );
-            } else if (action == 'savings-goal') {
+            if (action == 'savings-goal') {
               AddSavingGoalModal.show(context);
             } else if (action == 'my-savings') {
               context.go('/savings');
             } else if (action == 'rewards-shop') {
               RewardsShopModal.show(context, points: 150);
-            } else if (action == 'fixed-expense') {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => const AddExpenseModal(isFixed: true),
-              );
             } else if (action == 'ai-chat') {
               showModalBottomSheet(
                 context: context,
@@ -86,15 +67,13 @@ class AppShell extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: LinearGradient(
-              colors: isDark 
-                  ? [const Color(0xFF4338CA), const Color(0xFF059669)] // indigo-700 to emerald-600
-                  : [const Color(0xFF4F46E5), const Color(0xFF10B981)], // indigo-600 to emerald-500
+              colors: paletteGradient,
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
+                color: paletteGradient[0].withValues(alpha: 0.3),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               )
@@ -114,11 +93,11 @@ class AppShell extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(context, 'Inicio', LucideIcons.home, currentIndex == 0, '/dashboard'),
-              _buildNavItem(context, 'Gastos', LucideIcons.trendingUp, currentIndex == 1, '/expenses'),
+              _buildNavItem(context, 'Inicio', LucideIcons.home, currentIndex == 0, '/dashboard', palette.colors[0]),
+              _buildNavItem(context, 'Gastos', LucideIcons.trendingUp, currentIndex == 1, '/expenses', palette.colors[0]),
               const SizedBox(width: 48), // Space for FAB
-              _buildNavItem(context, 'Deudas', LucideIcons.creditCard, currentIndex == 3, '/debts'),
-              _buildNavItem(context, 'Ajustes', LucideIcons.settings, currentIndex == 4, '/settings'),
+              _buildNavItem(context, 'Deudas', LucideIcons.creditCard, currentIndex == 3, '/debts', palette.colors[0]),
+              _buildNavItem(context, 'Ajustes', LucideIcons.settings, currentIndex == 4, '/settings', palette.colors[0]),
             ],
           ),
         ),
@@ -126,10 +105,10 @@ class AppShell extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, String label, IconData icon, bool isSelected, String route) {
+  Widget _buildNavItem(BuildContext context, String label, IconData icon, bool isSelected, String route, Color activeColor) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final color = isSelected 
-        ? const Color(0xFF4F46E5) // text-indigo-600
+        ? activeColor
         : (isDark ? Colors.grey[500] : Colors.grey[400]);
 
     return InkWell(

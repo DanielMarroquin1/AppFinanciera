@@ -10,30 +10,12 @@ class QuickActionsMenu extends StatelessWidget {
 
     final actions = [
       {
-        'id': 'income',
-        'label': 'Agregar Ingreso',
-        'icon': LucideIcons.trendingUp,
-        'gradient': isDark 
-            ? const [Color(0xFF15803D), Color(0xFF047857)] // green-700 to emerald-700
-            : const [Color(0xFF16A34A), Color(0xFF059669)], // green-600 to emerald-600
-        'isPremium': false,
-      },
-      {
-        'id': 'expense',
-        'label': 'Agregar Gasto',
-        'icon': LucideIcons.trendingDown,
-        'gradient': isDark 
-            ? const [Color(0xFFB91C1C), Color(0xFFBE185D)] // red-700 to pink-700
-            : const [Color(0xFFDC2626), Color(0xFFDB2777)], // red-600 to pink-600
-        'isPremium': false,
-      },
-      {
         'id': 'savings-goal',
         'label': 'Nueva Meta de Ahorro',
         'icon': LucideIcons.target,
         'gradient': isDark 
-            ? const [Color(0xFF1D4ED8), Color(0xFF0E7490)] // blue-700 to cyan-700
-            : const [Color(0xFF2563EB), Color(0xFF0891B2)], // blue-600 to cyan-600
+            ? const [Color(0xFF1D4ED8), Color(0xFF0E7490)]
+            : const [Color(0xFF2563EB), Color(0xFF0891B2)],
         'isPremium': false,
       },
       {
@@ -41,8 +23,8 @@ class QuickActionsMenu extends StatelessWidget {
         'label': 'Mis Ahorros',
         'icon': LucideIcons.piggyBank,
         'gradient': isDark 
-            ? const [Color(0xFF0E7490), Color(0xFF0369A1)] // cyan-700 to sky-700
-            : const [Color(0xFF06B6D4), Color(0xFF0EA5E9)], // cyan-500 to sky-500
+            ? const [Color(0xFF0E7490), Color(0xFF0369A1)]
+            : const [Color(0xFF06B6D4), Color(0xFF0EA5E9)],
         'isPremium': false,
       },
       {
@@ -50,17 +32,8 @@ class QuickActionsMenu extends StatelessWidget {
         'label': 'Tienda de Recompensas',
         'icon': LucideIcons.shoppingBag,
         'gradient': isDark 
-            ? const [Color(0xFFD97706), Color(0xFFC2410C)] // amber-600 to orange-700
-            : const [Color(0xFFFBBF24), Color(0xFFF97316)], // amber-400 to orange-500
-        'isPremium': false,
-      },
-      {
-        'id': 'fixed-expense',
-        'label': 'Gasto Fijo',
-        'icon': LucideIcons.receipt,
-        'gradient': isDark 
-            ? const [Color(0xFF7E22CE), Color(0xFF4338CA)] // purple-700 to indigo-700
-            : const [Color(0xFF9333EA), Color(0xFF4F46E5)], // purple-600 to indigo-600
+            ? const [Color(0xFFD97706), Color(0xFFC2410C)]
+            : const [Color(0xFFFBBF24), Color(0xFFF97316)],
         'isPremium': false,
       },
       {
@@ -68,8 +41,8 @@ class QuickActionsMenu extends StatelessWidget {
         'label': 'Consultar IA',
         'icon': LucideIcons.messageSquare,
         'gradient': isDark 
-            ? const [Color(0xFF7E22CE), Color(0xFF4338CA)] // purple-700 to indigo-700
-            : const [Color(0xFF9333EA), Color(0xFF4F46E5)], // purple-600 to indigo-600
+            ? const [Color(0xFF7E22CE), Color(0xFF4338CA)]
+            : const [Color(0xFF9333EA), Color(0xFF4F46E5)],
         'isPremium': true,
       },
     ];
@@ -157,7 +130,7 @@ class QuickActionsMenu extends StatelessWidget {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: Colors.orange, // amber-500 equivalent
+                                    color: Colors.orange,
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: const Row(

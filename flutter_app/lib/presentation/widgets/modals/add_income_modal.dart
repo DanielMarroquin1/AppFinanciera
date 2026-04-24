@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class AddIncomeModal extends StatefulWidget {
-  const AddIncomeModal({super.key});
+  final bool isFixed;
+  const AddIncomeModal({super.key, this.isFixed = false});
 
-  static Future<void> show(BuildContext context) {
+  static Future<void> show(BuildContext context, {bool isFixed = false}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const AddIncomeModal(),
+      builder: (context) => AddIncomeModal(isFixed: isFixed),
     );
   }
 
@@ -65,10 +66,10 @@ class _AddIncomeModalState extends State<AddIncomeModal> {
                         Container(
                           width: 40, height: 40,
                           decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
-                          child: const Icon(LucideIcons.trendingUp, color: Colors.white, size: 24),
+                          child: Icon(widget.isFixed ? LucideIcons.repeat : LucideIcons.trendingUp, color: Colors.white, size: 24),
                         ),
                         const SizedBox(width: 12),
-                        const Text('Nuevo Ingreso', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                        Text(widget.isFixed ? 'Ingreso Fijo' : 'Nuevo Ingreso', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     IconButton(
@@ -78,7 +79,12 @@ class _AddIncomeModalState extends State<AddIncomeModal> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text('Registra tus ingresos para llevar un mejor control', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                Text(
+                  widget.isFixed 
+                      ? 'Registra ingresos recurrentes como salario, renta, pensión, etc.'
+                      : 'Registra tus ingresos para llevar un mejor control',
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14),
+                ),
               ],
             ),
           ),
@@ -217,7 +223,7 @@ class _AddIncomeModalState extends State<AddIncomeModal> {
                       child: Container(
                         alignment: Alignment.center,
                         constraints: const BoxConstraints(minHeight: 50),
-                        child: const Text('Agregar Ingreso', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: Text(widget.isFixed ? 'Agregar Ingreso Fijo' : 'Agregar Ingreso', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ),

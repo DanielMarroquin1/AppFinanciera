@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../widgets/modals/expenses_filter_modal.dart';
 import '../widgets/modals/voice_expense_modal.dart';
 import '../widgets/modals/category_detail_modal.dart';
 import '../widgets/modals/add_debt_modal.dart';
+import '../widgets/modals/add_expense_modal.dart';
+import '../providers/color_palette_provider.dart';
 
-class ExpensesScreen extends StatefulWidget {
+class ExpensesScreen extends ConsumerStatefulWidget {
   const ExpensesScreen({super.key});
 
   @override
-  State<ExpensesScreen> createState() => _ExpensesScreenState();
+  ConsumerState<ExpensesScreen> createState() => _ExpensesScreenState();
 }
 
-class _ExpensesScreenState extends State<ExpensesScreen> {
+class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
   String selectedMonth = 'Febrero';
   String selectedCategory = 'Todas';
 
@@ -51,6 +54,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final paletteGradient = ref.watch(colorPaletteProvider.notifier).getGradient(isDark);
 
     return Scaffold(
       backgroundColor: Colors.transparent, // Handled by AppShell
@@ -74,6 +78,70 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               style: TextStyle(
                 color: isDark ? Colors.grey[400] : Colors.grey[600],
               ),
+            ),
+            const SizedBox(height: 16),
+
+            // Action buttons: Agregar Gasto + Gasto Fijo
+            Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () => AddExpenseModal.show(context),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isDark
+                              ? [const Color(0xFFB91C1C), const Color(0xFFBE185D)]
+                              : [const Color(0xFFDC2626), const Color(0xFFDB2777)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(color: const Color(0xFFDC2626).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(LucideIcons.plus, color: Colors.white, size: 18),
+                          SizedBox(width: 6),
+                          Text('Agregar Gasto', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => AddExpenseModal.show(context, isFixed: true),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isDark
+                              ? [const Color(0xFF7E22CE), const Color(0xFF4338CA)]
+                              : [const Color(0xFF9333EA), const Color(0xFF4F46E5)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(color: const Color(0xFF9333EA).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(LucideIcons.receipt, color: Colors.white, size: 18),
+                          SizedBox(width: 6),
+                          Text('Gasto Fijo', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 24),
 
@@ -128,7 +196,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                     decoration: BoxDecoration(
                       color: (selectedCategory != 'Todas' || selectedMonth != 'Febrero') 
                           ? const Color(0xFFEC4899) // pink active filter
-                          : (isDark ? const Color(0xFF4338CA) : const Color(0xFF4F46E5)), 
+                          : paletteGradient[0], 
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: const Center(child: Icon(LucideIcons.filter, color: Colors.white, size: 20)),
@@ -143,9 +211,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: isDark 
-                      ? [const Color(0xFF881337), const Color(0xFF831843)] // rose-900 to pink-900
-                      : [const Color(0xFFF43F5E), const Color(0xFFDB2777)], // rose-500 to pink-600
+                  colors: paletteGradient,
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),

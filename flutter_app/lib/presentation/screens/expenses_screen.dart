@@ -7,6 +7,9 @@ import '../widgets/modals/category_detail_modal.dart';
 import '../widgets/modals/add_debt_modal.dart';
 import '../widgets/modals/add_expense_modal.dart';
 import '../providers/color_palette_provider.dart';
+import '../providers/transaction_provider.dart';
+import '../providers/debts_provider.dart';
+import 'package:intl/intl.dart';
 
 class ExpensesScreen extends ConsumerStatefulWidget {
   const ExpensesScreen({super.key});
@@ -16,48 +19,87 @@ class ExpensesScreen extends ConsumerStatefulWidget {
 }
 
 class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
-  String selectedMonth = 'Febrero';
+  late String selectedMonth;
   String selectedCategory = 'Todas';
+  String searchQuery = '';
 
-  final expenses = [
-    {'category': '🍔 Comida', 'amount': 450.50, 'percentage': 35, 'color': const Color(0xFFF43F5E)},
-    {'category': '🚗 Transporte', 'amount': 280.00, 'percentage': 22, 'color': const Color(0xFF0EA5E9)},
-    {'category': '🏠 Hogar', 'amount': 520.00, 'percentage': 40, 'color': const Color(0xFF6366F1)},
-    {'category': '🎮 Entretenimiento', 'amount': 150.00, 'percentage': 12, 'color': const Color(0xFFD946EF)},
-    {'category': '💊 Salud', 'amount': 95.00, 'percentage': 7, 'color': const Color(0xFF10B981)},
-  ];
-
-  final recentExpensesTree = [
-    {
-      'date': 'Hoy',
-      'items': [
-        {'icon': '🛒', 'name': 'Walmart', 'time': '10:30 AM', 'amount': 45.50, 'category': 'Hogar'},
-      ]
-    },
-    {
-      'date': 'Ayer',
-      'items': [
-        {'icon': '🚕', 'name': 'Uber', 'time': '6:15 PM', 'amount': 12.00, 'category': 'Transporte'},
-        {'icon': '☕', 'name': 'Starbucks', 'time': '8:00 AM', 'amount': 8.50, 'category': 'Comida'},
-      ]
-    },
-    {
-      'date': '2 de Febrero',
-      'items': [
-        {'icon': '🍕', 'name': 'Pizza Hut', 'time': '8:00 PM', 'amount': 32.00, 'category': 'Comida'},
-        {'icon': '⚡', 'name': 'Luz (CFE)', 'time': '12:00 PM', 'amount': 245.00, 'category': 'Servicios'},
-        {'icon': '🎬', 'name': 'Netflix', 'time': '9:00 AM', 'amount': 15.00, 'category': 'Entretenimiento'},
-      ]
+  @override
+  void initState() {
+    super.initState();
+    try {
+      selectedMonth = DateFormat('MMMM', 'es').format(DateTime.now());
+      // Capitalize first letter
+      selectedMonth = selectedMonth[0].toUpperCase() + selectedMonth.substring(1);
+    } catch (_) {
+      selectedMonth = DateFormat('MMMM').format(DateTime.now());
     }
-  ];
+  }
+
+  // Category color mapping
+  static const Map<String, Color> categoryColors = {
+    '🍔': Color(0xFFF43F5E),
+    '🚗': Color(0xFF0EA5E9),
+    '🏠': Color(0xFF6366F1),
+    '🎮': Color(0xFFD946EF),
+    '💊': Color(0xFF10B981),
+    '📱': Color(0xFFF59E0B),
+    '📚': Color(0xFF8B5CF6),
+    '💸': Color(0xFF64748B),
+    '💼': Color(0xFF059669),
+    'food': Color(0xFFF43F5E),
+    'transport': Color(0xFF0EA5E9),
+    'home': Color(0xFF6366F1),
+    'entertainment': Color(0xFFD946EF),
+    'health': Color(0xFF10B981),
+    'bills': Color(0xFFF59E0B),
+    'education': Color(0xFF8B5CF6),
+    'shopping': Color(0xFFEC4899),
+    'other': Color(0xFF64748B),
+  };
+
+  static const Map<String, String> categoryLabels = {
+    '🍔': '🍔 Comida',
+    '🚗': '🚗 Transporte',
+    '🏠': '🏠 Hogar',
+    '🎮': '🎮 Entretenimiento',
+    '💊': '💊 Salud',
+    '📱': '📱 Servicios',
+    '📚': '📚 Educación',
+    '💸': '💸 Otro',
+    '💼': '💼 Salario',
+    'food': '🍔 Comida',
+    'transport': '🚗 Transporte',
+    'home': '🏠 Hogar',
+    'entertainment': '🎮 Entretenimiento',
+    'health': '💊 Salud',
+    'bills': '📱 Servicios',
+    'education': '📚 Educación',
+    'shopping': '🛍️ Compras',
+    'other': '💸 Otro',
+  };
+
+  String _getCategoryEmoji(String category) {
+    if (category.runes.isNotEmpty && category.runes.first > 127) return category;
+    const map = {
+      'food': '🍔', 'transport': '🚗', 'shopping': '🛍️', 'bills': '📱',
+      'entertainment': '🎮', 'health': '💊', 'education': '📚', 'home': '🏠',
+      'other': '💸',
+    };
+    return map[category] ?? '💰';
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final paletteGradient = ref.watch(colorPaletteProvider.notifier).getGradient(isDark);
+    ref.watch(colorPaletteProvider);
+    final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
+    
+    final transactionsAsync = ref.watch(transactionsProvider);
+    final debtsAsync = ref.watch(debtsProvider);
+    final currencyFormatter = NumberFormat.currency(locale: 'en_US', symbol: '\$');
 
     return Scaffold(
-      backgroundColor: Colors.transparent, // Handled by AppShell
+      backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -81,7 +123,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Action buttons: Agregar Gasto + Gasto Fijo
+            // Action buttons
             Row(
               children: [
                 Expanded(
@@ -162,6 +204,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: TextField(
+                            onChanged: (v) => setState(() => searchQuery = v),
                             decoration: InputDecoration(
                               hintText: 'Buscar gastos...',
                               hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400]),
@@ -194,9 +237,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                   child: Container(
                     width: 48, height: 48,
                     decoration: BoxDecoration(
-                      color: (selectedCategory != 'Todas' || selectedMonth != 'Febrero') 
-                          ? const Color(0xFFEC4899) // pink active filter
-                          : paletteGradient[0], 
+                      color: paletteGradient[0], 
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: const Center(child: Icon(LucideIcons.filter, color: Colors.white, size: 20)),
@@ -206,174 +247,184 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Total Expenses Card
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: paletteGradient,
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))
-                ]
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Total de Gastos - $selectedMonth', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
-                  const SizedBox(height: 8),
-                  const Text('\$2,550.00', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 16),
-                  Container(
-                    height: 8,
-                    width: double.infinity,
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: 0.67, // 67%
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text('67% de tu presupuesto mensual (\$3800.00)', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Expenses by Category
-            Text('Gastos por Categoría', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
-            const SizedBox(height: 12),
-            ...expenses.map((expense) {
-              return InkWell(
-                onTap: () => CategoryDetailModal.show(context, categoryData: expense),
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                    border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(expense['category'] as String, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.w500)),
-                          Text('\$${(expense['amount'] as double).toStringAsFixed(2)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        height: 8,
-                        width: double.infinity,
-                        decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(8)),
-                        child: FractionallySizedBox(
-                          alignment: Alignment.centerLeft,
-                          widthFactor: ((expense['percentage'] as int) / 100).clamp(0.0, 1.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: expense['color'] as Color,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text('${expense['percentage']}% del total', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                      )
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-            const SizedBox(height: 24),
-            
-            // Installments / Cuotas Activas
-            Text('Deudas y Cuotas Activas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
-            const SizedBox(height: 12),
-            InkWell(
-              onTap: () => AddDebtModal.show(context),
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 24),
-                padding: const EdgeInsets.all(16),
+            // Total Expenses Card — real data
+            transactionsAsync.when(
+              loading: () => Container(
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                  border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+                  gradient: LinearGradient(colors: paletteGradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  borderRadius: BorderRadius.circular(24),
                 ),
-                child: Row(
+                child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+              ),
+              error: (e, _) => Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: paletteGradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Text('Error al cargar gastos: $e', style: const TextStyle(color: Colors.white, fontSize: 14)),
+              ),
+              data: (transactions) {
+                final allExpenses = transactions.where((t) => t.type == 'expense').toList();
+                
+                // Filter by search
+                final filteredExpenses = searchQuery.isEmpty
+                    ? allExpenses
+                    : allExpenses.where((t) =>
+                        t.description.toLowerCase().contains(searchQuery.toLowerCase()) ||
+                        t.category.toLowerCase().contains(searchQuery.toLowerCase())
+                      ).toList();
+
+                // Sort by date descending
+                filteredExpenses.sort((a, b) => b.date.compareTo(a.date));
+
+                final totalExpenses = filteredExpenses.fold(0.0, (sum, t) => sum + t.amount);
+                final totalIncome = transactions.where((t) => t.type == 'income').fold(0.0, (sum, t) => sum + t.amount);
+                final budgetPercentage = totalIncome > 0 ? (totalExpenses / totalIncome * 100).clamp(0.0, 100.0) : 0.0;
+
+                // Group by category
+                final categoryMap = <String, double>{};
+                for (var t in filteredExpenses) {
+                  categoryMap[t.category] = (categoryMap[t.category] ?? 0) + t.amount;
+                }
+                final categoryList = categoryMap.entries.toList()
+                  ..sort((a, b) => b.value.compareTo(a.value));
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // Total card
                     Container(
-                      width: 48, height: 48,
-                      decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(12)),
-                      child: const Center(child: Text('📱', style: TextStyle(fontSize: 24))),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: paletteGradient,
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))
+                        ]
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('iPhone 15 Pro', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 14)),
-                              Text('\$65.00/cuota', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
-                            ],
-                          ),
+                          Text('Total de Gastos - $selectedMonth', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
                           const SizedBox(height: 8),
+                          Text(currencyFormatter.format(totalExpenses), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 16),
                           Container(
-                            height: 6,
+                            height: 8,
                             width: double.infinity,
-                            decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(8)),
+                            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
                             child: FractionallySizedBox(
                               alignment: Alignment.centerLeft,
-                              widthFactor: 4 / 12,
-                              child: Container(decoration: BoxDecoration(color: const Color(0xFFF59E0B), borderRadius: BorderRadius.circular(8))),
+                              widthFactor: (budgetPercentage / 100).clamp(0.0, 1.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: budgetPercentage > 80 ? const Color(0xFFF87171) : Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          const Text('4 de 12 cuotas (Pulsa para editar)', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          const SizedBox(height: 8),
+                          Text(
+                            totalIncome > 0 
+                              ? '${budgetPercentage.toStringAsFixed(0)}% de tus ingresos (${currencyFormatter.format(totalIncome)})' 
+                              : 'Sin ingresos registrados aún',
+                            style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12),
+                          ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
+                    const SizedBox(height: 24),
 
-            // Redesigned Recent Transactions History
-            Text('Historial de Gastos', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
-            const SizedBox(height: 12),
-            ...recentExpensesTree.map((dayGroup) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      dayGroup['date'] as String,
-                      style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontWeight: FontWeight.bold, fontSize: 14),
-                    ),
+                    // Category breakdown
+                    Text('Gastos por Categoría', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
                     const SizedBox(height: 12),
-                    ...(dayGroup['items'] as List<dynamic>).map((expense) {
+                    if (categoryList.isEmpty)
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                          border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Center(child: Text('No hay gastos registrados', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400]))),
+                      ),
+                    ...categoryList.map((entry) {
+                      final percentage = totalExpenses > 0 ? (entry.value / totalExpenses * 100) : 0.0;
+                      final label = categoryLabels[entry.key] ?? '${_getCategoryEmoji(entry.key)} ${entry.key}';
+                      final color = categoryColors[entry.key] ?? const Color(0xFF64748B);
+                      final categoryData = {
+                        'category': label,
+                        'amount': entry.value,
+                        'percentage': percentage.round(),
+                        'color': color,
+                      };
+                      return InkWell(
+                        onTap: () => CategoryDetailModal.show(context, categoryData: categoryData),
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                            border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(label, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.w500)),
+                                  Text(currencyFormatter.format(entry.value), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                height: 8,
+                                width: double.infinity,
+                                decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(8)),
+                                child: FractionallySizedBox(
+                                  alignment: Alignment.centerLeft,
+                                  widthFactor: (percentage / 100).clamp(0.0, 1.0),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: color,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text('${percentage.toStringAsFixed(1)}% del total', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 24),
+
+                    // Recent expense history
+                    Text('Historial de Gastos', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
+                    const SizedBox(height: 12),
+                    if (filteredExpenses.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40),
+                        child: Center(child: Text('No hay gastos recientes.', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600]))),
+                      ),
+                    ...filteredExpenses.map((expense) {
                       return Container(
-                        margin: const EdgeInsets.only(bottom: 8),
+                        margin: const EdgeInsets.only(bottom: 16),
                         child: Row(
                           children: [
                             Container(
@@ -382,34 +433,130 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                 color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
                                 shape: BoxShape.circle,
                               ),
-                              child: Center(child: Text(expense['icon'] as String, style: const TextStyle(fontSize: 22))),
+                              child: Center(child: Text(_getCategoryEmoji(expense.category), style: const TextStyle(fontSize: 22))),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(expense['name'] as String, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w600)),
+                                  Text(expense.description.isNotEmpty ? expense.description : expense.category, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w600)),
                                   const SizedBox(height: 2),
-                                  Text('${expense['category']} • ${expense['time']}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                  Text(
+                                    '${categoryLabels[expense.category] ?? expense.category} • ${DateFormat('d MMM, HH:mm').format(expense.date)}${expense.isFixed ? ' • Fijo' : ''}',
+                                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                  ),
                                 ],
                               ),
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text('-\$${(expense['amount'] as double).toStringAsFixed(2)}', style: TextStyle(color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), fontWeight: FontWeight.bold, fontSize: 16)),
-                              ],
-                            ),
+                            Text('-${currencyFormatter.format(expense.amount)}', style: TextStyle(color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), fontWeight: FontWeight.bold, fontSize: 16)),
                           ],
                         ),
                       );
-                    }).toList(),
+                    }),
                   ],
-                ),
-              );
-            }).toList(),
-            const SizedBox(height: 80), // For FAB
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+
+            // Debts and Installments — real data
+            Text('Deudas y Cuotas Activas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
+            const SizedBox(height: 12),
+            debtsAsync.when(
+              loading: () => const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator())),
+              error: (e, _) => Text('Error al cargar deudas: $e', style: const TextStyle(color: Colors.red)),
+              data: (debtsList) {
+                if (debtsList.isEmpty) {
+                  return InkWell(
+                    onTap: () => AddDebtModal.show(context),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 24),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                        border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(LucideIcons.plus, color: isDark ? Colors.grey[400] : Colors.grey[500], size: 18),
+                          const SizedBox(width: 8),
+                          Text('Agregar primera deuda', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500])),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                return Column(
+                  children: debtsList.map((debt) {
+                    final progress = debt.totalInstallments > 0 ? (debt.paidInstallments / debt.totalInstallments) : 0.0;
+                    final isFullyPaid = debt.paidInstallments >= debt.totalInstallments;
+                    return InkWell(
+                      onTap: () => AddDebtModal.show(context),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                          border: Border.all(
+                            color: isFullyPaid 
+                              ? (isDark ? const Color(0xFF047857) : const Color(0xFF6EE7B7))
+                              : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48, height: 48,
+                              decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(12)),
+                              child: Center(child: Text(debt.category, style: const TextStyle(fontSize: 24))),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(child: Text('${debt.name}${isFullyPaid ? ' ✅' : ''}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 14), overflow: TextOverflow.ellipsis)),
+                                      Text('${currencyFormatter.format(debt.installmentAmount)}/cuota', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    height: 6,
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(8)),
+                                    child: FractionallySizedBox(
+                                      alignment: Alignment.centerLeft,
+                                      widthFactor: progress.clamp(0.0, 1.0),
+                                      child: Container(decoration: BoxDecoration(
+                                        color: progress >= 1.0 ? Colors.green : (progress >= 0.5 ? const Color(0xFF6366F1) : const Color(0xFFF59E0B)),
+                                        borderRadius: BorderRadius.circular(8),
+                                      )),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text('${debt.paidInstallments} de ${debt.totalInstallments} cuotas', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+            const SizedBox(height: 80),
           ],
         ),
       ),
@@ -421,9 +568,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
           width: 56, height: 56,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: isDark 
-                ? const LinearGradient(colors: [Color(0xFF4F46E5), Color(0xFF10B981)])
-                : const LinearGradient(colors: [Color(0xFF4F46E5), Color(0xFF10B981)]),
+            gradient: const LinearGradient(colors: [Color(0xFF4F46E5), Color(0xFF10B981)]),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF4F46E5).withValues(alpha: 0.3),

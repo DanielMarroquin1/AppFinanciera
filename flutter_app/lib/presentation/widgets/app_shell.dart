@@ -18,7 +18,7 @@ class AppShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Determine current route using go_router inside GoRouterState
     final String location = GoRouterState.of(context).uri.path;
-    int currentIndex = 0;
+    int currentIndex = -1;
     if (location == '/dashboard') currentIndex = 0;
     if (location == '/expenses') currentIndex = 1;
     if (location == '/debts') currentIndex = 3;

@@ -50,20 +50,35 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> login(String email, String password) async {
     state = state.copyWith(isLoading: true);
-    final user = await _repository.login(email, password);
-    state = AuthState(user: user, isLoading: false);
+    try {
+      final user = await _repository.login(email, password);
+      state = AuthState(user: user, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false);
+      rethrow;
+    }
   }
 
   Future<void> loginWithGoogle() async {
     state = state.copyWith(isLoading: true);
-    final user = await _repository.loginWithGoogle();
-    state = AuthState(user: user, isLoading: false);
+    try {
+      final user = await _repository.loginWithGoogle();
+      state = AuthState(user: user, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false);
+      rethrow;
+    }
   }
 
   Future<void> register(String email, String password, String purpose) async {
     state = state.copyWith(isLoading: true);
-    final user = await _repository.register(email, password, purpose);
-    state = AuthState(user: user, isLoading: false);
+    try {
+      final user = await _repository.register(email, password, purpose);
+      state = AuthState(user: user, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false);
+      rethrow;
+    }
   }
 
   Future<void> logout() async {
@@ -82,7 +97,9 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> updateProfile(User data) async {
     if (state.user != null) {
-      bool isComplete = data.country != null && data.currency != null && data.salary != null;
+      // Respect the profileComplete status from the incoming data, 
+      // or evaluate if required fields are present if it's not set.
+      bool isComplete = data.profileComplete || (data.country != null && data.currency != null && data.salary != null);
       final updatedUser = data.copyWith(profileComplete: isComplete);
       await _repository.saveUser(updatedUser);
       state = state.copyWith(user: updatedUser);

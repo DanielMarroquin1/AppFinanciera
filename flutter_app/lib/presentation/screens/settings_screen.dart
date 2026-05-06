@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/theme_provider.dart';
 import '../providers/color_palette_provider.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/modals/edit_profile_modal.dart';
 import '../widgets/modals/color_palette_modal.dart';
 import '../widgets/modals/premium_modal.dart';
@@ -24,7 +25,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final paletteGradient = ref.watch(colorPaletteProvider.notifier).getGradient(isDark);
+    ref.watch(colorPaletteProvider);
+    final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
+    
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
 
     return Scaffold(
       backgroundColor: Colors.transparent, // Handled by AppShell
@@ -39,9 +44,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 margin: const EdgeInsets.only(bottom: 24),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: isDark 
-                      ? const LinearGradient(colors: [Color(0xFF7C2D12), Color(0xFF7F1D1D)]) 
-                      : const LinearGradient(colors: [Color(0xFFFB923C), Color(0xFFEF4444)]),
+                  gradient: LinearGradient(
+                    colors: paletteGradient,
+                  ),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
                     color: isDark ? const Color(0xFF9A3412) : const Color(0xFFEA580C),
@@ -169,7 +174,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           children: [
                             Row(
                               children: [
-                                const Text('María García', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                                Text(user?.name ?? 'Usuario', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                                 if (isPremium) ...[
                                   const SizedBox(width: 8),
                                   Container(
@@ -190,7 +195,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 ],
                               ],
                             ),
-                            Text('maria.garcia@email.com', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                            Text(user?.email ?? 'correo@email.com', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
                           ],
                         ),
                       )
@@ -219,9 +224,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: isDark 
-                      ? const LinearGradient(colors: [Color(0xFFD97706), Color(0xFFC2410C)]) 
-                      : const LinearGradient(colors: [Color(0xFFFBBF24), Color(0xFFF97316)]),
+                  gradient: LinearGradient(
+                    colors: paletteGradient,
+                  ),
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))],
                 ),
@@ -244,7 +249,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFFEA580C),
+                        foregroundColor: paletteGradient[0],
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       ),

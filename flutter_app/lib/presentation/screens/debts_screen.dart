@@ -1,33 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../providers/color_palette_provider.dart';
-
-class Debt {
-  final String id;
-  final String name;
-  final String emoji;
-  final double installmentAmount;
-  final int totalInstallments;
-  int paidInstallments;
-  final List<Color> colors;
-
-  Debt({
-    required this.id,
-    required this.name,
-    required this.emoji,
-    required this.installmentAmount,
-    required this.totalInstallments,
-    required this.paidInstallments,
-    required this.colors,
-  });
-
-  double get totalAmount => installmentAmount * totalInstallments;
-  double get paidAmount => installmentAmount * paidInstallments;
-  double get remainingAmount => installmentAmount * (totalInstallments - paidInstallments);
-  double get progress => totalInstallments > 0 ? paidInstallments / totalInstallments : 0;
-  bool get isCompleted => paidInstallments >= totalInstallments;
-}
+import '../providers/debts_provider.dart';
+import '../../domain/entities/debt.dart';
 
 class DebtsScreen extends ConsumerStatefulWidget {
   const DebtsScreen({super.key});
@@ -37,31 +14,15 @@ class DebtsScreen extends ConsumerStatefulWidget {
 }
 
 class _DebtsScreenState extends ConsumerState<DebtsScreen> {
-  final List<Debt> _debts = [
-    Debt(
-      id: '1', name: 'Laptop HP', emoji: '💻',
-      installmentAmount: 1500, totalInstallments: 12, paidInstallments: 5,
-      colors: [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
-    ),
-    Debt(
-      id: '2', name: 'Préstamo Personal', emoji: '🏦',
-      installmentAmount: 3000, totalInstallments: 24, paidInstallments: 8,
-      colors: [const Color(0xFF0EA5E9), const Color(0xFF06B6D4)],
-    ),
-    Debt(
-      id: '3', name: 'Celular iPhone', emoji: '📱',
-      installmentAmount: 800, totalInstallments: 6, paidInstallments: 4,
-      colors: [const Color(0xFF10B981), const Color(0xFF059669)],
-    ),
-    Debt(
-      id: '4', name: 'Televisor 55"', emoji: '📺',
-      installmentAmount: 650, totalInstallments: 18, paidInstallments: 18,
-      colors: [const Color(0xFFF59E0B), const Color(0xFFEF4444)],
-    ),
-  ];
 
-  void _registerPayment(Debt debt) {
-    if (debt.isCompleted) {
+  double _getDebtTotalAmount(DebtModel d) => d.installmentAmount * d.totalInstallments;
+  double _getDebtPaidAmount(DebtModel d) => d.installmentAmount * d.paidInstallments;
+  double _getDebtRemainingAmount(DebtModel d) => d.installmentAmount * (d.totalInstallments - d.paidInstallments);
+  double _getDebtProgress(DebtModel d) => d.totalInstallments > 0 ? d.paidInstallments / d.totalInstallments : 0;
+  bool _isDebtCompleted(DebtModel d) => d.paidInstallments >= d.totalInstallments;
+
+  void _registerPayment(DebtModel debt) {
+    if (_isDebtCompleted(debt)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('¡Esta deuda ya está completamente pagada! 🎊'),
@@ -120,19 +81,20 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
                           Navigator.of(ctx).pop();
-                          setState(() {
-                            debt.paidInstallments++;
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('¡Cuota #${debt.paidInstallments} de ${debt.name} registrada! 🎉'),
-                              backgroundColor: const Color(0xFF10B981),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          );
+                          final newDebt = debt.copyWith(paidInstallments: debt.paidInstallments + 1);
+                          await ref.read(debtNotifierProvider.notifier).updateDebt(newDebt);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('¡Cuota #${newDebt.paidInstallments} de ${newDebt.name} registrada! 🎉'),
+                                backgroundColor: const Color(0xFF10B981),
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                            );
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF10B981),
@@ -169,6 +131,7 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
         return StatefulBuilder(
           builder: (ctx, setModalState) {
             return Container(
@@ -209,9 +172,9 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                             width: 48, height: 48,
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? (isDark ? const Color(0xFF312E81) : const Color(0xFFE0E7FF))
+                                  ? (isDark ? paletteGradient[0].withValues(alpha: 0.3) : paletteGradient[0].withValues(alpha: 0.1))
                                   : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                              border: isSelected ? Border.all(color: const Color(0xFF6366F1), width: 2) : null,
+                              border: isSelected ? Border.all(color: paletteGradient[0], width: 2) : null,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Center(child: Text(e, style: const TextStyle(fontSize: 22))),
@@ -243,27 +206,36 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
                           if (nameCtrl.text.isEmpty || amountCtrl.text.isEmpty || totalCtrl.text.isEmpty) return;
-                          final newDebt = Debt(
-                            id: DateTime.now().millisecondsSinceEpoch.toString(),
+                          
+                          final uid = FirebaseAuth.instance.currentUser?.uid;
+                          if (uid == null) return;
+                          
+                          final newDebt = DebtModel(
+                            id: '',
+                            userId: uid,
                             name: nameCtrl.text,
-                            emoji: selectedEmoji,
+                            category: selectedEmoji,
                             installmentAmount: double.tryParse(amountCtrl.text) ?? 0,
                             totalInstallments: int.tryParse(totalCtrl.text) ?? 0,
                             paidInstallments: int.tryParse(paidCtrl.text) ?? 0,
-                            colors: [const Color(0xFF6366F1), const Color(0xFF10B981)],
+                            createdAt: DateTime.now(),
                           );
-                          setState(() => _debts.add(newDebt));
-                          Navigator.of(ctx).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${newDebt.name} agregada ✅'),
-                              backgroundColor: const Color(0xFF6366F1),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          );
+                          
+                          await ref.read(debtNotifierProvider.notifier).addDebt(newDebt);
+                          
+                          if (context.mounted) {
+                            Navigator.of(ctx).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('${newDebt.name} agregada ✅'),
+                                backgroundColor: paletteGradient[0],
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                            );
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF6366F1),
@@ -319,135 +291,147 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final paletteGradient = ref.watch(colorPaletteProvider.notifier).getGradient(isDark);
-
-    final activeDebts = _debts.where((d) => !d.isCompleted).toList();
-    final completedDebts = _debts.where((d) => d.isCompleted).toList();
-    final totalRemaining = _debts.fold(0.0, (sum, d) => sum + d.remainingAmount);
-    final totalPaidInstallments = _debts.fold(0, (sum, d) => sum + d.paidInstallments);
-    final totalAllInstallments = _debts.fold(0, (sum, d) => sum + d.totalInstallments);
+    ref.watch(colorPaletteProvider);
+    final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
+    
+    final debtsAsync = ref.watch(debtsProvider);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Header
-            Text('Mis Deudas 💳', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
-            const SizedBox(height: 4),
-            Text('Control de pagos a cuotas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
-            const SizedBox(height: 24),
+      body: debtsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err', style: TextStyle(color: isDark ? Colors.white : Colors.black))),
+        data: (debts) {
+          final activeDebts = debts.where((d) => !_isDebtCompleted(d)).toList();
+          final completedDebts = debts.where((d) => _isDebtCompleted(d)).toList();
+          final totalRemaining = debts.fold(0.0, (sum, d) => sum + _getDebtRemainingAmount(d));
+          final totalPaidInstallments = debts.fold(0, (sum, d) => sum + d.paidInstallments);
+          final totalAllInstallments = debts.fold(0, (sum, d) => sum + d.totalInstallments);
 
-            // Summary Card
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: paletteGradient,
-                  begin: Alignment.topLeft, end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 12, offset: const Offset(0, 6))],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Header
+                Text('Mis Deudas 💳', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                const SizedBox(height: 4),
+                Text('Control de pagos a cuotas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
+                const SizedBox(height: 24),
+
+                // Summary Card
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: paletteGradient,
+                      begin: Alignment.topLeft, end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 12, offset: const Offset(0, 6))],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Deuda Total Pendiente', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
-                          const SizedBox(height: 8),
-                          Text('\$${totalRemaining.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Deuda Total Pendiente', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                              const SizedBox(height: 8),
+                              Text('\$${totalRemaining.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Column(
+                              children: [
+                                Text('$totalPaidInstallments/$totalAllInstallments', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                                Text('cuotas', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 11)),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
+                      const SizedBox(height: 16),
+                      // Overall progress bar
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(16),
+                        height: 8, width: double.infinity,
+                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
+                        child: FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: totalAllInstallments > 0 ? (totalPaidInstallments / totalAllInstallments).clamp(0.0, 1.0) : 0,
+                          child: Container(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8))),
                         ),
-                        child: Column(
-                          children: [
-                            Text('$totalPaidInstallments/$totalAllInstallments', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                            Text('cuotas', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 11)),
-                          ],
-                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${activeDebts.length} deuda${activeDebts.length != 1 ? 's' : ''} activa${activeDebts.length != 1 ? 's' : ''} · ${completedDebts.length} completada${completedDebts.length != 1 ? 's' : ''}',
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  // Overall progress bar
-                  Container(
-                    height: 8, width: double.infinity,
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: totalAllInstallments > 0 ? (totalPaidInstallments / totalAllInstallments).clamp(0.0, 1.0) : 0,
-                      child: Container(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8))),
+                ),
+                const SizedBox(height: 24),
+
+                // Add Debt Button
+                InkWell(
+                  onTap: _showAddDebtModal,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                      border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFD1D5DB), width: 2),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(LucideIcons.plus, color: isDark ? Colors.grey[400] : Colors.grey[500]),
+                        const SizedBox(width: 8),
+                        Text('Agregar Nueva Deuda', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontWeight: FontWeight.w500)),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${activeDebts.length} deuda${activeDebts.length != 1 ? 's' : ''} activa${activeDebts.length != 1 ? 's' : ''} · ${completedDebts.length} completada${completedDebts.length != 1 ? 's' : ''}',
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12),
-                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Active Debts
+                if (activeDebts.isNotEmpty) ...[
+                  Text('Deudas Activas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
+                  const SizedBox(height: 12),
+                  ...activeDebts.map((debt) => _buildDebtCard(debt, isDark, paletteGradient)),
                 ],
-              ),
+
+                // Completed
+                if (completedDebts.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  Text('Deudas Completadas ✅', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
+                  const SizedBox(height: 12),
+                  ...completedDebts.map((debt) => _buildDebtCard(debt, isDark, paletteGradient)),
+                ],
+
+                const SizedBox(height: 80),
+              ],
             ),
-            const SizedBox(height: 24),
-
-            // Add Debt Button
-            InkWell(
-              onTap: _showAddDebtModal,
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                  border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFD1D5DB), width: 2),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(LucideIcons.plus, color: isDark ? Colors.grey[400] : Colors.grey[500]),
-                    const SizedBox(width: 8),
-                    Text('Agregar Nueva Deuda', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontWeight: FontWeight.w500)),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Active Debts
-            if (activeDebts.isNotEmpty) ...[
-              Text('Deudas Activas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
-              const SizedBox(height: 12),
-              ...activeDebts.map((debt) => _buildDebtCard(debt, isDark)),
-            ],
-
-            // Completed
-            if (completedDebts.isNotEmpty) ...[
-              const SizedBox(height: 24),
-              Text('Deudas Completadas ✅', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
-              const SizedBox(height: 12),
-              ...completedDebts.map((debt) => _buildDebtCard(debt, isDark)),
-            ],
-
-            const SizedBox(height: 80),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildDebtCard(Debt debt, bool isDark) {
-    final percentage = (debt.progress * 100).toStringAsFixed(0);
+  Widget _buildDebtCard(DebtModel debt, bool isDark, List<Color> paletteGradient) {
+    final progress = _getDebtProgress(debt);
+    final isCompleted = _isDebtCompleted(debt);
+    final percentage = (progress * 100).toStringAsFixed(0);
+    final debtColors = [paletteGradient[0], paletteGradient.length > 1 ? paletteGradient[1] : paletteGradient[0]];
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -455,10 +439,10 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1F2937) : Colors.white,
         border: Border.all(
-          color: debt.isCompleted
+          color: isCompleted
               ? (isDark ? const Color(0xFF064E3B) : const Color(0xFFA7F3D0))
               : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-          width: debt.isCompleted ? 2 : 1,
+          width: isCompleted ? 2 : 1,
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
@@ -472,10 +456,10 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
               Container(
                 width: 56, height: 56,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: debt.colors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  gradient: LinearGradient(colors: debtColors, begin: Alignment.topLeft, end: Alignment.bottomRight),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Center(child: Text(debt.emoji, style: const TextStyle(fontSize: 24))),
+                child: Center(child: Text(debt.category, style: const TextStyle(fontSize: 24))),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -490,7 +474,7 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                             style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 15, fontWeight: FontWeight.w600),
                           ),
                         ),
-                        if (debt.isCompleted)
+                        if (isCompleted)
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
@@ -519,10 +503,10 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
             decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(8)),
             child: FractionallySizedBox(
               alignment: Alignment.centerLeft,
-              widthFactor: debt.progress.clamp(0.0, 1.0),
+              widthFactor: progress.clamp(0.0, 1.0),
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: debt.isCompleted ? [const Color(0xFF10B981), const Color(0xFF059669)] : debt.colors),
+                  gradient: LinearGradient(colors: isCompleted ? [const Color(0xFF10B981), const Color(0xFF059669)] : debtColors),
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
@@ -540,11 +524,11 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                   Text('$percentage% completado', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12)),
                   const SizedBox(height: 2),
                   Text(
-                    debt.isCompleted
+                    isCompleted
                         ? '¡Deuda pagada! 🎉'
-                        : 'Faltan \$${debt.remainingAmount.toStringAsFixed(0)}',
+                        : 'Faltan \$${_getDebtRemainingAmount(debt).toStringAsFixed(0)}',
                     style: TextStyle(
-                      color: debt.isCompleted
+                      color: isCompleted
                           ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
                           : (isDark ? const Color(0xFFFCA5A5) : const Color(0xFFDC2626)),
                       fontSize: 13,
@@ -553,7 +537,7 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                   ),
                 ],
               ),
-              if (!debt.isCompleted)
+              if (!isCompleted)
                 ElevatedButton.icon(
                   onPressed: () => _registerPayment(debt),
                   icon: const Icon(LucideIcons.chevronUp, size: 16),
@@ -570,7 +554,7 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
           ),
 
           // Detail summary (expandable info)
-          if (!debt.isCompleted) ...[
+          if (!isCompleted) ...[
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
@@ -580,11 +564,11 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
               ),
               child: Row(
                 children: [
-                  _buildDetailChip(isDark, 'Total', '\$${debt.totalAmount.toStringAsFixed(0)}'),
+                  _buildDetailChip(isDark, 'Total', '\$${_getDebtTotalAmount(debt).toStringAsFixed(0)}'),
                   const SizedBox(width: 8),
-                  _buildDetailChip(isDark, 'Pagado', '\$${debt.paidAmount.toStringAsFixed(0)}'),
+                  _buildDetailChip(isDark, 'Pagado', '\$${_getDebtPaidAmount(debt).toStringAsFixed(0)}'),
                   const SizedBox(width: 8),
-                  _buildDetailChip(isDark, 'Restante', '\$${debt.remainingAmount.toStringAsFixed(0)}'),
+                  _buildDetailChip(isDark, 'Restante', '\$${_getDebtRemainingAmount(debt).toStringAsFixed(0)}'),
                 ],
               ),
             ),

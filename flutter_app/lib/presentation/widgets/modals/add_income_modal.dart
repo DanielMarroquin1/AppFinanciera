@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-class AddIncomeModal extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../../domain/entities/transaction.dart';
+import '../../providers/transaction_provider.dart';
+
+class AddIncomeModal extends ConsumerStatefulWidget {
   final bool isFixed;
   const AddIncomeModal({super.key, this.isFixed = false});
 
@@ -15,10 +20,10 @@ class AddIncomeModal extends StatefulWidget {
   }
 
   @override
-  State<AddIncomeModal> createState() => _AddIncomeModalState();
+  ConsumerState<AddIncomeModal> createState() => _AddIncomeModalState();
 }
 
-class _AddIncomeModalState extends State<AddIncomeModal> {
+class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
   String amount = "";
   String category = "";
   String description = "";
@@ -202,28 +207,58 @@ class _AddIncomeModalState extends State<AddIncomeModal> {
                   const SizedBox(height: 24),
 
                   // Submit
-                  ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Colors.transparent,
-                      foregroundColor: Colors.white,
-                      elevation: 10,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ).copyWith(
-                      backgroundColor: WidgetStateProperty.resolveWith((states) => null), // for gradient
+                  Ink(
+                    decoration: BoxDecoration(
+                      gradient: (amount.isEmpty || category.isEmpty)
+                          ? LinearGradient(colors: [isDark ? const Color(0xFF4B5563) : Colors.grey[400]!, isDark ? const Color(0xFF374151) : Colors.grey[300]!])
+                          : (isDark ? const LinearGradient(colors: [Color(0xFF15803D), Color(0xFF047857)]) : const LinearGradient(colors: [Color(0xFF16A34A), Color(0xFF059669)])),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: (amount.isEmpty || category.isEmpty) ? [] : [
+                        BoxShadow(
+                          color: (isDark ? const Color(0xFF15803D) : const Color(0xFF16A34A)).withValues(alpha: 0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
                     ),
-                    child: Ink(
-                      decoration: BoxDecoration(
-                        gradient: isDark 
-                            ? const LinearGradient(colors: [Color(0xFF15803D), Color(0xFF047857)]) 
-                            : const LinearGradient(colors: [Color(0xFF16A34A), Color(0xFF059669)]),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                    child: InkWell(
+                      onTap: amount.isEmpty || category.isEmpty ? null : () async {
+                        final uid = FirebaseAuth.instance.currentUser?.uid;
+                        if (uid == null) return;
+                        
+                        final parsedAmount = double.tryParse(amount) ?? 0.0;
+                        if (parsedAmount <= 0) return;
+
+                        final transaction = TransactionModel(
+                          id: '', // Firestore will auto-generate
+                          userId: uid,
+                          amount: parsedAmount,
+                          type: 'income',
+                          category: category,
+                          description: description,
+                          date: date,
+                          isFixed: widget.isFixed,
+                        );
+
+                        await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
+
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('Ingreso agregado exitosamente', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              backgroundColor: isDark ? const Color(0xFF065F46) : const Color(0xFF10B981),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            ),
+                          );
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
                       child: Container(
                         alignment: Alignment.center,
-                        constraints: const BoxConstraints(minHeight: 50),
-                        child: Text(widget.isFixed ? 'Agregar Ingreso Fijo' : 'Agregar Ingreso', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Text(widget.isFixed ? 'Agregar Ingreso Fijo' : 'Agregar Ingreso', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
                       ),
                     ),
                   ),

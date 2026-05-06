@@ -8,7 +8,11 @@ import '../widgets/modals/streak_modal.dart';
 import '../widgets/modals/budget_limit_modal.dart';
 import '../widgets/modals/ai_chat_modal.dart';
 import '../widgets/modals/transactions_list_modal.dart';
+import '../widgets/modals/edit_profile_modal.dart';
 import '../providers/color_palette_provider.dart';
+import '../providers/auth_provider.dart';
+import '../providers/transaction_provider.dart';
+import 'package:intl/intl.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -44,10 +48,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
     super.dispose();
   }
 
+  bool _profileChecked = false;
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final paletteGradient = ref.watch(colorPaletteProvider.notifier).getGradient(isDark);
+    ref.watch(colorPaletteProvider);
+    final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
+    
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
+
+    final transactionsAsync = ref.watch(transactionsProvider);
+    final currencyFormatter = NumberFormat.currency(locale: 'en_US', symbol: '\$');
+
+    if (user != null && !user.profileComplete && !_profileChecked) {
+      _profileChecked = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          EditProfileModal.show(context);
+        }
+      });
+    }
 
     return Scaffold(
       backgroundColor: Colors.transparent, // Background handled by AppShell
@@ -66,7 +88,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '¡Hola, María! 👋',
+                        '¡Hola, ${user?.name ?? 'Usuario'}! 👋',
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -172,72 +194,103 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             ),
             const SizedBox(height: 24),
 
-            // Balance Card
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: paletteGradient,
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+            // Balance Card — computed inside when() to avoid stale locals
+            transactionsAsync.when(
+              loading: () => Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: paletteGradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  borderRadius: BorderRadius.circular(24),
                 ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  )
-                ]
+                child: const Center(child: CircularProgressIndicator(color: Colors.white)),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Balance Total', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
-                  const SizedBox(height: 8),
-                  const Text('\$12,450.00', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 16),
-                  Row(
+              error: (err, stack) => Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: paletteGradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: const Text('Error al cargar balance', style: TextStyle(color: Colors.white, fontSize: 18)),
+              ),
+              data: (transactions) {
+                double totalIncome = 0;
+                double totalExpense = 0;
+                for (var t in transactions) {
+                  if (t.type == 'income') {
+                    totalIncome += t.amount;
+                  } else if (t.type == 'expense') {
+                    totalExpense += t.amount;
+                  }
+                }
+                final totalBalance = totalIncome - totalExpense;
+
+                return Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: paletteGradient,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
+                    ]
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: isDark ? 0.1 : 0.2),
-                            borderRadius: BorderRadius.circular(16),
+                      Text('Balance Total', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                      const SizedBox(height: 8),
+                      Text(currencyFormatter.format(totalBalance), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: isDark ? 0.1 : 0.2),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Ingresos', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
+                                  const SizedBox(height: 4),
+                                  Text(currencyFormatter.format(totalIncome), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
+                                ],
+                              ),
+                            ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Ingresos', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
-                              const SizedBox(height: 4),
-                              const Text('\$15,000', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
-                            ],
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: isDark ? 0.1 : 0.2),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Gastos', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
+                                  const SizedBox(height: 4),
+                                  Text(currencyFormatter.format(totalExpense), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: isDark ? 0.1 : 0.2),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Gastos', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
-                              const SizedBox(height: 4),
-                              const Text('\$2,550', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
-                            ],
-                          ),
-                        ),
-                      ),
+                        ],
+                      )
                     ],
-                  )
-                ],
-              ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 24),
 
@@ -502,34 +555,49 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 )
               ],
             ),
-            _buildTransactionItem(
-              isDark,
-              icon: '🛒',
-              bgColor: isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.3) : const Color(0xFFFEF2F2),
-              title: 'Supermercado',
-              subtitle: 'Hoy, 10:30 AM',
-              amount: '-\$45.50',
-              amountColor: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626),
-            ),
-            const SizedBox(height: 12),
-            _buildTransactionItem(
-              isDark,
-              icon: '🚕',
-              bgColor: isDark ? const Color(0xFF1E3A8A).withValues(alpha: 0.3) : const Color(0xFFEFF6FF), // blue colors
-              title: 'Uber',
-              subtitle: 'Ayer, 6:15 PM',
-              amount: '-\$12.00',
-              amountColor: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626),
-            ),
-            const SizedBox(height: 12),
-            _buildTransactionItem(
-              isDark,
-              icon: '💼',
-              bgColor: isDark ? const Color(0xFF14532D).withValues(alpha: 0.3) : const Color(0xFFF0FDF4),
-              title: 'Salario',
-              subtitle: '15 Ene, 2026',
-              amount: '+\$3,500.00',
-              amountColor: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A),
+            transactionsAsync.when(
+              data: (transactions) {
+                if (transactions.isEmpty) {
+                  return Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                      border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Center(
+                      child: Text('No hay transacciones aún', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400])),
+                    ),
+                  );
+                }
+                final sorted = List.of(transactions)..sort((a, b) => b.date.compareTo(a.date));
+                final recent = sorted.take(3).toList();
+                return Column(
+                  children: recent.map((t) {
+                    final isIncome = t.type == 'income';
+                    final emoji = _getCategoryEmoji(t.category);
+                    final formattedDate = DateFormat('dd MMM, yyyy').format(t.date);
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _buildTransactionItem(
+                        isDark,
+                        icon: emoji,
+                        bgColor: isIncome
+                            ? (isDark ? const Color(0xFF14532D).withValues(alpha: 0.3) : const Color(0xFFF0FDF4))
+                            : (isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.3) : const Color(0xFFFEF2F2)),
+                        title: t.description.isNotEmpty ? t.description : t.category,
+                        subtitle: formattedDate,
+                        amount: '${isIncome ? '+' : '-'}${currencyFormatter.format(t.amount)}',
+                        amountColor: isIncome
+                            ? (isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A))
+                            : (isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626)),
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, __) => const Text('Error al cargar transacciones'),
             ),
             const SizedBox(height: 24),
 
@@ -637,5 +705,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
         ],
       ),
     );
+  }
+
+  String _getCategoryEmoji(String category) {
+    const map = {
+      'food': '🍔', 'transport': '🚗', 'shopping': '🛍️', 'bills': '📱',
+      'entertainment': '🎮', 'health': '💊', 'education': '📚', 'home': '🏠',
+      'salary': '💼', 'freelance': '💻', 'bonus': '🎁', 'investment': '📈',
+      'sale': '🏷️', 'gift': '🎉', 'other': '💸',
+    };
+    // If the category itself is an emoji, return it directly
+    if (category.runes.isNotEmpty && category.runes.first > 127) return category;
+    return map[category] ?? '💰';
   }
 }

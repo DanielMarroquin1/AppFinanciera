@@ -4,18 +4,22 @@ import '../widgets/modals/add_saving_goal_modal.dart';
 import '../widgets/modals/add_funds_modal.dart';
 import '../widgets/modals/saving_guide_modal.dart';
 import '../widgets/modals/ai_chat_modal.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/color_palette_provider.dart';
 
-class SavingsScreen extends StatefulWidget {
+class SavingsScreen extends ConsumerStatefulWidget {
   const SavingsScreen({super.key});
 
   @override
-  State<SavingsScreen> createState() => _SavingsScreenState();
+  ConsumerState<SavingsScreen> createState() => _SavingsScreenState();
 }
 
-class _SavingsScreenState extends State<SavingsScreen> {
+class _SavingsScreenState extends ConsumerState<SavingsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    ref.watch(colorPaletteProvider);
+    final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
 
     final goals = [
       {
@@ -86,9 +90,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: isDark 
-                      ? [const Color(0xFF166534), const Color(0xFF064E3B)] 
-                      : [const Color(0xFF16A34A), const Color(0xFF059669)], 
+                  colors: paletteGradient,
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),

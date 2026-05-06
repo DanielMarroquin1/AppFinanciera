@@ -5,14 +5,18 @@ import 'package:go_router/go_router.dart';
 import '../widgets/modals/forgot_password_modal.dart';
 import '../widgets/modals/privacy_policy_modal.dart';
 
-class LoginScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import '../providers/auth_provider.dart';
+
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool isLogin = true;
   bool showPassword = false;
   String email = '';
@@ -60,6 +64,79 @@ class _LoginScreenState extends State<LoginScreen> {
     {'value': 'debts', 'label': 'Salir de deudas', 'emoji': '🎯'},
     {'value': 'goals', 'label': 'Cumplir metas financieras', 'emoji': '🏆'},
   ];
+
+  Future<void> _submit() async {
+    if ((!isLogin && (!acceptedPolicies || purpose.isEmpty)) || email.isEmpty || password.isEmpty) return;
+    
+    try {
+      if (isLogin) {
+        await ref.read(authProvider.notifier).login(email, password);
+      } else {
+        await ref.read(authProvider.notifier).register(email, password, purpose);
+      }
+      
+      if (!context.mounted) return;
+      context.go('/dashboard');
+      _showWelcomeMessage(context);
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      if (!context.mounted) return;
+      
+      String title = 'Error';
+      String message = e.message ?? 'Ocurrió un error inesperado.';
+      
+      if (e.code == 'email-not-verified' || e.code == 'email-not-verified-registered') {
+         title = 'Verificación Requerida';
+         if (e.code == 'email-not-verified-registered') {
+           setState(() {
+             isLogin = true;
+           });
+         }
+      } else if (e.code == 'user-not-found' || e.code == 'wrong-password' || e.code == 'invalid-credential') {
+         message = 'Correo o contraseña incorrectos.';
+      } else if (e.code == 'email-already-in-use') {
+         message = 'Este correo ya está registrado.';
+      } else if (e.code == 'weak-password') {
+         message = 'La contraseña es muy débil. Usa al menos 6 caracteres.';
+      }
+      
+      _showErrorSnackBar(context, title, message);
+    } catch (e) {
+      if (!context.mounted) return;
+      _showErrorSnackBar(context, 'Error', 'No pudimos conectar con el servidor.');
+    }
+  }
+
+  void _showErrorSnackBar(BuildContext context, String title, String message) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(title == 'Verificación Requerida' ? LucideIcons.mailWarning : LucideIcons.alertCircle, color: Colors.white, size: 28),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white)),
+                  const SizedBox(height: 2),
+                  Text(message, style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.9), height: 1.3)),
+                ],
+              ),
+            ),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: title == 'Verificación Requerida' ? (isDark ? const Color(0xFFD97706) : const Color(0xFFF59E0B)) : (isDark ? const Color(0xFF991B1B) : const Color(0xFFDC2626)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        margin: const EdgeInsets.only(bottom: 24, left: 24, right: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        duration: const Duration(seconds: 5),
+        elevation: 10,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -168,9 +245,18 @@ class _LoginScreenState extends State<LoginScreen> {
                             side: BorderSide(color: isDark ? const Color(0xFF4B5563) : Colors.grey[300]!, width: 1.5),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           ),
-                          onPressed: () {
-                            context.go('/dashboard');
-                            _showWelcomeMessage(context);
+                          onPressed: ref.watch(authProvider).isLoading ? null : () async {
+                            try {
+                              await ref.read(authProvider.notifier).loginWithGoogle();
+                              if (context.mounted) {
+                                context.go('/dashboard');
+                                _showWelcomeMessage(context);
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                _showErrorSnackBar(context, 'Error', 'Error al iniciar sesión con Google.');
+                              }
+                            }
                           },
                         ),
                         
@@ -192,7 +278,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Text('Correo Electrónico', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
                         TextField(
-                          onChanged: (val) => email = val,
+                          onChanged: (val) => setState(() => email = val),
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
                             hintText: 'tu@email.com',
@@ -213,7 +299,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Text('Contraseña', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
                         TextField(
-                          onChanged: (val) => password = val,
+                          onChanged: (val) => setState(() => password = val),
                           obscureText: !showPassword,
                           decoration: InputDecoration(
                             hintText: '••••••••',
@@ -330,46 +416,54 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 32),
 
                         // Submit Button
-                        ElevatedButton(
-                          onPressed: (!isLogin && (!acceptedPolicies || purpose.isEmpty)) || email.isEmpty || password.isEmpty ? null : () {
-                            context.go('/dashboard');
-                            _showWelcomeMessage(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            backgroundColor: Colors.transparent, 
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          ),
-                          child: Ink(
-                            decoration: BoxDecoration(
-                              gradient: (!isLogin && (!acceptedPolicies || purpose.isEmpty)) || email.isEmpty || password.isEmpty
-                                ? LinearGradient(colors: [isDark ? const Color(0xFF374151) : Colors.grey[300]!, isDark ? const Color(0xFF374151) : Colors.grey[300]!])
-                                : const LinearGradient(colors: [Color(0xFF9333EA), Color(0xFF2563EB)]),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: (!isLogin && (!acceptedPolicies || purpose.isEmpty)) || email.isEmpty || password.isEmpty
-                                ? []
-                                : [
-                                    BoxShadow(
-                                      color: const Color(0xFF9333EA).withValues(alpha: 0.3),
-                                      blurRadius: 16,
-                                      offset: const Offset(0, 8),
-                                    ),
-                                  ],
-                            ),
-                            child: Container(
-                              alignment: Alignment.center,
-                              constraints: const BoxConstraints(minHeight: 56),
-                              child: Text(
-                                isLogin ? 'Ingresar a mi cuenta' : 'Crear Cuenta',
-                                style: TextStyle(
-                                  color: (!isLogin && (!acceptedPolicies || purpose.isEmpty)) || email.isEmpty || password.isEmpty ? Colors.grey[500] : Colors.white, 
-                                  fontSize: 16, 
-                                  fontWeight: FontWeight.bold
+                        // Submit Button
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final authState = ref.watch(authProvider);
+                            final isLoading = authState.isLoading;
+                            final isDisabled = (!isLogin && (!acceptedPolicies || purpose.isEmpty)) || email.isEmpty || password.isEmpty || isLoading;
+                            
+                            return ElevatedButton(
+                              onPressed: isDisabled ? null : _submit,
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                backgroundColor: Colors.transparent, 
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
+                              child: Ink(
+                                decoration: BoxDecoration(
+                                  gradient: isDisabled
+                                    ? LinearGradient(colors: [isDark ? const Color(0xFF374151) : Colors.grey[300]!, isDark ? const Color(0xFF374151) : Colors.grey[300]!])
+                                    : const LinearGradient(colors: [Color(0xFF9333EA), Color(0xFF2563EB)]),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: isDisabled
+                                    ? []
+                                    : [
+                                        BoxShadow(
+                                          color: const Color(0xFF9333EA).withValues(alpha: 0.3),
+                                          blurRadius: 16,
+                                          offset: const Offset(0, 8),
+                                        ),
+                                      ],
+                                ),
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  constraints: const BoxConstraints(minHeight: 56),
+                                  child: isLoading
+                                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                      : Text(
+                                          isLogin ? 'Ingresar a mi cuenta' : 'Crear Cuenta',
+                                          style: TextStyle(
+                                            color: isDisabled ? Colors.grey[500] : Colors.white, 
+                                            fontSize: 16, 
+                                            fontWeight: FontWeight.bold
+                                          ),
+                                        ),
                                 ),
                               ),
-                            ),
-                          ),
+                            );
+                          }
                         ),
                       ],
                     ),

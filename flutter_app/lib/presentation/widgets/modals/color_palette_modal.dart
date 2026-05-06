@@ -20,7 +20,8 @@ class ColorPaletteModal extends ConsumerStatefulWidget {
 class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
   late String selectedPaletteName;
 
-  final List<String> unlockedPalettes = ['Índigo Esmeralda', 'Paleta Océano'];
+  // TODO: Revertir a solo ['Índigo Esmeralda', 'Paleta Océano'] después de probar
+  final List<String> unlockedPalettes = ['Índigo Esmeralda', 'Paleta Océano', 'Paleta Atardecer', 'Paleta Bosque', 'Paleta Lavanda', 'Paleta Medianoche'];
 
   @override
   void initState() {
@@ -36,8 +37,10 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
       child: Material(
         color: Colors.transparent,
         child: Container(
-          margin: const EdgeInsets.all(24),
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+            maxWidth: 500,
+          ),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1F2937) : Colors.white,
             borderRadius: BorderRadius.circular(24),
@@ -170,25 +173,27 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                         );
                       }),
 
+                      // Live Preview
                       if (unlockedPalettes.contains(selectedPaletteName)) ...[
                         const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF374151).withValues(alpha: 0.5) : const Color(0xFFF3F4F6),
+                            color: isDark ? const Color(0xFF111827) : const Color(0xFFF9FAFB),
                             borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Vista Previa', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                              Text('Vista Previa', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
                               const SizedBox(height: 12),
                               Builder(builder: (context) {
-                                final activeColors = presetPalettes.firstWhere((p) => p.name == selectedPaletteName).colors;
+                                final selectedColors = presetPalettes.firstWhere((p) => p.name == selectedPaletteName).colors;
                                 return Container(
-                                  padding: const EdgeInsets.all(24),
+                                  padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(colors: [activeColors[0], activeColors[1], activeColors[2]], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                                    gradient: LinearGradient(colors: [selectedColors[0], selectedColors[1]]),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                   child: Column(
@@ -213,7 +218,7 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
 
               // Actions
               Padding(
-                padding: const EdgeInsets.all(24).copyWith(top: 0),
+                padding: const EdgeInsets.all(24).copyWith(top: 16),
                 child: Row(
                   children: [
                     Expanded(
@@ -234,43 +239,35 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                       child: Builder(
                         builder: (context) {
                           final canSave = unlockedPalettes.contains(selectedPaletteName);
-                          return Ink(
-                            decoration: BoxDecoration(
-                              gradient: canSave
-                                  ? (isDark 
-                                      ? const LinearGradient(colors: [Color(0xFF4338CA), Color(0xFF047857)])
-                                      : const LinearGradient(colors: [Color(0xFF4F46E5), Color(0xFF10B981)]))
-                                  : null,
-                              color: canSave ? null : (isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB)),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: InkWell(
-                              onTap: canSave ? () {
-                                final palette = presetPalettes.firstWhere((p) => p.name == selectedPaletteName);
-                                ref.read(colorPaletteProvider.notifier).setPalette(palette);
-                                Navigator.of(context).pop();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Row(
-                                      children: [
-                                        const Icon(LucideIcons.palette, color: Colors.white, size: 18),
-                                        const SizedBox(width: 8),
-                                        Text('Paleta "$selectedPaletteName" aplicada ✨'),
-                                      ],
-                                    ),
-                                    backgroundColor: const Color(0xFF4F46E5),
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          final selectedColors = presetPalettes.firstWhere((p) => p.name == selectedPaletteName).colors;
+                          return ElevatedButton(
+                            onPressed: canSave ? () {
+                              final palette = presetPalettes.firstWhere((p) => p.name == selectedPaletteName);
+                              ref.read(colorPaletteProvider.notifier).setPalette(palette);
+                              Navigator.of(context).pop();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(
+                                    children: [
+                                      const Icon(LucideIcons.palette, color: Colors.white, size: 18),
+                                      const SizedBox(width: 8),
+                                      Text('Paleta "$selectedPaletteName" aplicada ✨'),
+                                    ],
                                   ),
-                                );
-                              } : null,
-                              borderRadius: BorderRadius.circular(16),
-                              child: Container(
-                                alignment: Alignment.center,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                child: Text('Guardar', style: TextStyle(color: canSave ? Colors.white : Colors.white54, fontWeight: FontWeight.bold)),
-                              ),
+                                  backgroundColor: selectedColors[0],
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                              );
+                            } : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: canSave ? selectedColors[0] : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                              foregroundColor: canSave ? Colors.white : (isDark ? Colors.white54 : Colors.grey[500]),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             ),
+                            child: const Text('Guardar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           );
                         },
                       ),

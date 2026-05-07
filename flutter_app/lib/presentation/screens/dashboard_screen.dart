@@ -9,6 +9,7 @@ import '../widgets/modals/budget_limit_modal.dart';
 import '../widgets/modals/ai_chat_modal.dart';
 import '../widgets/modals/transactions_list_modal.dart';
 import '../widgets/modals/edit_profile_modal.dart';
+import '../widgets/modals/daily_tip_modal.dart';
 import '../providers/color_palette_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/transaction_provider.dart';
@@ -49,6 +50,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
   }
 
   bool _profileChecked = false;
+  bool _tipChecked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +69,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.mounted) {
           EditProfileModal.show(context);
+        }
+      });
+    }
+
+    // Show daily tip once per day (after profile modal if needed)
+    if (user != null && !_tipChecked) {
+      _tipChecked = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (context.mounted) {
+          // Small delay so it doesn't clash with the profile modal
+          await Future.delayed(const Duration(milliseconds: 600));
+          if (context.mounted) {
+            DailyTipModal.showIfNeeded(context);
+          }
         }
       });
     }

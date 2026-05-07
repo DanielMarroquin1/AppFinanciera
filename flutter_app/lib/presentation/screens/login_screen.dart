@@ -252,6 +252,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 context.go('/dashboard');
                                 _showWelcomeMessage(context);
                               }
+                            } on firebase_auth.FirebaseAuthException catch (e) {
+                              if (!context.mounted) return;
+                              // Don't show error if user cancelled
+                              if (e.code == 'sign-in-cancelled') return;
+                              _showErrorSnackBar(context, 'Error', e.message ?? 'Error al iniciar sesión con Google.');
                             } catch (e) {
                               if (context.mounted) {
                                 _showErrorSnackBar(context, 'Error', 'Error al iniciar sesión con Google.');

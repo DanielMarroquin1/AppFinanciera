@@ -2,7 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'google_sign_in_stub.dart' 
+    if (dart.library.io) 'google_sign_in_real.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 
@@ -101,9 +102,32 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<User> loginWithGoogle() async {
     try {
       firebase_auth.UserCredential userCredential;
-      
-      // On Web, we can safely use signInWithPopup.
-      userCredential = await _firebaseAuth.signInWithPopup(firebase_auth.GoogleAuthProvider());
+
+      if (kIsWeb) {
+        // On Web, use signInWithPopup (native browser popup)
+        userCredential = await _firebaseAuth.signInWithPopup(firebase_auth.GoogleAuthProvider());
+      } else {
+        // On Android/iOS/Desktop, use the GoogleSignIn package
+        const GoogleSignIn googleSignIn = GoogleSignIn();
+        final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+        
+        if (googleUser == null) {
+          // User cancelled the sign-in flow
+          throw firebase_auth.FirebaseAuthException(
+            code: 'sign-in-cancelled',
+            message: 'Inicio de sesión con Google cancelado.',
+          );
+        }
+
+        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+        final credential = firebase_auth.GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+
+        userCredential = await _firebaseAuth.signInWithCredential(credential);
+      }
 
       final firebaseUser = userCredential.user!;
       
@@ -115,6 +139,7 @@ class AuthRepositoryImpl implements AuthRepository {
           'name': firebaseUser.displayName ?? '',
           'purpose': '',
           'profileComplete': false,
+          'hasCompletedTour': false,
           'createdAt': FieldValue.serverTimestamp(),
         });
         return User(
@@ -163,6 +188,14 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> logout() async {
+    try {
+      if (!kIsWeb) {
+        const GoogleSignIn googleSignIn = GoogleSignIn();
+        await googleSignIn.signOut();
+      }
+    } catch (_) {
+      // Ignore errors from Google sign out
+    }
     await _firebaseAuth.signOut();
   }
 }

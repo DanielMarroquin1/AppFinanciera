@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/auth_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
-class ForgotPasswordModal extends StatefulWidget {
+class ForgotPasswordModal extends ConsumerStatefulWidget {
   const ForgotPasswordModal({super.key});
 
   static void show(BuildContext context) {
@@ -13,21 +16,47 @@ class ForgotPasswordModal extends StatefulWidget {
   }
 
   @override
-  State<ForgotPasswordModal> createState() => _ForgotPasswordModalState();
+  ConsumerState<ForgotPasswordModal> createState() => _ForgotPasswordModalState();
 }
 
-class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
+class _ForgotPasswordModalState extends ConsumerState<ForgotPasswordModal> {
   String email = '';
   bool sent = false;
 
-  void _handleSubmit() {
-    // Simulamos el envío del correo de recuperación
-    setState(() => sent = true);
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted && Navigator.canPop(context)) {
+  Future<void> _handleSubmit() async {
+    try {
+      await ref.read(authProvider.notifier).resetPassword(email);
+      if (!mounted) return;
+      
+      // Mostrar mensaje emergente de éxito
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Se ha enviado el enlace de recuperación exitosamente.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      
+      // Cerramos el modal inmediatamente
+      if (Navigator.canPop(context)) {
         Navigator.pop(context);
       }
-    });
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message ?? 'Ocurrió un error al enviar el correo.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo conectar con el servidor.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   @override
@@ -104,7 +133,7 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
               ),
               const SizedBox(height: 8),
               TextField(
-                onChanged: (val) => email = val,
+                onChanged: (val) => setState(() => email = val),
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   hintText: 'tu@email.com',
@@ -127,26 +156,35 @@ class _ForgotPasswordModalState extends State<ForgotPasswordModal> {
               ),
               const SizedBox(height: 24),
 
-              ElevatedButton(
-                onPressed: email.isEmpty ? null : _handleSubmit,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.transparent, 
-                  shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                child: Ink(
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFF9333EA), Color(0xFF2563EB)]),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Container(
-                    alignment: Alignment.center,
-                    width: double.infinity,
-                    constraints: const BoxConstraints(minHeight: 52),
-                    child: const Text('Enviar Enlace', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                  ),
-                ),
+              Consumer(
+                builder: (context, ref, child) {
+                  final isLoading = ref.watch(authProvider).isLoading;
+                  return ElevatedButton(
+                    onPressed: email.isEmpty || isLoading ? null : _handleSubmit,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: Colors.transparent, 
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        gradient: email.isEmpty || isLoading 
+                            ? LinearGradient(colors: [isDark ? const Color(0xFF374151) : Colors.grey[300]!, isDark ? const Color(0xFF374151) : Colors.grey[300]!])
+                            : const LinearGradient(colors: [Color(0xFF9333EA), Color(0xFF2563EB)]),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: double.infinity,
+                        constraints: const BoxConstraints(minHeight: 52),
+                        child: isLoading 
+                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                            : const Text('Enviar Enlace', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  );
+                },
               ),
             ] else ...[
               // Estado Enviado Exitoso

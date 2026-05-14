@@ -1,23 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-class RewardsShopModal extends StatelessWidget {
-  final int userPoints;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/auth_provider.dart';
 
-  const RewardsShopModal({super.key, required this.userPoints});
+class RewardsShopModal extends ConsumerStatefulWidget {
+  const RewardsShopModal({super.key});
 
-  static void show(BuildContext context, {int points = 150}) {
+  static void show(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => RewardsShopModal(userPoints: points),
+      builder: (context) => const RewardsShopModal(),
     );
   }
 
   @override
+  ConsumerState<RewardsShopModal> createState() => _RewardsShopModalState();
+}
+
+class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final user = ref.watch(authProvider).user;
+    final userPoints = user?.points ?? 0;
+    final unlockedItems = user?.unlockedItems ?? [];
 
     final categories = [
       {
@@ -143,6 +152,8 @@ class RewardsShopModal extends StatelessWidget {
                     
                     // Items
                     ...items.map((item) {
+                      final itemId = item['id'] as String;
+                      final isUnlocked = unlockedItems.contains(itemId);
                       final canAfford = userPoints >= (item['cost'] as int);
                       
                       return Container(
@@ -180,23 +191,60 @@ class RewardsShopModal extends StatelessWidget {
                                   ],
                                   
                                   const SizedBox(height: 12),
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
-                                    decoration: BoxDecoration(
-                                      gradient: canAfford 
-                                          ? LinearGradient(colors: [const Color(0xFF4F46E5), const Color(0xFF10B981)])
-                                          : null,
-                                      color: canAfford ? null : (isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(canAfford ? LucideIcons.star : LucideIcons.lock, color: canAfford ? Colors.white : Colors.grey, size: 16),
-                                        const SizedBox(width: 8),
-                                        Text('Canjear por ${item['cost']} pts', style: TextStyle(color: canAfford ? Colors.white : Colors.grey, fontWeight: FontWeight.bold, fontSize: 12)),
-                                      ],
+                                  InkWell(
+                                    onTap: () async {
+                                      if (isUnlocked) return;
+                                      if (canAfford) {
+                                        final success = await ref.read(authProvider.notifier).purchaseItem(item['cost'] as int, itemId);
+                                        if (success && context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('¡Desbloqueaste ${item['name']}! 🎉'),
+                                              backgroundColor: Colors.green,
+                                            ),
+                                          );
+                                        }
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('No tienes suficientes puntos.'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      decoration: BoxDecoration(
+                                        gradient: isUnlocked 
+                                            ? LinearGradient(colors: [const Color(0xFF10B981), const Color(0xFF059669)])
+                                            : canAfford 
+                                              ? LinearGradient(colors: [const Color(0xFF4F46E5), const Color(0xFF10B981)])
+                                              : null,
+                                        color: (isUnlocked || canAfford) ? null : (isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            isUnlocked ? LucideIcons.checkCircle : (canAfford ? LucideIcons.star : LucideIcons.lock),
+                                            color: (isUnlocked || canAfford) ? Colors.white : Colors.grey,
+                                            size: 16
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            isUnlocked ? 'Desbloqueado' : 'Canjear por ${item['cost']} pts',
+                                            style: TextStyle(
+                                              color: (isUnlocked || canAfford) ? Colors.white : Colors.grey,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12
+                                            )
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   )
                                 ],

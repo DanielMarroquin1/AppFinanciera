@@ -33,8 +33,13 @@ class AuthRepositoryImpl implements AuthRepository {
                profileComplete: map['profileComplete'] ?? false,
                country: map['country'],
                currency: map['currency'],
+               language: map['language'],
                salary: map['salary'],
                salaryType: map['salaryType'],
+               points: map['points'] ?? 0,
+               currentStreak: map['currentStreak'] ?? 0,
+               lastActiveDate: map['lastActiveDate'],
+               unlockedItems: List<String>.from(map['unlockedItems'] ?? []),
              );
            }
          } catch (e) {
@@ -57,8 +62,13 @@ class AuthRepositoryImpl implements AuthRepository {
         'profileComplete': user.profileComplete,
         if (user.country != null) 'country': user.country,
         if (user.currency != null) 'currency': user.currency,
+        if (user.language != null) 'language': user.language,
         if (user.salary != null) 'salary': user.salary,
         if (user.salaryType != null) 'salaryType': user.salaryType,
+        'points': user.points,
+        'currentStreak': user.currentStreak,
+        if (user.lastActiveDate != null) 'lastActiveDate': user.lastActiveDate,
+        'unlockedItems': user.unlockedItems,
       };
       await _firestore.collection('users').doc(firebaseUser.uid).set(map, SetOptions(merge: true));
     }
@@ -93,6 +103,9 @@ class AuthRepositoryImpl implements AuthRepository {
       hasCompletedTour: false,
       profileComplete: false,
     );
+    // Only save if it doesn't exist, to avoid overwriting existing properties with nulls
+    // Since getStoredUser() returned null, we might just have unverified email,
+    // but if it's actually missing we save it.
     await saveUser(fallbackUser);
     return fallbackUser;
   }
@@ -156,6 +169,9 @@ class AuthRepositoryImpl implements AuthRepository {
           purpose: '',
           hasCompletedTour: false,
           profileComplete: false,
+          points: 0,
+          currentStreak: 0,
+          unlockedItems: [],
         );
       }
       
@@ -166,6 +182,15 @@ class AuthRepositoryImpl implements AuthRepository {
         purpose: data['purpose'] ?? '',
         hasCompletedTour: data['hasCompletedTour'] ?? false,
         profileComplete: data['profileComplete'] ?? false,
+        country: data['country'],
+        currency: data['currency'],
+        language: data['language'],
+        salary: data['salary'],
+        salaryType: data['salaryType'],
+        points: data['points'] ?? 0,
+        currentStreak: data['currentStreak'] ?? 0,
+        lastActiveDate: data['lastActiveDate'],
+        unlockedItems: List<String>.from(data['unlockedItems'] ?? []),
       );
     } catch (e) {
       if (e is firebase_auth.FirebaseAuthException) rethrow;
@@ -207,5 +232,28 @@ class AuthRepositoryImpl implements AuthRepository {
       // Ignore errors from Google sign out
     }
     await _firebaseAuth.signOut();
+  }
+
+  @override
+  Future<void> resetPassword(String email) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } catch (e) {
+      if (e is firebase_auth.FirebaseAuthException) {
+        if (e.code == 'user-not-found') {
+          throw firebase_auth.FirebaseAuthException(
+            code: 'user-not-found',
+            message: 'No hay ninguna cuenta registrada con este correo.',
+          );
+        } else if (e.code == 'invalid-email') {
+          throw firebase_auth.FirebaseAuthException(
+            code: 'invalid-email',
+            message: 'El correo electrónico no es válido.',
+          );
+        }
+        rethrow;
+      }
+      throw Exception('Ocurrió un error al enviar el enlace de recuperación.');
+    }
   }
 }

@@ -105,6 +105,90 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(user: updatedUser);
     }
   }
+
+  Future<void> resetPassword(String email) async {
+    state = state.copyWith(isLoading: true);
+    try {
+      await _repository.resetPassword(email);
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false);
+      rethrow;
+    }
+  }
+
+  Future<bool> checkAndUpdateStreak() async {
+    final user = state.user;
+    if (user == null) return false;
+
+    final now = DateTime.now();
+    final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
+    if (user.lastActiveDate == todayStr) {
+      // Already logged in today
+      return false;
+    }
+
+    int newStreak = user.currentStreak;
+    int newPoints = user.points;
+
+    if (user.lastActiveDate != null) {
+      final lastActive = DateTime.tryParse(user.lastActiveDate!);
+      if (lastActive != null) {
+        final lastActiveDateOnly = DateTime(lastActive.year, lastActive.month, lastActive.day);
+        final todayDateOnly = DateTime(now.year, now.month, now.day);
+        final dayDiff = todayDateOnly.difference(lastActiveDateOnly).inDays;
+
+        if (dayDiff == 1) {
+          // Consecutive day
+          newStreak += 1;
+        } else if (dayDiff > 1) {
+          // Streak broken
+          newStreak = 1;
+        }
+      } else {
+        newStreak = 1;
+      }
+    } else {
+      // First login or streak
+      newStreak = 1;
+    }
+
+    // Award points: base 50 + 5 per consecutive day
+    newPoints += 50 + (newStreak * 5);
+
+    final updatedUser = user.copyWith(
+      lastActiveDate: todayStr,
+      currentStreak: newStreak,
+      points: newPoints,
+    );
+
+    await _repository.saveUser(updatedUser);
+    state = state.copyWith(user: updatedUser);
+
+    // Return true to show the modal
+    return true;
+  }
+
+  Future<bool> purchaseItem(int cost, String itemId) async {
+    final user = state.user;
+    if (user == null) return false;
+
+    if (user.points >= cost && !user.unlockedItems.contains(itemId)) {
+      final newPoints = user.points - cost;
+      final newUnlockedItems = List<String>.from(user.unlockedItems)..add(itemId);
+      
+      final updatedUser = user.copyWith(
+        points: newPoints,
+        unlockedItems: newUnlockedItems,
+      );
+      
+      await _repository.saveUser(updatedUser);
+      state = state.copyWith(user: updatedUser);
+      return true;
+    }
+    return false;
+  }
 }
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(() {

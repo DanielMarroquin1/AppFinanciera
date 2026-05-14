@@ -10,9 +10,12 @@ import '../widgets/modals/ai_chat_modal.dart';
 import '../widgets/modals/transactions_list_modal.dart';
 import '../widgets/modals/edit_profile_modal.dart';
 import '../widgets/modals/daily_tip_modal.dart';
+import '../widgets/modals/complete_profile_modal.dart';
 import '../providers/color_palette_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../../core/utils/currency_formatter.dart';
+import '../../core/utils/localization.dart';
 import 'package:intl/intl.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -51,6 +54,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
 
   bool _profileChecked = false;
   bool _tipChecked = false;
+  bool _streakChecked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -62,13 +66,29 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
     final user = authState.user;
 
     final transactionsAsync = ref.watch(transactionsProvider);
-    final currencyFormatter = NumberFormat.currency(locale: 'en_US', symbol: '\$');
+    final loc = ref.watch(localizationProvider);
+    final currencyCode = user?.currency;
 
     if (user != null && !user.profileComplete && !_profileChecked) {
       _profileChecked = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.mounted) {
-          EditProfileModal.show(context);
+          CompleteProfileModal.show(context);
+        }
+      });
+    }
+
+    if (user != null && !_streakChecked && user.profileComplete) {
+      _streakChecked = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (context.mounted) {
+          final isNewDay = await ref.read(authProvider.notifier).checkAndUpdateStreak();
+          if (isNewDay && context.mounted) {
+            final updatedUser = ref.read(authProvider).user;
+            if (updatedUser != null) {
+              StreakModal.show(context, streak: updatedUser.currentStreak);
+            }
+          }
         }
       });
     }
@@ -104,7 +124,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '¡Hola, ${user?.name ?? 'Usuario'}! 👋',
+                        '${loc.get('welcome_back')} ${user?.name ?? 'Usuario'}! 👋',
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -113,7 +133,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '¡Increíble! Estás en racha 🔥',
+                        loc.get('on_track'),
                         style: TextStyle(
                           color: isDark ? Colors.orange[400] : Colors.orange[800],
                           fontWeight: FontWeight.w600,
@@ -121,7 +141,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Aquí está tu resumen financiero',
+                        loc.get('financial_summary'),
                         style: TextStyle(
                           color: isDark ? Colors.grey[400] : Colors.grey[600],
                           fontSize: 12,
@@ -135,7 +155,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     InkWell(
-                      onTap: () => StreakModal.show(context, streak: 5),
+                      onTap: () => StreakModal.show(context, streak: user?.currentStreak ?? 0),
                       borderRadius: BorderRadius.circular(16),
                       child: AnimatedBuilder(
                         animation: _fireAnimController,
@@ -171,7 +191,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                '5',
+                                '${user?.currentStreak ?? 0}',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -186,7 +206,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                     ),
                     const SizedBox(width: 8),
                     InkWell(
-                      onTap: () => RewardsShopModal.show(context, points: 150),
+                      onTap: () => RewardsShopModal.show(context),
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
                         padding: const EdgeInsets.all(10),
@@ -260,9 +280,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Balance Total', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                      Text(loc.get('total_balance'), style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
                       const SizedBox(height: 8),
-                      Text(currencyFormatter.format(totalBalance), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
+                      Text(CurrencyFormatter.format(totalBalance, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 16),
                       Row(
                         children: [
@@ -276,9 +296,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Ingresos', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
+                                  Text(loc.get('income'), style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
                                   const SizedBox(height: 4),
-                                  Text(currencyFormatter.format(totalIncome), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
+                                  Text(CurrencyFormatter.format(totalIncome, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
                                 ],
                               ),
                             ),
@@ -294,9 +314,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Gastos', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
+                                  Text(loc.get('expenses'), style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
                                   const SizedBox(height: 4),
-                                  Text(currencyFormatter.format(totalExpense), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
+                                  Text(CurrencyFormatter.format(totalExpense, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
                                 ],
                               ),
                             ),
@@ -339,8 +359,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                       child: Text.rich(
                         TextSpan(
                           children: [
-                            const TextSpan(text: '¡Cuidado! ', style: TextStyle(fontWeight: FontWeight.bold)),
-                            TextSpan(text: 'Has alcanzado el $_budgetLimitPercentage% del límite mensual.'),
+                            TextSpan(text: loc.get('careful'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                            TextSpan(text: '${loc.get('limit_reached')}$_budgetLimitPercentage${loc.get('limit_monthly')}'),
                           ],
                         ),
                         style: const TextStyle(color: Color(0xFF92400E)), // Matches amber-900
@@ -358,10 +378,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Insignias Desbloqueadas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                Text(loc.get('unlocked_badges'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
                 TextButton(
                   onPressed: () => RewardsShopModal.show(context, points: 150),
-                  child: Text('Ver todas', style: TextStyle(color: paletteGradient[0], fontSize: 12)),
+                  child: Text(loc.get('see_all'), style: TextStyle(color: paletteGradient[0], fontSize: 12)),
                 ),
               ],
             ),
@@ -424,7 +444,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             const SizedBox(height: 24),
 
             // Quick Actions inline
-            Text('Acciones Rápidas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+            Text(loc.get('quick_actions'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -443,7 +463,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                         children: [
                           Icon(LucideIcons.trendingUp, color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A), size: 22),
                           const SizedBox(height: 6),
-                          Text('Ingreso', style: TextStyle(color: isDark ? const Color(0xFFBBF7D0) : const Color(0xFF14532D), fontSize: 11, fontWeight: FontWeight.w500)),
+                          Text(loc.get('income_action'), style: TextStyle(color: isDark ? const Color(0xFFBBF7D0) : const Color(0xFF14532D), fontSize: 11, fontWeight: FontWeight.w500)),
                         ],
                       ),
                     ),
@@ -465,7 +485,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                         children: [
                           Icon(LucideIcons.trendingDown, color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), size: 22),
                           const SizedBox(height: 6),
-                          Text('Gasto', style: TextStyle(color: isDark ? const Color(0xFFFECACA) : const Color(0xFF7F1D1D), fontSize: 11, fontWeight: FontWeight.w500)),
+                          Text(loc.get('expense_action'), style: TextStyle(color: isDark ? const Color(0xFFFECACA) : const Color(0xFF7F1D1D), fontSize: 11, fontWeight: FontWeight.w500)),
                         ],
                       ),
                     ),
@@ -487,7 +507,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                         children: [
                           Icon(LucideIcons.repeat, color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), size: 22),
                           const SizedBox(height: 6),
-                          Text('Ingreso Fijo', style: TextStyle(color: isDark ? const Color(0xFFBFDBFE) : const Color(0xFF1E3A8A), fontSize: 11, fontWeight: FontWeight.w500)),
+                          Text(loc.get('fixed_income'), style: TextStyle(color: isDark ? const Color(0xFFBFDBFE) : const Color(0xFF1E3A8A), fontSize: 11, fontWeight: FontWeight.w500)),
                         ],
                       ),
                     ),
@@ -542,11 +562,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                         child: const Icon(LucideIcons.trendingUp, color: Colors.white, size: 28),
                       ),
                       const SizedBox(width: 16),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Asistente de Inversión', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
+                            Text(loc.get('ai_assistant'), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
                             SizedBox(height: 4),
                             Text('Descubre cómo invertir tu dinero basado en tu negocio 💰', style: TextStyle(color: Colors.white70, fontSize: 14)),
                           ],
@@ -564,10 +584,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Transacciones Recientes', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                Text(loc.get('recent_transactions'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
                 TextButton(
                   onPressed: () => TransactionsListModal.show(context),
-                  child: Text('Ver todas', style: TextStyle(color: paletteGradient[0], fontSize: 12)),
+                  child: Text(loc.get('see_all'), style: TextStyle(color: paletteGradient[0], fontSize: 12)),
                 )
               ],
             ),
@@ -603,7 +623,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                             : (isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.3) : const Color(0xFFFEF2F2)),
                         title: t.description.isNotEmpty ? t.description : t.category,
                         subtitle: formattedDate,
-                        amount: '${isIncome ? '+' : '-'}${currencyFormatter.format(t.amount)}',
+                        amount: '${isIncome ? '+' : '-'}${CurrencyFormatter.format(t.amount, currencyCode)}',
                         amountColor: isIncome
                             ? (isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A))
                             : (isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626)),

@@ -11,15 +11,16 @@ import '../../../core/utils/localization.dart';
 class AddExpenseModal extends ConsumerStatefulWidget {
   final bool isFixed;
   final String? currencyCode;
+  final TransactionModel? existingTransaction;
   
-  const AddExpenseModal({super.key, this.isFixed = false, this.currencyCode});
+  const AddExpenseModal({super.key, this.isFixed = false, this.currencyCode, this.existingTransaction});
 
-  static Future<void> show(BuildContext context, {bool isFixed = false, String? currencyCode}) {
+  static Future<void> show(BuildContext context, {bool isFixed = false, String? currencyCode, TransactionModel? existingTransaction}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => AddExpenseModal(isFixed: isFixed, currencyCode: currencyCode),
+      builder: (context) => AddExpenseModal(isFixed: isFixed, currencyCode: currencyCode, existingTransaction: existingTransaction),
     );
   }
 
@@ -32,6 +33,28 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
   String category = "";
   String description = "";
   DateTime date = DateTime.now();
+  late TextEditingController _amountController;
+  late TextEditingController _descController;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existingTransaction != null) {
+      amount = widget.existingTransaction!.amount.toString();
+      category = widget.existingTransaction!.category;
+      description = widget.existingTransaction!.description;
+      date = widget.existingTransaction!.date;
+    }
+    _amountController = TextEditingController(text: amount);
+    _descController = TextEditingController(text: description);
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _descController.dispose();
+    super.dispose();
+  }
 
   final expenseCategories = [
     {'value': 'food', 'label': 'Comida', 'emoji': '🍔'},
@@ -81,7 +104,7 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                           child: Icon(widget.isFixed ? LucideIcons.receipt : LucideIcons.trendingDown, color: Colors.white, size: 24),
                         ),
                         const SizedBox(width: 12),
-                        Text(widget.isFixed ? loc.get('fixed_expense') : loc.get('new_expense'), style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                        Text(widget.existingTransaction != null ? 'Editar Gasto' : (widget.isFixed ? loc.get('fixed_expense') : loc.get('new_expense')), style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     IconButton(
@@ -110,6 +133,7 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                   Text('${loc.get('amount')} 💵', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 8),
                   TextField(
+                    controller: _amountController,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     onChanged: (val) => amount = val,
                     style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
@@ -175,6 +199,7 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                   Text('${loc.get('description_optional')} 📝', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 8),
                   TextField(
+                    controller: _descController,
                     onChanged: (val) => description = val,
                     maxLines: 3,
                     style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
@@ -212,30 +237,20 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                   const SizedBox(height: 24),
 
                   // Submit
-                  Ink(
-                    decoration: BoxDecoration(
-                      gradient: (amount.isEmpty || category.isEmpty)
-                          ? LinearGradient(colors: [isDark ? const Color(0xFF4B5563) : Colors.grey[400]!, isDark ? const Color(0xFF374151) : Colors.grey[300]!])
-                          : (isDark ? const LinearGradient(colors: [Color(0xFFB91C1C), Color(0xFFBE185D)]) : const LinearGradient(colors: [Color(0xFFDC2626), Color(0xFFDB2777)])),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: (amount.isEmpty || category.isEmpty) ? [] : [
-                        BoxShadow(
-                          color: (isDark ? const Color(0xFFB91C1C) : const Color(0xFFDC2626)).withValues(alpha: 0.4),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: InkWell(
-                      onTap: amount.isEmpty || category.isEmpty ? null : () async {
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: amount.isEmpty || category.isEmpty ? null : () async {
                         final uid = FirebaseAuth.instance.currentUser?.uid;
                         if (uid == null) return;
                         
                         final parsedAmount = double.tryParse(amount) ?? 0.0;
                         if (parsedAmount <= 0) return;
 
+                        final isEditing = widget.existingTransaction != null;
+                        
                         final transaction = TransactionModel(
-                          id: '', // Firestore will auto-generate
+                          id: isEditing ? widget.existingTransaction!.id : '', // Firestore will auto-generate if empty
                           userId: uid,
                           amount: parsedAmount,
                           type: 'expense',
@@ -245,13 +260,17 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                           isFixed: widget.isFixed,
                         );
 
-                        await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
+                        if (isEditing) {
+                          await ref.read(transactionNotifierProvider.notifier).updateTransaction(transaction);
+                        } else {
+                          await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
+                        }
 
                         if (context.mounted) {
                           Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(loc.get('expense_added'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              content: Text(isEditing ? 'Gasto actualizado' : loc.get('expense_added'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                               backgroundColor: isDark ? const Color(0xFF991B1B) : const Color(0xFFDC2626),
                               behavior: SnackBarBehavior.floating,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -259,12 +278,16 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                           );
                         }
                       },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        alignment: Alignment.center,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? const Color(0xFFE11D48) : const Color(0xFFF43F5E), // rose
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
+                        disabledForegroundColor: isDark ? Colors.grey[500] : Colors.grey[400],
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Text(widget.isFixed ? loc.get('add_fixed_expense') : loc.get('add_expense'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 4,
                       ),
+                      child: Text(widget.existingTransaction != null ? 'Guardar Cambios' : (widget.isFixed ? loc.get('add_fixed_expense') : loc.get('add_expense')), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

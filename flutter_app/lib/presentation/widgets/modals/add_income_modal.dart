@@ -8,14 +8,16 @@ import '../../providers/transaction_provider.dart';
 
 class AddIncomeModal extends ConsumerStatefulWidget {
   final bool isFixed;
-  const AddIncomeModal({super.key, this.isFixed = false});
+  final TransactionModel? existingTransaction;
+  
+  const AddIncomeModal({super.key, this.isFixed = false, this.existingTransaction});
 
-  static Future<void> show(BuildContext context, {bool isFixed = false}) {
+  static Future<void> show(BuildContext context, {bool isFixed = false, TransactionModel? existingTransaction}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => AddIncomeModal(isFixed: isFixed),
+      builder: (context) => AddIncomeModal(isFixed: isFixed, existingTransaction: existingTransaction),
     );
   }
 
@@ -28,6 +30,28 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
   String category = "";
   String description = "";
   DateTime date = DateTime.now();
+  late TextEditingController _amountController;
+  late TextEditingController _descController;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existingTransaction != null) {
+      amount = widget.existingTransaction!.amount.toString();
+      category = widget.existingTransaction!.category;
+      description = widget.existingTransaction!.description;
+      date = widget.existingTransaction!.date;
+    }
+    _amountController = TextEditingController(text: amount);
+    _descController = TextEditingController(text: description);
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _descController.dispose();
+    super.dispose();
+  }
 
   final incomeCategories = [
     {'value': 'salary', 'label': 'Salario', 'emoji': '💼'},
@@ -74,7 +98,7 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                           child: Icon(widget.isFixed ? LucideIcons.repeat : LucideIcons.trendingUp, color: Colors.white, size: 24),
                         ),
                         const SizedBox(width: 12),
-                        Text(widget.isFixed ? 'Ingreso Fijo' : 'Nuevo Ingreso', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                        Text(widget.existingTransaction != null ? 'Editar Ingreso' : (widget.isFixed ? 'Ingreso Fijo' : 'Nuevo Ingreso'), style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     IconButton(
@@ -108,6 +132,7 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                   Text('Monto 💵', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 8),
                   TextField(
+                    controller: _amountController,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     onChanged: (val) => amount = val,
                     style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
@@ -170,6 +195,7 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                   Text('Descripción (Opcional) 📝', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 8),
                   TextField(
+                    controller: _descController,
                     onChanged: (val) => description = val,
                     maxLines: 3,
                     style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
@@ -207,30 +233,20 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                   const SizedBox(height: 24),
 
                   // Submit
-                  Ink(
-                    decoration: BoxDecoration(
-                      gradient: (amount.isEmpty || category.isEmpty)
-                          ? LinearGradient(colors: [isDark ? const Color(0xFF4B5563) : Colors.grey[400]!, isDark ? const Color(0xFF374151) : Colors.grey[300]!])
-                          : (isDark ? const LinearGradient(colors: [Color(0xFF15803D), Color(0xFF047857)]) : const LinearGradient(colors: [Color(0xFF16A34A), Color(0xFF059669)])),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: (amount.isEmpty || category.isEmpty) ? [] : [
-                        BoxShadow(
-                          color: (isDark ? const Color(0xFF15803D) : const Color(0xFF16A34A)).withValues(alpha: 0.4),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: InkWell(
-                      onTap: amount.isEmpty || category.isEmpty ? null : () async {
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: amount.isEmpty || category.isEmpty ? null : () async {
                         final uid = FirebaseAuth.instance.currentUser?.uid;
                         if (uid == null) return;
                         
                         final parsedAmount = double.tryParse(amount) ?? 0.0;
                         if (parsedAmount <= 0) return;
 
+                        final isEditing = widget.existingTransaction != null;
+
                         final transaction = TransactionModel(
-                          id: '', // Firestore will auto-generate
+                          id: isEditing ? widget.existingTransaction!.id : '', // Firestore will auto-generate if empty
                           userId: uid,
                           amount: parsedAmount,
                           type: 'income',
@@ -240,13 +256,17 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                           isFixed: widget.isFixed,
                         );
 
-                        await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
+                        if (isEditing) {
+                          await ref.read(transactionNotifierProvider.notifier).updateTransaction(transaction);
+                        } else {
+                          await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
+                        }
 
                         if (context.mounted) {
                           Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: const Text('Ingreso agregado exitosamente', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              content: Text(isEditing ? 'Ingreso actualizado exitosamente' : 'Ingreso agregado exitosamente', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                               backgroundColor: isDark ? const Color(0xFF065F46) : const Color(0xFF10B981),
                               behavior: SnackBarBehavior.floating,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -254,12 +274,16 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                           );
                         }
                       },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        alignment: Alignment.center,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? const Color(0xFF059669) : const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
+                        disabledForegroundColor: isDark ? Colors.grey[500] : Colors.grey[400],
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Text(widget.isFixed ? 'Agregar Ingreso Fijo' : 'Agregar Ingreso', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 4,
                       ),
+                      child: Text(widget.existingTransaction != null ? 'Guardar Cambios' : (widget.isFixed ? 'Agregar Ingreso Fijo' : 'Agregar Ingreso'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

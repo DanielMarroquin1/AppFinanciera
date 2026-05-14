@@ -48,7 +48,7 @@ class AppShell extends ConsumerWidget {
             } else if (action == 'my-savings') {
               context.go('/savings');
             } else if (action == 'rewards-shop') {
-              RewardsShopModal.show(context, points: 150);
+              RewardsShopModal.show(context);
             } else if (action == 'ai-chat') {
               showModalBottomSheet(
                 context: context,

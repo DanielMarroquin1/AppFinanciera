@@ -60,6 +60,8 @@ class AppLocalizations {
       'select_language_desc': 'Elige el idioma de la aplicación',
       'select_currency': 'Seleccionar Moneda',
       'select_currency_desc': 'Elige la moneda de la aplicación',
+      'select_country': 'Seleccionar País',
+      'select_country_desc': 'Elige tu país de residencia',
       
       'complete_profile': '¡Completa tu perfil!',
       'complete_profile_desc': 'Necesitamos algunos datos para personalizar tu experiencia y ayudarte a ahorrar:',
@@ -159,6 +161,8 @@ class AppLocalizations {
       'select_language_desc': 'Choose the application language',
       'select_currency': 'Select Currency',
       'select_currency_desc': 'Choose the application currency',
+      'select_country': 'Select Country',
+      'select_country_desc': 'Choose your country of residence',
       
       'complete_profile': 'Complete your profile!',
       'complete_profile_desc': 'We need some data to customize your experience and help you save:',
@@ -258,6 +262,8 @@ class AppLocalizations {
       'select_language_desc': 'Escolha o idioma do aplicativo',
       'select_currency': 'Selecionar Moeda',
       'select_currency_desc': 'Escolha a moeda do aplicativo',
+      'select_country': 'Selecionar País',
+      'select_country_desc': 'Escolha seu país de residência',
       
       'complete_profile': 'Complete seu perfil!',
       'complete_profile_desc': 'Precisamos de alguns dados para personalizar sua experiência e ajudá-lo a economizar:',
@@ -357,6 +363,8 @@ class AppLocalizations {
       'select_language_desc': 'Choisissez la langue de l\'application',
       'select_currency': 'Choisir la Devise',
       'select_currency_desc': 'Choisissez la devise de l\'application',
+      'select_country': 'Choisir le Pays',
+      'select_country_desc': 'Choisissez votre pays de résidence',
       
       'complete_profile': 'Complétez votre profil !',
       'complete_profile_desc': 'Nous avons besoin de quelques données pour personnaliser votre expérience et vous aider à économiser :',
@@ -456,6 +464,8 @@ class AppLocalizations {
       'select_language_desc': 'Scegli la lingua dell\'applicazione',
       'select_currency': 'Seleziona Valuta',
       'select_currency_desc': 'Scegli la valuta dell\'applicazione',
+      'select_country': 'Seleziona Paese',
+      'select_country_desc': 'Scegli il tuo paese di residenza',
       
       'complete_profile': 'Completa il tuo profilo!',
       'complete_profile_desc': 'Abbiamo bisogno di alcuni dati per personalizzare la tua esperienza e aiutarti a risparmiare:',

@@ -35,6 +35,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     
     final loc = ref.watch(localizationProvider);
     final selectedLanguage = user?.language ?? 'Español';
+    final selectedCountry = user?.country ?? 'No seleccionado';
     final selectedCurrency = user?.currency ?? 'Dólares (USD)';
 
     return Scaffold(
@@ -273,6 +274,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               items: [
                 _buildSettingItem(isDark, icon: LucideIcons.bell, iconBg: isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF), iconColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), title: loc.get('notifications'), subtitle: loc.get('notifications_desc'), onTap: () => _showNotificationsModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.globe, iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE), iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), title: loc.get('language'), subtitle: selectedLanguage, onTap: () => _showLanguageModal(context, isDark)),
+                _buildSettingItem(isDark, icon: LucideIcons.globe, iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE), iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), title: loc.get('country'), subtitle: selectedCountry, onTap: () => _showCountryModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.dollarSign, iconBg: isDark ? const Color(0xFF064E3B) : const Color(0xFFD1FAE5), iconColor: isDark ? const Color(0xFF34D399) : const Color(0xFF059669), title: loc.get('currency'), subtitle: selectedCurrency, onTap: () => _showCurrencyModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.moon, iconBg: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), iconColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFF4B5563), title: loc.get('dark_theme'), subtitle: loc.get('dark_theme_desc'), hasSwitch: true),
               ],
@@ -1379,6 +1381,92 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  void _showCountryModal(BuildContext context, bool isDark) {
+    final countries = [
+      {'code': 'US', 'name': 'Estados Unidos', 'flag': '🇺🇸', 'currencyName': 'Dólares (USD)'},
+      {'code': 'ES', 'name': 'España', 'flag': '🇪🇸', 'currencyName': 'Euros (EUR)'},
+      {'code': 'GT', 'name': 'Guatemala', 'flag': '🇬🇹', 'currencyName': 'Quetzales (GTQ)'},
+      {'code': 'MX', 'name': 'México', 'flag': '🇲🇽', 'currencyName': 'Pesos Mexicanos (MXN)'},
+      {'code': 'GB', 'name': 'Reino Unido', 'flag': '🇬🇧', 'currencyName': 'Libras (GBP)'},
+      {'code': 'AR', 'name': 'Argentina', 'flag': '🇦🇷', 'currencyName': 'Pesos Argentinos (ARS)'},
+      {'code': 'CO', 'name': 'Colombia', 'flag': '🇨🇴', 'currencyName': 'Pesos Colombianos (COP)'},
+      {'code': 'CL', 'name': 'Chile', 'flag': '🇨🇱', 'currencyName': 'Pesos Chilenos (CLP)'},
+      {'code': 'PE', 'name': 'Perú', 'flag': '🇵🇪', 'currencyName': 'Soles (PEN)'},
+    ];
+    final user = ref.watch(authProvider).user;
+    final currentCountry = user?.country ?? 'No seleccionado';
+    final loc = ref.watch(localizationProvider);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 20),
+            Text(loc.get('select_country'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: isDark ? Colors.white : Colors.black)),
+            const SizedBox(height: 4),
+            Text(loc.get('select_country_desc'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+            const SizedBox(height: 20),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: countries.map((country) {
+                    final isSelected = currentCountry == country['name'];
+                    return InkWell(
+                      onTap: () {
+                        if (user != null) {
+                          ref.read(authProvider.notifier).updateProfile(
+                            user.copyWith(
+                              country: country['name'],
+                              currency: country['currencyName'],
+                            )
+                          );
+                        }
+                        Navigator.pop(ctx);
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? (isDark ? const Color(0xFF1E3A8A).withValues(alpha: 0.5) : const Color(0xFFDBEAFE))
+                              : (isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB)),
+                          border: Border.all(
+                            color: isSelected
+                                ? (isDark ? const Color(0xFF3B82F6) : const Color(0xFF3B82F6))
+                                : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
+                            width: isSelected ? 2 : 1,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(country['flag']!, style: const TextStyle(fontSize: 24)),
+                            const SizedBox(width: 12),
+                            Expanded(child: Text(country['name']!, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal))),
+                            if (isSelected) const Icon(LucideIcons.checkCircle2, color: Color(0xFF3B82F6), size: 20),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showCurrencyModal(BuildContext context, bool isDark) {
     final currencies = [
       {'code': 'USD', 'name': 'Dólares (USD)', 'flag': '🇺🇸', 'symbol': '\$'},
@@ -1386,6 +1474,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       {'code': 'GTQ', 'name': 'Quetzales (GTQ)', 'flag': '🇬🇹', 'symbol': 'Q'},
       {'code': 'MXN', 'name': 'Pesos Mexicanos (MXN)', 'flag': '🇲🇽', 'symbol': '\$'},
       {'code': 'GBP', 'name': 'Libras (GBP)', 'flag': '🇬🇧', 'symbol': '£'},
+      {'code': 'ARS', 'name': 'Pesos Argentinos (ARS)', 'flag': '🇦🇷', 'symbol': '\$'},
+      {'code': 'COP', 'name': 'Pesos Colombianos (COP)', 'flag': '🇨🇴', 'symbol': '\$'},
+      {'code': 'CLP', 'name': 'Pesos Chilenos (CLP)', 'flag': '🇨🇱', 'symbol': '\$'},
+      {'code': 'PEN', 'name': 'Soles (PEN)', 'flag': '🇵🇪', 'symbol': 'S/'},
     ];
     final user = ref.watch(authProvider).user;
     final currentCurrency = user?.currency ?? 'Dólares (USD)';

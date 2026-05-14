@@ -1,14 +1,16 @@
 class GoogleSignIn {
   const GoogleSignIn();
-  Future<GoogleSignInAccount?> signIn() => throw UnimplementedError();
-  Future<void> signOut() => throw UnimplementedError();
+  Future<dynamic> signIn() async => null;
+  Future<void> signOut() async {}
 }
 
 class GoogleSignInAccount {
-  Future<GoogleSignInAuthentication> get authentication => throw UnimplementedError();
+  Future<dynamic> get authentication => throw UnimplementedError();
 }
 
 class GoogleSignInAuthentication {
-  String? get accessToken => throw UnimplementedError();
-  String? get idToken => throw UnimplementedError();
+  String? get accessToken => null;
+  String? get idToken => null;
 }
+
+dynamic createGoogleSignInInstance() => const GoogleSignIn();

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_app/presentation/providers/chat_provider.dart';
+import 'package:flutter_app/domain/models/chat_message.dart';
 
-class AIChatModal extends StatefulWidget {
+class AIChatModal extends ConsumerStatefulWidget {
   const AIChatModal({super.key});
 
   static Future<void> show(BuildContext context) {
@@ -17,23 +20,12 @@ class AIChatModal extends StatefulWidget {
   }
 
   @override
-  State<AIChatModal> createState() => _AIChatModalState();
+  ConsumerState<AIChatModal> createState() => _AIChatModalState();
 }
 
-class _AIChatModalState extends State<AIChatModal> {
+class _AIChatModalState extends ConsumerState<AIChatModal> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  
-  List<Map<String, dynamic>> messages = [
-    {
-      'id': '1',
-      'text': '¡Hola! 👋 Soy tu asistente financiero con IA. Estoy aquí para ayudarte con consejos de ahorro, análisis de gastos y planificación financiera. ¿En qué puedo ayudarte hoy?',
-      'sender': 'ai',
-      'timestamp': DateTime.now(),
-    }
-  ];
-  
-  bool isTyping = false;
 
   final quickQuestions = [
     {'icon': LucideIcons.piggyBank, 'text': '¿Cómo puedo ahorrar más?'},
@@ -41,16 +33,10 @@ class _AIChatModalState extends State<AIChatModal> {
     {'icon': LucideIcons.target, 'text': 'Tips para mis metas'},
   ];
 
-  final Map<String, String> aiResponses = {
-    '¿Cómo puedo ahorrar más?': '¡Excelente pregunta! 💰 Basándome en tus datos, te recomiendo:\n\n1. Aplica la regla 50/30/20: 50% necesidades, 30% gustos, 20% ahorros\n2. Automatiza tus ahorros - transfiere automáticamente al inicio del mes\n3. Revisa tus suscripciones - cancela las que no uses\n4. Compra inteligente - usa listas y evita compras impulsivas\n\n¿Quieres que profundice en alguno de estos puntos?',
-    'Analiza mis gastos': '📊 He analizado tus gastos del último mes:\n\n🍔 Comida: \$850 (33%)\n🚗 Transporte: \$450 (18%)\n🎮 Ocio: \$420 (16%)\n📱 Servicios: \$500 (20%)\n🏠 Hogar: \$330 (13%)\n\nObservo que gastas más en comida. Te sugiero:\n• Planear comidas semanales\n• Cocinar en casa más seguido\n• Usar apps de descuentos\n\nPodrías ahorrar hasta \$200/mes optimizando estos gastos. ¿Te gustaría un plan personalizado?',
-    'Tips para mis metas': '🎯 Consejos para tus metas de ahorro:\n\n1. Meta de Vacaciones (\$2,000)\n   • Faltan 6 meses\n   • Ahorra \$333/mes\n   • Consejo: Crea una cuenta separada\n\n2. Fondo de Emergencia (\$5,000)\n   • Prioridad alta ⚠️\n   • Meta: 3-6 meses de gastos\n   • Empieza con \$100/semana\n\n💡 Tip PRO: Ahorra cada aumento o bono que recibas. ¿Necesitas ajustar tus metas?',
-  };
-
   void scrollToBottom() {
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent + 200, // overshoot slightly
+        _scrollController.position.maxScrollExtent + 200,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
@@ -59,41 +45,25 @@ class _AIChatModalState extends State<AIChatModal> {
 
   void handleSendMessage(String text) {
     if (text.trim().isEmpty) return;
-
-    setState(() {
-      messages.add({
-        'id': DateTime.now().toString(),
-        'text': text,
-        'sender': 'user',
-        'timestamp': DateTime.now(),
-      });
-      _controller.clear();
-      isTyping = true;
-    });
-
+    ref.read(chatProvider.notifier).sendMessage(text);
+    _controller.clear();
     WidgetsBinding.instance.addPostFrameCallback((_) => scrollToBottom());
-
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (!mounted) return;
-      final responseText = aiResponses[text] ?? 
-          "Entiendo tu pregunta. 🤔 Basándome en tu perfil financiero, te recomiendo establecer metas claras, hacer un presupuesto realista y revisar tus gastos semanalmente. ¿Hay algo más específico en lo que pueda ayudarte?";
-      
-      setState(() {
-        messages.add({
-          'id': DateTime.now().toString(),
-          'text': responseText,
-          'sender': 'ai',
-          'timestamp': DateTime.now(),
-        });
-        isTyping = false;
-      });
-      WidgetsBinding.instance.addPostFrameCallback((_) => scrollToBottom());
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final chatState = ref.watch(chatProvider);
+
+    // Initial greeting if no messages
+    final messages = chatState.messages.isEmpty 
+      ? [
+          ChatMessage(
+            text: '¡Hola! 👋 Soy Zent AI, tu asistente financiero. Estoy aquí para ayudarte con consejos de ahorro, análisis de gastos y planificación financiera basada en tus datos reales. ¿En qué puedo ayudarte hoy?',
+            role: MessageRole.assistant,
+          )
+        ]
+      : chatState.messages;
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
@@ -108,8 +78,8 @@ class _AIChatModalState extends State<AIChatModal> {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: isDark
-                  ? const LinearGradient(colors: [Color(0xFF9333EA), Color(0xFFDB2777)]) // purple-600 to pink-600
-                  : const LinearGradient(colors: [Color(0xFFA855F7), Color(0xFFEC4899)]), // purple-500 to pink-500
+                  ? const LinearGradient(colors: [Color(0xFF9333EA), Color(0xFFDB2777)])
+                  : const LinearGradient(colors: [Color(0xFFA855F7), Color(0xFFEC4899)]),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: Row(
@@ -126,7 +96,7 @@ class _AIChatModalState extends State<AIChatModal> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Asistente IA', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                        const Text('Zent AI', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                         Text('Siempre disponible para ayudarte', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12)),
                       ],
                     ),
@@ -145,9 +115,9 @@ class _AIChatModalState extends State<AIChatModal> {
             child: ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.all(16),
-              itemCount: messages.length + (isTyping ? 1 : 0),
+              itemCount: messages.length + (chatState.isLoading ? 1 : 0),
               itemBuilder: (context, index) {
-                if (index == messages.length && isTyping) {
+                if (index == messages.length && chatState.isLoading) {
                   return Align(
                     alignment: Alignment.centerLeft,
                     child: Container(
@@ -163,7 +133,7 @@ class _AIChatModalState extends State<AIChatModal> {
                         children: [
                           Icon(LucideIcons.sparkles, color: Color(0xFFC084FC), size: 16),
                           SizedBox(width: 8),
-                          Text(' Escribiendo...', style: TextStyle(color: Colors.grey)),
+                          Text(' Zent AI está pensando...', style: TextStyle(color: Colors.grey)),
                         ],
                       ),
                     ),
@@ -171,7 +141,7 @@ class _AIChatModalState extends State<AIChatModal> {
                 }
 
                 final msg = messages[index];
-                final isUser = msg['sender'] == 'user';
+                final isUser = msg.role == MessageRole.user;
 
                 return Align(
                   alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
@@ -181,7 +151,7 @@ class _AIChatModalState extends State<AIChatModal> {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: isUser 
-                          ? (isDark ? const Color(0xFF7E22CE) : const Color(0xFF9333EA)) // purple text bubbles
+                          ? (isDark ? const Color(0xFF7E22CE) : const Color(0xFF9333EA))
                           : (isDark ? const Color(0xFF1F2937) : const Color(0xFFF3F4F6)),
                       border: (!isUser && isDark) ? Border.all(color: const Color(0xFF374151)) : null,
                       borderRadius: BorderRadius.circular(16),
@@ -195,18 +165,18 @@ class _AIChatModalState extends State<AIChatModal> {
                             children: [
                               const Icon(LucideIcons.sparkles, color: Color(0xFFC084FC), size: 16),
                               const SizedBox(width: 4),
-                              Text('Asistente IA', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                              Text('Zent AI', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
                             ],
                           ),
                           const SizedBox(height: 4),
                         ],
                         Text(
-                          msg['text'] as String,
+                          msg.text,
                           style: TextStyle(color: isUser ? Colors.white : (isDark ? Colors.white : Colors.black), fontSize: 14),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${(msg['timestamp'] as DateTime).hour.toString().padLeft(2, '0')}:${(msg['timestamp'] as DateTime).minute.toString().padLeft(2, '0')}',
+                          '${msg.timestamp.hour.toString().padLeft(2, '0')}:${msg.timestamp.minute.toString().padLeft(2, '0')}',
                           style: TextStyle(
                             color: isUser ? Colors.white70 : (isDark ? Colors.grey[500] : Colors.grey[500]),
                             fontSize: 10,
@@ -221,7 +191,7 @@ class _AIChatModalState extends State<AIChatModal> {
           ),
 
           // Quick Questions
-          if (messages.length == 1)
+          if (messages.length <= 1)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               height: 60,

@@ -2,8 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'google_sign_in_stub.dart' 
-    if (dart.library.io) 'google_sign_in_real.dart';
+import 'google_sign_in_factory.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 
@@ -103,13 +102,22 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       firebase_auth.UserCredential userCredential;
 
-      if (kIsWeb) {
-        // On Web, use signInWithPopup (native browser popup)
+      if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
+        // On Web or Windows, use signInWithPopup (or similar Firebase flow)
+        // Note: For Windows, this might still need configuration, but it prevents native package errors
         userCredential = await _firebaseAuth.signInWithPopup(firebase_auth.GoogleAuthProvider());
       } else {
-        // On Android/iOS/Desktop, use the GoogleSignIn package
-        const GoogleSignIn googleSignIn = GoogleSignIn();
-        final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+        // On Android/iOS, use the GoogleSignIn package via safe factory
+        final dynamic googleSignIn = createSafeGoogleSignIn();
+        
+        if (googleSignIn == null) {
+          throw firebase_auth.FirebaseAuthException(
+            code: 'unsupported-platform',
+            message: 'Google Sign-In no está soportado en esta plataforma.',
+          );
+        }
+
+        final dynamic googleUser = await googleSignIn.signIn();
         
         if (googleUser == null) {
           // User cancelled the sign-in flow
@@ -119,7 +127,7 @@ class AuthRepositoryImpl implements AuthRepository {
           );
         }
 
-        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+        final dynamic googleAuth = await googleUser.authentication;
 
         final credential = firebase_auth.GoogleAuthProvider.credential(
           accessToken: googleAuth.accessToken,
@@ -189,9 +197,11 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     try {
-      if (!kIsWeb) {
-        const GoogleSignIn googleSignIn = GoogleSignIn();
-        await googleSignIn.signOut();
+      if (!kIsWeb && defaultTargetPlatform != TargetPlatform.windows) {
+        final dynamic googleSignIn = createSafeGoogleSignIn();
+        if (googleSignIn != null) {
+          await googleSignIn.signOut();
+        }
       }
     } catch (_) {
       // Ignore errors from Google sign out

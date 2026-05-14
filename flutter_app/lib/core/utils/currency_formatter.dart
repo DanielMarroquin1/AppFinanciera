@@ -19,6 +19,18 @@ class CurrencyFormatter {
       } else if (codeUpper.contains('GBP')) {
         symbol = '£';
         locale = 'en_GB';
+      } else if (codeUpper.contains('PEN')) {
+        symbol = 'S/';
+        locale = 'es_PE';
+      } else if (codeUpper.contains('ARS')) {
+        symbol = '\$';
+        locale = 'es_AR';
+      } else if (codeUpper.contains('COP')) {
+        symbol = '\$';
+        locale = 'es_CO';
+      } else if (codeUpper.contains('CLP')) {
+        symbol = '\$';
+        locale = 'es_CL';
       } else {
         symbol = '\$';
         locale = 'en_US';
@@ -35,6 +47,7 @@ class CurrencyFormatter {
       if (codeUpper.contains('EUR')) return '€';
       if (codeUpper.contains('GTQ')) return 'Q';
       if (codeUpper.contains('GBP')) return '£';
+      if (codeUpper.contains('PEN')) return 'S/';
     }
     return '\$';
   }

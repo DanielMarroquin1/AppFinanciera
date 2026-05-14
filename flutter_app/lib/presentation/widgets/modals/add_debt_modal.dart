@@ -4,6 +4,9 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/localization.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../../domain/entities/debt.dart';
+import '../../providers/debts_provider.dart';
 
 class AddDebtModal extends ConsumerStatefulWidget {
   final String? currencyCode;
@@ -180,7 +183,35 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
 
                   // Submit
                   ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: name.isEmpty || amountPerInstallment <= 0 ? null : () async {
+                      final uid = FirebaseAuth.instance.currentUser?.uid;
+                      if (uid == null) return;
+
+                      final debt = DebtModel(
+                        id: '',
+                        userId: uid,
+                        name: name,
+                        installmentAmount: amountPerInstallment,
+                        totalInstallments: totalInstallments,
+                        paidInstallments: currentInstallment,
+                        category: '🏦',
+                        createdAt: DateTime.now(),
+                      );
+
+                      await ref.read(debtNotifierProvider.notifier).addDebt(debt);
+
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Deuda guardada exitosamente', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            backgroundColor: isDark ? const Color(0xFF6D28D9) : const Color(0xFF9333EA),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                        );
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       backgroundColor: Colors.transparent,

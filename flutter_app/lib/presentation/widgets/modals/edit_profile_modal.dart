@@ -564,27 +564,18 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Ink(
-                            decoration: BoxDecoration(
-                              gradient: isDark 
-                                  ? const LinearGradient(colors: [Color(0xFF34D399), Color(0xFF059669)]) 
-                                  : const LinearGradient(colors: [Color(0xFF6EE7B7), Color(0xFF10B981)]),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: InkWell(
-                              onTap: _handleAddExpense,
-                              borderRadius: BorderRadius.circular(8),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                alignment: Alignment.center,
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(LucideIcons.plus, size: 16, color: Colors.black),
-                                    SizedBox(width: 8),
-                                    Text('Agregar', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _handleAddExpense,
+                              icon: const Icon(LucideIcons.plus, size: 16),
+                              label: const Text('Agregar', style: TextStyle(fontWeight: FontWeight.bold)),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                backgroundColor: isDark ? const Color(0xFF059669) : const Color(0xFF10B981),
+                                foregroundColor: Colors.white,
+                                elevation: 4,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
                             ),
                           )
@@ -820,27 +811,18 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                               ],
                             ),
                           const SizedBox(height: 8),
-                          Ink(
-                            decoration: BoxDecoration(
-                              gradient: isDark 
-                                  ? const LinearGradient(colors: [Color(0xFF34D399), Color(0xFF059669)]) 
-                                  : const LinearGradient(colors: [Color(0xFF6EE7B7), Color(0xFF10B981)]),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: InkWell(
-                              onTap: _handleAddIncome,
-                              borderRadius: BorderRadius.circular(8),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                alignment: Alignment.center,
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(LucideIcons.plus, size: 16, color: Colors.black),
-                                    SizedBox(width: 8),
-                                    Text('Agregar Ingreso', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _handleAddIncome,
+                              icon: const Icon(LucideIcons.plus, size: 16),
+                              label: const Text('Agregar Ingreso', style: TextStyle(fontWeight: FontWeight.bold)),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                backgroundColor: isDark ? const Color(0xFF059669) : const Color(0xFF10B981),
+                                foregroundColor: Colors.white,
+                                elevation: 4,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
                             ),
                           )
@@ -1097,22 +1079,10 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                   Builder(
                     builder: (context) {
                       final isLoading = ref.watch(authProvider).isLoading;
-                      return Ink(
-                        decoration: BoxDecoration(
-                          gradient: isDark 
-                              ? const LinearGradient(colors: [Color(0xFF34D399), Color(0xFF059669)]) 
-                              : const LinearGradient(colors: [Color(0xFF6EE7B7), Color(0xFF10B981)]),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: (isDark ? const Color(0xFF059669) : const Color(0xFF10B981)).withValues(alpha: 0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: InkWell(
-                          onTap: isLoading ? null : () async {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: isLoading ? null : () async {
                             final user = ref.read(authProvider).user;
                             if (user != null) {
                               final currentName = nameController.text.trim();
@@ -1154,14 +1124,18 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                               }
                             }
                           },
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            alignment: Alignment.center,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isDark ? const Color(0xFF059669) : const Color(0xFF10B981),
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: isDark ? const Color(0xFF374151) : Colors.grey[300],
+                            disabledForegroundColor: isDark ? Colors.grey[500] : Colors.grey[600],
+                            elevation: 4,
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: isLoading
-                                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
-                                : const Text('Guardar Cambios', style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           ),
+                          child: isLoading
+                              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                              : const Text('Guardar Cambios', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                         ),
                       );
                     }

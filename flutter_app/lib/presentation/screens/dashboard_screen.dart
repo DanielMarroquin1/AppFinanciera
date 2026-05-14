@@ -380,7 +380,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
               children: [
                 Text(loc.get('unlocked_badges'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
                 TextButton(
-                  onPressed: () => RewardsShopModal.show(context, points: 150),
+                  onPressed: () => RewardsShopModal.show(context),
                   child: Text(loc.get('see_all'), style: TextStyle(color: paletteGradient[0], fontSize: 12)),
                 ),
               ],
@@ -639,7 +639,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
 
             // Achievements Card (¡Logro Desbloqueado!)
             InkWell(
-              onTap: () => RewardsShopModal.show(context, points: 150),
+              onTap: () => RewardsShopModal.show(context),
               borderRadius: BorderRadius.circular(24),
               child: Container(
                 padding: const EdgeInsets.all(20),

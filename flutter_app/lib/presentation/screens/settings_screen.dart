@@ -8,6 +8,9 @@ import '../providers/auth_provider.dart';
 import '../widgets/modals/edit_profile_modal.dart';
 import '../widgets/modals/color_palette_modal.dart';
 import '../widgets/modals/premium_modal.dart';
+import '../widgets/modals/complete_profile_modal.dart';
+import '../../core/utils/localization.dart';
+import '../../core/utils/currency_formatter.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -20,7 +23,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool isPremium = false;
   bool showBanner = true;
   bool notificationsEnabled = true;
-  String selectedLanguage = 'Español';
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +32,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     
     final authState = ref.watch(authProvider);
     final user = authState.user;
+    
+    final loc = ref.watch(localizationProvider);
+    final selectedLanguage = user?.language ?? 'Español';
+    final selectedCurrency = user?.currency ?? 'Dólares (USD)';
 
     return Scaffold(
       backgroundColor: Colors.transparent, // Handled by AppShell
@@ -39,7 +45,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Missing Data Banner
-            if (showBanner)
+            if (showBanner && user != null && !user.profileComplete)
               Container(
                 margin: const EdgeInsets.only(bottom: 24),
                 padding: const EdgeInsets.all(20),
@@ -74,27 +80,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('¡Completa tu perfil!', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                              Text(loc.get('complete_profile'), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                               const SizedBox(height: 4),
-                              Text('Necesitamos algunos datos para personalizar tu experiencia y ayudarte a ahorrar:', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                              Text(loc.get('complete_profile_desc'), style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
                               const SizedBox(height: 12),
-                              const Row(children: [Icon(Icons.circle, size: 6, color: Colors.white), SizedBox(width: 8), Text('País', style: TextStyle(color: Colors.white))]),
+                              Row(children: [const Icon(Icons.circle, size: 6, color: Colors.white), const SizedBox(width: 8), Text(loc.get('country'), style: const TextStyle(color: Colors.white))]),
                               const SizedBox(height: 4),
-                              const Row(children: [Icon(Icons.circle, size: 6, color: Colors.white), SizedBox(width: 8), Text('Moneda', style: TextStyle(color: Colors.white))]),
+                              Row(children: [const Icon(Icons.circle, size: 6, color: Colors.white), const SizedBox(width: 8), Text(loc.get('currency'), style: const TextStyle(color: Colors.white))]),
                               const SizedBox(height: 4),
-                              const Row(children: [Icon(Icons.circle, size: 6, color: Colors.white), SizedBox(width: 8), Text('Salario', style: TextStyle(color: Colors.white))]),
+                              Row(children: [const Icon(Icons.circle, size: 6, color: Colors.white), const SizedBox(width: 8), Text(loc.get('salary'), style: const TextStyle(color: Colors.white))]),
                               const SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: () {
-                                  EditProfileModal.show(context);
+                                  CompleteProfileModal.show(context);
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
-                                  foregroundColor: const Color(0xFFDC2626),
+                                  foregroundColor: paletteGradient[0],
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                 ),
-                                child: const Text('Completar Ahora', style: TextStyle(fontWeight: FontWeight.bold)),
+                                child: Text(loc.get('complete_now'), style: const TextStyle(fontWeight: FontWeight.bold)),
                               )
                             ],
                           ),
@@ -107,7 +113,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
             // Header
             Text(
-              'Configuración ⚙️',
+              loc.get('settings_title'),
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -116,7 +122,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Personaliza tu experiencia',
+              loc.get('settings_subtitle'),
               style: TextStyle(
                 color: isDark ? Colors.grey[400] : Colors.grey[600],
               ),
@@ -263,11 +269,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             // Sections
             _buildSection(
               isDark,
-              title: 'General',
+              title: loc.get('general'),
               items: [
-                _buildSettingItem(isDark, icon: LucideIcons.bell, iconBg: isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF), iconColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), title: 'Notificaciones', subtitle: 'Alertas y recordatorios', onTap: () => _showNotificationsModal(context, isDark)),
-                _buildSettingItem(isDark, icon: LucideIcons.globe, iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE), iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), title: 'Idioma', subtitle: selectedLanguage, onTap: () => _showLanguageModal(context, isDark)),
-                _buildSettingItem(isDark, icon: LucideIcons.moon, iconBg: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), iconColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFF4B5563), title: 'Tema Oscuro', subtitle: 'Activar modo nocturno', hasSwitch: true),
+                _buildSettingItem(isDark, icon: LucideIcons.bell, iconBg: isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF), iconColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), title: loc.get('notifications'), subtitle: loc.get('notifications_desc'), onTap: () => _showNotificationsModal(context, isDark)),
+                _buildSettingItem(isDark, icon: LucideIcons.globe, iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE), iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), title: loc.get('language'), subtitle: selectedLanguage, onTap: () => _showLanguageModal(context, isDark)),
+                _buildSettingItem(isDark, icon: LucideIcons.dollarSign, iconBg: isDark ? const Color(0xFF064E3B) : const Color(0xFFD1FAE5), iconColor: isDark ? const Color(0xFF34D399) : const Color(0xFF059669), title: loc.get('currency'), subtitle: selectedCurrency, onTap: () => _showCurrencyModal(context, isDark)),
+                _buildSettingItem(isDark, icon: LucideIcons.moon, iconBg: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), iconColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFF4B5563), title: loc.get('dark_theme'), subtitle: loc.get('dark_theme_desc'), hasSwitch: true),
               ],
             ),
             const SizedBox(height: 24),
@@ -618,7 +625,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       {'code': 'en', 'name': 'English', 'flag': '🇺🇸'},
       {'code': 'pt', 'name': 'Português', 'flag': '🇧🇷'},
       {'code': 'fr', 'name': 'Français', 'flag': '🇫🇷'},
+      {'code': 'it', 'name': 'Italiano', 'flag': '🇮🇹'},
     ];
+    final user = ref.watch(authProvider).user;
+    final currentLanguage = user?.language ?? 'Español';
+    final loc = ref.watch(localizationProvider);
 
     showModalBottomSheet(
       context: context,
@@ -632,44 +643,52 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: [
             Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)))),
             const SizedBox(height: 20),
-            Text('Seleccionar Idioma', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: isDark ? Colors.white : Colors.black)),
+            Text(loc.get('select_language'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: isDark ? Colors.white : Colors.black)),
             const SizedBox(height: 4),
-            Text('Elige el idioma de la aplicación', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+            Text(loc.get('select_language_desc'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
             const SizedBox(height: 20),
-            ...languages.map((lang) {
-              final isSelected = selectedLanguage == lang['name'];
-              return InkWell(
-                onTap: () {
-                  setState(() => selectedLanguage = lang['name']!);
-                  Navigator.pop(ctx);
-                },
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? (isDark ? const Color(0xFF581C87).withValues(alpha: 0.5) : const Color(0xFFF3E8FF))
-                        : (isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB)),
-                    border: Border.all(
-                      color: isSelected
-                          ? (isDark ? const Color(0xFF9333EA) : const Color(0xFF9333EA))
-                          : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
-                      width: isSelected ? 2 : 1,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Text(lang['flag']!, style: const TextStyle(fontSize: 24)),
-                      const SizedBox(width: 12),
-                      Expanded(child: Text(lang['name']!, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal))),
-                      if (isSelected) const Icon(LucideIcons.checkCircle2, color: Color(0xFF9333EA), size: 20),
-                    ],
-                  ),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: languages.map((lang) {
+                    final isSelected = currentLanguage == lang['name'];
+                    return InkWell(
+                      onTap: () {
+                        if (user != null) {
+                          ref.read(authProvider.notifier).updateProfile(user.copyWith(language: lang['name']));
+                        }
+                        Navigator.pop(ctx);
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? (isDark ? const Color(0xFF581C87).withValues(alpha: 0.5) : const Color(0xFFF3E8FF))
+                              : (isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB)),
+                          border: Border.all(
+                            color: isSelected
+                                ? (isDark ? const Color(0xFF9333EA) : const Color(0xFF9333EA))
+                                : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
+                            width: isSelected ? 2 : 1,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(lang['flag']!, style: const TextStyle(fontSize: 24)),
+                            const SizedBox(width: 12),
+                            Expanded(child: Text(lang['name']!, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal))),
+                            if (isSelected) const Icon(LucideIcons.checkCircle2, color: Color(0xFF9333EA), size: 20),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
-              );
-            }),
+              ),
+            ),
             const SizedBox(height: 16),
           ],
         ),
@@ -1356,6 +1375,83 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(width: 8),
           Text(text, style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
         ],
+      ),
+    );
+  }
+
+  void _showCurrencyModal(BuildContext context, bool isDark) {
+    final currencies = [
+      {'code': 'USD', 'name': 'Dólares (USD)', 'flag': '🇺🇸', 'symbol': '\$'},
+      {'code': 'EUR', 'name': 'Euros (EUR)', 'flag': '🇪🇺', 'symbol': '€'},
+      {'code': 'GTQ', 'name': 'Quetzales (GTQ)', 'flag': '🇬🇹', 'symbol': 'Q'},
+      {'code': 'MXN', 'name': 'Pesos Mexicanos (MXN)', 'flag': '🇲🇽', 'symbol': '\$'},
+      {'code': 'GBP', 'name': 'Libras (GBP)', 'flag': '🇬🇧', 'symbol': '£'},
+    ];
+    final user = ref.watch(authProvider).user;
+    final currentCurrency = user?.currency ?? 'Dólares (USD)';
+    final loc = ref.watch(localizationProvider);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 20),
+            Text(loc.get('select_currency'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: isDark ? Colors.white : Colors.black)),
+            const SizedBox(height: 4),
+            Text(loc.get('select_currency_desc'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+            const SizedBox(height: 20),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: currencies.map((curr) {
+                    final isSelected = currentCurrency == curr['name'] || currentCurrency == curr['code'];
+                    return InkWell(
+                      onTap: () {
+                        if (user != null) {
+                          ref.read(authProvider.notifier).updateProfile(user.copyWith(currency: curr['name']));
+                        }
+                        Navigator.pop(ctx);
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.5) : const Color(0xFFD1FAE5))
+                              : (isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB)),
+                          border: Border.all(
+                            color: isSelected
+                                ? (isDark ? const Color(0xFF10B981) : const Color(0xFF10B981))
+                                : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
+                            width: isSelected ? 2 : 1,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(curr['flag']!, style: const TextStyle(fontSize: 24)),
+                            const SizedBox(width: 12),
+                            Expanded(child: Text(curr['name']!, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal))),
+                            if (isSelected) const Icon(LucideIcons.checkCircle2, color: Color(0xFF10B981), size: 20),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }

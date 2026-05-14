@@ -1,23 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-class AddDebtModal extends StatefulWidget {
-  const AddDebtModal({super.key});
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/utils/currency_formatter.dart';
+import '../../../core/utils/localization.dart';
 
-  static Future<void> show(BuildContext context) {
+class AddDebtModal extends ConsumerStatefulWidget {
+  final String? currencyCode;
+  const AddDebtModal({super.key, this.currencyCode});
+
+  static Future<void> show(BuildContext context, {String? currencyCode}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const AddDebtModal(),
+      builder: (context) => AddDebtModal(currencyCode: currencyCode),
     );
   }
 
   @override
-  State<AddDebtModal> createState() => _AddDebtModalState();
+  ConsumerState<AddDebtModal> createState() => _AddDebtModalState();
 }
 
-class _AddDebtModalState extends State<AddDebtModal> {
+class _AddDebtModalState extends ConsumerState<AddDebtModal> {
   String name = "";
   double amountPerInstallment = 0.0;
   int totalInstallments = 1;
@@ -26,6 +31,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final loc = ref.watch(localizationProvider);
 
     return Container(
       decoration: BoxDecoration(
@@ -58,7 +64,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
                           child: const Icon(LucideIcons.creditCard, color: Colors.white, size: 24),
                         ),
                         const SizedBox(width: 12),
-                        const Text('Nueva Deuda/Cuota', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                        Text(loc.get('new_debt'), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     IconButton(
@@ -101,7 +107,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
                   const SizedBox(height: 20),
 
                   // Amount per Installment
-                  Text('Monto por Cuota 💵', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                  Text('${loc.get('amount')} 💵', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 8),
                   TextField(
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -109,7 +115,10 @@ class _AddDebtModalState extends State<AddDebtModal> {
                     style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
                     decoration: InputDecoration(
                       hintText: '0.00',
-                      prefixIcon: Icon(LucideIcons.dollarSign, color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                      prefixIcon: Container(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(CurrencyFormatter.getSymbol(widget.currencyCode), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                      ),
                       filled: true,
                       fillColor: isDark ? const Color(0xFF374151) : Colors.white,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2)),
@@ -126,7 +135,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Cuotas Totales', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                            Text(loc.get('total_installments'), style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                             const SizedBox(height: 8),
                             TextField(
                               keyboardType: TextInputType.number,
@@ -148,7 +157,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Cuotas Pagadas', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                            Text(loc.get('paid_installments'), style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                             const SizedBox(height: 8),
                             TextField(
                               keyboardType: TextInputType.number,
@@ -191,7 +200,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
                       child: Container(
                         alignment: Alignment.center,
                         constraints: const BoxConstraints(minHeight: 50),
-                        child: const Text('Agregar Deuda', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: Text(loc.get('add_debt'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ),

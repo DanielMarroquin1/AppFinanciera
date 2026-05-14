@@ -5,17 +5,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../domain/entities/transaction.dart';
 import '../../providers/transaction_provider.dart';
+import '../../../core/utils/currency_formatter.dart';
+import '../../../core/utils/localization.dart';
 
 class AddExpenseModal extends ConsumerStatefulWidget {
   final bool isFixed;
-  const AddExpenseModal({super.key, this.isFixed = false});
+  final String? currencyCode;
+  
+  const AddExpenseModal({super.key, this.isFixed = false, this.currencyCode});
 
-  static Future<void> show(BuildContext context, {bool isFixed = false}) {
+  static Future<void> show(BuildContext context, {bool isFixed = false, String? currencyCode}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => AddExpenseModal(isFixed: isFixed),
+      builder: (context) => AddExpenseModal(isFixed: isFixed, currencyCode: currencyCode),
     );
   }
 
@@ -44,6 +48,7 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final loc = ref.watch(localizationProvider);
 
     return Container(
       decoration: BoxDecoration(
@@ -76,7 +81,7 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                           child: Icon(widget.isFixed ? LucideIcons.receipt : LucideIcons.trendingDown, color: Colors.white, size: 24),
                         ),
                         const SizedBox(width: 12),
-                        Text(widget.isFixed ? 'Gasto Fijo' : 'Nuevo Gasto', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                        Text(widget.isFixed ? loc.get('fixed_expense') : loc.get('new_expense'), style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     IconButton(
@@ -102,7 +107,7 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Amount
-                  Text('Monto 💵', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                  Text('${loc.get('amount')} 💵', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 8),
                   TextField(
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -111,7 +116,10 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                     decoration: InputDecoration(
                       hintText: '0.00',
                       hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400]),
-                      prefixIcon: Icon(LucideIcons.dollarSign, color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                      prefixIcon: Container(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(CurrencyFormatter.getSymbol(widget.currencyCode), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                      ),
                       filled: true,
                       fillColor: isDark ? const Color(0xFF374151) : Colors.white,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2)),
@@ -122,7 +130,7 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                   const SizedBox(height: 20),
 
                   // Category
-                  Text('Categoría 🏷️', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                  Text('${loc.get('category')} 🏷️', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8, runSpacing: 8,
@@ -164,7 +172,7 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                   const SizedBox(height: 20),
 
                   // Description
-                  Text('Descripción (Opcional) 📝', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                  Text('${loc.get('description_optional')} 📝', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 8),
                   TextField(
                     onChanged: (val) => description = val,
@@ -184,7 +192,7 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                   const SizedBox(height: 20),
 
                   // Date (Simplified for UI copy)
-                  Text('Fecha 📅', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                  Text('${loc.get('date')} 📅', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.all(16),
@@ -243,7 +251,7 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                           Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: const Text('Gasto agregado exitosamente', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              content: Text(loc.get('expense_added'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                               backgroundColor: isDark ? const Color(0xFF991B1B) : const Color(0xFFDC2626),
                               behavior: SnackBarBehavior.floating,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -255,7 +263,7 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                       child: Container(
                         alignment: Alignment.center,
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Text(widget.isFixed ? 'Agregar Gasto Fijo' : 'Agregar Gasto', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
+                        child: Text(widget.isFixed ? loc.get('add_fixed_expense') : loc.get('add_expense'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
                       ),
                     ),
                   ),

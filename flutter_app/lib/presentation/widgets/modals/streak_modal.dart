@@ -22,9 +22,9 @@ class StreakModal extends StatelessWidget {
     
     // Configuración de los días de la semana (L, M, M, J, V, S, D)
     final days = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
-    // Mock de los días donde el usuario cumplió (ej. L, M, M listos, J hoy, resto no)
-    // Asumimos para el estilo demo que los primeros 4 están completados:
-    final completedDays = [true, true, true, true, false, false, false];
+    // Generate dynamic completed days based on streak modulo 7
+    final displayStreak = currentStreak > 0 ? ((currentStreak - 1) % 7) + 1 : 0;
+    final completedDays = List.generate(7, (index) => index < displayStreak);
 
     return Dialog(
       shape: RoundedRectangleBorder(

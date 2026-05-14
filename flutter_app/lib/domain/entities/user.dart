@@ -6,8 +6,15 @@ class User {
   final bool profileComplete;
   final String? country;
   final String? currency;
+  final String? language;
   final String? salary;
   final String? salaryType;
+  
+  // Rewards & Streak Fields
+  final int points;
+  final int currentStreak;
+  final String? lastActiveDate;
+  final List<String> unlockedItems;
 
   User({
     required this.email,
@@ -17,8 +24,13 @@ class User {
     required this.profileComplete,
     this.country,
     this.currency,
+    this.language,
     this.salary,
     this.salaryType,
+    this.points = 0,
+    this.currentStreak = 0,
+    this.lastActiveDate,
+    this.unlockedItems = const [],
   });
 
   User copyWith({
@@ -29,8 +41,13 @@ class User {
     bool? profileComplete,
     String? country,
     String? currency,
+    String? language,
     String? salary,
     String? salaryType,
+    int? points,
+    int? currentStreak,
+    String? lastActiveDate,
+    List<String>? unlockedItems,
   }) {
     return User(
       email: email ?? this.email,
@@ -40,8 +57,13 @@ class User {
       profileComplete: profileComplete ?? this.profileComplete,
       country: country ?? this.country,
       currency: currency ?? this.currency,
+      language: language ?? this.language,
       salary: salary ?? this.salary,
       salaryType: salaryType ?? this.salaryType,
+      points: points ?? this.points,
+      currentStreak: currentStreak ?? this.currentStreak,
+      lastActiveDate: lastActiveDate ?? this.lastActiveDate,
+      unlockedItems: unlockedItems ?? this.unlockedItems,
     );
   }
 }

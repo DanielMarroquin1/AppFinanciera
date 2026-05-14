@@ -9,6 +9,9 @@ import '../widgets/modals/add_expense_modal.dart';
 import '../providers/color_palette_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/debts_provider.dart';
+import '../providers/auth_provider.dart';
+import '../../core/utils/currency_formatter.dart';
+import '../../core/utils/localization.dart';
 import 'package:intl/intl.dart';
 
 class ExpensesScreen extends ConsumerStatefulWidget {
@@ -96,7 +99,9 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
     
     final transactionsAsync = ref.watch(transactionsProvider);
     final debtsAsync = ref.watch(debtsProvider);
-    final currencyFormatter = NumberFormat.currency(locale: 'en_US', symbol: '\$');
+    final authState = ref.watch(authProvider);
+    final currencyCode = authState.user?.currency;
+    final loc = ref.watch(localizationProvider);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -107,7 +112,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
           children: [
             // Header
             Text(
-              'Mis Gastos 💸',
+              loc.get('my_expenses'),
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -143,12 +148,12 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                           BoxShadow(color: const Color(0xFFDC2626).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))
                         ],
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(LucideIcons.plus, color: Colors.white, size: 18),
-                          SizedBox(width: 6),
-                          Text('Agregar Gasto', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+                          const Icon(LucideIcons.plus, color: Colors.white, size: 18),
+                          const SizedBox(width: 6),
+                          Text(loc.get('add_expense'), style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ),
@@ -172,12 +177,12 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                           BoxShadow(color: const Color(0xFF9333EA).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))
                         ],
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(LucideIcons.receipt, color: Colors.white, size: 18),
-                          SizedBox(width: 6),
-                          Text('Gasto Fijo', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+                          const Icon(LucideIcons.receipt, color: Colors.white, size: 18),
+                          const SizedBox(width: 6),
+                          Text(loc.get('fixed_expense'), style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ),
@@ -206,7 +211,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                           child: TextField(
                             onChanged: (v) => setState(() => searchQuery = v),
                             decoration: InputDecoration(
-                              hintText: 'Buscar gastos...',
+                              hintText: loc.get('search_expenses'),
                               hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400]),
                               border: InputBorder.none,
                             ),
@@ -311,9 +316,9 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Total de Gastos - $selectedMonth', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                          Text('${loc.get('total_expenses_month')} $selectedMonth', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
                           const SizedBox(height: 8),
-                          Text(currencyFormatter.format(totalExpenses), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
+                          Text(CurrencyFormatter.format(totalExpenses, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 16),
                           Container(
                             height: 8,
@@ -333,8 +338,8 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                           const SizedBox(height: 8),
                           Text(
                             totalIncome > 0 
-                              ? '${budgetPercentage.toStringAsFixed(0)}% de tus ingresos (${currencyFormatter.format(totalIncome)})' 
-                              : 'Sin ingresos registrados aún',
+                              ? '${budgetPercentage.toStringAsFixed(0)}% ${loc.get('of_your_income')} (${CurrencyFormatter.format(totalIncome, currencyCode)})' 
+                              : loc.get('no_income_yet'),
                             style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12),
                           ),
                         ],
@@ -343,7 +348,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                     const SizedBox(height: 24),
 
                     // Category breakdown
-                    Text('Gastos por Categoría', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
+                    Text(loc.get('expenses_by_category'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
                     const SizedBox(height: 12),
                     if (categoryList.isEmpty)
                       Container(
@@ -383,7 +388,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(label, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.w500)),
-                                  Text(currencyFormatter.format(entry.value), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.bold)),
+                                  Text(CurrencyFormatter.format(entry.value, currencyCode), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.bold)),
                                 ],
                               ),
                               const SizedBox(height: 8),
@@ -449,7 +454,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                 ],
                               ),
                             ),
-                            Text('-${currencyFormatter.format(expense.amount)}', style: TextStyle(color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), fontWeight: FontWeight.bold, fontSize: 16)),
+                            Text('-${CurrencyFormatter.format(expense.amount, currencyCode)}', style: TextStyle(color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), fontWeight: FontWeight.bold, fontSize: 16)),
                           ],
                         ),
                       );
@@ -469,7 +474,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
               data: (debtsList) {
                 if (debtsList.isEmpty) {
                   return InkWell(
-                    onTap: () => AddDebtModal.show(context),
+                    onTap: () => AddDebtModal.show(context, currencyCode: currencyCode),
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 24),
@@ -495,7 +500,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                     final progress = debt.totalInstallments > 0 ? (debt.paidInstallments / debt.totalInstallments) : 0.0;
                     final isFullyPaid = debt.paidInstallments >= debt.totalInstallments;
                     return InkWell(
-                      onTap: () => AddDebtModal.show(context),
+                      onTap: () => AddDebtModal.show(context, currencyCode: currencyCode),
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 12),
@@ -526,7 +531,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(child: Text('${debt.name}${isFullyPaid ? ' ✅' : ''}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 14), overflow: TextOverflow.ellipsis)),
-                                      Text('${currencyFormatter.format(debt.installmentAmount)}/cuota', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
+                                      Text('${CurrencyFormatter.format(debt.installmentAmount, currencyCode)}/cuota', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
                                     ],
                                   ),
                                   const SizedBox(height: 8),

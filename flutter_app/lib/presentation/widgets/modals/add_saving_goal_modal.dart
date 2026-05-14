@@ -1,26 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-class AddSavingGoalModal extends StatefulWidget {
-  const AddSavingGoalModal({super.key});
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../domain/entities/saving_goal.dart';
+import '../../providers/saving_goals_provider.dart';
+import '../../providers/auth_provider.dart';
 
-  static Future<void> show(BuildContext context) {
+class AddSavingGoalModal extends ConsumerStatefulWidget {
+  final String? initialName;
+  final double? initialTargetAmount;
+  final String? initialIcon;
+
+  const AddSavingGoalModal({
+    super.key,
+    this.initialName,
+    this.initialTargetAmount,
+    this.initialIcon,
+  });
+
+  static Future<void> show(
+    BuildContext context, {
+    String? initialName,
+    double? initialTargetAmount,
+    String? initialIcon,
+  }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const AddSavingGoalModal(),
+      builder: (context) => AddSavingGoalModal(
+        initialName: initialName,
+        initialTargetAmount: initialTargetAmount,
+        initialIcon: initialIcon,
+      ),
     );
   }
 
   @override
-  State<AddSavingGoalModal> createState() => _AddSavingGoalModalState();
+  ConsumerState<AddSavingGoalModal> createState() => _AddSavingGoalModalState();
 }
 
-class _AddSavingGoalModalState extends State<AddSavingGoalModal> {
-  String name = "";
-  double targetAmount = 0.0;
-  String selectedIcon = "🎯";
+class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
+  late TextEditingController _nameController;
+  late TextEditingController _amountController;
+  late String selectedIcon;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialName ?? "");
+    _amountController = TextEditingController(
+      text: widget.initialTargetAmount != null && widget.initialTargetAmount! > 0 
+          ? widget.initialTargetAmount.toString() 
+          : "",
+    );
+    selectedIcon = widget.initialIcon ?? "🎯";
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _amountController.dispose();
+    super.dispose();
+  }
 
   final icons = ["🎯", "✈️", "🏠", "🚗", "💻", "🏥", "💍", "🎓", "🎮", "🚲"];
 
@@ -75,7 +117,7 @@ class _AddSavingGoalModalState extends State<AddSavingGoalModal> {
                   Text('¿Qué quieres lograr? 📝', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 8),
                   TextField(
-                    onChanged: (val) => name = val,
+                    controller: _nameController,
                     decoration: InputDecoration(
                       hintText: 'Ej: Viaje a Japón, Fondo de paz...',
                       filled: true,
@@ -88,8 +130,8 @@ class _AddSavingGoalModalState extends State<AddSavingGoalModal> {
                   Text('Monto Objetivo 💵', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 8),
                   TextField(
+                    controller: _amountController,
                     keyboardType: TextInputType.number,
-                    onChanged: (val) => targetAmount = double.tryParse(val) ?? 0.0,
                     decoration: InputDecoration(
                       prefixIcon: const Icon(LucideIcons.dollarSign),
                       hintText: '0.00',
@@ -129,14 +171,43 @@ class _AddSavingGoalModalState extends State<AddSavingGoalModal> {
                   const SizedBox(height: 32),
 
                   ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () async {
+                      final name = _nameController.text.trim();
+                      final amount = double.tryParse(_amountController.text) ?? 0.0;
+                      if (name.isEmpty || amount <= 0) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Por favor, ingresa un nombre y un monto válido.')),
+                        );
+                        return;
+                      }
+
+                      final user = ref.read(authProvider).user;
+                      if (user != null) {
+                        final goal = SavingGoal(
+                          id: DateTime.now().millisecondsSinceEpoch.toString(),
+                          name: name,
+                          targetAmount: amount,
+                          currentAmount: 0.0,
+                          icon: selectedIcon,
+                          userId: user.email,
+                        );
+
+                        await ref.read(savingGoalsProvider.notifier).addGoal(goal);
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Meta de ahorro creada con éxito 🎉'), backgroundColor: Colors.green),
+                          );
+                        }
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF3B82F6),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text('Crear Meta', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: const Text('Guardar Meta', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),

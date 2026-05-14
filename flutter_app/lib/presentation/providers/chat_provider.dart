@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_app/domain/models/chat_message.dart';
 import 'package:flutter_app/domain/repositories/ai_repository.dart';
@@ -63,18 +64,48 @@ class ChatNotifier extends Notifier<ChatState> {
       );
 
       String fullResponse = '';
-      final assistantMessage = ChatMessage(text: '', role: MessageRole.assistant);
-      
-      state = state.copyWith(
-        messages: [...state.messages, assistantMessage],
-      );
+      ChatMessage? assistantMessage;
 
       await for (final chunk in responseStream) {
         fullResponse += chunk;
-        final lastMessage = ChatMessage(text: fullResponse, role: MessageRole.assistant);
-        state = state.copyWith(
-          messages: [...state.messages.sublist(0, state.messages.length - 1), lastMessage],
-        );
+        
+        // Intentar parsear el chunk para ver si es un payload JSON de propuesta
+        bool isProposal = false;
+        Map<String, dynamic>? payload;
+        String displayText = fullResponse;
+
+        try {
+          final decoded = jsonDecode(fullResponse);
+          if (decoded is Map<String, dynamic> && decoded['___PROPOSAL___'] == true) {
+            isProposal = true;
+            payload = decoded;
+            displayText = "He analizado tus datos y tengo una propuesta de ahorro para ti.";
+          }
+        } catch (_) {
+          // No es JSON, o aún no está completo (en el caso de stream)
+        }
+
+        if (assistantMessage == null) {
+          assistantMessage = ChatMessage(
+            text: displayText, 
+            role: MessageRole.assistant,
+            isProposal: isProposal,
+            payload: payload,
+          );
+          state = state.copyWith(
+            messages: [...state.messages, assistantMessage],
+          );
+        } else {
+          assistantMessage = ChatMessage(
+            text: displayText, 
+            role: MessageRole.assistant,
+            isProposal: isProposal,
+            payload: payload,
+          );
+          state = state.copyWith(
+            messages: [...state.messages.sublist(0, state.messages.length - 1), assistantMessage],
+          );
+        }
       }
     } catch (e) {
       final errorMessage = ChatMessage(

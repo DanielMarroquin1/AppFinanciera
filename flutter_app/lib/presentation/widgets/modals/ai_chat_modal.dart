@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_app/presentation/providers/chat_provider.dart';
 import 'package:flutter_app/domain/models/chat_message.dart';
+import 'package:flutter_app/presentation/widgets/modals/add_saving_goal_modal.dart';
+import 'package:flutter_app/domain/entities/saving_goal.dart';
+import 'package:flutter_app/presentation/providers/saving_goals_provider.dart';
+import 'package:flutter_app/presentation/providers/auth_provider.dart';
 
 class AIChatModal extends ConsumerStatefulWidget {
   const AIChatModal({super.key});
@@ -142,6 +146,107 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
 
                 final msg = messages[index];
                 final isUser = msg.role == MessageRole.user;
+
+                if (msg.isProposal && msg.payload != null) {
+                  final p = msg.payload!;
+                  return Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.85),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                        border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2))],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(LucideIcons.sparkles, color: Color(0xFFC084FC), size: 16),
+                              const SizedBox(width: 4),
+                              Text('Zent AI ha propuesto un Plan de Ahorro', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Text(p['icon'] ?? '🎯', style: const TextStyle(fontSize: 32)),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(p['name'] ?? 'Meta', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
+                                    Text('\$${p['targetAmount']}', style: const TextStyle(color: Color(0xFF10B981), fontSize: 14, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            p['description'] ?? '',
+                            style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    AddSavingGoalModal.show(
+                                      context,
+                                      initialName: p['name'],
+                                      initialTargetAmount: (p['targetAmount'] as num?)?.toDouble(),
+                                      initialIcon: p['icon'],
+                                    );
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: isDark ? Colors.white : Colors.black,
+                                    side: BorderSide(color: isDark ? const Color(0xFF374151) : const Color(0xFFD1D5DB)),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  child: const Text('Modificar'),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    final user = ref.read(authProvider).user;
+                                    if (user != null) {
+                                      final goal = SavingGoal(
+                                        id: DateTime.now().millisecondsSinceEpoch.toString(),
+                                        name: p['name'] ?? 'Plan',
+                                        targetAmount: (p['targetAmount'] as num?)?.toDouble() ?? 0.0,
+                                        icon: p['icon'] ?? '🎯',
+                                        userId: user.email,
+                                      );
+                                      await ref.read(savingGoalsProvider.notifier).addGoal(goal);
+                                      ref.read(chatProvider.notifier).sendMessage("¡He aceptado el plan de ahorro! Se ha guardado en mi cuenta.");
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF10B981),
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    elevation: 0,
+                                  ),
+                                  child: const Text('Aceptar'),
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
+                    ),
+                  );
+                }
 
                 return Align(
                   alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,

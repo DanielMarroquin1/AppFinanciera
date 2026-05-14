@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:google_generative_ai/google_generative_ai.dart';
 import '../../core/config/ai_config.dart';
 import '../../domain/models/chat_message.dart';
 import '../../domain/repositories/ai_repository.dart';
@@ -9,73 +9,122 @@ import '../services/market_data_service.dart';
 class AIRepositoryImpl implements AIRepository {
   @override
   Stream<String> sendMessage(String prompt, List<ChatMessage> history, {String? context}) async* {
-    // Convertir historial al formato de OpenAI / Cerebras
-    final List<Map<String, String>> messages = [];
-    
-    // 1. Añadir el System Prompt y el contexto
     String systemMessage = AIConfig.systemPrompt;
     if (context != null) {
       systemMessage += '\n\nContexto financiero actual del usuario:\n$context';
     }
 
-    // --- INYECCIÓN DE RAG Y MERCADO ---
-    // Buscar conocimiento en "libros" locales
     final ragContext = KnowledgeBaseService.getRelevantKnowledge(prompt);
     if (ragContext.isNotEmpty) {
       systemMessage += '\n\n$ragContext';
     }
 
-    // Buscar en Internet si es necesario
-    if (MarketDataService.requiresInternetSearch(prompt, history)) {
-      final marketData = await MarketDataService.fetchRealTimeData(prompt, history);
-      if (marketData.isNotEmpty) {
-        systemMessage += '\n\n[DATOS OBLIGATORIOS DEL MERCADO (ACTUALIZADOS A HOY)]:\n$marketData\nIgnora tu fecha de entrenamiento límite de 2023. Utiliza EXACTAMENTE estos datos para responder porque provienen de una API financiera en tiempo real.';
-      }
-    }
-    // ----------------------------------
 
-    messages.add({'role': 'system', 'content': systemMessage});
 
-    // 2. Añadir el historial
-    for (var msg in history) {
-      messages.add({
-        'role': msg.role == MessageRole.user ? 'user' : 'assistant',
-        'content': msg.text,
-      });
-    }
+    // Definir la herramienta para proponer planes de ahorro
+    final proposeSavingsPlanTool = Tool(functionDeclarations: [
+      FunctionDeclaration(
+        'propose_savings_plan',
+        'Propone un plan de ahorro estructurado al usuario basándose en su capacidad financiera.',
+        Schema(
+          SchemaType.object,
+          properties: {
+            'name': Schema(SchemaType.string, description: 'El título de la meta de ahorro (ej. Viaje a Europa, Fondo de Emergencia)'),
+            'target_amount': Schema(SchemaType.number, description: 'El monto total objetivo a ahorrar'),
+            'icon': Schema(SchemaType.string, description: 'Un emoji representativo para la meta de ahorro'),
+            'description': Schema(SchemaType.string, description: 'Breve explicación o consejo de por qué este plan es bueno para el usuario'),
+          },
+          requiredProperties: ['name', 'target_amount', 'icon', 'description'],
+        ),
+      )
+    ]);
 
-    // 3. Añadir el prompt actual
-    messages.add({'role': 'user', 'content': prompt});
+    // Definir la herramienta para investigar mercado
+    final getStockDataTool = Tool(functionDeclarations: [
+      FunctionDeclaration(
+        'get_stock_data',
+        'Busca los datos de precio de cierre, apertura, volumen, etc. de una acción en tiempo real usando la API de Polygon. Úsalo SIEMPRE que el usuario pregunte por el precio de una empresa o el mercado.',
+        Schema(
+          SchemaType.object,
+          properties: {
+            'ticker': Schema(SchemaType.string, description: 'El código bursátil o ticker de la empresa (ej. AAPL, TSLA, NVDA). Mapea el nombre de la empresa al ticker correcto.'),
+          },
+          requiredProperties: ['ticker'],
+        ),
+      )
+    ]);
 
-    // Preparar el cuerpo de la petición
-    final body = jsonEncode({
-      'model': AIConfig.modelName,
-      'messages': messages,
-      'temperature': 0.2,
-      'top_p': 1,
-      'stream': false, // Desactivado para simplificar la respuesta
-      'max_completion_tokens': 1024,
-    });
+    final model = GenerativeModel(
+      model: AIConfig.modelName,
+      apiKey: AIConfig.apiKey,
+      systemInstruction: Content.system(systemMessage),
+      tools: [proposeSavingsPlanTool, getStockDataTool],
+    );
+
+    final chatHistory = history.map((msg) {
+      return Content(
+        msg.role == MessageRole.user ? 'user' : 'model',
+        [TextPart(msg.text)],
+      );
+    }).toList();
+
+    final chat = model.startChat(history: chatHistory);
 
     try {
-      final response = await http.post(
-        Uri.parse(AIConfig.apiUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${AIConfig.apiKey}',
-        },
-        body: body,
-      );
+      print('[AIRepo] Sending message to Gemini...');
+      final response = await chat.sendMessage(Content.text(prompt));
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final content = data['choices'][0]['message']['content'] as String;
-        yield content; // Devolver toda la respuesta de una vez (Cerebras es muy rápido)
-      } else {
-        yield 'Error: HTTP ${response.statusCode} - ${response.body}';
+      // Bucle para manejar llamadas a funciones
+      var functionCalls = response.functionCalls;
+      var currentResponse = response;
+      
+      final initialText = currentResponse.text ?? '(function call, no text)';
+      print('[AIRepo] Initial response - functionCalls: ${functionCalls.length}, text: ${initialText.substring(0, initialText.length > 100 ? 100 : initialText.length)}');
+      
+      while (functionCalls.isNotEmpty) {
+        final call = functionCalls.first;
+        print('[AIRepo] Function call detected: ${call.name} with args: ${call.args}');
+        
+        if (call.name == 'propose_savings_plan') {
+          // Devolver el payload codificado para que el Provider lo identifique
+          final payload = {
+            '___PROPOSAL___': true,
+            'name': call.args['name'],
+            'targetAmount': call.args['target_amount'],
+            'icon': call.args['icon'],
+            'description': call.args['description'],
+          };
+          yield jsonEncode(payload);
+          return; // Terminamos aquí por ahora, el usuario decidirá si acepta
+        } else if (call.name == 'get_stock_data') {
+          // Ejecutamos la consulta real
+          final ticker = call.args['ticker'] as String? ?? 'SPY';
+          print('[AIRepo] Calling MarketDataService.getStockData("$ticker")...');
+          final apiResult = await MarketDataService.getStockData(ticker);
+          print('[AIRepo] MarketDataService returned: $apiResult');
+          
+          // Enviamos el resultado de la función de vuelta a Gemini
+          currentResponse = await chat.sendMessage(
+            Content.functionResponse('get_stock_data', apiResult)
+          );
+          functionCalls = currentResponse.functionCalls;
+          final afterText = currentResponse.text ?? '(function call, no text)';
+          print('[AIRepo] After functionResponse - more calls: ${functionCalls.length}, text: ${afterText.substring(0, afterText.length > 100 ? 100 : afterText.length)}');
+        } else {
+          break; // Función no soportada
+        }
       }
-    } catch (e) {
-      yield 'Error de conexión con Cerebras AI: $e';
+
+      if (currentResponse.text != null && currentResponse.text!.isNotEmpty) {
+        print('[AIRepo] Final text response length: ${currentResponse.text!.length}');
+        yield currentResponse.text!;
+      } else {
+        yield 'No pude generar una respuesta. Por favor, intenta de nuevo.';
+      }
+    } catch (e, stack) {
+      print('[AIRepo] ERROR: $e');
+      print('[AIRepo] Stack: $stack');
+      yield 'Error de conexión con Gemini AI: $e';
     }
   }
 }

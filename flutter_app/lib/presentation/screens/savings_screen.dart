@@ -6,6 +6,7 @@ import '../widgets/modals/saving_guide_modal.dart';
 import '../widgets/modals/ai_chat_modal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/color_palette_provider.dart';
+import '../providers/saving_goals_provider.dart';
 
 class SavingsScreen extends ConsumerStatefulWidget {
   const SavingsScreen({super.key});
@@ -21,44 +22,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
     ref.watch(colorPaletteProvider);
     final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
 
-    final goals = [
-      {
-        'name': 'Vacaciones en Cancún',
-        'icon': '✈️',
-        'current': 2500.0,
-        'goal': 5000.0,
-        'colors': isDark 
-            ? [const Color(0xFF1E3A8A), const Color(0xFF164E63)] 
-            : [const Color(0xFF3B82F6), const Color(0xFF06B6D4)], 
-      },
-      {
-        'name': 'Fondo de Emergencia',
-        'icon': '🏥',
-        'current': 8500.0,
-        'goal': 10000.0,
-        'colors': isDark 
-            ? [const Color(0xFF14532D), const Color(0xFF064E3B)] 
-            : [const Color(0xFF22C55E), const Color(0xFF10B981)], 
-      },
-      {
-        'name': 'Nueva Laptop',
-        'icon': '💻',
-        'current': 1200.0,
-        'goal': 2500.0,
-        'colors': isDark 
-            ? [const Color(0xFF581C87), const Color(0xFF831843)] 
-            : [const Color(0xFFA855F7), const Color(0xFFEC4899)], 
-      },
-      {
-        'name': 'Auto Nuevo',
-        'icon': '🚗',
-        'current': 15000.0,
-        'goal': 50000.0,
-        'colors': isDark 
-            ? [const Color(0xFF7C2D12), const Color(0xFF7F1D1D)] 
-            : [const Color(0xFFF97316), const Color(0xFFEF4444)], 
-      },
-    ];
+    final goalsAsync = ref.watch(savingGoalsProvider);
 
     return Scaffold(
       backgroundColor: Colors.transparent, // Handled by AppShell
@@ -86,35 +50,42 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
             const SizedBox(height: 24),
 
             // Total Savings
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: paletteGradient,
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))
-                ]
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Total Ahorrado', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
-                  const SizedBox(height: 8),
-                  const Text('\$27,200.00', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 16),
-                  Row(
+            goalsAsync.when(
+              data: (goalsList) {
+                final totalSaved = goalsList.fold(0.0, (sum, item) => sum + item.currentAmount);
+                return Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: paletteGradient,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))
+                    ]
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(LucideIcons.trendingUp, color: Colors.white, size: 20),
-                      const SizedBox(width: 8),
-                      Text('+12% este mes', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                      Text('Total Ahorrado', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                      const SizedBox(height: 8),
+                      Text('\$${totalSaved.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          const Icon(LucideIcons.trendingUp, color: Colors.white, size: 20),
+                          const SizedBox(width: 8),
+                          Text('+12% este mes', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) => const Text('Error al cargar ahorros'),
             ),
             const SizedBox(height: 24),
 
@@ -214,104 +185,130 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
             // Goals
             Text('Mis Metas de Ahorro', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
             const SizedBox(height: 12),
-            ...goals.map((goal) {
-              final percentage = ((goal['current'] as double) / (goal['goal'] as double)) * 100;
-              final isComplete = percentage >= 100;
+            goalsAsync.when(
+              data: (goalsList) {
+                if (goalsList.isEmpty) {
+                  return Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                      border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Center(
+                      child: Text('Aún no tienes metas de ahorro.', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400])),
+                    ),
+                  );
+                }
+                return Column(
+                  children: goalsList.map((goal) {
+                    final percentage = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0.0;
+                    final isComplete = percentage >= 100;
+                    
+                    // Fallback colors if not specified
+                    final List<Color> goalColors = goal.colorInts != null 
+                        ? goal.colorInts!.map((c) => Color(c)).toList()
+                        : (isDark ? [const Color(0xFF1E3A8A), const Color(0xFF164E63)] : [const Color(0xFF3B82F6), const Color(0xFF06B6D4)]);
 
-              return Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                  border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 56, height: 56,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: goal['colors'] as List<Color>,
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Center(child: Text(goal['icon'] as String, style: const TextStyle(fontSize: 24))),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                        border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(goal['name'] as String, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 4),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.baseline,
-                                textBaseline: TextBaseline.alphabetic,
-                                children: [
-                                  Text('\$${(goal['current'] as double).toStringAsFixed(0)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
-                                  const SizedBox(width: 4),
-                                  Text('de \$${(goal['goal'] as double).toStringAsFixed(0)}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                                ],
-                              )
+                              Container(
+                                width: 56, height: 56,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: goalColors,
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Center(child: Text(goal.icon, style: const TextStyle(fontSize: 24))),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(goal.name, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                                      textBaseline: TextBaseline.alphabetic,
+                                      children: [
+                                        Text('\$${goal.currentAmount.toStringAsFixed(0)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
+                                        const SizedBox(width: 4),
+                                        Text('de \$${goal.targetAmount.toStringAsFixed(0)}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              ),
+                              if (isComplete)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text('¡Logrado!', style: TextStyle(color: isDark ? const Color(0xFF86EFAC) : const Color(0xFF15803D), fontSize: 12, fontWeight: FontWeight.bold)),
+                                )
                             ],
                           ),
-                        ),
-                        if (isComplete)
+                          const SizedBox(height: 16),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7),
-                              borderRadius: BorderRadius.circular(12),
+                            height: 12,
+                            width: double.infinity,
+                            decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(8)),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: (percentage / 100).clamp(0.0, 1.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: goalColors,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
                             ),
-                            child: Text('¡Logrado!', style: TextStyle(color: isDark ? const Color(0xFF86EFAC) : const Color(0xFF15803D), fontSize: 12, fontWeight: FontWeight.bold)),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('${percentage.toStringAsFixed(0)}% completado', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                              TextButton(
+                                onPressed: () => AddFundsModal.show(context, goalName: goal.name),
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: const Size(50, 30),
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: Text('Agregar fondos', style: TextStyle(color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), fontSize: 12, fontWeight: FontWeight.bold)),
+                              )
+                            ],
                           )
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      height: 12,
-                      width: double.infinity,
-                      decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(8)),
-                      child: FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
-                        widthFactor: (percentage / 100).clamp(0.0, 1.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: goal['colors'] as List<Color>,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('${percentage.toStringAsFixed(0)}% completado', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                        TextButton(
-                          onPressed: () => AddFundsModal.show(context, goalName: goal['name'] as String),
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: const Size(50, 30),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: Text('Agregar fondos', style: TextStyle(color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), fontSize: 12, fontWeight: FontWeight.bold)),
-                        )
-                      ],
-                    )
-                  ],
-                ),
-              );
-            }).toList(),
+                    );
+                  }).toList(),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) => const Text('Error al cargar metas de ahorro'),
+            ),
             const SizedBox(height: 80), // Fab space
           ],
         ),

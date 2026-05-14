@@ -7,7 +7,7 @@ import '../providers/auth_provider.dart';
 class RewardsShopModal extends ConsumerStatefulWidget {
   const RewardsShopModal({super.key});
 
-  static void show(BuildContext context) {
+  static void show(BuildContext context, {int? points}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

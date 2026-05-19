@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import '../../providers/transaction_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../../core/utils/currency_formatter.dart';
 
-class TransactionsListModal extends StatelessWidget {
+class TransactionsListModal extends ConsumerWidget {
   const TransactionsListModal({super.key});
 
   static Future<void> show(BuildContext context) {
@@ -19,30 +24,33 @@ class TransactionsListModal extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return const SizedBox.shrink(); // Not used directly
   }
 }
 
-class TransactionsListModalInternal extends StatelessWidget {
+class TransactionsListModalInternal extends ConsumerWidget {
   final ScrollController scrollController;
 
   const TransactionsListModalInternal({super.key, required this.scrollController});
 
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  String _getCategoryEmoji(String category) {
+    if (category.runes.isNotEmpty && category.runes.first > 127) return category;
+    const map = {
+      'food': '🍔', 'transport': '🚗', 'shopping': '🛍️', 'bills': '📱',
+      'entertainment': '🎮', 'health': '💊', 'education': '📚', 'home': '🏠',
+      'salary': '💼', 'freelance': '💻', 'bonus': '🎁', 'investment': '📈',
+      'sale': '🏷️', 'gift': '🎉', 'other': '💸', 'debt': '💳'
+    };
+    return map[category] ?? '💰';
+  }
 
-    final allTransactions = [
-      {'icon': '🛒', 'name': 'Supermercado', 'date': 'Hoy, 10:30 AM', 'amount': -45.50, 'category': 'Comida'},
-      {'icon': '🚕', 'name': 'Uber', 'date': 'Ayer, 6:15 PM', 'amount': -12.00, 'category': 'Transporte'},
-      {'icon': '☕', 'name': 'Cafe', 'date': 'Ayer, 8:00 AM', 'amount': -4.50, 'category': 'Comida'},
-      {'icon': '💼', 'name': 'Salario', 'date': '15 Ene, 2026', 'amount': 3500.00, 'category': 'Ingreso'},
-      {'icon': '🎬', 'name': 'Netflix', 'date': '12 Ene, 2026', 'amount': -15.00, 'category': 'Entretenimiento'},
-      {'icon': '🍕', 'name': 'Pizza', 'date': '10 Ene, 2026', 'amount': -25.00, 'category': 'Comida'},
-      {'icon': '👕', 'name': 'Ropa', 'date': '8 Ene, 2026', 'amount': -120.00, 'category': 'Compras'},
-      {'icon': '⚡', 'name': 'Luz', 'date': '5 Ene, 2026', 'amount': -65.00, 'category': 'Servicios'},
-    ];
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final transactionsAsync = ref.watch(transactionsProvider);
+    final user = ref.watch(authProvider).user;
+    final currencyCode = user?.currency;
 
     return Container(
       decoration: BoxDecoration(
@@ -77,63 +85,76 @@ class TransactionsListModalInternal extends StatelessWidget {
           const Divider(),
 
           Expanded(
-            child: ListView.builder(
-              controller: scrollController,
-              padding: const EdgeInsets.all(24),
-              itemCount: allTransactions.length,
-              itemBuilder: (context, index) {
-                final tx = allTransactions[index];
-                final isIncome = (tx['amount'] as double) > 0;
+            child: transactionsAsync.when(
+              data: (transactions) {
+                if (transactions.isEmpty) {
+                  return Center(child: Text('No hay transacciones registradas', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400])));
+                }
+                
+                final sorted = List.of(transactions)..sort((a, b) => b.date.compareTo(a.date));
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF374151).withValues(alpha: 0.3) : Colors.white,
-                    border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [if (!isDark) BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 48, height: 48,
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Center(child: Text(tx['icon'] as String, style: const TextStyle(fontSize: 24))),
+                return ListView.builder(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(24),
+                  itemCount: sorted.length,
+                  itemBuilder: (context, index) {
+                    final tx = sorted[index];
+                    final isIncome = tx.type == 'income';
+                    final formattedDate = DateFormat('dd MMM, yyyy - hh:mm a').format(tx.date);
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF374151).withValues(alpha: 0.3) : Colors.white,
+                        border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [if (!isDark) BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(tx['name'] as String, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w500)),
-                            const SizedBox(height: 2),
-                            Row(
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 48, height: 48,
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(child: Text(_getCategoryEmoji(tx.category), style: const TextStyle(fontSize: 24))),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(tx['category'] as String, style: TextStyle(color: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5), fontSize: 12)),
-                                Text(' • ${tx['date']}', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                                Text(tx.description.isNotEmpty ? tx.description : tx.category, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w500)),
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    Text(tx.category, style: TextStyle(color: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5), fontSize: 12)),
+                                    Expanded(child: Text(' • $formattedDate', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12), overflow: TextOverflow.ellipsis)),
+                                  ],
+                                ),
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+                          Text(
+                            isIncome ? '+${CurrencyFormatter.format(tx.amount, currencyCode)}' : '-${CurrencyFormatter.format(tx.amount, currencyCode)}', 
+                            style: TextStyle(
+                              color: isIncome 
+                                  ? (isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A))
+                                  : (isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626)), 
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            )
+                          ),
+                        ],
                       ),
-                      Text(
-                        isIncome ? '+\$${tx['amount']}' : '-\$${(tx['amount'] as double).abs().toStringAsFixed(2)}', 
-                        style: TextStyle(
-                          color: isIncome 
-                              ? (isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A))
-                              : (isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626)), 
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        )
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 );
               },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, __) => const Center(child: Text('Error al cargar transacciones')),
             ),
           )
         ],

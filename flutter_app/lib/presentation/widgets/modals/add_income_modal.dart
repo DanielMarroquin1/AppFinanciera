@@ -33,6 +33,10 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
   late TextEditingController _amountController;
   late TextEditingController _descController;
 
+  String? recurrenceType;
+  int? recurrenceDay = 1;
+  int? recurrenceDay2;
+
   @override
   void initState() {
     super.initState();
@@ -41,6 +45,9 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
       category = widget.existingTransaction!.category;
       description = widget.existingTransaction!.description;
       date = widget.existingTransaction!.date;
+      recurrenceType = widget.existingTransaction!.recurrenceType;
+      recurrenceDay = widget.existingTransaction!.recurrenceDay ?? 1;
+      recurrenceDay2 = widget.existingTransaction!.recurrenceDay2;
     }
     _amountController = TextEditingController(text: amount);
     _descController = TextEditingController(text: description);
@@ -53,15 +60,108 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
     super.dispose();
   }
 
-  final incomeCategories = [
-    {'value': 'salary', 'label': 'Salario', 'emoji': '💼'},
-    {'value': 'freelance', 'label': 'Freelance', 'emoji': '💻'},
-    {'value': 'bonus', 'label': 'Bonificación', 'emoji': '🎁'},
-    {'value': 'investment', 'label': 'Inversión', 'emoji': '📈'},
-    {'value': 'sale', 'label': 'Venta', 'emoji': '🏷️'},
-    {'value': 'gift', 'label': 'Regalo', 'emoji': '🎉'},
-    {'value': 'other', 'label': 'Otro', 'emoji': '💰'},
+  final List<Map<String, dynamic>> detailedCategories = [
+    {
+      'main': 'Trabajo', 'emoji': '💼',
+      'subs': [
+        {'value': 'salary', 'label': 'Salario Fijo', 'emoji': '💼'},
+        {'value': 'freelance', 'label': 'Freelance / Proyectos', 'emoji': '💻'},
+        {'value': 'bonus', 'label': 'Bonificación / Extra', 'emoji': '🎁'},
+      ]
+    },
+    {
+      'main': 'Inversiones', 'emoji': '📈',
+      'subs': [
+        {'value': 'investment', 'label': 'Rendimientos', 'emoji': '📈'},
+        {'value': 'sale', 'label': 'Venta de Activos', 'emoji': '🏷️'},
+        {'value': 'dividends', 'label': 'Dividendos', 'emoji': '💸'},
+      ]
+    },
+    {
+      'main': 'Otros', 'emoji': '🎉',
+      'subs': [
+        {'value': 'gift', 'label': 'Regalo', 'emoji': '🎉'},
+        {'value': 'other', 'label': 'Otro Ingreso', 'emoji': '💰'},
+      ]
+    },
   ];
+
+  Map<String, String> _getCategoryDetails(String val) {
+    for (var mainCat in detailedCategories) {
+      for (var sub in mainCat['subs']) {
+        if (sub['value'] == val) {
+          return {'label': sub['label']!, 'emoji': sub['emoji']!};
+        }
+      }
+    }
+    return {'label': 'Seleccionar Categoría', 'emoji': '📁'};
+  }
+
+  void _showCategoryPicker(bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(context).size.height * 0.75,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1F2937) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text('Seleccionar Categoría', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: detailedCategories.length,
+                itemBuilder: (ctx, i) {
+                  final mainCat = detailedCategories[i];
+                  return Theme(
+                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                    child: ExpansionTile(
+                      leading: Text(mainCat['emoji'], style: const TextStyle(fontSize: 24)),
+                      title: Text(mainCat['main'], style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
+                      children: (mainCat['subs'] as List).map<Widget>((sub) {
+                        return ListTile(
+                          contentPadding: const EdgeInsets.only(left: 72, right: 24),
+                          leading: Text(sub['emoji'], style: const TextStyle(fontSize: 20)),
+                          title: Text(sub['label'], style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800])),
+                          onTap: () {
+                            setState(() => category = sub['value']);
+                            Navigator.pop(ctx);
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDayDropdown(bool isDark, int value, ValueChanged<int?> onChanged, int maxDays) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : Colors.white, border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2), borderRadius: BorderRadius.circular(12)),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: value,
+          isExpanded: true,
+          dropdownColor: isDark ? const Color(0xFF374151) : Colors.white,
+          style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
+          items: List.generate(maxDays, (i) => DropdownMenuItem(value: i + 1, child: Text('${i + 1}'))),
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -152,42 +252,46 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                   // Category
                   Text('Categoría 🏷️', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8, runSpacing: 8,
-                    children: incomeCategories.map((cat) {
-                      final isSelected = category == cat['value'];
-                      return InkWell(
-                        onTap: () => setState(() => category = cat['value']!),
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          width: (MediaQuery.of(context).size.width - 56) / 2, // 2 cols minus padding
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: isSelected 
-                                ? (isDark ? const Color(0xFF14532D).withValues(alpha: 0.5) : const Color(0xFFDCFCE7)) 
-                                : (isDark ? const Color(0xFF374151) : Colors.white),
-                            border: Border.all(
-                              color: isSelected ? const Color(0xFF16A34A) : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
+                  InkWell(
+                    onTap: () => _showCategoryPicker(isDark),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      decoration: BoxDecoration(
+                        color: category.isNotEmpty 
+                            ? (isDark ? const Color(0xFF16A34A).withValues(alpha: 0.1) : const Color(0xFFDCFCE7).withValues(alpha: 0.5))
+                            : (isDark ? const Color(0xFF374151).withValues(alpha: 0.3) : Colors.grey[100]),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
                             children: [
-                              Text(cat['emoji']!, style: const TextStyle(fontSize: 20)),
-                              const SizedBox(width: 8),
-                              Expanded(child: Text(cat['label']!, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14))),
-                              if (isSelected) 
-                                Container(
-                                  width: 20, height: 20,
-                                  decoration: const BoxDecoration(color: Color(0xFF16A34A), shape: BoxShape.circle),
-                                  child: const Icon(Icons.check, color: Colors.white, size: 12),
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+                                ),
+                                child: Text(_getCategoryDetails(category)['emoji']!, style: const TextStyle(fontSize: 20)),
+                              ),
+                              const SizedBox(width: 16),
+                              Text(
+                                _getCategoryDetails(category)['label']!, 
+                                style: TextStyle(
+                                  color: category.isEmpty ? (isDark ? Colors.grey[500] : Colors.grey[400]) : (isDark ? Colors.white : Colors.black87), 
+                                  fontSize: 16, 
+                                  fontWeight: category.isEmpty ? FontWeight.normal : FontWeight.w600
                                 )
+                              ),
                             ],
                           ),
-                        ),
-                      );
-                    }).toList(),
+                          Icon(LucideIcons.chevronDown, color: isDark ? Colors.grey[500] : Colors.grey[400], size: 20),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 20),
 
@@ -215,21 +319,141 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                   // Date
                   Text('Fecha 📅', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF374151) : Colors.white,
-                      border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(LucideIcons.calendar, color: isDark ? Colors.grey[500] : Colors.grey[400]),
-                        const SizedBox(width: 12),
-                        Text('${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
-                      ],
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: date,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime.now(),
+                        builder: (context, child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: isDark 
+                                ? const ColorScheme.dark(primary: Color(0xFF16A34A), onPrimary: Colors.white, onSurface: Colors.white)
+                                : const ColorScheme.light(primary: Color(0xFF16A34A), onPrimary: Colors.white, onSurface: Colors.black),
+                            ),
+                            child: child!,
+                          );
+                        },
+                      );
+                      if (picked != null) {
+                        setState(() => date = picked);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF374151) : Colors.white,
+                        border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(LucideIcons.calendar, color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                              const SizedBox(width: 12),
+                              Text('${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16)),
+                            ],
+                          ),
+                          Icon(LucideIcons.edit2, size: 16, color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                        ],
+                      ),
                     ),
                   ),
+
+                  if (widget.isFixed) ...[
+                    const SizedBox(height: 20),
+                    Text('Frecuencia de cobro 🔄', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF374151) : Colors.white,
+                        border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: recurrenceType ?? 'monthly',
+                          isExpanded: true,
+                          dropdownColor: isDark ? const Color(0xFF374151) : Colors.white,
+                          style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
+                          items: const [
+                            DropdownMenuItem(value: 'monthly', child: Text('Mensual')),
+                            DropdownMenuItem(value: 'bimonthly', child: Text('Quincenal')),
+                            DropdownMenuItem(value: 'weekly', child: Text('Semanal')),
+                          ],
+                          onChanged: (val) {
+                            setState(() {
+                              recurrenceType = val;
+                              recurrenceDay = 1;
+                              recurrenceDay2 = (val == 'bimonthly') ? 15 : null;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    if (recurrenceType == 'monthly' || recurrenceType == null) ...[
+                      Text('Día de cobro', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                      const SizedBox(height: 8),
+                      _buildDayDropdown(isDark, recurrenceDay ?? 1, (val) => setState(() => recurrenceDay = val!), 31),
+                    ] else if (recurrenceType == 'bimonthly') ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Primer día', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                                const SizedBox(height: 8),
+                                _buildDayDropdown(isDark, recurrenceDay ?? 1, (val) => setState(() => recurrenceDay = val!), 31),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Segundo día', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                                const SizedBox(height: 8),
+                                _buildDayDropdown(isDark, recurrenceDay2 ?? 15, (val) => setState(() => recurrenceDay2 = val!), 31),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ] else if (recurrenceType == 'weekly') ...[
+                      Text('Día de la semana', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : Colors.white, border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2), borderRadius: BorderRadius.circular(12)),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<int>(
+                            value: recurrenceDay ?? 1,
+                            isExpanded: true, dropdownColor: isDark ? const Color(0xFF374151) : Colors.white,
+                            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
+                            items: const [
+                              DropdownMenuItem(value: 1, child: Text('Lunes')),
+                              DropdownMenuItem(value: 2, child: Text('Martes')),
+                              DropdownMenuItem(value: 3, child: Text('Miércoles')),
+                              DropdownMenuItem(value: 4, child: Text('Jueves')),
+                              DropdownMenuItem(value: 5, child: Text('Viernes')),
+                              DropdownMenuItem(value: 6, child: Text('Sábado')),
+                              DropdownMenuItem(value: 7, child: Text('Domingo')),
+                            ],
+                            onChanged: (val) => setState(() => recurrenceDay = val!),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                   const SizedBox(height: 24),
 
                   // Submit
@@ -246,7 +470,7 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                         final isEditing = widget.existingTransaction != null;
 
                         final transaction = TransactionModel(
-                          id: isEditing ? widget.existingTransaction!.id : '', // Firestore will auto-generate if empty
+                          id: isEditing ? widget.existingTransaction!.id : '',
                           userId: uid,
                           amount: parsedAmount,
                           type: 'income',
@@ -254,6 +478,9 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                           description: description,
                           date: date,
                           isFixed: widget.isFixed,
+                          recurrenceType: widget.isFixed ? (recurrenceType ?? 'monthly') : null,
+                          recurrenceDay: widget.isFixed ? recurrenceDay : null,
+                          recurrenceDay2: widget.isFixed && recurrenceType == 'bimonthly' ? recurrenceDay2 : null,
                         );
 
                         if (isEditing) {

@@ -36,6 +36,10 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
   late TextEditingController _amountController;
   late TextEditingController _descController;
 
+  String? recurrenceType;
+  int? recurrenceDay = 1;
+  int? recurrenceDay2;
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +48,9 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
       category = widget.existingTransaction!.category;
       description = widget.existingTransaction!.description;
       date = widget.existingTransaction!.date;
+      recurrenceType = widget.existingTransaction!.recurrenceType;
+      recurrenceDay = widget.existingTransaction!.recurrenceDay ?? 1;
+      recurrenceDay2 = widget.existingTransaction!.recurrenceDay2;
     }
     _amountController = TextEditingController(text: amount);
     _descController = TextEditingController(text: description);
@@ -56,17 +63,167 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
     super.dispose();
   }
 
-  final expenseCategories = [
-    {'value': 'food', 'label': 'Comida', 'emoji': '🍔'},
-    {'value': 'transport', 'label': 'Transporte', 'emoji': '🚗'},
-    {'value': 'shopping', 'label': 'Compras', 'emoji': '🛍️'},
-    {'value': 'bills', 'label': 'Servicios', 'emoji': '📱'},
-    {'value': 'entertainment', 'label': 'Ocio', 'emoji': '🎮'},
-    {'value': 'health', 'label': 'Salud', 'emoji': '💊'},
-    {'value': 'education', 'label': 'Educación', 'emoji': '📚'},
-    {'value': 'home', 'label': 'Hogar', 'emoji': '🏠'},
-    {'value': 'other', 'label': 'Otro', 'emoji': '💸'},
+  final List<Map<String, dynamic>> detailedCategories = [
+    {
+      'main': 'Comida', 'emoji': '🍔',
+      'subs': [
+        {'value': 'food', 'label': 'General', 'emoji': '🍔'},
+        {'value': 'food_grocery', 'label': 'Supermercado', 'emoji': '🛒'},
+        {'value': 'food_restaurant', 'label': 'Restaurante', 'emoji': '🍽️'},
+        {'value': 'food_coffee', 'label': 'Cafetería', 'emoji': '☕'},
+        {'value': 'food_delivery', 'label': 'Delivery', 'emoji': '🛵'},
+      ]
+    },
+    {
+      'main': 'Transporte', 'emoji': '🚗',
+      'subs': [
+        {'value': 'transport', 'label': 'General', 'emoji': '🚗'},
+        {'value': 'transport_gas', 'label': 'Gasolina', 'emoji': '⛽'},
+        {'value': 'transport_public', 'label': 'Transporte Público', 'emoji': '🚌'},
+        {'value': 'transport_taxi', 'label': 'Taxi / App', 'emoji': '🚕'},
+        {'value': 'transport_flight', 'label': 'Vuelos', 'emoji': '✈️'},
+      ]
+    },
+    {
+      'main': 'Servicios', 'emoji': '📱',
+      'subs': [
+        {'value': 'bills', 'label': 'General', 'emoji': '📱'},
+        {'value': 'bills_water', 'label': 'Agua', 'emoji': '💧'},
+        {'value': 'bills_electricity', 'label': 'Luz', 'emoji': '⚡'},
+        {'value': 'bills_internet', 'label': 'Internet / TV', 'emoji': '🌐'},
+        {'value': 'bills_gas', 'label': 'Gas', 'emoji': '🔥'},
+      ]
+    },
+    {
+      'main': 'Compras', 'emoji': '🛍️',
+      'subs': [
+        {'value': 'shopping', 'label': 'General', 'emoji': '🛍️'},
+        {'value': 'shopping_clothes', 'label': 'Ropa y Calzado', 'emoji': '👕'},
+        {'value': 'shopping_electronics', 'label': 'Electrónica', 'emoji': '💻'},
+        {'value': 'shopping_gifts', 'label': 'Regalos', 'emoji': '🎁'},
+      ]
+    },
+    {
+      'main': 'Ocio', 'emoji': '🎮',
+      'subs': [
+        {'value': 'entertainment', 'label': 'General', 'emoji': '🎮'},
+        {'value': 'entertainment_movies', 'label': 'Cine', 'emoji': '🍿'},
+        {'value': 'entertainment_music', 'label': 'Música', 'emoji': '🎵'},
+        {'value': 'entertainment_sports', 'label': 'Deportes', 'emoji': '⚽'},
+        {'value': 'entertainment_subscriptions', 'label': 'Suscripciones', 'emoji': '📺'},
+      ]
+    },
+    {
+      'main': 'Salud', 'emoji': '💊',
+      'subs': [
+        {'value': 'health', 'label': 'General', 'emoji': '💊'},
+        {'value': 'health_doctor', 'label': 'Médico', 'emoji': '👨‍⚕️'},
+        {'value': 'health_pharmacy', 'label': 'Farmacia', 'emoji': '🏥'},
+        {'value': 'health_gym', 'label': 'Gimnasio', 'emoji': '🏋️'},
+      ]
+    },
+    {
+      'main': 'Hogar', 'emoji': '🏠',
+      'subs': [
+        {'value': 'home', 'label': 'General', 'emoji': '🏠'},
+        {'value': 'home_rent', 'label': 'Alquiler / Hipoteca', 'emoji': '🏢'},
+        {'value': 'home_maintenance', 'label': 'Mantenimiento', 'emoji': '🔧'},
+        {'value': 'home_furniture', 'label': 'Muebles', 'emoji': '🛋️'},
+      ]
+    },
+    {
+      'main': 'Educación', 'emoji': '📚',
+      'subs': [
+        {'value': 'education', 'label': 'General', 'emoji': '📚'},
+        {'value': 'education_tuition', 'label': 'Colegiatura', 'emoji': '🏫'},
+        {'value': 'education_books', 'label': 'Libros / Material', 'emoji': '🎒'},
+        {'value': 'education_courses', 'label': 'Cursos', 'emoji': '🎓'},
+      ]
+    },
+    {
+      'main': 'Otro', 'emoji': '💸',
+      'subs': [
+        {'value': 'other', 'label': 'General', 'emoji': '💸'},
+      ]
+    },
   ];
+
+  Map<String, String> _getCategoryDetails(String val) {
+    for (var mainCat in detailedCategories) {
+      for (var sub in mainCat['subs']) {
+        if (sub['value'] == val) {
+          return {'label': sub['label']!, 'emoji': sub['emoji']!};
+        }
+      }
+    }
+    return {'label': 'Seleccionar Categoría', 'emoji': '📁'};
+  }
+
+  void _showCategoryPicker(bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(context).size.height * 0.75,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1F2937) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text('Seleccionar Categoría', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: detailedCategories.length,
+                itemBuilder: (ctx, i) {
+                  final mainCat = detailedCategories[i];
+                  return Theme(
+                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                    child: ExpansionTile(
+                      leading: Text(mainCat['emoji'], style: const TextStyle(fontSize: 24)),
+                      title: Text(mainCat['main'], style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
+                      children: (mainCat['subs'] as List).map<Widget>((sub) {
+                        return ListTile(
+                          contentPadding: const EdgeInsets.only(left: 72, right: 24),
+                          leading: Text(sub['emoji'], style: const TextStyle(fontSize: 20)),
+                          title: Text(sub['label'], style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800])),
+                          onTap: () {
+                            setState(() => category = sub['value']);
+                            Navigator.pop(ctx);
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDayDropdown(bool isDark, int value, ValueChanged<int?> onChanged, int maxDays) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : Colors.white, border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2), borderRadius: BorderRadius.circular(12)),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: value,
+          isExpanded: true,
+          dropdownColor: isDark ? const Color(0xFF374151) : Colors.white,
+          style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
+          items: List.generate(maxDays, (i) => DropdownMenuItem(value: i + 1, child: Text('${i + 1}'))),
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -156,42 +313,46 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                   // Category
                   Text('${loc.get('category')} 🏷️', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8, runSpacing: 8,
-                    children: expenseCategories.map((cat) {
-                      final isSelected = category == cat['value'];
-                      return InkWell(
-                        onTap: () => setState(() => category = cat['value']!),
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          width: (MediaQuery.of(context).size.width - 56) / 2, // 2 cols minus padding
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: isSelected 
-                                ? (isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.5) : const Color(0xFFFEE2E2)) 
-                                : (isDark ? const Color(0xFF374151) : Colors.white),
-                            border: Border.all(
-                              color: isSelected ? const Color(0xFFDC2626) : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
+                  InkWell(
+                    onTap: () => _showCategoryPicker(isDark),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      decoration: BoxDecoration(
+                        color: category.isNotEmpty 
+                            ? (isDark ? const Color(0xFFDC2626).withValues(alpha: 0.1) : const Color(0xFFFEE2E2).withValues(alpha: 0.5))
+                            : (isDark ? const Color(0xFF374151).withValues(alpha: 0.3) : Colors.grey[100]),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
                             children: [
-                              Text(cat['emoji']!, style: const TextStyle(fontSize: 20)),
-                              const SizedBox(width: 8),
-                              Expanded(child: Text(cat['label']!, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14))),
-                              if (isSelected) 
-                                Container(
-                                  width: 20, height: 20,
-                                  decoration: const BoxDecoration(color: Color(0xFFDC2626), shape: BoxShape.circle),
-                                  child: const Icon(Icons.check, color: Colors.white, size: 12),
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+                                ),
+                                child: Text(_getCategoryDetails(category)['emoji']!, style: const TextStyle(fontSize: 20)),
+                              ),
+                              const SizedBox(width: 16),
+                              Text(
+                                _getCategoryDetails(category)['label']!, 
+                                style: TextStyle(
+                                  color: category.isEmpty ? (isDark ? Colors.grey[500] : Colors.grey[400]) : (isDark ? Colors.white : Colors.black87), 
+                                  fontSize: 16, 
+                                  fontWeight: category.isEmpty ? FontWeight.normal : FontWeight.w600
                                 )
+                              ),
                             ],
                           ),
-                        ),
-                      );
-                    }).toList(),
+                          Icon(LucideIcons.chevronDown, color: isDark ? Colors.grey[500] : Colors.grey[400], size: 20),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 20),
 
@@ -219,21 +380,140 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                   // Date (Simplified for UI copy)
                   Text('${loc.get('date')} 📅', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF374151) : Colors.white,
-                      border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(LucideIcons.calendar, color: isDark ? Colors.grey[500] : Colors.grey[400]),
-                        const SizedBox(width: 12),
-                        Text('${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
-                      ],
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: date,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime.now(),
+                        builder: (context, child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: isDark 
+                                ? const ColorScheme.dark(primary: Color(0xFFDC2626), onPrimary: Colors.white, onSurface: Colors.white)
+                                : const ColorScheme.light(primary: Color(0xFFDC2626), onPrimary: Colors.white, onSurface: Colors.black),
+                            ),
+                            child: child!,
+                          );
+                        },
+                      );
+                      if (picked != null) {
+                        setState(() => date = picked);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF374151) : Colors.white,
+                        border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(LucideIcons.calendar, color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                              const SizedBox(width: 12),
+                              Text('${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16)),
+                            ],
+                          ),
+                          Icon(LucideIcons.edit2, size: 16, color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                        ],
+                      ),
                     ),
                   ),
+                  if (widget.isFixed) ...[
+                    const SizedBox(height: 20),
+                    Text('Frecuencia de cobro 🔄', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF374151) : Colors.white,
+                        border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: recurrenceType ?? 'monthly',
+                          isExpanded: true,
+                          dropdownColor: isDark ? const Color(0xFF374151) : Colors.white,
+                          style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
+                          items: const [
+                            DropdownMenuItem(value: 'monthly', child: Text('Mensual')),
+                            DropdownMenuItem(value: 'bimonthly', child: Text('Quincenal')),
+                            DropdownMenuItem(value: 'weekly', child: Text('Semanal')),
+                          ],
+                          onChanged: (val) {
+                            setState(() {
+                              recurrenceType = val;
+                              recurrenceDay = 1;
+                              recurrenceDay2 = (val == 'bimonthly') ? 15 : null;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    if (recurrenceType == 'monthly' || recurrenceType == null) ...[
+                      Text('Día de cobro', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                      const SizedBox(height: 8),
+                      _buildDayDropdown(isDark, recurrenceDay ?? 1, (val) => setState(() => recurrenceDay = val!), 31),
+                    ] else if (recurrenceType == 'bimonthly') ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Primer día', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                                const SizedBox(height: 8),
+                                _buildDayDropdown(isDark, recurrenceDay ?? 1, (val) => setState(() => recurrenceDay = val!), 31),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Segundo día', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                                const SizedBox(height: 8),
+                                _buildDayDropdown(isDark, recurrenceDay2 ?? 15, (val) => setState(() => recurrenceDay2 = val!), 31),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ] else if (recurrenceType == 'weekly') ...[
+                      Text('Día de la semana', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : Colors.white, border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2), borderRadius: BorderRadius.circular(12)),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<int>(
+                            value: recurrenceDay ?? 1,
+                            isExpanded: true, dropdownColor: isDark ? const Color(0xFF374151) : Colors.white,
+                            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
+                            items: const [
+                              DropdownMenuItem(value: 1, child: Text('Lunes')),
+                              DropdownMenuItem(value: 2, child: Text('Martes')),
+                              DropdownMenuItem(value: 3, child: Text('Miércoles')),
+                              DropdownMenuItem(value: 4, child: Text('Jueves')),
+                              DropdownMenuItem(value: 5, child: Text('Viernes')),
+                              DropdownMenuItem(value: 6, child: Text('Sábado')),
+                              DropdownMenuItem(value: 7, child: Text('Domingo')),
+                            ],
+                            onChanged: (val) => setState(() => recurrenceDay = val!),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                   const SizedBox(height: 24),
 
                   // Submit
@@ -258,6 +538,9 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                           description: description,
                           date: date,
                           isFixed: widget.isFixed,
+                          recurrenceType: widget.isFixed ? (recurrenceType ?? 'monthly') : null,
+                          recurrenceDay: widget.isFixed ? recurrenceDay : null,
+                          recurrenceDay2: widget.isFixed && recurrenceType == 'bimonthly' ? recurrenceDay2 : null,
                         );
 
                         if (isEditing) {

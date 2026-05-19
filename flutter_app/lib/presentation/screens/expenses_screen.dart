@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../widgets/modals/expenses_filter_modal.dart';
+import '../widgets/modals/expense_report_modal.dart';
 import '../widgets/modals/voice_expense_modal.dart';
 import '../widgets/modals/category_detail_modal.dart';
 import '../widgets/modals/add_debt_modal.dart';
@@ -22,20 +24,17 @@ class ExpensesScreen extends ConsumerStatefulWidget {
 }
 
 class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
-  late String selectedMonth;
+  late int selectedMonth;
+  late int selectedYear;
   String selectedCategory = 'Todas';
   String searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    try {
-      selectedMonth = DateFormat('MMMM', 'es').format(DateTime.now());
-      // Capitalize first letter
-      selectedMonth = selectedMonth[0].toUpperCase() + selectedMonth.substring(1);
-    } catch (_) {
-      selectedMonth = DateFormat('MMMM').format(DateTime.now());
-    }
+    final now = DateTime.now();
+    selectedMonth = now.month;
+    selectedYear = now.year;
   }
 
   // Category color mapping
@@ -91,6 +90,91 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
     return map[category] ?? '💰';
   }
 
+  List<dynamic> _getFilteredExpenses(List<dynamic> transactions) {
+    final allExpenses = transactions.where((t) => t.type == 'expense').toList();
+    
+    // Filter by month and year
+    var timeFiltered = allExpenses.where((t) {
+      return t.date.month == selectedMonth && t.date.year == selectedYear;
+    }).toList();
+
+    // Filter by category
+    if (selectedCategory != 'Todas') {
+      timeFiltered = timeFiltered.where((t) {
+        return t.category.startsWith(selectedCategory);
+      }).toList();
+    }
+
+    // Filter by search
+    if (searchQuery.isNotEmpty) {
+      timeFiltered = timeFiltered.where((t) =>
+        t.description.toLowerCase().contains(searchQuery.toLowerCase()) ||
+        t.category.toLowerCase().contains(searchQuery.toLowerCase())
+      ).toList();
+    }
+    
+    timeFiltered.sort((a, b) => b.date.compareTo(a.date));
+    return timeFiltered;
+  }
+
+  void _showReportModal(
+    BuildContext context, 
+    List<dynamic> transactions, 
+    List<dynamic> debtsList,
+    String? currencyCode,
+    int rMonth,
+    int rYear,
+    List<String> rCategories,
+    bool includeNormal,
+    bool includeFixed,
+    bool includeDebts,
+  ) {
+    var allExpenses = transactions.where((t) => t.type == 'expense').toList();
+    
+    var timeFiltered = allExpenses.where((t) {
+      if (!includeNormal && !t.isFixed) return false;
+      if (!includeFixed && t.isFixed) return false;
+      return t.date.month == rMonth && t.date.year == rYear;
+    }).toList();
+
+    if (!rCategories.contains('Todas')) {
+      timeFiltered = timeFiltered.where((t) => rCategories.any((c) => t.category.startsWith(c))).toList();
+    }
+
+    final categoryMap = <String, double>{};
+    for (var t in timeFiltered) {
+      categoryMap[t.category] = (categoryMap[t.category] ?? 0) + t.amount;
+    }
+
+    if (includeDebts) {
+      for (var debt in debtsList) {
+        if (debt.paidInstallments < debt.totalInstallments || debt.totalInstallments == 0) {
+          categoryMap['debt'] = (categoryMap['debt'] ?? 0) + debt.installmentAmount;
+        }
+      }
+    }
+
+    final totalExpenses = categoryMap.values.fold(0.0, (sum, val) => sum + val);
+    
+    final categoryList = categoryMap.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+      
+    String formattedMonth = DateFormat('MMMM yyyy', 'es').format(DateTime(rYear, rMonth));
+    formattedMonth = formattedMonth[0].toUpperCase() + formattedMonth.substring(1);
+    
+    String displayCategory = rCategories.contains('Todas') ? 'Todas' : (rCategories.length == 1 ? rCategories.first : 'Varias Categorías');
+      
+    ExpenseReportModal.show(
+      context,
+      categoryList: categoryList,
+      totalExpenses: totalExpenses,
+      selectedMonth: formattedMonth,
+      selectedCategory: displayCategory,
+      currencyCode: currencyCode,
+      transactions: timeFiltered,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -102,6 +186,10 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
     final authState = ref.watch(authProvider);
     final currencyCode = authState.user?.currency;
     final loc = ref.watch(localizationProvider);
+
+    String formattedMonth = DateFormat('MMMM', 'es').format(DateTime(selectedYear, selectedMonth));
+    formattedMonth = formattedMonth[0].toUpperCase() + formattedMonth.substring(1);
+    final displayMonthStr = '$formattedMonth $selectedYear';
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -121,7 +209,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              '$selectedMonth 2026${selectedCategory != 'Todas' ? ' • $selectedCategory' : ''}',
+              '$displayMonthStr${selectedCategory != 'Todas' ? ' • $selectedCategory' : ''}',
               style: TextStyle(
                 color: isDark ? Colors.grey[400] : Colors.grey[600],
               ),
@@ -225,17 +313,27 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                 const SizedBox(width: 12),
                 InkWell(
                   onTap: () async {
-                    final filters = await showModalBottomSheet<Map<String, String>>(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (context) => const ExpensesFilterModal(),
+                    final filters = await ExpensesFilterModal.show(
+                      context,
+                      initialMonth: selectedMonth,
+                      initialYear: selectedYear,
+                      initialCategories: ['Todas'],
                     );
                     if (filters != null) {
-                      setState(() {
-                        selectedMonth = filters['month']!;
-                        selectedCategory = filters['category']!;
-                      });
+                      final rMonth = filters['month'] as int;
+                      final rYear = filters['year'] as int;
+                      final rCategories = filters['categories'] as List<String>;
+                      final rNormal = filters['includeNormal'] as bool;
+                      final rFixed = filters['includeFixed'] as bool;
+                      final rDebts = filters['includeDebts'] as bool;
+                      
+                      final transactions = ref.read(transactionsProvider).value ?? [];
+                      final debtsList = ref.read(debtsProvider).value ?? [];
+                      
+                      _showReportModal(
+                        context, transactions, debtsList, currencyCode,
+                        rMonth, rYear, rCategories, rNormal, rFixed, rDebts
+                      );
                     }
                   },
                   borderRadius: BorderRadius.circular(16),
@@ -271,30 +369,11 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                 child: Text('Error al cargar gastos: $e', style: const TextStyle(color: Colors.white, fontSize: 14)),
               ),
               data: (transactions) {
-                final allExpenses = transactions.where((t) => t.type == 'expense').toList();
-                
-                // Filter by search
-                final filteredExpenses = searchQuery.isEmpty
-                    ? allExpenses
-                    : allExpenses.where((t) =>
-                        t.description.toLowerCase().contains(searchQuery.toLowerCase()) ||
-                        t.category.toLowerCase().contains(searchQuery.toLowerCase())
-                      ).toList();
-
-                // Sort by date descending
-                filteredExpenses.sort((a, b) => b.date.compareTo(a.date));
+                final filteredExpenses = _getFilteredExpenses(transactions);
 
                 final totalExpenses = filteredExpenses.fold(0.0, (sum, t) => sum + t.amount);
                 final totalIncome = transactions.where((t) => t.type == 'income').fold(0.0, (sum, t) => sum + t.amount);
                 final budgetPercentage = totalIncome > 0 ? (totalExpenses / totalIncome * 100).clamp(0.0, 100.0) : 0.0;
-
-                // Group by category
-                final categoryMap = <String, double>{};
-                for (var t in filteredExpenses) {
-                  categoryMap[t.category] = (categoryMap[t.category] ?? 0) + t.amount;
-                }
-                final categoryList = categoryMap.entries.toList()
-                  ..sort((a, b) => b.value.compareTo(a.value));
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -316,7 +395,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('${loc.get('total_expenses_month')} $selectedMonth', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                          Text('${loc.get('total_expenses_month')} $displayMonthStr', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
                           const SizedBox(height: 8),
                           Text(CurrencyFormatter.format(totalExpenses, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 16),
@@ -347,77 +426,155 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Category breakdown
-                    Text(loc.get('expenses_by_category'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
-                    const SizedBox(height: 12),
-                    if (categoryList.isEmpty)
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                          border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Center(child: Text('No hay gastos registrados', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400]))),
-                      ),
-                    ...categoryList.map((entry) {
-                      final percentage = totalExpenses > 0 ? (entry.value / totalExpenses * 100) : 0.0;
-                      final label = categoryLabels[entry.key] ?? '${_getCategoryEmoji(entry.key)} ${entry.key}';
-                      final color = categoryColors[entry.key] ?? const Color(0xFF64748B);
-                      final categoryData = {
-                        'category': label,
-                        'amount': entry.value,
-                        'percentage': percentage.round(),
-                        'color': color,
-                      };
-                      return InkWell(
-                        onTap: () => CategoryDetailModal.show(context, categoryData: categoryData),
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                            border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(label, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.w500)),
-                                  Text(CurrencyFormatter.format(entry.value, currencyCode), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Container(
-                                height: 8,
-                                width: double.infinity,
-                                decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(8)),
-                                child: FractionallySizedBox(
-                                  alignment: Alignment.centerLeft,
-                                  widthFactor: (percentage / 100).clamp(0.0, 1.0),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: color,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
+                    const SizedBox(height: 24),
+
+                    // Active Fixed Expenses Section
+                    Builder(
+                      builder: (context) {
+                        final allExpenses = transactionsAsync.value ?? [];
+                        final fixedExpenses = allExpenses.where((t) => t.isFixed).toList();
+                        fixedExpenses.sort((a, b) => b.date.compareTo(a.date)); // Sort to get latest
+                        final uniqueFixedExpenses = <String, dynamic>{};
+                        for (var t in fixedExpenses) {
+                          final key = t.description.isNotEmpty ? t.description : t.category;
+                          if (!uniqueFixedExpenses.containsKey(key)) {
+                            uniqueFixedExpenses[key] = t;
+                          }
+                        }
+                        final activeFixedList = uniqueFixedExpenses.values.toList();
+
+                        if (activeFixedList.isEmpty) return const SizedBox.shrink();
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Suscripciones y Gastos Fijos', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
+                            const SizedBox(height: 12),
+                            ...activeFixedList.map((expense) {
+                              return InkWell(
+                                onTap: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (context) {
+                                      return Container(
+                                        padding: const EdgeInsets.all(24),
+                                        decoration: BoxDecoration(
+                                          color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                                          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text('Detalle de Suscripción', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+                                            const SizedBox(height: 16),
+                                            Text('Concepto: ${expense.description.isNotEmpty ? expense.description : expense.category}', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800], fontSize: 16)),
+                                            const SizedBox(height: 8),
+                                            Text('Monto: ${CurrencyFormatter.format(expense.amount, currencyCode)}', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800], fontSize: 16)),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              'Día de cobro: ${expense.recurrenceType == 'bimonthly' ? '${expense.recurrenceDay} y ${expense.recurrenceDay2}' : expense.recurrenceDay}',
+                                              style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800], fontSize: 16)
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text('Frecuencia: ${expense.recurrenceType == 'weekly' ? 'Semanal' : (expense.recurrenceType == 'bimonthly' ? 'Quincenal' : 'Mensual')}', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800], fontSize: 16)),
+                                            const SizedBox(height: 24),
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: ElevatedButton(
+                                                onPressed: () => Navigator.of(context).pop(),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: isDark ? const Color(0xFF4F46E5) : const Color(0xFF4338CA),
+                                                  foregroundColor: Colors.white,
+                                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                ),
+                                                child: const Text('Cerrar'),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      );
+                                    }
+                                  );
+                                },
+                                borderRadius: BorderRadius.circular(16),
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                                    border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 48, height: 48,
+                                        decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), shape: BoxShape.circle),
+                                        child: Center(child: Text(_getCategoryEmoji(expense.category), style: const TextStyle(fontSize: 22))),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(expense.description.isNotEmpty ? expense.description : expense.category, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Cobro ${expense.recurrenceType == 'weekly' ? 'Semanal' : (expense.recurrenceType == 'bimonthly' ? 'Quincenal' : 'Mensual')}',
+                                              style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Text(CurrencyFormatter.format(expense.amount, currencyCode), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+                                      PopupMenuButton<String>(
+                                        icon: Icon(LucideIcons.moreVertical, color: isDark ? Colors.grey[400] : Colors.grey[600], size: 20),
+                                        color: isDark ? const Color(0xFF374151) : Colors.white,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        onSelected: (value) {
+                                          if (value == 'edit') {
+                                            AddExpenseModal.show(context, isFixed: true, existingTransaction: expense);
+                                          } else if (value == 'delete') {
+                                            ref.read(transactionNotifierProvider.notifier).deleteTransaction(expense.id);
+                                          }
+                                        },
+                                        itemBuilder: (context) => [
+                                          PopupMenuItem(
+                                            value: 'edit',
+                                            child: Row(
+                                              children: [
+                                                Icon(LucideIcons.edit2, size: 18, color: isDark ? Colors.grey[300] : Colors.grey[700]),
+                                                const SizedBox(width: 8),
+                                                Text('Editar', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+                                              ],
+                                            ),
+                                          ),
+                                          const PopupMenuItem(
+                                            value: 'delete',
+                                            child: Row(
+                                              children: [
+                                                Icon(LucideIcons.trash2, size: 18, color: Colors.redAccent),
+                                                const SizedBox(width: 8),
+                                                Text('Eliminar', style: TextStyle(color: Colors.redAccent)),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text('${percentage.toStringAsFixed(1)}% del total', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                              )
-                            ],
-                          ),
-                        ),
-                      );
-                    }),
-                    const SizedBox(height: 24),
+                              );
+                            }),
+                            const SizedBox(height: 24),
+                          ],
+                        );
+                      }
+                    ),
 
                     // Recent expense history
                     Text('Historial de Gastos', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
@@ -525,31 +682,43 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
               loading: () => const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator())),
               error: (e, _) => Text('Error al cargar deudas: $e', style: const TextStyle(color: Colors.red)),
               data: (debtsList) {
-                if (debtsList.isEmpty) {
-                  return InkWell(
-                    onTap: () => AddDebtModal.show(context, currencyCode: currencyCode),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 24),
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                        border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                final activeDebts = debtsList.where((d) => d.paidInstallments < d.totalInstallments).toList();
+                
+                if (activeDebts.isEmpty) {
+                  return Column(
+                    children: [
+                      if (debtsList.isNotEmpty) // There are debts, but all are paid
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Text('¡Felicidades! No tienes deudas activas.', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
+                        ),
+                      InkWell(
+                        onTap: () => AddDebtModal.show(context, currencyCode: currencyCode),
                         borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 24),
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                            border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(LucideIcons.plus, color: isDark ? Colors.grey[400] : Colors.grey[500], size: 18),
+                              const SizedBox(width: 8),
+                              Text(debtsList.isEmpty ? 'Agregar primera deuda' : 'Agregar nueva deuda', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500])),
+                            ],
+                          ),
+                        ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(LucideIcons.plus, color: isDark ? Colors.grey[400] : Colors.grey[500], size: 18),
-                          const SizedBox(width: 8),
-                          Text('Agregar primera deuda', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500])),
-                        ],
-                      ),
-                    ),
+                    ],
                   );
                 }
+
                 return Column(
-                  children: debtsList.map((debt) {
+                  children: activeDebts.map((debt) {
                     final progress = debt.totalInstallments > 0 ? (debt.paidInstallments / debt.totalInstallments) : 0.0;
                     final isFullyPaid = debt.paidInstallments >= debt.totalInstallments;
                     return InkWell(
@@ -561,9 +730,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                         decoration: BoxDecoration(
                           color: isDark ? const Color(0xFF1F2937) : Colors.white,
                           border: Border.all(
-                            color: isFullyPaid 
-                              ? (isDark ? const Color(0xFF047857) : const Color(0xFF6EE7B7))
-                              : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                            color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
                           ),
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
@@ -583,7 +750,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Expanded(child: Text('${debt.name}${isFullyPaid ? ' ✅' : ''}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 14), overflow: TextOverflow.ellipsis)),
+                                      Expanded(child: Text(debt.name, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 14), overflow: TextOverflow.ellipsis)),
                                       Text('${CurrencyFormatter.format(debt.installmentAmount, currencyCode)}/cuota', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
                                     ],
                                   ),

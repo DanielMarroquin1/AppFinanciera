@@ -16,7 +16,9 @@ import '../providers/auth_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/localization.dart';
+import '../widgets/modals/quick_action_manager_modal.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -29,13 +31,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
   int _budgetLimitPercentage = 80;
   late AnimationController _fireAnimController;
 
-  // Mock badge data
-  final List<Map<String, String>> unlockedBadges = [
-    {'id': 'first-save', 'emoji': '🎯', 'name': 'Primer Ahorro'},
-    {'id': 'week-streak', 'emoji': '🔥', 'name': 'Racha Semanal'},
-    {'id': 'budget-control', 'emoji': '✅', 'name': 'Bajo Control'},
-    {'id': 'profile-complete', 'emoji': '👤', 'name': 'Perfil Completo'},
-  ];
 
   @override
   void initState() {
@@ -58,12 +53,30 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
+    
+    final realBadges = <Map<String, String>>[];
+    if (user?.profileComplete == true) {
+      realBadges.add({'id': 'profile-complete', 'emoji': '👤', 'name': 'Perfil Completo'});
+    }
+    if ((user?.currentStreak ?? 0) >= 7) {
+      realBadges.add({'id': 'week-streak', 'emoji': '🔥', 'name': 'Racha Semanal'});
+    }
+    if ((user?.currentStreak ?? 0) >= 30) {
+      realBadges.add({'id': 'month-streak', 'emoji': '⭐', 'name': 'Racha Mensual'});
+    }
+    if ((user?.unlockedItems.length ?? 0) > 0) {
+      realBadges.add({'id': 'shopper', 'emoji': '🛍️', 'name': 'Comprador'});
+    }
+    if (realBadges.isEmpty) {
+      realBadges.add({'id': 'first-step', 'emoji': '🌱', 'name': 'Primer Paso'});
+    }
     final isDark = Theme.of(context).brightness == Brightness.dark;
     ref.watch(colorPaletteProvider);
     final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
     
-    final authState = ref.watch(authProvider);
-    final user = authState.user;
+
 
     final transactionsAsync = ref.watch(transactionsProvider);
     final loc = ref.watch(localizationProvider);
@@ -374,6 +387,80 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             ),
             const SizedBox(height: 24),
 
+            // Quick Actions inline
+            Text(loc.get('quick_actions'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () => QuickActionManagerModal.show(context, type: 'income'),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF14532D).withValues(alpha: 0.3) : const Color(0xFFF0FDF4),
+                        border: Border.all(color: isDark ? const Color(0xFF166534) : const Color(0xFFBBF7D0), width: 2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(LucideIcons.trendingUp, color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A), size: 22),
+                          const SizedBox(height: 6),
+                          Text('Ingresos', style: TextStyle(color: isDark ? const Color(0xFFBBF7D0) : const Color(0xFF14532D), fontSize: 11, fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => QuickActionManagerModal.show(context, type: 'expense'),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.3) : const Color(0xFFFEF2F2),
+                        border: Border.all(color: isDark ? const Color(0xFF991B1B) : const Color(0xFFFECACA), width: 2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(LucideIcons.trendingDown, color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), size: 22),
+                          const SizedBox(height: 6),
+                          Text('Gastos', style: TextStyle(color: isDark ? const Color(0xFFFECACA) : const Color(0xFF7F1D1D), fontSize: 11, fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => context.go('/debts'),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E3A5F).withValues(alpha: 0.3) : const Color(0xFFEFF6FF),
+                        border: Border.all(color: isDark ? const Color(0xFF1D4ED8) : const Color(0xFFBFDBFE), width: 2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(LucideIcons.creditCard, color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), size: 22),
+                          const SizedBox(height: 6),
+                          Text('Deudas', style: TextStyle(color: isDark ? const Color(0xFFBFDBFE) : const Color(0xFF1E3A8A), fontSize: 11, fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
             // Badges Section (Insignias Desbloqueadas)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -390,10 +477,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
               height: 100,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: unlockedBadges.length,
+                itemCount: realBadges.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
-                  final badge = unlockedBadges[index];
+                  final badge = realBadges[index];
                   return Container(
                     width: 88,
                     padding: const EdgeInsets.all(10),
@@ -440,80 +527,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   );
                 },
               ),
-            ),
-            const SizedBox(height: 24),
-
-            // Quick Actions inline
-            Text(loc.get('quick_actions'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () => AddIncomeModal.show(context),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF14532D).withValues(alpha: 0.3) : const Color(0xFFF0FDF4),
-                        border: Border.all(color: isDark ? const Color(0xFF166534) : const Color(0xFFBBF7D0), width: 2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(LucideIcons.trendingUp, color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A), size: 22),
-                          const SizedBox(height: 6),
-                          Text(loc.get('income_action'), style: TextStyle(color: isDark ? const Color(0xFFBBF7D0) : const Color(0xFF14532D), fontSize: 11, fontWeight: FontWeight.w500)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: InkWell(
-                    onTap: () => AddExpenseModal.show(context),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.3) : const Color(0xFFFEF2F2),
-                        border: Border.all(color: isDark ? const Color(0xFF991B1B) : const Color(0xFFFECACA), width: 2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(LucideIcons.trendingDown, color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), size: 22),
-                          const SizedBox(height: 6),
-                          Text(loc.get('expense_action'), style: TextStyle(color: isDark ? const Color(0xFFFECACA) : const Color(0xFF7F1D1D), fontSize: 11, fontWeight: FontWeight.w500)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: InkWell(
-                    onTap: () => AddIncomeModal.show(context, isFixed: true),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E3A5F).withValues(alpha: 0.3) : const Color(0xFFEFF6FF),
-                        border: Border.all(color: isDark ? const Color(0xFF1D4ED8) : const Color(0xFFBFDBFE), width: 2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(LucideIcons.repeat, color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), size: 22),
-                          const SizedBox(height: 6),
-                          Text(loc.get('fixed_income'), style: TextStyle(color: isDark ? const Color(0xFFBFDBFE) : const Color(0xFF1E3A8A), fontSize: 11, fontWeight: FontWeight.w500)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
             ),
             const SizedBox(height: 24),
 

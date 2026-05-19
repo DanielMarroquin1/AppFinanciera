@@ -156,6 +156,11 @@ class AuthNotifier extends Notifier<AuthState> {
 
     // Award points: base 50 + 5 per consecutive day
     newPoints += 50 + (newStreak * 5);
+    
+    // Bonus points every 5 consecutive days
+    if (newStreak % 5 == 0 && newStreak > 0) {
+      newPoints += 200;
+    }
 
     final updatedUser = user.copyWith(
       lastActiveDate: todayStr,

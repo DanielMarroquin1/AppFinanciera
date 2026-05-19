@@ -21,7 +21,7 @@ class AppShell extends ConsumerWidget {
     int currentIndex = -1;
     if (location == '/dashboard') currentIndex = 0;
     if (location == '/expenses') currentIndex = 1;
-    if (location == '/debts') currentIndex = 3;
+    if (location == '/savings') currentIndex = 3;
     if (location == '/settings') currentIndex = 4;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -96,7 +96,7 @@ class AppShell extends ConsumerWidget {
               _buildNavItem(context, 'Inicio', LucideIcons.home, currentIndex == 0, '/dashboard', palette.colors[0]),
               _buildNavItem(context, 'Gastos', LucideIcons.trendingUp, currentIndex == 1, '/expenses', palette.colors[0]),
               const SizedBox(width: 48), // Space for FAB
-              _buildNavItem(context, 'Deudas', LucideIcons.creditCard, currentIndex == 3, '/debts', palette.colors[0]),
+              _buildNavItem(context, 'Ahorros', LucideIcons.piggyBank, currentIndex == 3, '/savings', palette.colors[0]),
               _buildNavItem(context, 'Ajustes', LucideIcons.settings, currentIndex == 4, '/settings', palette.colors[0]),
             ],
           ),

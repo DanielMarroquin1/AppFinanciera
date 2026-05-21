@@ -1,5 +1,7 @@
 class AIConfig {
-  static const String apiKey = 'AIzaSyALHNps59qPTmPyhSYay3cLydfmXsWfL_g';
+  // API Key se pasa por variable de entorno al compilar:
+  // flutter run --dart-define=GEMINI_API_KEY=tu_clave_aqui
+  static const String apiKey = String.fromEnvironment('GEMINI_API_KEY');
   static const String modelName = 'gemini-2.5-flash';
   static const String assistantName = 'Zent AI';
 

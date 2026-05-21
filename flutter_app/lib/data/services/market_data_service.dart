@@ -3,7 +3,9 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 class MarketDataService {
-  static const String _apiKey = 'LfypcStlQ2AKOxUeKtl7wCpqbuhrJXt3';
+  // API Key se pasa por variable de entorno al compilar:
+  // flutter run --dart-define=MASSIVE_API_KEY=tu_clave_aqui
+  static const String _apiKey = String.fromEnvironment('MASSIVE_API_KEY');
 
   /// Busca datos financieros en tiempo real consultando la API de Massive (antes Polygon)
   static Future<Map<String, dynamic>> getStockData(String ticker) async {

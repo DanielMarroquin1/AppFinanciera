@@ -8,6 +8,8 @@ import '../widgets/modals/streak_modal.dart';
 import '../widgets/modals/budget_limit_modal.dart';
 import '../widgets/modals/ai_chat_modal.dart';
 import '../widgets/modals/transactions_list_modal.dart';
+import '../widgets/modals/credit_cards_modal.dart';
+import '../widgets/modals/badges_modal.dart';
 import '../widgets/modals/edit_profile_modal.dart';
 import '../widgets/modals/daily_tip_modal.dart';
 import '../widgets/modals/complete_profile_modal.dart';
@@ -390,75 +392,97 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             // Quick Actions inline
             Text(loc.get('quick_actions'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () => QuickActionManagerModal.show(context, type: 'income'),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF14532D).withValues(alpha: 0.3) : const Color(0xFFF0FDF4),
-                        border: Border.all(color: isDark ? const Color(0xFF166534) : const Color(0xFFBBF7D0), width: 2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(LucideIcons.trendingUp, color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A), size: 22),
-                          const SizedBox(height: 6),
-                          Text('Ingresos', style: TextStyle(color: isDark ? const Color(0xFFBBF7D0) : const Color(0xFF14532D), fontSize: 11, fontWeight: FontWeight.w500)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: InkWell(
-                    onTap: () => QuickActionManagerModal.show(context, type: 'expense'),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.3) : const Color(0xFFFEF2F2),
-                        border: Border.all(color: isDark ? const Color(0xFF991B1B) : const Color(0xFFFECACA), width: 2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(LucideIcons.trendingDown, color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), size: 22),
-                          const SizedBox(height: 6),
-                          Text('Gastos', style: TextStyle(color: isDark ? const Color(0xFFFECACA) : const Color(0xFF7F1D1D), fontSize: 11, fontWeight: FontWeight.w500)),
-                        ],
+              Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => QuickActionManagerModal.show(context, type: 'income'),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF14532D).withValues(alpha: 0.3) : const Color(0xFFF0FDF4),
+                          border: Border.all(color: isDark ? const Color(0xFF166534) : const Color(0xFFBBF7D0), width: 2),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(LucideIcons.trendingUp, color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A), size: 22),
+                            const SizedBox(height: 6),
+                            Text('Ingresos', style: TextStyle(color: isDark ? const Color(0xFFBBF7D0) : const Color(0xFF14532D), fontSize: 10, fontWeight: FontWeight.w500)),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: InkWell(
-                    onTap: () => context.go('/debts'),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E3A5F).withValues(alpha: 0.3) : const Color(0xFFEFF6FF),
-                        border: Border.all(color: isDark ? const Color(0xFF1D4ED8) : const Color(0xFFBFDBFE), width: 2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(LucideIcons.creditCard, color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), size: 22),
-                          const SizedBox(height: 6),
-                          Text('Deudas', style: TextStyle(color: isDark ? const Color(0xFFBFDBFE) : const Color(0xFF1E3A8A), fontSize: 11, fontWeight: FontWeight.w500)),
-                        ],
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => QuickActionManagerModal.show(context, type: 'expense'),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.3) : const Color(0xFFFEF2F2),
+                          border: Border.all(color: isDark ? const Color(0xFF991B1B) : const Color(0xFFFECACA), width: 2),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(LucideIcons.trendingDown, color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), size: 22),
+                            const SizedBox(height: 6),
+                            Text('Gastos', style: TextStyle(color: isDark ? const Color(0xFFFECACA) : const Color(0xFF7F1D1D), fontSize: 10, fontWeight: FontWeight.w500)),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => context.go('/debts'),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E3A5F).withValues(alpha: 0.3) : const Color(0xFFEFF6FF),
+                          border: Border.all(color: isDark ? const Color(0xFF1D4ED8) : const Color(0xFFBFDBFE), width: 2),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(LucideIcons.wallet, color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), size: 22),
+                            const SizedBox(height: 6),
+                            Text('Deudas', style: TextStyle(color: isDark ? const Color(0xFFBFDBFE) : const Color(0xFF1E3A8A), fontSize: 10, fontWeight: FontWeight.w500)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => CreditCardsModal.show(context),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF92400E).withValues(alpha: 0.3) : const Color(0xFFFFFBEB),
+                          border: Border.all(color: isDark ? const Color(0xFFD97706) : const Color(0xFFFDE68A), width: 2),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(LucideIcons.creditCard, color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), size: 22),
+                            const SizedBox(height: 6),
+                            Text('Tarjetas', style: TextStyle(color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E), fontSize: 10, fontWeight: FontWeight.w500)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             const SizedBox(height: 24),
 
             // Badges Section (Insignias Desbloqueadas)
@@ -467,7 +491,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
               children: [
                 Text(loc.get('unlocked_badges'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
                 TextButton(
-                  onPressed: () => RewardsShopModal.show(context),
+                  onPressed: () => BadgesModal.show(context),
                   child: Text(loc.get('see_all'), style: TextStyle(color: paletteGradient[0], fontSize: 12)),
                 ),
               ],

@@ -20,11 +20,10 @@ class StreakModal extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    // Configuración de los días de la semana (L, M, M, J, V, S, D)
-    final days = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
-    // Generate dynamic completed days based on streak modulo 7
-    final displayStreak = currentStreak > 0 ? ((currentStreak - 1) % 7) + 1 : 0;
-    final completedDays = List.generate(7, (index) => index < displayStreak);
+    // Generate dynamic completed days based on streak modulo 5
+    int progress = currentStreak % 5;
+    if (progress == 0 && currentStreak > 0) progress = 5;
+    final completedDays = List.generate(5, (index) => index < progress);
 
     return Dialog(
       shape: RoundedRectangleBorder(
@@ -100,37 +99,49 @@ class StreakModal extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             
-            // Calendario de semana (L-D)
+            // 5-step progress (Duolingo style)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(7, (index) {
+              children: List.generate(5, (index) {
                 final isCompleted = completedDays[index];
+                final isChest = index == 4; // The 5th day is the bonus chest
                 return Column(
                   children: [
                     Text(
-                      days[index],
+                      'Día ${index + 1}',
                       style: TextStyle(
                         color: isCompleted 
                             ? (isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C))
                             : (isDark ? Colors.grey[600] : Colors.grey[400]),
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 12,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      width: 32,
-                      height: 32,
+                      width: isChest ? 48 : 40,
+                      height: isChest ? 48 : 40,
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
+                        shape: isChest ? BoxShape.rectangle : BoxShape.circle,
+                        borderRadius: isChest ? BorderRadius.circular(12) : null,
                         color: isCompleted 
                             ? (isDark ? const Color(0xFFEA580C) : const Color(0xFFF97316))
                             : (isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
+                        border: isChest && !isCompleted ? Border.all(
+                          color: isDark ? const Color(0xFFF59E0B).withOpacity(0.5) : const Color(0xFFFCD34D),
+                          width: 2,
+                        ) : null,
                       ),
-                      child: isCompleted
-                          ? const Icon(LucideIcons.check, color: Colors.white, size: 16)
-                          : null,
-                    )
+                      child: isChest 
+                          ? Icon(LucideIcons.gift, color: isCompleted ? Colors.white : (isDark ? const Color(0xFFF59E0B) : const Color(0xFFF59E0B)), size: 24)
+                          : (isCompleted
+                              ? const Icon(LucideIcons.check, color: Colors.white, size: 20)
+                              : null),
+                    ),
+                    if (isChest) ...[
+                      const SizedBox(height: 4),
+                      Text('+200 pts', style: TextStyle(color: isDark ? const Color(0xFFFCD34D) : const Color(0xFFD97706), fontSize: 10, fontWeight: FontWeight.bold)),
+                    ]
                   ],
                 );
               }),

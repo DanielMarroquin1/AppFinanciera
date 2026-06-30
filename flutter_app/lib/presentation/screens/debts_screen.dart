@@ -5,6 +5,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../providers/color_palette_provider.dart';
 import '../providers/debts_provider.dart';
 import '../../domain/entities/debt.dart';
+import '../../domain/entities/transaction.dart';
+import '../providers/transaction_provider.dart';
+import 'package:go_router/go_router.dart';
 
 class DebtsScreen extends ConsumerStatefulWidget {
   const DebtsScreen({super.key});
@@ -14,6 +17,7 @@ class DebtsScreen extends ConsumerStatefulWidget {
 }
 
 class _DebtsScreenState extends ConsumerState<DebtsScreen> {
+  bool _showCompleted = false;
 
   double _getDebtTotalAmount(DebtModel d) => d.installmentAmount * d.totalInstallments;
   double _getDebtPaidAmount(DebtModel d) => d.installmentAmount * d.paidInstallments;
@@ -85,10 +89,26 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                           Navigator.of(ctx).pop();
                           final newDebt = debt.copyWith(paidInstallments: debt.paidInstallments + 1);
                           await ref.read(debtNotifierProvider.notifier).updateDebt(newDebt);
+                          
+                          final uid = FirebaseAuth.instance.currentUser?.uid;
+                          if (uid != null) {
+                            final transaction = TransactionModel(
+                              id: '',
+                              userId: uid,
+                              amount: debt.installmentAmount,
+                              type: 'expense',
+                              category: debt.category,
+                              description: 'Cuota de ${debt.name}',
+                              date: DateTime.now(),
+                              isFixed: false,
+                            );
+                            await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
+                          }
+                          
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('¡Cuota #${newDebt.paidInstallments} de ${newDebt.name} registrada! 🎉'),
+                                content: Text('¡Cuota #${newDebt.paidInstallments} de ${newDebt.name} registrada como gasto! 🎉'),
                                 backgroundColor: const Color(0xFF10B981),
                                 behavior: SnackBarBehavior.floating,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -314,9 +334,33 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Header
-                Text('Mis Deudas 💳', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
-                const SizedBox(height: 4),
-                Text('Control de pagos a cuotas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
+                Row(
+                  children: [
+                    InkWell(
+                      onTap: () => context.go('/dashboard'),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(LucideIcons.arrowLeft, color: isDark ? Colors.white : Colors.black),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Mis Deudas 💳', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                          const SizedBox(height: 4),
+                          Text('Control de pagos a cuotas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 24),
 
                 // Summary Card
@@ -410,12 +454,38 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                   ...activeDebts.map((debt) => _buildDebtCard(debt, isDark, paletteGradient)),
                 ],
 
-                // Completed
+                // Completed toggle
                 if (completedDebts.isNotEmpty) ...[
                   const SizedBox(height: 24),
-                  Text('Deudas Completadas ✅', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
-                  const SizedBox(height: 12),
-                  ...completedDebts.map((debt) => _buildDebtCard(debt, isDark, paletteGradient)),
+                  InkWell(
+                    onTap: () => setState(() => _showCompleted = !_showCompleted),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                        border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(LucideIcons.history, color: isDark ? Colors.grey[400] : Colors.grey[600], size: 20),
+                              const SizedBox(width: 8),
+                              Text('Historial de Pagadas (${completedDebts.length})', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          Icon(_showCompleted ? LucideIcons.chevronUp : LucideIcons.chevronDown, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (_showCompleted) ...[
+                    const SizedBox(height: 16),
+                    ...completedDebts.map((debt) => _buildDebtCard(debt, isDark, paletteGradient)),
+                  ],
                 ],
 
                 const SizedBox(height: 80),

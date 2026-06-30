@@ -1,19 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-class StreakModal extends StatelessWidget {
+class StreakModal extends StatefulWidget {
   final int currentStreak;
+  final bool isActiveToday;
 
   const StreakModal({
     super.key,
     required this.currentStreak,
+    required this.isActiveToday,
   });
 
-  static Future<void> show(BuildContext context, {required int streak}) {
+  @override
+  State<StreakModal> createState() => _StreakModalState();
+
+
+  static Future<void> show(BuildContext context, {required int streak, required bool isActiveToday}) {
     return showDialog(
       context: context,
-      builder: (context) => StreakModal(currentStreak: streak),
+      builder: (context) => StreakModal(currentStreak: streak, isActiveToday: isActiveToday),
     );
+  }
+}
+
+class _StreakModalState extends State<StreakModal> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -21,8 +46,8 @@ class StreakModal extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     // Generate dynamic completed days based on streak modulo 5
-    int progress = currentStreak % 5;
-    if (progress == 0 && currentStreak > 0) progress = 5;
+    int progress = widget.currentStreak % 5;
+    if (progress == 0 && widget.currentStreak > 0) progress = 5;
     final completedDays = List.generate(5, (index) => index < progress);
 
     return Dialog(
@@ -56,23 +81,37 @@ class StreakModal extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isDark ? const Color(0xFF7C2D12) : const Color(0xFFFFF7ED),
+                color: widget.isActiveToday
+                    ? (isDark ? const Color(0xFF7C2D12) : const Color(0xFFFFF7ED))
+                    : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
                 border: Border.all(
-                  color: isDark ? const Color(0xFFC2410C) : const Color(0xFFFDBA74),
+                  color: widget.isActiveToday
+                      ? (isDark ? const Color(0xFFC2410C) : const Color(0xFFFDBA74))
+                      : (isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB)),
                   width: 3,
                 )
               ),
-              child: Icon(
-                LucideIcons.flame,
-                size: 48,
-                color: isDark ? const Color(0xFFF97316) : const Color(0xFFEA580C),
+              child: AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: widget.isActiveToday ? 1.0 + (_controller.value * 0.2) : 1.0,
+                    child: Icon(
+                      LucideIcons.flame,
+                      size: 48,
+                      color: widget.isActiveToday
+                          ? (isDark ? const Color(0xFFF97316) : const Color(0xFFEA580C))
+                          : (isDark ? Colors.grey[500] : Colors.grey[400]),
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 16),
             
             // Número de la Racha
             Text(
-              '$currentStreak',
+              '${widget.currentStreak}',
               style: TextStyle(
                 fontSize: 48,
                 fontWeight: FontWeight.bold,
@@ -81,7 +120,7 @@ class StreakModal extends StatelessWidget {
               ),
             ),
             Text(
-              currentStreak == 1 ? 'días de racha' : 'días de racha',
+              widget.currentStreak == 1 ? 'días de racha' : 'días de racha',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -90,7 +129,9 @@ class StreakModal extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '¡Estás en fuego! Ingresa tus gastos e ingresos cada día para mantenerla viva.',
+              widget.isActiveToday
+                  ? '¡Estás en fuego! Ingresa tus gastos e ingresos cada día para mantenerla viva.'
+                  : 'Registra al menos un ingreso o gasto hoy para activar tu racha diaria.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: isDark ? Colors.grey[400] : Colors.grey[600],

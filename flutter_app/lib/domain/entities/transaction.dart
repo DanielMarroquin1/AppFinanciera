@@ -12,6 +12,7 @@ class TransactionModel {
   final String? recurrenceType; // 'monthly', 'bimonthly' (2 times/month), 'weekly', null
   final int? recurrenceDay; // primary day of month (1-31) or day of week (1-7 for weekly)
   final int? recurrenceDay2; // secondary day for bimonthly (e.g. pay on 15 and 30)
+  final String? creditCardId; // Si es null, fue en efectivo/cuenta. Si tiene ID, fue con TC.
 
   TransactionModel({
     required this.id,
@@ -25,6 +26,7 @@ class TransactionModel {
     this.recurrenceType,
     this.recurrenceDay,
     this.recurrenceDay2,
+    this.creditCardId,
   });
 
   factory TransactionModel.fromFirestore(DocumentSnapshot doc) {
@@ -41,6 +43,7 @@ class TransactionModel {
       recurrenceType: data['recurrenceType'],
       recurrenceDay: data['recurrenceDay'],
       recurrenceDay2: data['recurrenceDay2'],
+      creditCardId: data['creditCardId'],
     );
   }
 
@@ -56,6 +59,7 @@ class TransactionModel {
       if (recurrenceType != null) 'recurrenceType': recurrenceType,
       if (recurrenceDay != null) 'recurrenceDay': recurrenceDay,
       if (recurrenceDay2 != null) 'recurrenceDay2': recurrenceDay2,
+      'creditCardId': creditCardId,
     };
   }
 
@@ -71,6 +75,7 @@ class TransactionModel {
     String? recurrenceType,
     int? recurrenceDay,
     int? recurrenceDay2,
+    String? creditCardId,
   }) {
     return TransactionModel(
       id: id ?? this.id,
@@ -84,6 +89,7 @@ class TransactionModel {
       recurrenceType: recurrenceType ?? this.recurrenceType,
       recurrenceDay: recurrenceDay ?? this.recurrenceDay,
       recurrenceDay2: recurrenceDay2 ?? this.recurrenceDay2,
+      creditCardId: creditCardId ?? this.creditCardId,
     );
   }
 

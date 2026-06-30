@@ -3,10 +3,12 @@ import 'package:go_router/go_router.dart';
 import '../../presentation/screens/login_screen.dart';
 import '../../presentation/screens/dashboard_screen.dart';
 import '../../presentation/screens/expenses_screen.dart';
+import '../../presentation/screens/income_screen.dart';
 import '../../presentation/screens/savings_screen.dart';
 import '../../presentation/screens/settings_screen.dart';
 import '../../presentation/screens/statistics_screen.dart';
 import '../../presentation/screens/debts_screen.dart';
+import '../../presentation/screens/onboarding_screen.dart';
 import '../../presentation/widgets/app_shell.dart';
 
 // Definición de GlobalKeys para enrutamiento anidado
@@ -14,10 +16,11 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 class AppRouter {
-  static final router = GoRouter(
-    navigatorKey: _rootNavigatorKey,
-    initialLocation: '/login', // TODO: Implement Redirect based on auth
-    routes: [
+  static GoRouter createRouter(bool hasSeenOnboarding) {
+    return GoRouter(
+      navigatorKey: _rootNavigatorKey,
+      initialLocation: '/login', // Removed onboarding logic per user request
+      routes: [
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
@@ -45,6 +48,10 @@ class AppRouter {
             builder: (context, state) => const DebtsScreen(),
           ),
           GoRoute(
+            path: '/incomes',
+            builder: (context, state) => const IncomeScreen(),
+          ),
+          GoRoute(
             path: '/settings',
             builder: (context, state) => const SettingsScreen(),
           ),
@@ -55,5 +62,6 @@ class AppRouter {
         builder: (context, state) => const Scaffold(body: SafeArea(child: StatisticsScreen())),
       ),
     ],
-  );
+    );
+  }
 }

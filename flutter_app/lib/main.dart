@@ -19,18 +19,21 @@ void main() async {
 
   final sharedPreferences = await SharedPreferences.getInstance();
 
+  final hasSeenOnboarding = sharedPreferences.getBool('has_seen_onboarding') ?? false;
+
   runApp(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
       ],
-      child: const MyApp(),
+      child: MyApp(hasSeenOnboarding: hasSeenOnboarding),
     ),
   );
 }
 
 class MyApp extends ConsumerWidget {
-  const MyApp({super.key});
+  final bool hasSeenOnboarding;
+  const MyApp({super.key, required this.hasSeenOnboarding});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -42,7 +45,7 @@ class MyApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      routerConfig: AppRouter.router,
+      routerConfig: AppRouter.createRouter(hasSeenOnboarding),
     );
   }
 }

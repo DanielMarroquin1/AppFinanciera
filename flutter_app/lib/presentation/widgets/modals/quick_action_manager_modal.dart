@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import 'add_income_modal.dart';
 import 'add_expense_modal.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 
 class QuickActionManagerModal extends ConsumerWidget {
   final String type; // 'income' or 'expense'
@@ -118,7 +119,7 @@ class _QuickActionManagerModalInternal extends ConsumerWidget {
                       child: InkWell(
                         onTap: () {
                           Navigator.pop(context);
-                          if (isIncome) AddIncomeModal.show(context);
+                          if (isIncome) context.push('/incomes');
                           else AddExpenseModal.show(context);
                         },
                         borderRadius: BorderRadius.circular(16),

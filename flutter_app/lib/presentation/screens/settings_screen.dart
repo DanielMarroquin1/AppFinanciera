@@ -157,7 +157,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               color: Colors.white.withValues(alpha: isDark ? 0.1 : 0.2),
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            child: const Center(child: Text('👤', style: TextStyle(fontSize: 32))),
+                            child: Center(child: Text(user?.avatarEmoji ?? '👤', style: const TextStyle(fontSize: 32))),
                           ),
                           if (isPremium)
                             Positioned(

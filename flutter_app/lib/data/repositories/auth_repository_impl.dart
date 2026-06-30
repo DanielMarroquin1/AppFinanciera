@@ -40,6 +40,8 @@ class AuthRepositoryImpl implements AuthRepository {
                currentStreak: map['currentStreak'] ?? 0,
                lastActiveDate: map['lastActiveDate'],
                unlockedItems: List<String>.from(map['unlockedItems'] ?? []),
+               currentAvatar: map['currentAvatar'],
+               monthlyLimit: map['monthlyLimit'] != null ? (map['monthlyLimit'] as num).toDouble() : null,
              );
            }
          } catch (e) {
@@ -69,6 +71,8 @@ class AuthRepositoryImpl implements AuthRepository {
         'currentStreak': user.currentStreak,
         if (user.lastActiveDate != null) 'lastActiveDate': user.lastActiveDate,
         'unlockedItems': user.unlockedItems,
+        'currentAvatar': user.currentAvatar,
+        'monthlyLimit': user.monthlyLimit,
       };
       await _firestore.collection('users').doc(firebaseUser.uid).set(map, SetOptions(merge: true));
     }
@@ -172,6 +176,8 @@ class AuthRepositoryImpl implements AuthRepository {
           points: 0,
           currentStreak: 0,
           unlockedItems: [],
+          currentAvatar: null,
+          monthlyLimit: null,
         );
       }
       
@@ -191,6 +197,8 @@ class AuthRepositoryImpl implements AuthRepository {
         currentStreak: data['currentStreak'] ?? 0,
         lastActiveDate: data['lastActiveDate'],
         unlockedItems: List<String>.from(data['unlockedItems'] ?? []),
+        currentAvatar: data['currentAvatar'],
+        monthlyLimit: data['monthlyLimit'] != null ? (data['monthlyLimit'] as num).toDouble() : null,
       );
     } catch (e) {
       if (e is firebase_auth.FirebaseAuthException) rethrow;

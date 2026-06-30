@@ -15,7 +15,8 @@ import '../providers/auth_provider.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/localization.dart';
 import 'package:intl/intl.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../domain/entities/transaction.dart';
 class ExpensesScreen extends ConsumerStatefulWidget {
   const ExpensesScreen({super.key});
 
@@ -91,7 +92,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
   }
 
   List<dynamic> _getFilteredExpenses(List<dynamic> transactions) {
-    final allExpenses = transactions.where((t) => t.type == 'expense').toList();
+    final allExpenses = transactions.where((t) => t.type == 'expense' && !t.isFixed).toList();
     
     // Filter by month and year
     var timeFiltered = allExpenses.where((t) {
@@ -372,7 +373,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                 final filteredExpenses = _getFilteredExpenses(transactions);
 
                 final totalExpenses = filteredExpenses.fold(0.0, (sum, t) => sum + t.amount);
-                final totalIncome = transactions.where((t) => t.type == 'income').fold(0.0, (sum, t) => sum + t.amount);
+                final totalIncome = transactions.where((t) => t.type == 'income' && !t.isFixed).fold(0.0, (sum, t) => sum + t.amount);
                 final budgetPercentage = totalIncome > 0 ? (totalExpenses / totalIncome * 100).clamp(0.0, 100.0) : 0.0;
 
                 return Column(
@@ -432,7 +433,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                     Builder(
                       builder: (context) {
                         final allExpenses = transactionsAsync.value ?? [];
-                        final fixedExpenses = allExpenses.where((t) => t.isFixed).toList();
+                        final fixedExpenses = allExpenses.where((t) => t.isFixed && t.type == 'expense').toList();
                         fixedExpenses.sort((a, b) => b.date.compareTo(a.date)); // Sort to get latest
                         final uniqueFixedExpenses = <String, dynamic>{};
                         for (var t in fixedExpenses) {
@@ -722,7 +723,76 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                     final progress = debt.totalInstallments > 0 ? (debt.paidInstallments / debt.totalInstallments) : 0.0;
                     final isFullyPaid = debt.paidInstallments >= debt.totalInstallments;
                     return InkWell(
-                      onTap: () => AddDebtModal.show(context, currencyCode: currencyCode),
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) {
+                            return Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Gestionar Deuda', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 16),
+                                  Text('Pagar cuota de ${debt.name}', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800], fontSize: 16)),
+                                  const SizedBox(height: 8),
+                                  Text('Monto: ${CurrencyFormatter.format(debt.installmentAmount, currencyCode)}', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800], fontSize: 16)),
+                                  const SizedBox(height: 24),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        final updatedDebt = debt.copyWith(paidInstallments: debt.paidInstallments + 1);
+                                        await ref.read(debtNotifierProvider.notifier).updateDebt(updatedDebt);
+                                        
+                                        final uid = FirebaseAuth.instance.currentUser?.uid;
+                                        if (uid != null) {
+                                          final transaction = TransactionModel(
+                                            id: '',
+                                            userId: uid,
+                                            amount: debt.installmentAmount,
+                                            type: 'expense',
+                                            category: debt.category,
+                                            description: 'Cuota de ${debt.name}',
+                                            date: DateTime.now(),
+                                            isFixed: false,
+                                          );
+                                          await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
+                                        }
+                                        
+                                        if (context.mounted) {
+                                          Navigator.of(context).pop();
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: const Text('Cuota pagada y registrada como gasto', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                              backgroundColor: isDark ? const Color(0xFF065F46) : const Color(0xFF10B981),
+                                              behavior: SnackBarBehavior.floating,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: isDark ? const Color(0xFF10B981) : const Color(0xFF059669),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      ),
+                                      child: const Text('Agregar Cuota', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                        );
+                      },
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 12),

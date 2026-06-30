@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/user.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../core/services/recurring_transaction_service.dart';
 
 // Provider for SharedPreferences to be injected
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
@@ -46,6 +47,9 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> _loadUser() async {
     final user = await _repository.getStoredUser();
     state = AuthState(user: user, isLoading: false);
+    if (user != null) {
+      RecurringTransactionService.evaluateRecurringTransactions();
+    }
   }
 
   Future<void> login(String email, String password) async {
@@ -53,6 +57,7 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final user = await _repository.login(email, password);
       state = AuthState(user: user, isLoading: false);
+      RecurringTransactionService.evaluateRecurringTransactions();
     } catch (e) {
       state = state.copyWith(isLoading: false);
       rethrow;
@@ -117,7 +122,29 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<bool> checkAndUpdateStreak() async {
+  Future<void> checkStreakStatus() async {
+    final user = state.user;
+    if (user == null) return;
+
+    if (user.lastActiveDate != null) {
+      final now = DateTime.now();
+      final lastActive = DateTime.tryParse(user.lastActiveDate!);
+      if (lastActive != null) {
+        final lastActiveDateOnly = DateTime(lastActive.year, lastActive.month, lastActive.day);
+        final todayDateOnly = DateTime(now.year, now.month, now.day);
+        final dayDiff = todayDateOnly.difference(lastActiveDateOnly).inDays;
+
+        if (dayDiff > 1 && user.currentStreak > 0) {
+          // Streak broken
+          final updatedUser = user.copyWith(currentStreak: 0);
+          await _repository.saveUser(updatedUser);
+          state = state.copyWith(user: updatedUser);
+        }
+      }
+    }
+  }
+
+  Future<bool> incrementStreakOnAction() async {
     final user = state.user;
     if (user == null) return false;
 
@@ -125,7 +152,7 @@ class AuthNotifier extends Notifier<AuthState> {
     final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
 
     if (user.lastActiveDate == todayStr) {
-      // Already logged in today
+      // Already did an action today
       return false;
     }
 
@@ -145,12 +172,14 @@ class AuthNotifier extends Notifier<AuthState> {
         } else if (dayDiff > 1) {
           // Streak broken
           newStreak = 1;
+        } else {
+            return false;
         }
       } else {
         newStreak = 1;
       }
     } else {
-      // First login or streak
+      // First action
       newStreak = 1;
     }
 
@@ -171,7 +200,7 @@ class AuthNotifier extends Notifier<AuthState> {
     await _repository.saveUser(updatedUser);
     state = state.copyWith(user: updatedUser);
 
-    // Return true to show the modal
+    // Return true to show the modal and animation
     return true;
   }
 
@@ -193,6 +222,26 @@ class AuthNotifier extends Notifier<AuthState> {
       return true;
     }
     return false;
+  }
+
+  Future<void> equipAvatar(String avatarId) async {
+    final user = state.user;
+    if (user == null) return;
+    
+    if (user.unlockedItems.contains(avatarId) || avatarId == 'default') {
+      final updatedUser = user.copyWith(currentAvatar: avatarId == 'default' ? null : avatarId);
+      await _repository.saveUser(updatedUser);
+      state = state.copyWith(user: updatedUser);
+    }
+  }
+
+  Future<void> updateMonthlyLimit(double limit) async {
+    final user = state.user;
+    if (user == null) return;
+    
+    final updatedUser = user.copyWith(monthlyLimit: limit);
+    await _repository.saveUser(updatedUser);
+    state = state.copyWith(user: updatedUser);
   }
 }
 

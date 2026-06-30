@@ -11,6 +11,13 @@ class AppLocalizations {
 
   AppLocalizations(this.langCode);
 
+  String get intlLocale {
+    final lower = langCode.toLowerCase();
+    if (lower == 'español' || lower == 'es') return 'es';
+    if (lower == 'english' || lower == 'en') return 'en';
+    return 'es'; // default fallback
+  }
+
   static const Map<String, Map<String, String>> _localizedValues = {
     'es': {
       'settings_title': 'Configuración ⚙️',

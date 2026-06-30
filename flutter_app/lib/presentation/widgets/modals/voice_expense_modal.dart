@@ -36,6 +36,7 @@ class _VoiceExpenseModalState extends ConsumerState<VoiceExpenseModal> with Sing
   double _parsedAmount = 0.0;
   String _parsedCategory = 'other';
   String _parsedDescription = '';
+  String _parsedPaymentMethod = 'efectivo'; // 'efectivo' or 'tarjeta'
   String _errorMessage = '';
 
   @override
@@ -132,7 +133,8 @@ Analiza este gasto dictado por el usuario: "$_recognizedText"
 Extrae la información en el siguiente formato JSON estricto:
 {
   "amount": número decimal (ej. 15.5),
-  "category": "string exacto de la categoría"
+  "category": "string exacto de la categoría",
+  "paymentMethod": "efectivo" o "tarjeta"
 }
 
 Categorías permitidas (USA EXACTAMENTE ESTOS VALORES EN INGLÉS COMO APARECEN AQUÍ):
@@ -151,6 +153,7 @@ Elige la categoría (como 'food_restaurant', 'transport_taxi', etc.) que mejor r
           final data = jsonDecode(response.text!);
           _parsedAmount = (data['amount'] as num).toDouble();
           _parsedCategory = data['category'] ?? 'other';
+          _parsedPaymentMethod = data['paymentMethod'] ?? 'efectivo';
         }
       }
     } catch (e) {
@@ -173,6 +176,11 @@ Elige la categoría (como 'food_restaurant', 'transport_taxi', etc.) que mejor r
       } else if (textLower.contains('ropa') || textLower.contains('zapatos') || textLower.contains('compra')) {
         _parsedCategory = 'shopping';
       }
+      
+      if (textLower.contains('tarjeta') || textLower.contains('crédito') || textLower.contains('credito') || textLower.contains('tc')) {
+        _parsedPaymentMethod = 'tarjeta';
+      }
+      
       _parsedDescription = _recognizedText;
     } else {
       _parsedDescription = _recognizedText; // Use the raw text for the description in DB
@@ -189,6 +197,7 @@ Elige la categoría (como 'food_restaurant', 'transport_taxi', etc.) que mejor r
         description: _parsedDescription,
         date: DateTime.now(),
         isFixed: false,
+        creditCardId: _parsedPaymentMethod == 'tarjeta' ? 'TC' : null,
       );
       await ref.read(transactionNotifierProvider.notifier).addTransaction(expense);
       
@@ -247,7 +256,7 @@ Elige la categoría (como 'food_restaurant', 'transport_taxi', etc.) que mejor r
               ),
               const SizedBox(height: 8),
               Text(
-                'Di algo como: "Gasté 15 dólares en Starbucks"',
+                'Ejemplo:\n"Gasté 15 en comida con tarjeta"\n"Pagué 20 de luz en efectivo"',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14),
               ),

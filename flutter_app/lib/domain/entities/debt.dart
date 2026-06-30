@@ -8,6 +8,10 @@ class DebtModel {
   final int totalInstallments;
   final int paidInstallments;
   final String category;
+  final bool isAutoPay;
+  final String? recurrenceType;
+  final int? recurrenceDay;
+  final int? recurrenceDay2;
   final DateTime createdAt;
 
   DebtModel({
@@ -18,6 +22,10 @@ class DebtModel {
     required this.totalInstallments,
     required this.paidInstallments,
     required this.category,
+    this.isAutoPay = false,
+    this.recurrenceType,
+    this.recurrenceDay,
+    this.recurrenceDay2,
     required this.createdAt,
   });
 
@@ -31,6 +39,10 @@ class DebtModel {
       totalInstallments: data['totalInstallments'] ?? 0,
       paidInstallments: data['paidInstallments'] ?? 0,
       category: data['category'] ?? '🏦',
+      isAutoPay: data['isAutoPay'] ?? false,
+      recurrenceType: data['recurrenceType'],
+      recurrenceDay: data['recurrenceDay'],
+      recurrenceDay2: data['recurrenceDay2'],
       createdAt: data['createdAt'] != null ? (data['createdAt'] as Timestamp).toDate() : DateTime.now(),
     );
   }
@@ -43,6 +55,10 @@ class DebtModel {
       'totalInstallments': totalInstallments,
       'paidInstallments': paidInstallments,
       'category': category,
+      'isAutoPay': isAutoPay,
+      if (recurrenceType != null) 'recurrenceType': recurrenceType,
+      if (recurrenceDay != null) 'recurrenceDay': recurrenceDay,
+      if (recurrenceDay2 != null) 'recurrenceDay2': recurrenceDay2,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -55,6 +71,10 @@ class DebtModel {
     int? totalInstallments,
     int? paidInstallments,
     String? category,
+    bool? isAutoPay,
+    String? recurrenceType,
+    int? recurrenceDay,
+    int? recurrenceDay2,
     DateTime? createdAt,
   }) {
     return DebtModel(
@@ -65,6 +85,10 @@ class DebtModel {
       totalInstallments: totalInstallments ?? this.totalInstallments,
       paidInstallments: paidInstallments ?? this.paidInstallments,
       category: category ?? this.category,
+      isAutoPay: isAutoPay ?? this.isAutoPay,
+      recurrenceType: recurrenceType ?? this.recurrenceType,
+      recurrenceDay: recurrenceDay ?? this.recurrenceDay,
+      recurrenceDay2: recurrenceDay2 ?? this.recurrenceDay2,
       createdAt: createdAt ?? this.createdAt,
     );
   }

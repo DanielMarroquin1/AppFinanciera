@@ -15,6 +15,8 @@ class User {
   final int currentStreak;
   final String? lastActiveDate;
   final List<String> unlockedItems;
+  final String? currentAvatar;
+  final double? monthlyLimit;
 
   User({
     required this.email,
@@ -31,6 +33,8 @@ class User {
     this.currentStreak = 0,
     this.lastActiveDate,
     this.unlockedItems = const [],
+    this.currentAvatar,
+    this.monthlyLimit,
   });
 
   User copyWith({
@@ -48,6 +52,8 @@ class User {
     int? currentStreak,
     String? lastActiveDate,
     List<String>? unlockedItems,
+    String? currentAvatar,
+    double? monthlyLimit,
   }) {
     return User(
       email: email ?? this.email,
@@ -64,6 +70,16 @@ class User {
       currentStreak: currentStreak ?? this.currentStreak,
       lastActiveDate: lastActiveDate ?? this.lastActiveDate,
       unlockedItems: unlockedItems ?? this.unlockedItems,
+      currentAvatar: currentAvatar ?? this.currentAvatar,
+      monthlyLimit: monthlyLimit ?? this.monthlyLimit,
     );
+  }
+
+  String get avatarEmoji {
+    switch (currentAvatar) {
+      case 'avatar1': return '🦸';
+      case 'avatar2': return '🧙';
+      default: return '👤';
+    }
   }
 }

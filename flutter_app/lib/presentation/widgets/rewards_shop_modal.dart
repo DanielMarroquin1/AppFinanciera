@@ -154,6 +154,7 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                     ...items.map((item) {
                       final itemId = item['id'] as String;
                       final isUnlocked = unlockedItems.contains(itemId);
+                      final isEquipped = user?.currentAvatar == itemId;
                       final canAfford = userPoints >= (item['cost'] as int);
                       
                       return Container(
@@ -161,7 +162,12 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                          border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), width: 2),
+                          border: Border.all(
+                            color: isEquipped 
+                              ? const Color(0xFF10B981) 
+                              : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)), 
+                            width: isEquipped ? 2 : 2
+                          ),
                           borderRadius: BorderRadius.circular(24),
                         ),
                         child: Row(
@@ -193,7 +199,16 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                   const SizedBox(height: 12),
                                   InkWell(
                                     onTap: () async {
-                                      if (isUnlocked) return;
+                                      if (isEquipped) return;
+                                      if (isUnlocked) {
+                                        await ref.read(authProvider.notifier).equipAvatar(itemId);
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Avatar equipado: ${item['name']} 🌟'), backgroundColor: const Color(0xFF10B981)),
+                                          );
+                                        }
+                                        return;
+                                      }
                                       if (canAfford) {
                                         final success = await ref.read(authProvider.notifier).purchaseItem(item['cost'] as int, itemId);
                                         if (success && context.mounted) {
@@ -203,6 +218,10 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                               backgroundColor: Colors.green,
                                             ),
                                           );
+                                          // Auto-equip if it's an avatar
+                                          if (category['id'] == 'avatars') {
+                                            await ref.read(authProvider.notifier).equipAvatar(itemId);
+                                          }
                                         }
                                       } else {
                                         ScaffoldMessenger.of(context).showSnackBar(
@@ -218,29 +237,31 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                       width: double.infinity,
                                       padding: const EdgeInsets.symmetric(vertical: 8),
                                       decoration: BoxDecoration(
-                                        gradient: isUnlocked 
-                                            ? LinearGradient(colors: [const Color(0xFF10B981), const Color(0xFF059669)])
-                                            : canAfford 
-                                              ? LinearGradient(colors: [const Color(0xFF4F46E5), const Color(0xFF10B981)])
-                                              : null,
+                                        gradient: isEquipped
+                                            ? LinearGradient(colors: [const Color(0xFF10B981).withOpacity(0.2), const Color(0xFF059669).withOpacity(0.2)])
+                                            : isUnlocked 
+                                                ? LinearGradient(colors: [const Color(0xFF10B981), const Color(0xFF059669)])
+                                                : canAfford 
+                                                  ? LinearGradient(colors: [const Color(0xFF4F46E5), const Color(0xFF10B981)])
+                                                  : null,
                                         color: (isUnlocked || canAfford) ? null : (isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
                                         borderRadius: BorderRadius.circular(12),
+                                        border: isEquipped ? Border.all(color: const Color(0xFF10B981)) : null,
                                       ),
                                       child: Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           Icon(
-                                            isUnlocked ? LucideIcons.checkCircle : (canAfford ? LucideIcons.star : LucideIcons.lock),
-                                            color: (isUnlocked || canAfford) ? Colors.white : Colors.grey,
+                                            isEquipped ? LucideIcons.check : isUnlocked ? LucideIcons.userPlus : (canAfford ? LucideIcons.star : LucideIcons.lock),
+                                            color: isEquipped ? const Color(0xFF10B981) : (isUnlocked || canAfford) ? Colors.white : Colors.grey,
                                             size: 16
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
-                                            isUnlocked ? 'Desbloqueado' : 'Canjear por ${item['cost']} pts',
+                                            isEquipped ? 'Equipado' : isUnlocked ? 'Equipar' : 'Canjear por ${item['cost']} pts',
                                             style: TextStyle(
-                                              color: (isUnlocked || canAfford) ? Colors.white : Colors.grey,
+                                              color: isEquipped ? const Color(0xFF10B981) : (isUnlocked || canAfford) ? Colors.white : Colors.grey,
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 12
                                             )
                                           ),
                                         ],

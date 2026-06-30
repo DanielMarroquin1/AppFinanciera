@@ -11,6 +11,7 @@ class AddCreditCardModal extends ConsumerStatefulWidget {
   static Future<void> show(BuildContext context, {CreditCard? existingCard}) {
     return showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
@@ -63,7 +64,9 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
     if (_nameController.text.isEmpty || _limitController.text.isEmpty) return;
 
     final limit = double.tryParse(_limitController.text) ?? 0.0;
-    final balance = double.tryParse(_balanceController.text) ?? 0.0;
+    final balance = widget.existingCard != null 
+        ? widget.existingCard!.currentBalance 
+        : (double.tryParse(_balanceController.text) ?? 0.0);
 
     final card = CreditCard(
       id: widget.existingCard?.id ?? '', // Firestore will generate if empty
@@ -139,18 +142,20 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: TextField(
-                        controller: _balanceController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: 'Deuda Actual',
-                          prefixIcon: const Icon(LucideIcons.trendingDown),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                    if (widget.existingCard == null) ...[
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextField(
+                          controller: _balanceController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Deuda Inicial',
+                            prefixIcon: const Icon(LucideIcons.trendingDown),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: 16),

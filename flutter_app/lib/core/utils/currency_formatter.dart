@@ -37,8 +37,13 @@ class CurrencyFormatter {
       }
     }
 
-    final formatter = NumberFormat.currency(locale: locale, symbol: symbol);
-    return formatter.format(amount);
+    final formatter = NumberFormat.currency(
+      locale: locale,
+      symbol: '',
+      customPattern: '#,##0.00',
+    );
+    
+    return '$symbol ${formatter.format(amount).trim()}';
   }
 
   static String getSymbol(String? currencyCode) {

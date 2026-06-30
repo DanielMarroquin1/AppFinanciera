@@ -32,6 +32,7 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
   DateTime date = DateTime.now();
   late TextEditingController _amountController;
   late TextEditingController _descController;
+  bool isExtraIncome = false;
 
   String? recurrenceType;
   int? recurrenceDay = 1;
@@ -50,7 +51,8 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
       recurrenceDay2 = widget.existingTransaction!.recurrenceDay2;
     }
     _amountController = TextEditingController(text: amount);
-    _descController = TextEditingController(text: description);
+    _descController = TextEditingController(text: description.replaceAll('(Extra)', '').trim());
+    isExtraIncome = widget.existingTransaction?.description.contains('(Extra)') ?? false;
   }
 
   @override
@@ -316,6 +318,38 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                   ),
                   const SizedBox(height: 20),
 
+                  // Extra Income Toggle
+                  if (!widget.isFixed) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF374151).withValues(alpha: 0.5) : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Ingreso Extra', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 2),
+                                Text('No sumar al total de ingresos (solo al balance)', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                              ],
+                            ),
+                          ),
+                          Switch(
+                            value: isExtraIncome,
+                            onChanged: (val) => setState(() => isExtraIncome = val),
+                            activeColor: const Color(0xFF22C55E),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
                   // Date
                   Text('Fecha 📅', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 8),
@@ -475,7 +509,7 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                           amount: parsedAmount,
                           type: 'income',
                           category: category,
-                          description: description,
+                          description: isExtraIncome ? '${description.trim()} (Extra)'.trim() : description.trim(),
                           date: date,
                           isFixed: widget.isFixed,
                           recurrenceType: widget.isFixed ? (recurrenceType ?? 'monthly') : null,

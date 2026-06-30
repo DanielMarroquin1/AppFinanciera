@@ -30,8 +30,8 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTickerProviderStateMixin {
-  int _budgetLimitPercentage = 80;
   late AnimationController _fireAnimController;
+  bool _limitAlertShown = false;
 
 
   @override
@@ -57,22 +57,37 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final user = authState.user;
+
+    ref.listen(authProvider, (previous, next) {
+      final prevStreak = previous?.user?.currentStreak ?? 0;
+      final nextStreak = next.user?.currentStreak ?? 0;
+      if (nextStreak > prevStreak && nextStreak > 0) {
+        if (context.mounted) {
+          StreakModal.show(context, streak: nextStreak, isActiveToday: true);
+        }
+      }
+    });
     
-    final realBadges = <Map<String, String>>[];
-    if (user?.profileComplete == true) {
-      realBadges.add({'id': 'profile-complete', 'emoji': '👤', 'name': 'Perfil Completo'});
-    }
-    if ((user?.currentStreak ?? 0) >= 7) {
-      realBadges.add({'id': 'week-streak', 'emoji': '🔥', 'name': 'Racha Semanal'});
-    }
-    if ((user?.currentStreak ?? 0) >= 30) {
-      realBadges.add({'id': 'month-streak', 'emoji': '⭐', 'name': 'Racha Mensual'});
-    }
-    if ((user?.unlockedItems.length ?? 0) > 0) {
-      realBadges.add({'id': 'shopper', 'emoji': '🛍️', 'name': 'Comprador'});
-    }
-    if (realBadges.isEmpty) {
-      realBadges.add({'id': 'first-step', 'emoji': '🌱', 'name': 'Primer Paso'});
+    final realBadges = <Map<String, dynamic>>[];
+    if (user != null) {
+      if (user.profileComplete == true) {
+        realBadges.add({'id': 'profile-complete', 'icon': LucideIcons.userCheck, 'name': 'Perfil Completo', 'color': const Color(0xFF3B82F6)});
+      }
+      if ((user.currentStreak ?? 0) >= 7) {
+        realBadges.add({'id': 'week-streak', 'icon': LucideIcons.flame, 'name': 'Racha 7 Días', 'color': const Color(0xFFEF4444)});
+      }
+      if ((user.currentStreak ?? 0) >= 30) {
+        realBadges.add({'id': 'month-streak', 'icon': LucideIcons.award, 'name': 'Racha 30 Días', 'color': const Color(0xFFF59E0B)});
+      }
+      if ((user.unlockedItems.isNotEmpty)) {
+        realBadges.add({'id': 'shopper', 'icon': LucideIcons.shoppingBag, 'name': 'Comprador', 'color': const Color(0xFFEC4899)});
+      }
+      if ((user.unlockedItems.length) >= 5) {
+        realBadges.add({'id': 'collector', 'icon': LucideIcons.crown, 'name': 'Coleccionista', 'color': const Color(0xFF8B5CF6)});
+      }
+      if ((user.points ?? 0) >= 100) {
+        realBadges.add({'id': 'saver', 'icon': LucideIcons.piggyBank, 'name': 'Ahorrador', 'color': const Color(0xFF10B981)});
+      }
     }
     final isDark = Theme.of(context).brightness == Brightness.dark;
     ref.watch(colorPaletteProvider);
@@ -97,11 +112,33 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
       _streakChecked = true;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (context.mounted) {
-          final isNewDay = await ref.read(authProvider.notifier).checkAndUpdateStreak();
-          if (isNewDay && context.mounted) {
+          await ref.read(authProvider.notifier).checkStreakStatus();
+          
+          if (context.mounted) {
             final updatedUser = ref.read(authProvider).user;
-            if (updatedUser != null) {
-              StreakModal.show(context, streak: updatedUser.currentStreak);
+            if (updatedUser != null && updatedUser.currentStreak > 0) {
+              final now = DateTime.now();
+              final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+              
+              if (updatedUser.lastActiveDate != todayStr) {
+                // Warning! They haven't done an action today
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Text('🔥', style: TextStyle(fontSize: 20)),
+                        const SizedBox(width: 12),
+                        Expanded(child: Text('¡Cuidado! Haz una transacción hoy para no perder tu racha de ${updatedUser.currentStreak} días.', style: const TextStyle(fontWeight: FontWeight.bold))),
+                      ],
+                    ),
+                    backgroundColor: Colors.orange[800],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    duration: const Duration(seconds: 5),
+                    margin: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+                  ),
+                );
+              }
             }
           }
         }
@@ -154,14 +191,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        loc.get('financial_summary'),
-                        style: TextStyle(
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
-                          fontSize: 12,
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -170,38 +199,55 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     InkWell(
-                      onTap: () => StreakModal.show(context, streak: user?.currentStreak ?? 0),
+                      onTap: () {
+                        final now = DateTime.now();
+                        final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+                        final isActiveToday = user?.lastActiveDate == todayStr;
+                        StreakModal.show(context, streak: user?.currentStreak ?? 0, isActiveToday: isActiveToday);
+                      },
                       borderRadius: BorderRadius.circular(16),
                       child: AnimatedBuilder(
                         animation: _fireAnimController,
                         builder: (context, child) {
+                          final now = DateTime.now();
+                          final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+                          final isActiveToday = user?.lastActiveDate == todayStr;
+                          
                           return Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            gradient: isDark 
-                                ? const LinearGradient(colors: [Color(0xFF7C2D12), Color(0xFF7F1D1D)]) 
-                                : const LinearGradient(colors: [Color(0xFFFFF7ED), Color(0xFFFEF2F2)]),
+                            gradient: isActiveToday
+                                ? (isDark 
+                                    ? const LinearGradient(colors: [Color(0xFF7C2D12), Color(0xFF7F1D1D)]) 
+                                    : const LinearGradient(colors: [Color(0xFFFFF7ED), Color(0xFFFEF2F2)]))
+                                : (isDark
+                                    ? const LinearGradient(colors: [Color(0xFF374151), Color(0xFF1F2937)])
+                                    : const LinearGradient(colors: [Color(0xFFF3F4F6), Color(0xFFE5E7EB)])),
                             border: Border.all(
-                              color: isDark ? const Color(0xFFC2410C) : const Color(0xFFFDBA74),
+                              color: isActiveToday
+                                  ? (isDark ? const Color(0xFFC2410C) : const Color(0xFFFDBA74))
+                                  : (isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB)),
                               width: 2,
                             ),
                             borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
+                            boxShadow: isActiveToday ? [
                               BoxShadow(
                                 color: const Color(0xFFF97316).withValues(alpha: 0.3 + (_fireAnimController.value * 0.2)),
                                 blurRadius: 8 + (_fireAnimController.value * 8),
                                 spreadRadius: _fireAnimController.value * 2,
                               ),
-                            ],
+                            ] : [],
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Transform.scale(
-                                scale: 1.0 + (_fireAnimController.value * 0.1),
+                                scale: isActiveToday ? 1.0 + (_fireAnimController.value * 0.1) : 1.0,
                                 child: Icon(
                                   LucideIcons.flame, 
-                                  color: isDark ? const Color(0xFFF97316) : const Color(0xFFEA580C),
+                                  color: isActiveToday
+                                      ? (isDark ? const Color(0xFFF97316) : const Color(0xFFEA580C))
+                                      : (isDark ? Colors.grey[500] : Colors.grey[400]),
                                 ),
                               ),
                               const SizedBox(width: 4),
@@ -210,7 +256,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C),
+                                  color: isActiveToday
+                                      ? (isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C))
+                                      : (isDark ? Colors.grey[400] : Colors.grey[600]),
                                 ),
                               )
                             ],
@@ -264,16 +312,45 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 child: const Text('Error al cargar balance', style: TextStyle(color: Colors.white, fontSize: 18)),
               ),
               data: (transactions) {
-                double totalIncome = 0;
+                double displayTotalIncome = 0;
+                double actualTotalIncome = 0;
                 double totalExpense = 0;
+                
+                final now = DateTime.now();
+                final currentMonth = now.month;
+                final currentYear = now.year;
+                
+                final monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                final currentMonthName = monthNames[now.month - 1];
+
                 for (var t in transactions) {
                   if (t.type == 'income') {
-                    totalIncome += t.amount;
-                  } else if (t.type == 'expense') {
-                    totalExpense += t.amount;
+                    if (t.isFixed) {
+                      displayTotalIncome += t.amount;
+                    } else {
+                      actualTotalIncome += t.amount;
+                    }
+                  } else if (t.type == 'expense' && t.creditCardId == null) {
+                    // Handled in second loop
                   }
                 }
-                final totalBalance = totalIncome - totalExpense;
+                double allTimeExpense = 0;
+                for (var t in transactions) {
+                  if (t.isFixed) continue;
+                  if (t.type == 'expense' && t.creditCardId == null) {
+                    allTimeExpense += t.amount;
+                    if (t.date.month == currentMonth && t.date.year == currentYear) {
+                      totalExpense += t.amount;
+                    }
+                  } else if (t.type == 'cc_payment') {
+                    allTimeExpense += t.amount;
+                    if (t.date.month == currentMonth && t.date.year == currentYear) {
+                      totalExpense += t.amount;
+                    }
+                  }
+                }
+                
+                final totalBalance = actualTotalIncome - allTimeExpense;
 
                 return Container(
                   padding: const EdgeInsets.all(24),
@@ -295,7 +372,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(loc.get('total_balance'), style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                      Text('${loc.get('total_balance')} - $currentMonthName', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
                       const SizedBox(height: 8),
                       Text(CurrencyFormatter.format(totalBalance, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 16),
@@ -313,7 +390,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                                 children: [
                                   Text(loc.get('income'), style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
                                   const SizedBox(height: 4),
-                                  Text(CurrencyFormatter.format(totalIncome, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
+                                  Text(CurrencyFormatter.format(displayTotalIncome, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
                                 ],
                               ),
                             ),
@@ -345,48 +422,139 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             ),
             const SizedBox(height: 24),
 
-            // Alert Banner
-            InkWell(
-              onTap: () async {
-                final newValue = await BudgetLimitModal.show(context, initialValue: _budgetLimitPercentage);
-                if (newValue != null) {
-                  setState(() {
-                    _budgetLimitPercentage = newValue;
-                  });
-                }
-              },
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF78350F).withValues(alpha: 0.3) : const Color(0xFFFFFBEB),
-                  border: Border.all(
-                    color: isDark ? const Color(0xFF92400E) : const Color(0xFFFDE68A),
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    Icon(LucideIcons.alertCircle, color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text.rich(
-                        TextSpan(
+            // Limit Banner
+            transactionsAsync.whenData((transactions) {
+              final double limitPercentage = user?.monthlyLimit ?? 80.0;
+              double totalExpense = 0;
+              double totalIncome = 0;
+              for (var t in transactions) {
+                if (t.isFixed) continue; // Ignorar plantillas
+                if (t.type == 'expense') totalExpense += t.amount;
+                if (t.type == 'income') totalIncome += t.amount;
+              }
+              
+              final double calculatedLimit = (totalIncome * limitPercentage) / 100.0;
+              final isOverLimit = totalIncome > 0 && totalExpense >= calculatedLimit;
+              
+              if (isOverLimit && !_limitAlertShown) {
+                _limitAlertShown = true;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (context.mounted) {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                        title: Row(
                           children: [
-                            TextSpan(text: loc.get('careful'), style: const TextStyle(fontWeight: FontWeight.bold)),
-                            TextSpan(text: '${loc.get('limit_reached')}$_budgetLimitPercentage${loc.get('limit_monthly')}'),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(LucideIcons.alertTriangle, color: Colors.red),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(child: Text('¡Límite Alcanzado!', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold))),
                           ],
                         ),
-                        style: const TextStyle(color: Color(0xFF92400E)), // Matches amber-900
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Has superado el ${limitPercentage.toInt()}% de límite mensual de tus ingresos.',
+                              style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800], fontSize: 16),
+                            ),
+                            const SizedBox(height: 16),
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('Presupuesto:', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
+                                      Text(CurrencyFormatter.format(calculatedLimit, currencyCode), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('Gastado:', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
+                                      Text(CurrencyFormatter.format(totalExpense, currencyCode), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                        actions: [
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () => Navigator.of(ctx).pop(),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
+                              child: const Text('Entendido', style: TextStyle(fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(LucideIcons.pencil, size: 16, color: isDark ? const Color(0xFF92400E) : const Color(0xFFD97706)),
-                  ],
+                    );
+                  }
+                });
+              }
+
+              final bannerColor = isOverLimit ? (isDark ? const Color(0xFF991B1B) : const Color(0xFFFEE2E2)) : (isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE));
+              final borderColor = isOverLimit ? (isDark ? const Color(0xFFDC2626) : const Color(0xFFF87171)) : (isDark ? const Color(0xFF2563EB) : const Color(0xFF60A5FA));
+              final iconColor = isOverLimit ? (isDark ? const Color(0xFFFCA5A5) : const Color(0xFFDC2626)) : (isDark ? const Color(0xFF93C5FD) : const Color(0xFF2563EB));
+              final textColor = isOverLimit ? (isDark ? const Color(0xFFFCA5A5) : const Color(0xFFB91C1C)) : (isDark ? const Color(0xFF93C5FD) : const Color(0xFF1E3A8A));
+
+              return InkWell(
+                onTap: () async {
+                  final newValue = await BudgetLimitModal.show(context, initialValue: limitPercentage);
+                  if (newValue != null) {
+                    ref.read(authProvider.notifier).updateMonthlyLimit(newValue);
+                  }
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: bannerColor,
+                    border: Border.all(color: borderColor, width: 2),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(isOverLimit ? LucideIcons.alertTriangle : LucideIcons.target, color: iconColor),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          isOverLimit 
+                            ? '¡Cuidado! Has alcanzado el ${limitPercentage.toInt()}% de tu límite.'
+                            : 'Límite Mensual: ${limitPercentage.toInt()}% de ingresos',
+                          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(LucideIcons.pencil, size: 16, color: iconColor),
+                    ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            }).value ?? const SizedBox(),
             const SizedBox(height: 24),
 
             // Quick Actions inline
@@ -396,7 +564,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 children: [
                   Expanded(
                     child: InkWell(
-                      onTap: () => QuickActionManagerModal.show(context, type: 'income'),
+                      onTap: () => context.push('/incomes'),
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
                         padding: const EdgeInsets.all(12),
@@ -418,7 +586,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   const SizedBox(width: 6),
                   Expanded(
                     child: InkWell(
-                      onTap: () => QuickActionManagerModal.show(context, type: 'expense'),
+                      onTap: () => AddExpenseModal.show(context),
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
                         padding: const EdgeInsets.all(12),
@@ -499,58 +667,57 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             const SizedBox(height: 8),
             SizedBox(
               height: 100,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: realBadges.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final badge = realBadges[index];
-                  return Container(
-                    width: 88,
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: isDark
-                            ? [const Color(0xFF78350F).withValues(alpha: 0.3), const Color(0xFF7C2D12).withValues(alpha: 0.3)]
-                            : [const Color(0xFFFFFBEB), const Color(0xFFFFF7ED)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+              child: realBadges.isEmpty 
+              ? Center(
+                  child: Text('Aún no tienes insignias desbloqueadas', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 14)),
+                )
+              : ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: realBadges.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    final badge = realBadges[index];
+                    final Color baseColor = badge['color'];
+                    return Container(
+                      width: 90,
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        border: Border.all(color: baseColor.withOpacity(0.5), width: 2),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(color: baseColor.withOpacity(0.15), blurRadius: 8, offset: const Offset(0, 4)),
+                        ],
                       ),
-                      border: Border.all(
-                        color: isDark ? const Color(0xFF92400E) : const Color(0xFFFCD34D),
-                        width: 2,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: baseColor.withOpacity(0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(badge['icon'], color: baseColor, size: 18),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            badge['name']!,
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF78350F).withValues(alpha: 0.5) : const Color(0xFFFEF3C7),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Center(child: Text(badge['emoji']!, style: const TextStyle(fontSize: 20))),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          badge['name']!,
-                          style: TextStyle(
-                            color: isDark ? const Color(0xFFFCD34D) : const Color(0xFF78350F),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                    );
+                  },
+                ),
             ),
             const SizedBox(height: 24),
 
@@ -643,13 +810,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                     ),
                   );
                 }
-                final sorted = List.of(transactions)..sort((a, b) => b.date.compareTo(a.date));
+                final sorted = transactions.where((t) => !t.isFixed).toList()..sort((a, b) => b.date.compareTo(a.date));
                 final recent = sorted.take(3).toList();
                 return Column(
                   children: recent.map((t) {
                     final isIncome = t.type == 'income';
                     final emoji = _getCategoryEmoji(t.category);
                     final formattedDate = DateFormat('dd MMM, yyyy').format(t.date);
+                    
+                    String paymentMethod = t.creditCardId != null ? 'Tarjeta de Crédito' : (t.type == 'cc_payment' ? 'Pago a Tarjeta' : 'Efectivo / Débito');
+                    String paymentIcon = t.creditCardId != null ? '💳' : (t.type == 'cc_payment' ? '🏦' : '💵');
+
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: _buildTransactionItem(
@@ -659,7 +830,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                             ? (isDark ? const Color(0xFF14532D).withValues(alpha: 0.3) : const Color(0xFFF0FDF4))
                             : (isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.3) : const Color(0xFFFEF2F2)),
                         title: t.description.isNotEmpty ? t.description : t.category,
-                        subtitle: formattedDate,
+                        subtitle: '$formattedDate • $paymentIcon $paymentMethod',
                         amount: '${isIncome ? '+' : '-'}${CurrencyFormatter.format(t.amount, currencyCode)}',
                         amountColor: isIncome
                             ? (isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A))
@@ -676,7 +847,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
 
             // Achievements Card (¡Logro Desbloqueado!)
             InkWell(
-              onTap: () => RewardsShopModal.show(context),
+              onTap: () => BadgesModal.show(context),
               borderRadius: BorderRadius.circular(24),
               child: Container(
                 padding: const EdgeInsets.all(20),
@@ -699,42 +870,56 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                       children: [
                         const Row(
                           children: [
-                            Icon(LucideIcons.gift, color: Colors.white, size: 24),
+                            Icon(LucideIcons.medal, color: Colors.white, size: 24),
                             SizedBox(width: 12),
                             Text('¡Logro Desbloqueado!', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                           ],
                         ),
-                        Text('Ver todos →', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
+                        Text('Ver todas →', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Has ahorrado por 7 días consecutivos. ¡Sigue así! 🎉',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      height: 8,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
-                        widthFactor: 0.75,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '75% para el próximo nivel',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12),
+                    const SizedBox(height: 16),
+                    Builder(
+                      builder: (context) {
+                        final List<IconData> unlockedBadges = [
+                          if (user?.profileComplete == true) LucideIcons.userCheck,
+                          if ((user?.currentStreak ?? 0) >= 7) LucideIcons.flame,
+                          if ((user?.currentStreak ?? 0) >= 30) LucideIcons.award,
+                          if ((user?.unlockedItems.isNotEmpty ?? false)) LucideIcons.shoppingBag,
+                          if ((user?.unlockedItems.length ?? 0) >= 5) LucideIcons.crown,
+                          if ((user?.points ?? 0) >= 100) LucideIcons.piggyBank,
+                        ];
+
+                        if (unlockedBadges.isEmpty) {
+                          return Text(
+                            'Aún no tienes insignias. ¡Cumple metas para desbloquearlas!',
+                            style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14),
+                          );
+                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Has desbloqueado ${unlockedBadges.length} insignia${unlockedBadges.length == 1 ? '' : 's'}:',
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14),
+                            ),
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 12,
+                              runSpacing: 12,
+                              children: unlockedBadges.map((icon) => Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(icon, color: Colors.white, size: 24),
+                              )).toList(),
+                            ),
+                          ],
+                        );
+                      }
                     ),
                   ],
                 ),

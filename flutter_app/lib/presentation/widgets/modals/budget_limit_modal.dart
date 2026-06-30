@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class BudgetLimitModal extends StatefulWidget {
-  final int initialValue;
+  final double initialValue;
 
   const BudgetLimitModal({
     super.key,
     required this.initialValue,
   });
 
-  static Future<int?> show(BuildContext context, {required int initialValue}) {
-    return showDialog<int>(
+  static Future<double?> show(BuildContext context, {required double initialValue}) {
+    return showDialog<double>(
       context: context,
       builder: (context) => BudgetLimitModal(initialValue: initialValue),
     );
@@ -21,12 +21,14 @@ class BudgetLimitModal extends StatefulWidget {
 }
 
 class _BudgetLimitModalState extends State<BudgetLimitModal> {
-  late int _currentValue;
+  double _currentValue = 80;
 
   @override
   void initState() {
     super.initState();
     _currentValue = widget.initialValue;
+    if (_currentValue < 50) _currentValue = 50;
+    if (_currentValue > 100) _currentValue = 100;
   }
 
   @override
@@ -102,7 +104,7 @@ class _BudgetLimitModalState extends State<BudgetLimitModal> {
             const SizedBox(height: 24),
             
             Text(
-              'Te avisaremos cuando tus gastos alcancen este porcentaje de tu presupuesto mensual.',
+              'Establece tu presupuesto máximo para este mes.',
               style: TextStyle(
                 color: isDark ? Colors.grey[300] : Colors.grey[700],
                 fontSize: 14,
@@ -110,49 +112,40 @@ class _BudgetLimitModalState extends State<BudgetLimitModal> {
             ),
             const SizedBox(height: 24),
             
-            // Slider y Porcentaje
+            // Slider for percentage
             Column(
               children: [
                 Text(
-                  '$_currentValue%',
+                  '${_currentValue.toInt()}%',
                   style: TextStyle(
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
+                    color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669),
                   ),
                 ),
-                const SizedBox(height: 8),
-                SliderTheme(
-                  data: SliderThemeData(
-                    activeTrackColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFFF59E0B),
-                    inactiveTrackColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                    thumbColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFFF59E0B),
-                    overlayColor: (isDark ? const Color(0xFFFBBF24) : const Color(0xFFF59E0B)).withValues(alpha: 0.2),
-                    trackHeight: 8,
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
-                  ),
-                  child: Slider(
-                    value: _currentValue.toDouble(),
-                    min: 50,
-                    max: 100,
-                    divisions: 10,
-                    onChanged: (value) {
-                      setState(() {
-                        _currentValue = value.toInt();
-                      });
-                    },
-                  ),
+                Slider(
+                  value: _currentValue,
+                  min: 50,
+                  max: 100,
+                  divisions: 10,
+                  activeColor: isDark ? const Color(0xFF10B981) : const Color(0xFF059669),
+                  inactiveColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  onChanged: (value) {
+                    setState(() {
+                      _currentValue = value;
+                    });
+                  },
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('50%', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
-                      Text('100%', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                      Text('50%', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 12)),
+                      Text('100%', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 12)),
                     ],
                   ),
-                )
+                ),
               ],
             ),
             const SizedBox(height: 32),
@@ -181,7 +174,9 @@ class _BudgetLimitModalState extends State<BudgetLimitModal> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(_currentValue),
+                    onPressed: () {
+                      Navigator.of(context).pop(_currentValue);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isDark ? const Color(0xFFD97706) : const Color(0xFFF59E0B), // amber
                       foregroundColor: Colors.white,

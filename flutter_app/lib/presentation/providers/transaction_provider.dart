@@ -33,6 +33,9 @@ class TransactionNotifier extends Notifier<void> {
 
   Future<void> addTransaction(TransactionModel transaction) async {
     await _repository.addTransaction(transaction);
+    if (!transaction.isFixed) {
+      await ref.read(authProvider.notifier).incrementStreakOnAction();
+    }
   }
 
   Future<void> updateTransaction(TransactionModel transaction) async {

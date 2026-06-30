@@ -7,6 +7,8 @@ import '../../../domain/entities/transaction.dart';
 import '../../providers/transaction_provider.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/localization.dart';
+import '../../providers/credit_card_provider.dart';
+import '../../../domain/entities/credit_card.dart';
 
 class AddExpenseModal extends ConsumerStatefulWidget {
   final bool isFixed;
@@ -39,6 +41,7 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
   String? recurrenceType;
   int? recurrenceDay = 1;
   int? recurrenceDay2;
+  String? creditCardId; // null = Efectivo/Cuenta
 
   @override
   void initState() {
@@ -51,6 +54,7 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
       recurrenceType = widget.existingTransaction!.recurrenceType;
       recurrenceDay = widget.existingTransaction!.recurrenceDay ?? 1;
       recurrenceDay2 = widget.existingTransaction!.recurrenceDay2;
+      creditCardId = widget.existingTransaction!.creditCardId;
     }
     _amountController = TextEditingController(text: amount);
     _descController = TextEditingController(text: description);
@@ -229,6 +233,7 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final loc = ref.watch(localizationProvider);
+    final creditCardsAsync = ref.watch(creditCardsProvider);
 
     return Container(
       decoration: BoxDecoration(
@@ -425,6 +430,48 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 20),
+                  
+                  // Payment Method Selector
+                  Text('Método de Pago 💳', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF374151) : Colors.white,
+                      border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: creditCardsAsync.when(
+                        data: (cards) {
+                          final items = [
+                            const DropdownMenuItem<String?>(
+                              value: null,
+                              child: Text('Efectivo / Cuenta'),
+                            ),
+                            ...cards.map((card) => DropdownMenuItem<String?>(
+                              value: card.id,
+                              child: Text('TC: ${card.name} (${card.network})'),
+                            ))
+                          ];
+                          return DropdownButton<String?>(
+                            value: creditCardId,
+                            isExpanded: true,
+                            dropdownColor: isDark ? const Color(0xFF374151) : Colors.white,
+                            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
+                            items: items,
+                            onChanged: (val) {
+                              setState(() => creditCardId = val);
+                            },
+                          );
+                        },
+                        loading: () => const Center(child: CircularProgressIndicator()),
+                        error: (_, __) => const Text('Error al cargar tarjetas'),
+                      ),
+                    ),
+                  ),
+
                   if (widget.isFixed) ...[
                     const SizedBox(height: 20),
                     Text('Frecuencia de cobro 🔄', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
@@ -521,29 +568,71 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: amount.isEmpty || category.isEmpty ? null : () async {
-                        final uid = FirebaseAuth.instance.currentUser?.uid;
-                        if (uid == null) return;
+                        final user = FirebaseAuth.instance.currentUser;
+                        if (user == null) return;
                         
                         final parsedAmount = double.tryParse(amount) ?? 0.0;
                         if (parsedAmount <= 0) return;
 
-                        final isEditing = widget.existingTransaction != null;
-                        
                         final transaction = TransactionModel(
-                          id: isEditing ? widget.existingTransaction!.id : '', // Firestore will auto-generate if empty
-                          userId: uid,
+                          id: widget.existingTransaction?.id ?? '',
+                          userId: user.uid,
                           amount: parsedAmount,
                           type: 'expense',
                           category: category,
                           description: description,
                           date: date,
                           isFixed: widget.isFixed,
-                          recurrenceType: widget.isFixed ? (recurrenceType ?? 'monthly') : null,
+                          recurrenceType: widget.isFixed ? recurrenceType : null,
                           recurrenceDay: widget.isFixed ? recurrenceDay : null,
-                          recurrenceDay2: widget.isFixed && recurrenceType == 'bimonthly' ? recurrenceDay2 : null,
+                          recurrenceDay2: widget.isFixed ? recurrenceDay2 : null,
+                          creditCardId: creditCardId,
                         );
 
-                        if (isEditing) {
+                        // CC Limit Check
+                        if (creditCardId != null) {
+                          final cards = ref.read(computedCreditCardsProvider).value ?? [];
+                          final selectedCard = cards.where((c) => c.id == creditCardId).firstOrNull;
+                          if (selectedCard != null) {
+                            final newBalance = selectedCard.currentBalance + parsedAmount;
+                            if (newBalance > selectedCard.limit) {
+                              final proceed = await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+                                  title: Row(
+                                    children: [
+                                      const Icon(LucideIcons.alertTriangle, color: Colors.amber, size: 28),
+                                      const SizedBox(width: 12),
+                                      const Text('Límite Excedido'),
+                                    ],
+                                  ),
+                                  content: Text(
+                                    'Esta compra sobrepasará el límite de tu tarjeta ${selectedCard.name}.\n\n'
+                                    'Límite: \$${selectedCard.limit.toStringAsFixed(2)}\n'
+                                    'Nuevo balance: \$${newBalance.toStringAsFixed(2)}\n\n'
+                                    '¿Deseas continuar y sobregirar la tarjeta?',
+                                    style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800]),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx, false),
+                                      child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () => Navigator.pop(ctx, true),
+                                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDC2626), foregroundColor: Colors.white),
+                                      child: const Text('Sí, Continuar'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (proceed != true) return;
+                            }
+                          }
+                        }
+
+                        if (widget.existingTransaction != null) {
                           await ref.read(transactionNotifierProvider.notifier).updateTransaction(transaction);
                         } else {
                           await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
@@ -553,7 +642,7 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                           Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(isEditing ? 'Gasto actualizado' : loc.get('expense_added'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              content: Text(widget.existingTransaction != null ? 'Gasto actualizado' : loc.get('expense_added'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                               backgroundColor: isDark ? const Color(0xFF991B1B) : const Color(0xFFDC2626),
                               behavior: SnackBarBehavior.floating,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

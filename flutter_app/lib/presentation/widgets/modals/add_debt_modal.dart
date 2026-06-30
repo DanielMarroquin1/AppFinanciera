@@ -30,6 +30,10 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
   double amountPerInstallment = 0.0;
   int totalInstallments = 1;
   int currentInstallment = 0;
+  bool isAutoPay = false;
+  String? recurrenceType;
+  int recurrenceDay = 1;
+  int recurrenceDay2 = 15;
 
   @override
   Widget build(BuildContext context) {
@@ -179,6 +183,128 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 24),
+
+                  // Auto Pay toggle
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(LucideIcons.refreshCw, color: isDark ? const Color(0xFFA855F7) : const Color(0xFF9333EA), size: 20),
+                                const SizedBox(width: 8),
+                                Text('Pago Automático', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+                              ],
+                            ),
+                            Switch(
+                              value: isAutoPay,
+                              activeColor: const Color(0xFFA855F7),
+                              onChanged: (val) {
+                                setState(() {
+                                  isAutoPay = val;
+                                  if (isAutoPay && recurrenceType == null) {
+                                    recurrenceType = 'monthly';
+                                  }
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                        if (isAutoPay) ...[
+                          const SizedBox(height: 16),
+                          Text('Frecuencia', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                          const SizedBox(height: 8),
+                          DropdownButtonFormField<String>(
+                            value: recurrenceType ?? 'monthly',
+                            dropdownColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+                            items: const [
+                              DropdownMenuItem(value: 'monthly', child: Text('Mensual')),
+                              DropdownMenuItem(value: 'bimonthly', child: Text('Quincenal')),
+                              DropdownMenuItem(value: 'weekly', child: Text('Semanal')),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) setState(() => recurrenceType = val);
+                            },
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: isDark ? const Color(0xFF4B5563) : Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          if (recurrenceType == 'monthly' || recurrenceType == 'weekly') ...[
+                            Text(recurrenceType == 'weekly' ? 'Día de la semana (1=Lun, 7=Dom)' : 'Día de cobro', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                            const SizedBox(height: 8),
+                            TextField(
+                              keyboardType: TextInputType.number,
+                              onChanged: (val) => recurrenceDay = int.tryParse(val) ?? 1,
+                              decoration: InputDecoration(
+                                hintText: recurrenceType == 'weekly' ? 'Ej: 1 (Lunes)' : 'Ej: 15',
+                                filled: true,
+                                fillColor: isDark ? const Color(0xFF4B5563) : Colors.white,
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                              ),
+                            ),
+                          ] else if (recurrenceType == 'bimonthly') ...[
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Día 1', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                                      const SizedBox(height: 8),
+                                      TextField(
+                                        keyboardType: TextInputType.number,
+                                        onChanged: (val) => recurrenceDay = int.tryParse(val) ?? 1,
+                                        decoration: InputDecoration(
+                                          hintText: 'Ej: 15',
+                                          filled: true,
+                                          fillColor: isDark ? const Color(0xFF4B5563) : Colors.white,
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Día 2', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                                      const SizedBox(height: 8),
+                                      TextField(
+                                        keyboardType: TextInputType.number,
+                                        onChanged: (val) => recurrenceDay2 = int.tryParse(val) ?? 30,
+                                        decoration: InputDecoration(
+                                          hintText: 'Ej: 30',
+                                          filled: true,
+                                          fillColor: isDark ? const Color(0xFF4B5563) : Colors.white,
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ]
+                        ]
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 32),
 
                   // Submit
@@ -195,6 +321,10 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
                         totalInstallments: totalInstallments,
                         paidInstallments: currentInstallment,
                         category: '🏦',
+                        isAutoPay: isAutoPay,
+                        recurrenceType: isAutoPay ? recurrenceType : null,
+                        recurrenceDay: isAutoPay ? recurrenceDay : null,
+                        recurrenceDay2: (isAutoPay && recurrenceType == 'bimonthly') ? recurrenceDay2 : null,
                         createdAt: DateTime.now(),
                       );
 

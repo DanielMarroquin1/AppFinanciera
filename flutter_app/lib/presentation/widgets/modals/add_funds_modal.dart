@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-class AddFundsModal extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/auth_provider.dart';
+import '../../../core/utils/currency_formatter.dart';
+
+class AddFundsModal extends ConsumerStatefulWidget {
   final String goalName;
   const AddFundsModal({super.key, required this.goalName});
 
@@ -15,10 +19,10 @@ class AddFundsModal extends StatefulWidget {
   }
 
   @override
-  State<AddFundsModal> createState() => _AddFundsModalState();
+  ConsumerState<AddFundsModal> createState() => _AddFundsModalState();
 }
 
-class _AddFundsModalState extends State<AddFundsModal> {
+class _AddFundsModalState extends ConsumerState<AddFundsModal> {
   double amount = 0.0;
 
   @override
@@ -63,7 +67,10 @@ class _AddFundsModalState extends State<AddFundsModal> {
               onChanged: (val) => amount = double.tryParse(val) ?? 0.0,
               style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
-                prefixIcon: const Icon(LucideIcons.dollarSign, size: 24),
+                prefixIcon: Container(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                ),
                 hintText: '0.00',
                 filled: true,
                 fillColor: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),

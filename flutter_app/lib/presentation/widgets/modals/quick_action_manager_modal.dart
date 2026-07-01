@@ -198,37 +198,76 @@ class _QuickActionManagerModalInternal extends ConsumerWidget {
 
                     return Column(
                       children: activeFixedList.map((expense) {
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF374151).withOpacity(0.3) : Colors.white,
-                            border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [if (!isDark) BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 48, height: 48,
-                                decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB), borderRadius: BorderRadius.circular(12)),
-                                child: Center(child: Text(_getCategoryEmoji(expense.category), style: const TextStyle(fontSize: 24))),
+                        return InkWell(
+                          onTap: () {
+                            Navigator.pop(context);
+                            if (isIncome) {
+                              AddIncomeModal.show(context, isFixed: true, existingTransaction: expense);
+                            } else {
+                              AddExpenseModal.show(context, isFixed: true, existingTransaction: expense);
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: isDark 
+                                  ? [const Color(0xFF1E293B), const Color(0xFF0F172A)] 
+                                  : [Colors.white, const Color(0xFFF8FAFC)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                              border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (isDark ? Colors.black : Colors.blue.withOpacity(0.05)).withOpacity(isDark ? 0.2 : 1),
+                                  blurRadius: 10, offset: const Offset(0, 4)
+                                )
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 52, height: 52,
+                                  decoration: BoxDecoration(
+                                    color: (isIncome ? Colors.green : Colors.blue).withOpacity(0.1), 
+                                    borderRadius: BorderRadius.circular(16)
+                                  ),
+                                  child: Center(child: Text(_getCategoryEmoji(expense.category), style: const TextStyle(fontSize: 26))),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(expense.description.isNotEmpty ? expense.description : expense.category, style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: -0.3)),
+                                      const SizedBox(height: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          'Día ${expense.recurrenceDay} • ${expense.recurrenceType == 'weekly' ? 'Semanal' : (expense.recurrenceType == 'bimonthly' ? 'Quincenal' : 'Mensual')}',
+                                          style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569), fontSize: 10, fontWeight: FontWeight.w600),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Text(expense.description.isNotEmpty ? expense.description : expense.category, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
+                                    Text(CurrencyFormatter.format(expense.amount, currencyCode), style: TextStyle(color: isIncome ? (isDark ? const Color(0xFF10B981) : const Color(0xFF059669)) : (isDark ? Colors.white : Colors.black), fontWeight: FontWeight.w900, fontSize: 16)),
                                     const SizedBox(height: 4),
-                                    Text(
-                                      'Cobro ${expense.recurrenceType == 'weekly' ? 'Semanal' : (expense.recurrenceType == 'bimonthly' ? 'Quincenal' : 'Mensual')} (Día ${expense.recurrenceDay})',
-                                      style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12),
-                                    ),
+                                    Text('Suscripción', style: TextStyle(color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8), fontSize: 10)),
                                   ],
                                 ),
-                              ),
-                              Text(CurrencyFormatter.format(expense.amount, currencyCode), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+                              const SizedBox(width: 8),
                               PopupMenuButton<String>(
                                 icon: Icon(LucideIcons.moreVertical, color: isDark ? Colors.grey[400] : Colors.grey[600], size: 20),
                                 color: isDark ? const Color(0xFF374151) : Colors.white,
@@ -268,7 +307,8 @@ class _QuickActionManagerModalInternal extends ConsumerWidget {
                                   ),
                                 ],
                               ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       }).toList(),

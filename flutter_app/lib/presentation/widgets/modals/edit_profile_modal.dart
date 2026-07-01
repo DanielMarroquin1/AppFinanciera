@@ -8,6 +8,7 @@ import '../../providers/transaction_provider.dart';
 import '../../../domain/entities/debt.dart';
 import '../../../domain/entities/transaction.dart';
 import 'avatar_selector_modal.dart';
+import '../../../core/utils/currency_formatter.dart';
 
 class EditProfileModal extends ConsumerStatefulWidget {
   const EditProfileModal({super.key});
@@ -232,6 +233,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final sym = CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency);
 
     double totalFixed = fixedExpenses.fold(0, (sum, exp) => sum + exp.amount);
     double totalDebtPending = debts.fold(0, (sum, d) {
@@ -461,7 +463,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Total de Gastos Fijos', style: TextStyle(color: isDark ? const Color(0xFFA5B4FC) : const Color(0xFF4338CA), fontSize: 12)),
-                          Text('\$${totalFixed.toStringAsFixed(2)}', style: TextStyle(color: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5), fontSize: 24, fontWeight: FontWeight.bold)),
+                          Text('$sym${totalFixed.toStringAsFixed(2)}', style: TextStyle(color: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5), fontSize: 24, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),
@@ -484,7 +486,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(expense.description, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
-                                Text('\$${expense.amount.toStringAsFixed(2)}', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                                Text('$sym${expense.amount.toStringAsFixed(2)}', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
                               ],
                             ),
                           ),
@@ -555,7 +557,10 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                             decoration: InputDecoration(
                               hintText: '0.00',
                               hintStyle: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[400]),
-                              prefixIcon: Icon(LucideIcons.dollarSign, color: isDark ? Colors.grey[400] : Colors.grey[500], size: 16),
+                              prefixIcon: Container(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 16, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                              ),
                               filled: true,
                               fillColor: isDark ? const Color(0xFF4B5563) : Colors.white,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF6B7280) : const Color(0xFFD1D5DB), width: 2)),
@@ -597,7 +602,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Total de Ingresos Fijos', style: TextStyle(color: isDark ? const Color(0xFF6EE7B7) : const Color(0xFF047857), fontSize: 12)),
-                          Text('\$${fixedIncomes.fold(0.0, (sum, inc) => sum + inc.amount).toStringAsFixed(2)}', style: TextStyle(color: isDark ? const Color(0xFF34D399) : const Color(0xFF059669), fontSize: 24, fontWeight: FontWeight.bold)),
+                          Text('$sym${fixedIncomes.fold(0.0, (sum, inc) => sum + inc.amount).toStringAsFixed(2)}', style: TextStyle(color: isDark ? const Color(0xFF34D399) : const Color(0xFF059669), fontSize: 24, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),
@@ -620,7 +625,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(income.description, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
-                                Text('\$${income.amount.toStringAsFixed(2)}', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                                Text('$sym${income.amount.toStringAsFixed(2)}', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
                                 if (income.recurrenceType != null)
                                   Text(income.recurrenceLabel, style: TextStyle(color: isDark ? const Color(0xFF34D399) : const Color(0xFF059669), fontSize: 11)),
                               ],
@@ -693,7 +698,10 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                             decoration: InputDecoration(
                               hintText: '0.00',
                               hintStyle: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[400]),
-                              prefixIcon: Icon(LucideIcons.dollarSign, color: isDark ? Colors.grey[400] : Colors.grey[500], size: 16),
+                              prefixIcon: Container(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 16, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                              ),
                               filled: true,
                               fillColor: isDark ? const Color(0xFF4B5563) : Colors.white,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: isDark ? const Color(0xFF6B7280) : const Color(0xFFD1D5DB), width: 2)),
@@ -844,7 +852,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Deuda Total Pendiente', style: TextStyle(color: isDark ? const Color(0xFFFDA4AF) : const Color(0xFFBE123C), fontSize: 12)),
-                          Text('\$${totalDebtPending.toStringAsFixed(2)}', style: TextStyle(color: isDark ? const Color(0xFFFB7185) : const Color(0xFFE11D48), fontSize: 24, fontWeight: FontWeight.bold)),
+                          Text('$sym${totalDebtPending.toStringAsFixed(2)}', style: TextStyle(color: isDark ? const Color(0xFFFB7185) : const Color(0xFFE11D48), fontSize: 24, fontWeight: FontWeight.bold)),
                           Text('${debts.length} deudas registradas', style: TextStyle(color: isDark ? const Color(0xFFFB7185).withValues(alpha: 0.7) : const Color(0xFFE11D48).withValues(alpha: 0.7), fontSize: 12)),
                         ],
                       ),
@@ -877,7 +885,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text('${debt.name} ${isFullyPaid ? '✅' : ''}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
-                                      Text('\$${debt.installmentAmount.toStringAsFixed(0)}/cuota · $paid/$total pagadas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                                      Text('$sym${debt.installmentAmount.toStringAsFixed(0)}/cuota · $paid/$total pagadas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
                                     ],
                                   ),
                                 ),
@@ -916,7 +924,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(isFullyPaid ? '¡Deuda pagada! 🎉' : 'Faltan \$${remaining.toStringAsFixed(0)}', style: TextStyle(color: isFullyPaid ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669)) : (isDark ? const Color(0xFFFB7185) : const Color(0xFFE11D48)), fontSize: 12)),
+                                Text(isFullyPaid ? '¡Deuda pagada! 🎉' : 'Faltan $sym${remaining.toStringAsFixed(0)}', style: TextStyle(color: isFullyPaid ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669)) : (isDark ? const Color(0xFFFB7185) : const Color(0xFFE11D48)), fontSize: 12)),
                                 if (!isFullyPaid)
                                   GestureDetector(
                                     onTap: () => _handleAdvancePayment(debt.id),
@@ -998,7 +1006,10 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                             style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14),
                             decoration: InputDecoration(
                               hintText: 'Monto por cuota',
-                              prefixIcon: Icon(LucideIcons.dollarSign, size: 16, color: isDark ? Colors.grey[400] : Colors.grey[500]),
+                              prefixIcon: Container(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 16, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                              ),
                               hintStyle: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[400]),
                               filled: true,
                               fillColor: isDark ? const Color(0xFF4B5563) : Colors.white,

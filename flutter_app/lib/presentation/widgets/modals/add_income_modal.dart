@@ -5,6 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../domain/entities/transaction.dart';
 import '../../providers/transaction_provider.dart';
+import '../common/recurrence_selector_widget.dart';
+import '../../../core/utils/currency_formatter.dart';
+import '../../providers/auth_provider.dart';
 
 class AddIncomeModal extends ConsumerStatefulWidget {
   final bool isFixed;
@@ -148,23 +151,6 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
     );
   }
 
-  Widget _buildDayDropdown(bool isDark, int value, ValueChanged<int?> onChanged, int maxDays) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : Colors.white, border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2), borderRadius: BorderRadius.circular(12)),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
-          value: value,
-          isExpanded: true,
-          dropdownColor: isDark ? const Color(0xFF374151) : Colors.white,
-          style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
-          items: List.generate(maxDays, (i) => DropdownMenuItem(value: i + 1, child: Text('${i + 1}'))),
-          onChanged: onChanged,
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -241,7 +227,10 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                     decoration: InputDecoration(
                       hintText: '0.00',
                       hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400]),
-                      prefixIcon: Icon(LucideIcons.dollarSign, color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                      prefixIcon: Container(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                      ),
                       filled: true,
                       fillColor: isDark ? const Color(0xFF374151) : Colors.white,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2)),
@@ -401,92 +390,22 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
 
                   if (widget.isFixed) ...[
                     const SizedBox(height: 20),
-                    Text('Frecuencia de cobro 🔄', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF374151) : Colors.white,
-                        border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: recurrenceType ?? 'monthly',
-                          isExpanded: true,
-                          dropdownColor: isDark ? const Color(0xFF374151) : Colors.white,
-                          style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
-                          items: const [
-                            DropdownMenuItem(value: 'monthly', child: Text('Mensual')),
-                            DropdownMenuItem(value: 'bimonthly', child: Text('Quincenal')),
-                            DropdownMenuItem(value: 'weekly', child: Text('Semanal')),
-                          ],
-                          onChanged: (val) {
-                            setState(() {
-                              recurrenceType = val;
-                              recurrenceDay = 1;
-                              recurrenceDay2 = (val == 'bimonthly') ? 15 : null;
-                            });
-                          },
-                        ),
-                      ),
+                    RecurrenceSelectorWidget(
+                      isDark: isDark,
+                      recurrenceType: recurrenceType,
+                      recurrenceDay: recurrenceDay ?? 1,
+                      recurrenceDay2: recurrenceDay2,
+                      activeColor: const Color(0xFF10B981),
+                      onTypeChanged: (val) {
+                        setState(() {
+                          recurrenceType = val;
+                          recurrenceDay = 1;
+                          recurrenceDay2 = (val == 'bimonthly') ? 16 : null;
+                        });
+                      },
+                      onDayChanged: (val) => setState(() => recurrenceDay = val),
+                      onDay2Changed: (val) => setState(() => recurrenceDay2 = val),
                     ),
-                    const SizedBox(height: 16),
-                    if (recurrenceType == 'monthly' || recurrenceType == null) ...[
-                      Text('Día de cobro', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
-                      const SizedBox(height: 8),
-                      _buildDayDropdown(isDark, recurrenceDay ?? 1, (val) => setState(() => recurrenceDay = val!), 31),
-                    ] else if (recurrenceType == 'bimonthly') ...[
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Primer día', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
-                                const SizedBox(height: 8),
-                                _buildDayDropdown(isDark, recurrenceDay ?? 1, (val) => setState(() => recurrenceDay = val!), 31),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Segundo día', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
-                                const SizedBox(height: 8),
-                                _buildDayDropdown(isDark, recurrenceDay2 ?? 15, (val) => setState(() => recurrenceDay2 = val!), 31),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ] else if (recurrenceType == 'weekly') ...[
-                      Text('Día de la semana', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : Colors.white, border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2), borderRadius: BorderRadius.circular(12)),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<int>(
-                            value: recurrenceDay ?? 1,
-                            isExpanded: true, dropdownColor: isDark ? const Color(0xFF374151) : Colors.white,
-                            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
-                            items: const [
-                              DropdownMenuItem(value: 1, child: Text('Lunes')),
-                              DropdownMenuItem(value: 2, child: Text('Martes')),
-                              DropdownMenuItem(value: 3, child: Text('Miércoles')),
-                              DropdownMenuItem(value: 4, child: Text('Jueves')),
-                              DropdownMenuItem(value: 5, child: Text('Viernes')),
-                              DropdownMenuItem(value: 6, child: Text('Sábado')),
-                              DropdownMenuItem(value: 7, child: Text('Domingo')),
-                            ],
-                            onChanged: (val) => setState(() => recurrenceDay = val!),
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
                   const SizedBox(height: 24),
 

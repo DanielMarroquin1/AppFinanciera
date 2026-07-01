@@ -102,7 +102,7 @@ class CreditCardHistoryModal extends ConsumerWidget {
                 loading: () => const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator())),
                 error: (err, _) => Center(child: Padding(padding: const EdgeInsets.all(40), child: Text('Error: $err', style: TextStyle(color: isDark ? Colors.white : Colors.black)))),
                 data: (allTransactions) {
-                  final cardTransactions = allTransactions.where((t) => t.creditCardId == card.id).toList();
+                  final cardTransactions = allTransactions.where((t) => t.creditCardId == card.id && !t.isFixed).toList();
                   cardTransactions.sort((a, b) => b.date.compareTo(a.date));
 
                   if (cardTransactions.isEmpty) {

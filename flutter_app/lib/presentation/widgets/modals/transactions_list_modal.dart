@@ -91,7 +91,7 @@ class TransactionsListModalInternal extends ConsumerWidget {
                   return Center(child: Text('No hay transacciones registradas', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400])));
                 }
                 
-                final sorted = List.of(transactions)..sort((a, b) => b.date.compareTo(a.date));
+                final sorted = transactions.where((t) => !t.isFixed).toList()..sort((a, b) => b.date.compareTo(a.date));
 
                 return ListView.builder(
                   controller: scrollController,

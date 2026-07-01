@@ -7,6 +7,9 @@ import '../widgets/modals/ai_chat_modal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/color_palette_provider.dart';
 import '../providers/saving_goals_provider.dart';
+import '../../core/utils/localization.dart';
+import '../../core/utils/currency_formatter.dart';
+import '../providers/auth_provider.dart';
 
 class SavingsScreen extends ConsumerStatefulWidget {
   const SavingsScreen({super.key});
@@ -21,7 +24,8 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     ref.watch(colorPaletteProvider);
     final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
-
+    final loc = ref.watch(localizationProvider);
+    final sym = CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency);
     final goalsAsync = ref.watch(savingGoalsProvider);
 
     return Scaffold(
@@ -33,7 +37,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
           children: [
             // Header
             Text(
-              'Mis Ahorros 🎯',
+              loc.get('my_savings'),
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -71,7 +75,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                     children: [
                       Text('Total Ahorrado', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
                       const SizedBox(height: 8),
-                      Text('\$${totalSaved.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
+                      Text('$sym${totalSaved.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 16),
                       Row(
                         children: [
@@ -247,9 +251,9 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                                       crossAxisAlignment: CrossAxisAlignment.baseline,
                                       textBaseline: TextBaseline.alphabetic,
                                       children: [
-                                        Text('\$${goal.currentAmount.toStringAsFixed(0)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
+                                        Text('$sym${goal.currentAmount.toStringAsFixed(0)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
                                         const SizedBox(width: 4),
-                                        Text('de \$${goal.targetAmount.toStringAsFixed(0)}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                        Text('de $sym${goal.targetAmount.toStringAsFixed(0)}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                                       ],
                                     )
                                   ],

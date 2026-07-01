@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/color_palette_provider.dart';
 import '../../../core/utils/localization.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/utils/currency_formatter.dart';
 
 class CompleteProfileModal extends ConsumerStatefulWidget {
   const CompleteProfileModal({super.key});
@@ -251,7 +252,10 @@ class _CompleteProfileModalState extends ConsumerState<CompleteProfileModal> {
                           style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 18),
                           decoration: InputDecoration(
                             hintText: '0.00',
-                            prefixIcon: Icon(LucideIcons.dollarSign, color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                            prefixIcon: Container(
+                              padding: const EdgeInsets.all(12),
+                              child: Text(CurrencyFormatter.getSymbol(selectedCurrency), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                            ),
                             filled: true,
                             fillColor: isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB))),

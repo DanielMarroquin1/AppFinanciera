@@ -7,6 +7,9 @@ import '../../../core/utils/localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../domain/entities/debt.dart';
 import '../../providers/debts_provider.dart';
+import '../common/recurrence_selector_widget.dart';
+import '../../providers/color_palette_provider.dart';
+import '../../providers/auth_provider.dart';
 
 class AddDebtModal extends ConsumerStatefulWidget {
   final String? currencyCode;
@@ -30,15 +33,19 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
   double amountPerInstallment = 0.0;
   int totalInstallments = 1;
   int currentInstallment = 0;
-  bool isAutoPay = false;
-  String? recurrenceType;
+  bool isAutoPay = true;
+  String? recurrenceType; // default null so day selector only shows when selected
   int recurrenceDay = 1;
-  int recurrenceDay2 = 15;
+  int? recurrenceDay2 = 16;
+  String selectedEmoji = '🏦';
+  final emojis = ['🏦', '💳', '🏠', '🚗', '💻', '📱', '📺', '🎓', '💊', '✈️'];
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final loc = ref.watch(localizationProvider);
+    final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
+    final userCurrency = widget.currencyCode ?? ref.watch(authProvider).user?.currency;
 
     return Container(
       decoration: BoxDecoration(
@@ -95,6 +102,31 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // Emoji selector
+                  Text('Categoría 🏷️', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8, runSpacing: 8,
+                    children: emojis.map((e) {
+                      final isSelected = selectedEmoji == e;
+                      return GestureDetector(
+                        onTap: () => setState(() => selectedEmoji = e),
+                        child: Container(
+                          width: 48, height: 48,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? (isDark ? paletteGradient[0].withValues(alpha: 0.3) : paletteGradient[0].withValues(alpha: 0.1))
+                                : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                            border: isSelected ? Border.all(color: paletteGradient[0], width: 2) : null,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Center(child: Text(e, style: const TextStyle(fontSize: 22))),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+
                   // Concept
                   Text('Concepto 📝', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 8),
@@ -124,7 +156,7 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
                       hintText: '0.00',
                       prefixIcon: Container(
                         padding: const EdgeInsets.all(12),
-                        child: Text(CurrencyFormatter.getSymbol(widget.currencyCode), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                        child: Text(CurrencyFormatter.getSymbol(userCurrency), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
                       ),
                       filled: true,
                       fillColor: isDark ? const Color(0xFF374151) : Colors.white,
@@ -222,85 +254,22 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
                         ),
                         if (isAutoPay) ...[
                           const SizedBox(height: 16),
-                          Text('Frecuencia', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
-                          const SizedBox(height: 8),
-                          DropdownButtonFormField<String>(
-                            value: recurrenceType ?? 'monthly',
-                            dropdownColor: isDark ? const Color(0xFF1F2937) : Colors.white,
-                            items: const [
-                              DropdownMenuItem(value: 'monthly', child: Text('Mensual')),
-                              DropdownMenuItem(value: 'bimonthly', child: Text('Quincenal')),
-                              DropdownMenuItem(value: 'weekly', child: Text('Semanal')),
-                            ],
-                            onChanged: (val) {
-                              if (val != null) setState(() => recurrenceType = val);
+                          RecurrenceSelectorWidget(
+                            isDark: isDark,
+                            recurrenceType: recurrenceType,
+                            recurrenceDay: recurrenceDay,
+                            recurrenceDay2: recurrenceDay2,
+                            activeColor: const Color(0xFFA855F7),
+                            onTypeChanged: (val) {
+                              setState(() {
+                                recurrenceType = val;
+                                recurrenceDay = 1;
+                                recurrenceDay2 = (val == 'bimonthly') ? 16 : null;
+                              });
                             },
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: isDark ? const Color(0xFF4B5563) : Colors.white,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                            ),
+                            onDayChanged: (val) => setState(() => recurrenceDay = val),
+                            onDay2Changed: (val) => setState(() => recurrenceDay2 = val),
                           ),
-                          const SizedBox(height: 16),
-                          if (recurrenceType == 'monthly' || recurrenceType == 'weekly') ...[
-                            Text(recurrenceType == 'weekly' ? 'Día de la semana (1=Lun, 7=Dom)' : 'Día de cobro', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
-                            const SizedBox(height: 8),
-                            TextField(
-                              keyboardType: TextInputType.number,
-                              onChanged: (val) => recurrenceDay = int.tryParse(val) ?? 1,
-                              decoration: InputDecoration(
-                                hintText: recurrenceType == 'weekly' ? 'Ej: 1 (Lunes)' : 'Ej: 15',
-                                filled: true,
-                                fillColor: isDark ? const Color(0xFF4B5563) : Colors.white,
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                              ),
-                            ),
-                          ] else if (recurrenceType == 'bimonthly') ...[
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Día 1', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
-                                      const SizedBox(height: 8),
-                                      TextField(
-                                        keyboardType: TextInputType.number,
-                                        onChanged: (val) => recurrenceDay = int.tryParse(val) ?? 1,
-                                        decoration: InputDecoration(
-                                          hintText: 'Ej: 15',
-                                          filled: true,
-                                          fillColor: isDark ? const Color(0xFF4B5563) : Colors.white,
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Día 2', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
-                                      const SizedBox(height: 8),
-                                      TextField(
-                                        keyboardType: TextInputType.number,
-                                        onChanged: (val) => recurrenceDay2 = int.tryParse(val) ?? 30,
-                                        decoration: InputDecoration(
-                                          hintText: 'Ej: 30',
-                                          filled: true,
-                                          fillColor: isDark ? const Color(0xFF4B5563) : Colors.white,
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ]
                         ]
                       ],
                     ),
@@ -320,7 +289,7 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
                         installmentAmount: amountPerInstallment,
                         totalInstallments: totalInstallments,
                         paidInstallments: currentInstallment,
-                        category: '🏦',
+                        category: selectedEmoji,
                         isAutoPay: isAutoPay,
                         recurrenceType: isAutoPay ? recurrenceType : null,
                         recurrenceDay: isAutoPay ? recurrenceDay : null,

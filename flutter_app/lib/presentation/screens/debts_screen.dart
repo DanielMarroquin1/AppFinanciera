@@ -8,6 +8,10 @@ import '../../domain/entities/debt.dart';
 import '../../domain/entities/transaction.dart';
 import '../providers/transaction_provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/utils/localization.dart';
+import '../widgets/modals/add_debt_modal.dart';
+import '../providers/auth_provider.dart';
+import '../../core/utils/currency_formatter.dart';
 
 class DebtsScreen extends ConsumerStatefulWidget {
   const DebtsScreen({super.key});
@@ -42,6 +46,7 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
       context: context,
       builder: (ctx) {
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        final sym = CurrencyFormatter.getSymbol(ref.read(authProvider).user?.currency);
         return Dialog(
           backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -67,7 +72,7 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
-                Text('\$${debt.installmentAmount.toStringAsFixed(0)}', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isDark ? const Color(0xFF34D399) : const Color(0xFF059669))),
+                Text('$sym${debt.installmentAmount.toStringAsFixed(0)}', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isDark ? const Color(0xFF34D399) : const Color(0xFF059669))),
                 const SizedBox(height: 24),
                 Row(
                   children: [
@@ -136,183 +141,15 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
     );
   }
 
-  void _showAddDebtModal() {
-    final nameCtrl = TextEditingController();
-    final amountCtrl = TextEditingController();
-    final totalCtrl = TextEditingController();
-    final paidCtrl = TextEditingController(text: '0');
-    String selectedEmoji = '🏦';
 
-    final emojis = ['🏦', '💳', '🏠', '🚗', '💻', '📱', '📺', '🎓', '💊', '✈️'];
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
-        return StatefulBuilder(
-          builder: (ctx, setModalState) {
-            return Container(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Handle
-                    Center(
-                      child: Container(
-                        width: 40, height: 4,
-                        decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text('Nueva Deuda', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
-                    const SizedBox(height: 4),
-                    Text('Registra una compra a cuotas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
-                    const SizedBox(height: 24),
-
-                    // Emoji selector
-                    Text('Categoría', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8, runSpacing: 8,
-                      children: emojis.map((e) {
-                        final isSelected = selectedEmoji == e;
-                        return GestureDetector(
-                          onTap: () => setModalState(() => selectedEmoji = e),
-                          child: Container(
-                            width: 48, height: 48,
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? (isDark ? paletteGradient[0].withValues(alpha: 0.3) : paletteGradient[0].withValues(alpha: 0.1))
-                                  : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                              border: isSelected ? Border.all(color: paletteGradient[0], width: 2) : null,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Center(child: Text(e, style: const TextStyle(fontSize: 22))),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Name
-                    _buildInputField(isDark, nameCtrl, 'Nombre de la deuda', LucideIcons.creditCard, TextInputType.text),
-                    const SizedBox(height: 12),
-
-                    // Amount per installment
-                    _buildInputField(isDark, amountCtrl, 'Monto por cuota', LucideIcons.dollarSign, TextInputType.number),
-                    const SizedBox(height: 12),
-
-                    // Total installments
-                    Row(
-                      children: [
-                        Expanded(child: _buildInputField(isDark, totalCtrl, 'Cuotas totales', LucideIcons.hash, TextInputType.number)),
-                        const SizedBox(width: 12),
-                        Expanded(child: _buildInputField(isDark, paidCtrl, 'Ya pagadas', LucideIcons.check, TextInputType.number)),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Add button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          if (nameCtrl.text.isEmpty || amountCtrl.text.isEmpty || totalCtrl.text.isEmpty) return;
-                          
-                          final uid = FirebaseAuth.instance.currentUser?.uid;
-                          if (uid == null) return;
-                          
-                          final newDebt = DebtModel(
-                            id: '',
-                            userId: uid,
-                            name: nameCtrl.text,
-                            category: selectedEmoji,
-                            installmentAmount: double.tryParse(amountCtrl.text) ?? 0,
-                            totalInstallments: int.tryParse(totalCtrl.text) ?? 0,
-                            paidInstallments: int.tryParse(paidCtrl.text) ?? 0,
-                            createdAt: DateTime.now(),
-                          );
-                          
-                          await ref.read(debtNotifierProvider.notifier).addDebt(newDebt);
-                          
-                          if (context.mounted) {
-                            Navigator.of(ctx).pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${newDebt.name} agregada ✅'),
-                                backgroundColor: paletteGradient[0],
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6366F1),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          elevation: 0,
-                        ),
-                        child: const Text('+ Agregar Deuda', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildInputField(bool isDark, TextEditingController ctrl, String hint, IconData icon, TextInputType type) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: isDark ? Colors.grey[500] : Colors.grey[400], size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: TextField(
-              controller: ctrl,
-              keyboardType: type,
-              style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14),
-              decoration: InputDecoration(
-                hintText: hint,
-                hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400]),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-            ),
-          )
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     ref.watch(colorPaletteProvider);
     final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
+    final loc = ref.watch(localizationProvider);
+    final sym = CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency);
     
     final debtsAsync = ref.watch(debtsProvider);
 
@@ -353,7 +190,7 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Mis Deudas 💳', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                          Text(loc.get('my_debts'), style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
                           const SizedBox(height: 4),
                           Text('Control de pagos a cuotas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
                         ],
@@ -385,7 +222,7 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                             children: [
                               Text('Deuda Total Pendiente', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
                               const SizedBox(height: 8),
-                              Text('\$${totalRemaining.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
+                              Text('$sym${totalRemaining.toStringAsFixed(0)}', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
                             ],
                           ),
                           Container(
@@ -426,7 +263,7 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
 
                 // Add Debt Button
                 InkWell(
-                  onTap: _showAddDebtModal,
+                  onTap: () => AddDebtModal.show(context, currencyCode: ref.read(authProvider).user?.currency),
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
                     padding: const EdgeInsets.all(16),
@@ -498,6 +335,7 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
   }
 
   Widget _buildDebtCard(DebtModel debt, bool isDark, List<Color> paletteGradient) {
+    final sym = CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency);
     final progress = _getDebtProgress(debt);
     final isCompleted = _isDebtCompleted(debt);
     final percentage = (progress * 100).toStringAsFixed(0);
@@ -557,7 +395,7 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '\$${debt.installmentAmount.toStringAsFixed(0)}/cuota · ${debt.paidInstallments}/${debt.totalInstallments} pagadas',
+                      '$sym${debt.installmentAmount.toStringAsFixed(0)}/cuota · ${debt.paidInstallments}/${debt.totalInstallments} pagadas',
                       style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12),
                     ),
                   ],
@@ -596,7 +434,7 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                   Text(
                     isCompleted
                         ? '¡Deuda pagada! 🎉'
-                        : 'Faltan \$${_getDebtRemainingAmount(debt).toStringAsFixed(0)}',
+                        : 'Faltan $sym${_getDebtRemainingAmount(debt).toStringAsFixed(0)}',
                     style: TextStyle(
                       color: isCompleted
                           ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
@@ -634,11 +472,11 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
               ),
               child: Row(
                 children: [
-                  _buildDetailChip(isDark, 'Total', '\$${_getDebtTotalAmount(debt).toStringAsFixed(0)}'),
+                  _buildDetailChip(isDark, 'Total', '$sym${_getDebtTotalAmount(debt).toStringAsFixed(0)}'),
                   const SizedBox(width: 8),
-                  _buildDetailChip(isDark, 'Pagado', '\$${_getDebtPaidAmount(debt).toStringAsFixed(0)}'),
+                  _buildDetailChip(isDark, 'Pagado', '$sym${_getDebtPaidAmount(debt).toStringAsFixed(0)}'),
                   const SizedBox(width: 8),
-                  _buildDetailChip(isDark, 'Restante', '\$${_getDebtRemainingAmount(debt).toStringAsFixed(0)}'),
+                  _buildDetailChip(isDark, 'Restante', '$sym${_getDebtRemainingAmount(debt).toStringAsFixed(0)}'),
                 ],
               ),
             ),

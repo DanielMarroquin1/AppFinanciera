@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../providers/notification_provider.dart';
 
-class QuickActionsMenu extends StatelessWidget {
+class QuickActionsMenu extends ConsumerWidget {
   const QuickActionsMenu({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final unreadCount = ref.watch(unreadNotificationsCountProvider);
 
     final actions = [
       {
@@ -44,6 +47,17 @@ class QuickActionsMenu extends StatelessWidget {
             ? const [Color(0xFF7E22CE), Color(0xFF4338CA)]
             : const [Color(0xFF9333EA), Color(0xFF4F46E5)],
         'isPremium': true,
+      },
+      {
+        'id': 'notifications',
+        'label': 'Notificaciones',
+        'icon': LucideIcons.bell,
+        'gradient': isDark 
+            ? const [Color(0xFFB91C1C), Color(0xFF7F1D1D)]
+            : const [Color(0xFFEF4444), Color(0xFFB91C1C)],
+        'isPremium': false,
+        'hasBadge': unreadCount > 0,
+        'badgeCount': unreadCount,
       },
     ];
 
@@ -139,6 +153,20 @@ class QuickActionsMenu extends StatelessWidget {
                                       Icon(LucideIcons.crown, color: Colors.white, size: 12),
                                       SizedBox(width: 4),
                                       Text('PRO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ),
+                              if (action['hasBadge'] == true)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text('${action['badgeCount']} nueva(s)', style: const TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)),
                                     ],
                                   ),
                                 ),

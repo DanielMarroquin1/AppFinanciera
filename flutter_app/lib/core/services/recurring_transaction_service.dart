@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/debt.dart';
+import '../../domain/entities/notification.dart';
 
 class RecurringTransactionService {
   static Future<void> evaluateRecurringTransactions() async {
@@ -10,6 +11,15 @@ class RecurringTransactionService {
     if (user == null) return;
     
     await cleanDuplicates(user.uid);
+
+    final existingSnapshot = await FirebaseFirestore.instance
+        .collection('transactions')
+        .where('userId', isEqualTo: user.uid)
+        .get();
+    final existingNormal = existingSnapshot.docs
+        .map((d) => TransactionModel.fromFirestore(d))
+        .where((t) => !t.isFixed)
+        .toList();
 
     final prefs = await SharedPreferences.getInstance();
     final String lastCheckStr = prefs.getString('last_recurring_check_${user.uid}') ?? '';
@@ -71,6 +81,19 @@ class RecurringTransactionService {
         }
 
         if (shouldAdd) {
+          final targetDesc = '${template.description} (Automático)';
+          final alreadyExists = existingNormal.any((t) => 
+            t.description == targetDesc &&
+            t.date.year == current.year &&
+            t.date.month == current.month &&
+            t.date.day == current.day
+          );
+          if (alreadyExists) {
+            shouldAdd = false;
+          }
+        }
+
+        if (shouldAdd) {
           // Create a new normal transaction (not fixed, so it doesn't duplicate the template)
           final newTx = TransactionModel(
             id: '',
@@ -85,6 +108,22 @@ class RecurringTransactionService {
 
           final docRef = FirebaseFirestore.instance.collection('transactions').doc();
           batch.set(docRef, newTx.toFirestore());
+          
+          // Generate notification
+          final notifRef = FirebaseFirestore.instance.collection('notifications').doc();
+          final notif = NotificationModel(
+            id: notifRef.id,
+            userId: user.uid,
+            title: template.type == 'income' ? 'Ingreso Automático' : 'Cobro Automático',
+            body: 'Se ha registrado "${template.description}" por un monto de ${template.perPaymentAmount.toStringAsFixed(2)}.',
+            createdAt: DateTime.now(),
+            isRead: false,
+            type: template.type,
+            relatedId: docRef.id,
+            category: template.category,
+          );
+          batch.set(notifRef, notif.toFirestore());
+
           addedCount++;
         }
 
@@ -123,6 +162,19 @@ class RecurringTransactionService {
         }
 
         if (shouldAdd) {
+          final targetDesc = 'Cuota de ${debt.name} (Automático)';
+          final alreadyExists = existingNormal.any((t) => 
+            t.description == targetDesc &&
+            t.date.year == current.year &&
+            t.date.month == current.month &&
+            t.date.day == current.day
+          );
+          if (alreadyExists) {
+            shouldAdd = false;
+          }
+        }
+
+        if (shouldAdd) {
           // Create the expense transaction
           final newTx = TransactionModel(
             id: '',
@@ -138,6 +190,21 @@ class RecurringTransactionService {
           final docRef = FirebaseFirestore.instance.collection('transactions').doc();
           batch.set(docRef, newTx.toFirestore());
           
+          // Generate notification
+          final notifRef = FirebaseFirestore.instance.collection('notifications').doc();
+          final notif = NotificationModel(
+            id: notifRef.id,
+            userId: user.uid,
+            title: 'Pago Automático de Deuda',
+            body: 'Se ha cobrado la cuota de "${debt.name}" por un monto de ${debt.installmentAmount.toStringAsFixed(2)}.',
+            createdAt: DateTime.now(),
+            isRead: false,
+            type: 'expense',
+            relatedId: docRef.id,
+            category: debt.category,
+          );
+          batch.set(notifRef, notif.toFirestore());
+
           addedInstallments++;
           addedCount++;
         }
@@ -158,16 +225,19 @@ class RecurringTransactionService {
     }
 
     await prefs.setString('last_recurring_check_${user.uid}', today.toIso8601String());
+    await cleanDuplicates(user.uid);
   }
 
   static Future<void> cleanDuplicates(String uid) async {
     final snapshot = await FirebaseFirestore.instance
         .collection('transactions')
         .where('userId', isEqualTo: uid)
-        .where('isFixed', isEqualTo: false)
         .get();
 
-    final allNormal = snapshot.docs.map((doc) => TransactionModel.fromFirestore(doc)).toList();
+    final allNormal = snapshot.docs
+        .map((doc) => TransactionModel.fromFirestore(doc))
+        .where((t) => !t.isFixed)
+        .toList();
     final Map<String, List<TransactionModel>> groups = {};
 
     for (var t in allNormal) {
@@ -187,6 +257,27 @@ class RecurringTransactionService {
         for (int i = 1; i < group.length; i++) {
           final docRef = FirebaseFirestore.instance.collection('transactions').doc(group[i].id);
           batch.delete(docRef);
+          deletedCount++;
+        }
+      }
+    }
+
+    // Clean duplicate notifications
+    final notifSnapshot = await FirebaseFirestore.instance
+        .collection('notifications')
+        .where('userId', isEqualTo: uid)
+        .get();
+    final allNotifs = notifSnapshot.docs.map((d) => NotificationModel.fromFirestore(d)).toList();
+    final Map<String, List<NotificationModel>> notifGroups = {};
+    for (var n in allNotifs) {
+      final key = '${n.title}_${n.body}_${n.createdAt.year}_${n.createdAt.month}_${n.createdAt.day}';
+      if (!notifGroups.containsKey(key)) notifGroups[key] = [];
+      notifGroups[key]!.add(n);
+    }
+    for (var g in notifGroups.values) {
+      if (g.length > 1) {
+        for (int i = 1; i < g.length; i++) {
+          batch.delete(FirebaseFirestore.instance.collection('notifications').doc(g[i].id));
           deletedCount++;
         }
       }

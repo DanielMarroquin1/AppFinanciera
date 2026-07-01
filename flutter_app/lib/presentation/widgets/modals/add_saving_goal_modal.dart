@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/saving_goal.dart';
 import '../../providers/saving_goals_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../../core/utils/currency_formatter.dart';
 
 class AddSavingGoalModal extends ConsumerStatefulWidget {
   final String? initialName;
@@ -133,7 +134,10 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                     controller: _amountController,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      prefixIcon: const Icon(LucideIcons.dollarSign),
+                      prefixIcon: Container(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                      ),
                       hintText: '0.00',
                       filled: true,
                       fillColor: isDark ? const Color(0xFF374151) : Colors.white,

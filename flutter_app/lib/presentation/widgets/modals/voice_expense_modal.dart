@@ -11,6 +11,7 @@ import '../../providers/transaction_provider.dart';
 import '../../../domain/entities/transaction.dart' as entity;
 import '../../../core/utils/currency_formatter.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/credit_card_provider.dart';
 
 class VoiceExpenseModal extends ConsumerStatefulWidget {
   const VoiceExpenseModal({super.key});
@@ -115,6 +116,7 @@ class _VoiceExpenseModalState extends ConsumerState<VoiceExpenseModal> with Sing
   }
 
   void _processText() async {
+    if (_isProcessing) return; // Fix duplication
     if (_recognizedText.isEmpty) return;
 
     setState(() => _isProcessing = true);
@@ -138,14 +140,17 @@ Extrae la información en el siguiente formato JSON estricto:
 }
 
 Categorías permitidas (USA EXACTAMENTE ESTOS VALORES EN INGLÉS COMO APARECEN AQUÍ):
-- Comida: food (General), food_grocery (Supermercado), food_restaurant (Restaurante), food_coffee (Cafetería), food_delivery (Delivery)
-- Transporte: transport (General), transport_gas (Gasolina), transport_public (Público), transport_taxi (Taxi/Uber), transport_flight (Vuelos)
-- Servicios: bills (General), bills_water (Agua), bills_electricity (Luz), bills_internet (Internet), bills_gas (Gas)
-- Compras: shopping (General), shopping_clothes (Ropa), shopping_electronics (Electrónica), shopping_gifts (Regalos)
-- Ocio: entertainment (General), entertainment_movies (Cine), entertainment_sports (Deportes), entertainment_subscriptions (Suscripciones)
+- Comida: food
+- Transporte: transport
+- Hogar: home
+- Servicios: bills
+- Compras: shopping
+- Ocio: entertainment
+- Salud: health
+- Educación: education
 - Otro: other
 
-Elige la categoría (como 'food_restaurant', 'transport_taxi', etc.) que mejor represente el gasto.
+Elige la categoría que mejor represente el gasto.
 ''';
 
         final response = await model.generateContent([Content.text(prompt)]);
@@ -153,6 +158,9 @@ Elige la categoría (como 'food_restaurant', 'transport_taxi', etc.) que mejor r
           final data = jsonDecode(response.text!);
           _parsedAmount = (data['amount'] as num).toDouble();
           _parsedCategory = data['category'] ?? 'other';
+          if (_parsedCategory.contains('_')) {
+            _parsedCategory = _parsedCategory.split('_')[0];
+          }
           _parsedPaymentMethod = data['paymentMethod'] ?? 'efectivo';
         }
       }
@@ -188,6 +196,17 @@ Elige la categoría (como 'food_restaurant', 'transport_taxi', etc.) que mejor r
 
     if (_parsedAmount > 0) {
       final user = ref.read(authProvider).user;
+      
+      String? creditCardIdToUse;
+      if (_parsedPaymentMethod == 'tarjeta') {
+        final cards = ref.read(creditCardsProvider).value;
+        if (cards != null && cards.isNotEmpty) {
+          creditCardIdToUse = cards.first.id;
+        } else {
+          creditCardIdToUse = 'TC';
+        }
+      }
+
       final expense = entity.TransactionModel(
         id: '',
         userId: firebase_auth.FirebaseAuth.instance.currentUser?.uid ?? '',
@@ -197,7 +216,7 @@ Elige la categoría (como 'food_restaurant', 'transport_taxi', etc.) que mejor r
         description: _parsedDescription,
         date: DateTime.now(),
         isFixed: false,
-        creditCardId: _parsedPaymentMethod == 'tarjeta' ? 'TC' : null,
+        creditCardId: creditCardIdToUse,
       );
       await ref.read(transactionNotifierProvider.notifier).addTransaction(expense);
       

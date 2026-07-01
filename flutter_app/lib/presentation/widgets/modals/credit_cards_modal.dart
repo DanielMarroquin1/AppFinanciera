@@ -192,7 +192,11 @@ class _CreditCardsModalInternal extends ConsumerWidget {
                                 ),
 
                               // The physical card representation
-                              AspectRatio(
+                              GestureDetector(
+                                onTap: () {
+                                  CreditCardHistoryModal.show(context, card);
+                                },
+                                child: AspectRatio(
                                 aspectRatio: 1.586, // Standard credit card ratio
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(24),
@@ -207,8 +211,8 @@ class _CreditCardsModalInternal extends ConsumerWidget {
                                           top: -50,
                                           right: -50,
                                           child: Container(
-                                            width: 200,
-                                            height: 200,
+                                            width: 180,
+                                            height: 180,
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               color: (isOverdrawn ? Colors.redAccent : card.color).withOpacity(0.5),
@@ -306,12 +310,12 @@ class _CreditCardsModalInternal extends ConsumerWidget {
                                                   mainAxisSize: MainAxisSize.min,
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
-                                                    Text('DEUDA ACTUAL', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 10, letterSpacing: 3, fontWeight: FontWeight.w600)),
-                                                    const SizedBox(height: 4),
+                                                    Text('DEUDA ACTUAL', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 9, letterSpacing: 2, fontWeight: FontWeight.w600)),
+                                                    const SizedBox(height: 2),
                                                     if (card.currentBalance <= 0)
-                                                      const Text('¡AL DÍA!', style: TextStyle(color: Color(0xFF10B981), fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 2))
+                                                      const Text('¡AL DÍA!', style: TextStyle(color: Color(0xFF10B981), fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: 1.5))
                                                     else
-                                                      Text(CurrencyFormatter.format(card.currentBalance, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w300, letterSpacing: 1)),
+                                                      Text(CurrencyFormatter.format(card.currentBalance, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w300, letterSpacing: 0.5)),
                                                   ],
                                                 ),
                                               
@@ -325,7 +329,7 @@ class _CreditCardsModalInternal extends ConsumerWidget {
                                                         mainAxisSize: MainAxisSize.min,
                                                         crossAxisAlignment: CrossAxisAlignment.start,
                                                         children: [
-                                                          Text(card.name.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500, letterSpacing: 2), overflow: TextOverflow.ellipsis),
+                                                          Text(card.name.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500, letterSpacing: 1.5), overflow: TextOverflow.ellipsis),
                                                         ],
                                                       ),
                                                     ),
@@ -333,9 +337,9 @@ class _CreditCardsModalInternal extends ConsumerWidget {
                                                       mainAxisSize: MainAxisSize.min,
                                                       crossAxisAlignment: CrossAxisAlignment.end,
                                                       children: [
-                                                        Text('Corte: ${card.cutOffDay}  •  Pago: ${card.paymentDay}', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 10, fontWeight: FontWeight.w500)),
-                                                        const SizedBox(height: 4),
-                                                        Text(card.network.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 14, fontStyle: FontStyle.italic, fontWeight: FontWeight.w900)),
+                                                        Text('Corte: ${card.cutOffDay}  •  Pago: ${card.paymentDay}', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 9, fontWeight: FontWeight.w500)),
+                                                        const SizedBox(height: 2),
+                                                        Text(card.network.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 12, fontStyle: FontStyle.italic, fontWeight: FontWeight.w900)),
                                                       ],
                                                     ),
                                                   ],
@@ -344,10 +348,12 @@ class _CreditCardsModalInternal extends ConsumerWidget {
                                           ),
                                         ),
                                         // Premium Border Glow
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(24),
-                                            border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
+                                        IgnorePointer(
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(24),
+                                              border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -355,87 +361,58 @@ class _CreditCardsModalInternal extends ConsumerWidget {
                                   ),
                                 ),
                               ),
+                              ),
                               
                               const SizedBox(height: 16),
                               
-                              // Limit Progress Bar
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                                ),
-                                child: Column(
+                              // New Action Area: Limit info and Pay button side-by-side
+                              IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text('Límite de Crédito', style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 12)),
-                                        Text(CurrencyFormatter.format(card.limit, currencyCode), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 14)),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(4),
-                                      child: LinearProgressIndicator(
-                                        value: usagePercent,
-                                        backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                                        valueColor: AlwaysStoppedAnimation<Color>(usageColor),
-                                        minHeight: 8,
+                                    // Limit Info (Left side)
+                                    Expanded(
+                                      flex: 1,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                                        decoration: BoxDecoration(
+                                          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                          borderRadius: BorderRadius.circular(16),
+                                          border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                                        ),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text('Límite Disponible', style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 10, fontWeight: FontWeight.bold)),
+                                            const SizedBox(height: 6),
+                                            Text(isOverdrawn ? '-\$0.00' : CurrencyFormatter.format(availableBalance, currencyCode), style: TextStyle(color: isOverdrawn ? Colors.red : (isDark ? Colors.white : Colors.black), fontWeight: FontWeight.w900, fontSize: 16)),
+                                            const SizedBox(height: 2),
+                                            Text('de ${CurrencyFormatter.format(card.limit, currencyCode)}', style: TextStyle(color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8), fontSize: 10)),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text('Disponible', style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 12)),
-                                        Text(isOverdrawn ? '-\$0.00' : CurrencyFormatter.format(availableBalance, currencyCode), style: TextStyle(color: isOverdrawn ? Colors.red : (isDark ? Colors.white : Colors.black), fontWeight: FontWeight.bold, fontSize: 14)),
-                                      ],
+                                    const SizedBox(width: 12),
+                                    // Pay Button (Right side)
+                                    Expanded(
+                                      flex: 1,
+                                      child: ElevatedButton.icon(
+                                        onPressed: () {
+                                          _showPaymentDialog(context, ref, card, currencyCode);
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: isDark ? const Color(0xFF10B981) : const Color(0xFF059669),
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                          elevation: 0,
+                                        ),
+                                        icon: const Icon(LucideIcons.checkCircle, size: 20),
+                                        label: const Text('Abonar a\nDeuda', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, height: 1.2)),
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              // Action Buttons (History & Pay)
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: ElevatedButton.icon(
-                                      onPressed: () {
-                                        CreditCardHistoryModal.show(context, card);
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
-                                        foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
-                                        padding: const EdgeInsets.symmetric(vertical: 16),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                        elevation: 0,
-                                      ),
-                                      icon: const Icon(LucideIcons.history, size: 18),
-                                      label: const Text('Ver Historial', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: ElevatedButton.icon(
-                                      onPressed: () {
-                                        _showPaymentDialog(context, ref, card, currencyCode);
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: isDark ? const Color(0xFF10B981) : const Color(0xFF059669),
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(vertical: 16),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                        elevation: 0,
-                                      ),
-                                      icon: const Icon(LucideIcons.checkCircle, size: 18),
-                                      label: const Text('Abonar a Deuda', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                    ),
-                                  ),
-                                ],
                               ),
                             ],
                           ),

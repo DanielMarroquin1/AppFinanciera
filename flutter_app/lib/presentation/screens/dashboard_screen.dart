@@ -19,6 +19,7 @@ import '../providers/transaction_provider.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/localization.dart';
 import '../widgets/modals/quick_action_manager_modal.dart';
+import '../widgets/modals/monthly_report_modal.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 
@@ -32,6 +33,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTickerProviderStateMixin {
   late AnimationController _fireAnimController;
   bool _limitAlertShown = false;
+  bool _fixedExpenseAlertShown = false;
 
 
   @override
@@ -144,6 +146,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
         }
       });
     }
+
+    // Old fixed expense alert removed. Using new Notifications system instead.
 
     // Show daily tip once per day (after profile modal if needed)
     if (user != null && !_tipChecked) {
@@ -352,23 +356,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 
                 final totalBalance = actualTotalIncome - allTimeExpense;
 
-                return Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: paletteGradient,
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                return InkWell(
+                  onTap: () {
+                    MonthlyReportModal.show(context);
+                  },
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: paletteGradient,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        )
+                      ]
                     ),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      )
-                    ]
-                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -417,7 +426,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                       )
                     ],
                   ),
-                );
+                ));
               },
             ),
             const SizedBox(height: 24),

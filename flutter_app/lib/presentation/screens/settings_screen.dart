@@ -903,7 +903,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
+      builder: (ctx) {
+        final sym = CurrencyFormatter.getSymbol(ref.read(authProvider).user?.currency);
+        return Container(
         constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.85),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1F2937) : Colors.white,
@@ -943,7 +945,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(cat['name'] as String, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 14)),
-                          Text('\$${(cat['spent'] as double).toStringAsFixed(0)} / \$${(cat['budget'] as double).toStringAsFixed(0)}', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                          Text('$sym${(cat['spent'] as double).toStringAsFixed(0)} / $sym${(cat['budget'] as double).toStringAsFixed(0)}', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -972,7 +974,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ],
           ),
         ),
-      ),
+      );
+      },
     );
   }
 

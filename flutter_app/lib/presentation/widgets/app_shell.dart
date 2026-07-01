@@ -7,6 +7,7 @@ import '../../presentation/widgets/quick_actions_menu.dart';
 import '../../presentation/widgets/modals/ai_chat_modal.dart';
 import '../../presentation/widgets/modals/add_saving_goal_modal.dart';
 import '../../presentation/widgets/rewards_shop_modal.dart';
+import '../../presentation/widgets/modals/notifications_modal.dart';
 import '../../presentation/providers/color_palette_provider.dart';
 
 class AppShell extends ConsumerWidget {
@@ -56,6 +57,8 @@ class AppShell extends ConsumerWidget {
                 backgroundColor: Colors.transparent,
                 builder: (context) => const AIChatModal(),
               );
+            } else if (action == 'notifications') {
+              NotificationsModal.show(context);
             }
           }
         },

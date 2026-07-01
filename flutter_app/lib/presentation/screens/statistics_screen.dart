@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-class StatisticsScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/utils/currency_formatter.dart';
+import '../providers/auth_provider.dart';
+
+class StatisticsScreen extends ConsumerStatefulWidget {
   const StatisticsScreen({super.key});
 
   @override
-  State<StatisticsScreen> createState() => _StatisticsScreenState();
+  ConsumerState<StatisticsScreen> createState() => _StatisticsScreenState();
 }
 
-class _StatisticsScreenState extends State<StatisticsScreen> {
+class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   String selectedPeriod = 'Últimos 6 meses';
   bool isExporting = false;
 
@@ -38,6 +42,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final sym = CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency);
 
     final data = [
       {'month': 'Ene', 'income': 3500.0, 'expenses': 2300.0},
@@ -153,7 +158,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        const Text('\$22,000', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                        Text('${sym}22,000', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
                         Text('Este período', style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 12)),
                       ],
@@ -182,7 +187,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        const Text('\$15,150', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                        Text('${sym}15,150', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
                         Text('Este período', style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 12)),
                       ],
@@ -294,7 +299,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('\$1,550', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.bold)),
+                              Text('${sym}1,550', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.bold)),
                               Text('Total', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12)),
                             ],
                           ),
@@ -320,7 +325,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                             children: [
                               Text('${cat['percentage']}%', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12)),
                               const SizedBox(width: 12),
-                              SizedBox(width: 70, child: Text('\$${(cat['amount'] as double).toStringAsFixed(0)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
+                              SizedBox(width: 70, child: Text('$sym${(cat['amount'] as double).toStringAsFixed(0)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
                             ],
                           )
                         ],

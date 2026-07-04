@@ -16,12 +16,15 @@ import '../widgets/modals/complete_profile_modal.dart';
 import '../providers/color_palette_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../providers/credit_card_provider.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/localization.dart';
 import '../widgets/modals/quick_action_manager_modal.dart';
 import '../widgets/modals/monthly_report_modal.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import '../providers/notification_provider.dart';
+import '../widgets/modals/notifications_modal.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -61,11 +64,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
     final user = authState.user;
 
     ref.listen(authProvider, (previous, next) {
+      final now = DateTime.now();
+      final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+      final wasActiveToday = previous?.user?.lastActiveDate == todayStr;
+      final isActiveToday = next.user?.lastActiveDate == todayStr;
+      
       final prevStreak = previous?.user?.currentStreak ?? 0;
       final nextStreak = next.user?.currentStreak ?? 0;
-      if (nextStreak > prevStreak && nextStreak > 0) {
+
+      if (previous?.user != null && !wasActiveToday && isActiveToday) {
         if (context.mounted) {
-          StreakModal.show(context, streak: nextStreak, isActiveToday: true);
+          StreakModal.show(context, streak: nextStreak > 0 ? nextStreak : 1, isActiveToday: true);
         }
       }
     });
@@ -100,6 +109,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
     final transactionsAsync = ref.watch(transactionsProvider);
     final loc = ref.watch(localizationProvider);
     final currencyCode = user?.currency;
+    final unreadNotificationsCount = ref.watch(unreadNotificationsCountProvider);
+    final creditCardsAsync = ref.watch(computedCreditCardsProvider);
+    final hasOverlimitCard = creditCardsAsync.value?.any((card) => card.currentBalance >= card.limit && card.limit > 0) ?? false;
 
     if (user != null && !user.profileComplete && !_profileChecked) {
       _profileChecked = true;
@@ -272,30 +284,75 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                       ),
                     ),
                     const SizedBox(width: 8),
-                    InkWell(
-                      onTap: () => RewardsShopModal.show(context),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.amber[900]?.withValues(alpha: 0.3) : Colors.amber[100],
-                          border: Border.all(
-                            color: Colors.amber,
-                            width: 2,
-                          ),
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        InkWell(
+                          onTap: () => NotificationsModal.show(context),
                           borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: unreadNotificationsCount > 0
+                                  ? (isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.4) : const Color(0xFFFEF2F2))
+                                  : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                              border: Border.all(
+                                color: unreadNotificationsCount > 0
+                                    ? const Color(0xFFEF4444)
+                                    : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Icon(
+                              LucideIcons.bell,
+                              color: unreadNotificationsCount > 0
+                                  ? const Color(0xFFEF4444)
+                                  : (isDark ? Colors.white : Colors.black87),
+                            ),
+                          ),
                         ),
-                        child: Icon(
-                          LucideIcons.shoppingBag,
-                          color: isDark ? Colors.amber[400] : Colors.amber[700],
-                        ),
-                      ),
+                        if (unreadNotificationsCount > 0)
+                          Positioned(
+                            top: -4,
+                            right: -4,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFEF4444),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                unreadNotificationsCount > 9 ? '9+' : '$unreadNotificationsCount',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            Builder(
+              builder: (context) {
+                final now = DateTime.now();
+                final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+                final isActiveToday = user?.lastActiveDate == todayStr;
+                
+                if (!isActiveToday) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 16, bottom: 20),
+                    child: _buildFloatingStreakPrompt(context, isDark, user?.currentStreak ?? 0),
+                  );
+                }
+                return const SizedBox(height: 24);
+              },
+            ),
 
             // Balance Card — computed inside when() to avoid stale locals
             transactionsAsync.when(
@@ -638,24 +695,45 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   ),
                   const SizedBox(width: 6),
                   Expanded(
-                    child: InkWell(
-                      onTap: () => CreditCardsModal.show(context),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF92400E).withValues(alpha: 0.3) : const Color(0xFFFFFBEB),
-                          border: Border.all(color: isDark ? const Color(0xFFD97706) : const Color(0xFFFDE68A), width: 2),
-                          borderRadius: BorderRadius.circular(16),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: InkWell(
+                            onTap: () => CreditCardsModal.show(context),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF92400E).withValues(alpha: 0.3) : const Color(0xFFFFFBEB),
+                                border: Border.all(color: isDark ? const Color(0xFFD97706) : const Color(0xFFFDE68A), width: 2),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(LucideIcons.creditCard, color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), size: 22),
+                                  const SizedBox(height: 6),
+                                  Text('Tarjetas', style: TextStyle(color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E), fontSize: 10, fontWeight: FontWeight.w500)),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
-                        child: Column(
-                          children: [
-                            Icon(LucideIcons.creditCard, color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), size: 22),
-                            const SizedBox(height: 6),
-                            Text('Tarjetas', style: TextStyle(color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E), fontSize: 10, fontWeight: FontWeight.w500)),
-                          ],
-                        ),
-                      ),
+                        if (hasOverlimitCard)
+                          Positioned(
+                            top: -4,
+                            right: -4,
+                            child: Container(
+                              padding: const EdgeInsets.all(5),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFEF4444),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(LucideIcons.alertTriangle, color: Colors.white, size: 12),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ],
@@ -854,21 +932,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             ),
             const SizedBox(height: 24),
 
-            // Achievements Card (¡Logro Desbloqueado!)
+            // Rewards Shop Card (Tienda de Recompensas)
             InkWell(
-              onTap: () => BadgesModal.show(context),
+              onTap: () => RewardsShopModal.show(context),
               borderRadius: BorderRadius.circular(24),
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [paletteGradient[0], paletteGradient.length > 1 ? paletteGradient[1] : paletteGradient[0]],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  gradient: isDark
+                      ? const LinearGradient(colors: [Color(0xFF9A3412), Color(0xFF7C2D12)], begin: Alignment.topLeft, end: Alignment.bottomRight)
+                      : const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFEA580C)], begin: Alignment.topLeft, end: Alignment.bottomRight),
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 10, offset: const Offset(0, 4))
+                    BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.25), blurRadius: 12, offset: const Offset(0, 4))
                   ],
                 ),
                 child: Column(
@@ -877,58 +953,72 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Row(
+                        Row(
                           children: [
-                            Icon(LucideIcons.medal, color: Colors.white, size: 24),
-                            SizedBox(width: 12),
-                            Text('¡Logro Desbloqueado!', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(LucideIcons.shoppingBag, color: Colors.white, size: 24),
+                            ),
+                            const SizedBox(width: 12),
+                            const Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Tienda de Recompensas', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                                Text('Canjea tus puntos ganados', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                              ],
+                            ),
                           ],
                         ),
-                        Text('Ver todas →', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.25),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('🟡', style: TextStyle(fontSize: 12)),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${user?.points ?? 0} pts',
+                                style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Builder(
-                      builder: (context) {
-                        final List<IconData> unlockedBadges = [
-                          if (user?.profileComplete == true) LucideIcons.userCheck,
-                          if ((user?.currentStreak ?? 0) >= 7) LucideIcons.flame,
-                          if ((user?.currentStreak ?? 0) >= 30) LucideIcons.award,
-                          if ((user?.unlockedItems.isNotEmpty ?? false)) LucideIcons.shoppingBag,
-                          if ((user?.unlockedItems.length ?? 0) >= 5) LucideIcons.crown,
-                          if ((user?.points ?? 0) >= 100) LucideIcons.piggyBank,
-                        ];
-
-                        if (unlockedBadges.isEmpty) {
-                          return Text(
-                            'Aún no tienes insignias. ¡Cumple metas para desbloquearlas!',
-                            style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14),
-                          );
-                        }
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    Text(
+                      'Desbloquea avatares exclusivos, temas personalizados y consejos VIP para potenciar tus finanzas.',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 13, height: 1.4),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
                           children: [
-                            Text(
-                              'Has desbloqueado ${unlockedBadges.length} insignia${unlockedBadges.length == 1 ? '' : 's'}:',
-                              style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14),
-                            ),
-                            const SizedBox(height: 12),
-                            Wrap(
-                              spacing: 12,
-                              runSpacing: 12,
-                              children: unlockedBadges.map((icon) => Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(icon, color: Colors.white, size: 24),
-                              )).toList(),
-                            ),
+                            _buildShopPreviewChip('🦸', 'Avatares'),
+                            const SizedBox(width: 8),
+                            _buildShopPreviewChip('🎨', 'Temas'),
+                            const SizedBox(width: 8),
+                            _buildShopPreviewChip('💡', 'Consejos Pro'),
                           ],
-                        );
-                      }
+                        ),
+                        const Row(
+                          children: [
+                            Text('Entrar', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                            SizedBox(width: 4),
+                            Icon(LucideIcons.arrowRight, color: Colors.white, size: 16),
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -984,5 +1074,130 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
     // If the category itself is an emoji, return it directly
     if (category.runes.isNotEmpty && category.runes.first > 127) return category;
     return map[category] ?? '💰';
+  }
+
+  Widget _buildShopPreviewChip(String emoji, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 12)),
+          const SizedBox(width: 4),
+          Text(label, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFloatingStreakPrompt(BuildContext context, bool isDark, int currentStreak) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: isDark
+            ? LinearGradient(colors: [const Color(0xFF7C2D12).withValues(alpha: 0.4), const Color(0xFF451A03).withValues(alpha: 0.3)])
+            : LinearGradient(colors: [const Color(0xFFFFF7ED), const Color(0xFFFFEDD5)]),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? const Color(0xFFEA580C) : const Color(0xFFF97316),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFF97316).withValues(alpha: 0.2),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          AnimatedBuilder(
+            animation: _fireAnimController,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: 1.0 + (_fireAnimController.value * 0.15),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF97316),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFF97316).withValues(alpha: 0.5),
+                        blurRadius: 12,
+                        spreadRadius: _fireAnimController.value * 4,
+                      )
+                    ],
+                  ),
+                  child: const Icon(LucideIcons.flame, color: Colors.white, size: 24),
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      '🔥 ¡TU RACHA ESTÁ EN RIESGO!',
+                      style: TextStyle(
+                        color: isDark ? const Color(0xFFFB923C) : const Color(0xFFC2410C),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Registra al menos un gasto o ingreso hoy para activar tu fuego y sumar +50 pts.',
+                  style: TextStyle(
+                    color: isDark ? Colors.grey[200] : Colors.grey[800],
+                    fontSize: 12.5,
+                    height: 1.3,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          InkWell(
+            onTap: () => AddExpenseModal.show(context),
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFFF97316), Color(0xFFEA580C)]),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(color: const Color(0xFFF97316).withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0, 3)),
+                ],
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Activar',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(LucideIcons.arrowRight, color: Colors.white, size: 14),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/entities/notification.dart';
+import '../../domain/entities/credit_card.dart';
+import '../utils/currency_formatter.dart';
 
 class RecurringTransactionService {
   static Future<void> evaluateRecurringTransactions() async {
@@ -225,6 +227,7 @@ class RecurringTransactionService {
     }
 
     await prefs.setString('last_recurring_check_${user.uid}', today.toIso8601String());
+    await evaluateCreditCardAlerts();
     await cleanDuplicates(user.uid);
   }
 
@@ -285,6 +288,132 @@ class RecurringTransactionService {
 
     if (deletedCount > 0) {
       await batch.commit();
+    }
+  }
+
+  static Future<void> evaluateCreditCardAlerts() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      final currencyCode = (userDoc.data()?['currency'] as String?) ?? 'USD';
+
+      final cardsSnap = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('credit_cards')
+          .get();
+      if (cardsSnap.docs.isEmpty) return;
+
+      final cards = cardsSnap.docs.map((d) => CreditCard.fromFirestore(d)).toList();
+
+      final txSnap = await FirebaseFirestore.instance
+          .collection('transactions')
+          .where('userId', isEqualTo: user.uid)
+          .get();
+
+      final notifSnap = await FirebaseFirestore.instance
+          .collection('notifications')
+          .where('userId', isEqualTo: user.uid)
+          .get();
+
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      
+      // Collect already generated alerts today for deduplication
+      final existingTodayKeys = <String>{};
+      for (var doc in notifSnap.docs) {
+        final data = doc.data();
+        final dt = (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.fromMillisecondsSinceEpoch(0);
+        if (dt.year == today.year && dt.month == today.month && dt.day == today.day) {
+          final relId = data['relatedId'] ?? '';
+          final title = data['title'] ?? '';
+          existingTodayKeys.add('${relId}_$title');
+        }
+      }
+
+      final batch = FirebaseFirestore.instance.batch();
+      int addedAlerts = 0;
+
+      void addAlertIfNeeded(CreditCard card, String title, String body, String notifType) {
+        final key = '${card.id}_$title';
+        if (!existingTodayKeys.contains(key)) {
+          existingTodayKeys.add(key);
+          final notifRef = FirebaseFirestore.instance.collection('notifications').doc();
+          final notif = NotificationModel(
+            id: notifRef.id,
+            userId: user.uid,
+            title: title,
+            body: body,
+            createdAt: DateTime.now(),
+            isRead: false,
+            type: notifType,
+            relatedId: card.id,
+            category: 'debt',
+          );
+          batch.set(notifRef, notif.toFirestore());
+          addedAlerts++;
+        }
+      }
+
+      int daysInMonth(int y, int m) => DateTime(y, m + 1, 0).day;
+
+      for (var card in cards) {
+        double balance = card.currentBalance;
+        for (var doc in txSnap.docs) {
+          final data = doc.data();
+          if (data['creditCardId'] == card.id) {
+            final amount = (data['amount'] ?? 0.0).toDouble();
+            if (data['type'] == 'expense') {
+              balance += amount;
+            } else if (data['type'] == 'cc_payment') {
+              balance -= amount;
+            }
+          }
+        }
+
+        // Candidate cutOff dates (this month and next month)
+        final cutOff1 = DateTime(today.year, today.month, card.cutOffDay.clamp(1, daysInMonth(today.year, today.month)));
+        final cutOff2 = DateTime(today.year, today.month + 1, card.cutOffDay.clamp(1, daysInMonth(today.year, today.month + 1)));
+        for (var d in [cutOff1, cutOff2]) {
+          final diff = d.difference(today).inDays;
+          if (diff == 2) {
+            addAlertIfNeeded(card, '⚠️ Corte en 2 días: ${card.name}', 'Tu tarjeta realiza su corte el día ${card.cutOffDay}. Prepárate para revisar tu estado de cuenta del ciclo.', 'info');
+          } else if (diff == 1) {
+            addAlertIfNeeded(card, '⏳ Mañana es el corte: ${card.name}', 'Mañana día ${card.cutOffDay} es la fecha de corte de tu tarjeta de crédito.', 'info');
+          } else if (diff == 0) {
+            addAlertIfNeeded(card, '📊 Hoy corta tu tarjeta: ${card.name}', 'Hoy cierra tu ciclo de facturación. Revisa tus movimientos para conocer el saldo del periodo.', 'info');
+          }
+        }
+
+        // Candidate payment dates (this month and next month)
+        final pay1 = DateTime(today.year, today.month, card.paymentDay.clamp(1, daysInMonth(today.year, today.month)));
+        final pay2 = DateTime(today.year, today.month + 1, card.paymentDay.clamp(1, daysInMonth(today.year, today.month + 1)));
+        for (var d in [pay1, pay2]) {
+          final diff = d.difference(today).inDays;
+          if (diff == 2) {
+            addAlertIfNeeded(card, '⚠️ Pago de tarjeta en 2 días: ${card.name}', 'Faltan 2 días para el pago de tu tarjeta (Día ${card.paymentDay}). Saldo estimado: ${CurrencyFormatter.format(balance, currencyCode)}.', 'warning');
+          } else if (diff == 1) {
+            addAlertIfNeeded(card, '⏰ Mañana vence tu tarjeta: ${card.name}', 'Mañana día ${card.paymentDay} es la fecha límite para pagar tu tarjeta sin intereses.', 'warning');
+          } else if (diff == 0) {
+            addAlertIfNeeded(card, '🚨 HOY vence tu tarjeta: ${card.name}', '¡Hoy es el día límite de pago para ${card.name}! Saldo actual: ${CurrencyFormatter.format(balance, currencyCode)}. Abona hoy para evitar recargos.', 'warning');
+          }
+        }
+
+        // Overdue check (in mora): if today is 1 to 5 days past the payment day of this month and balance > 0
+        final currentMonthPay = DateTime(today.year, today.month, card.paymentDay.clamp(1, daysInMonth(today.year, today.month)));
+        final diffOverdue = currentMonthPay.difference(today).inDays;
+        if (diffOverdue < 0 && diffOverdue >= -5 && balance > 0.05) {
+          addAlertIfNeeded(card, '💥 TARJETA EN MORA: ${card.name}', 'Tu tarjeta venció el día ${card.paymentDay} y aún presenta un saldo pendiente de ${CurrencyFormatter.format(balance, currencyCode)}. ¡Abona cuanto antes para detener intereses moratorios!', 'expense');
+        }
+      }
+
+      if (addedAlerts > 0) {
+        await batch.commit();
+      }
+    } catch (e) {
+      print('Error evaluating credit card alerts: $e');
     }
   }
 }

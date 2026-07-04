@@ -108,38 +108,156 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) => Container(
-        height: MediaQuery.of(context).size.height * 0.75,
+        height: MediaQuery.of(context).size.height * 0.82,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1F2937) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          color: isDark ? const Color(0xFF111827) : const Color(0xFFF8FAFC),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 30, offset: const Offset(0, -10)),
+          ],
         ),
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Text('Seleccionar Categoría', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            Container(
+              width: 48,
+              height: 5,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[700] : Colors.grey[300],
+                borderRadius: BorderRadius.circular(3),
+              ),
             ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 16, 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(colors: [Color(0xFF22C55E), Color(0xFF15803D)]),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [BoxShadow(color: const Color(0xFF22C55E).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))],
+                        ),
+                        child: const Icon(LucideIcons.tags, color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 14),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Elige una Categoría',
+                            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 0.3),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Organiza tus ingresos para reportes precisos',
+                            style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    icon: Icon(LucideIcons.xCircle, color: isDark ? Colors.grey[400] : Colors.grey[600], size: 28),
+                  ),
+                ],
+              ),
+            ),
+            Divider(color: isDark ? const Color(0xFF1F2937) : const Color(0xFFE2E8F0), height: 1),
             Expanded(
-              child: ListView.builder(
+              child: ListView.separated(
+                padding: const EdgeInsets.all(20),
                 itemCount: detailedCategories.length,
+                separatorBuilder: (ctx, i) => const SizedBox(height: 16),
                 itemBuilder: (ctx, i) {
                   final mainCat = detailedCategories[i];
-                  return Theme(
-                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                    child: ExpansionTile(
-                      leading: Text(mainCat['emoji'], style: const TextStyle(fontSize: 24)),
-                      title: Text(mainCat['main'], style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
-                      children: (mainCat['subs'] as List).map<Widget>((sub) {
-                        return ListTile(
-                          contentPadding: const EdgeInsets.only(left: 72, right: 24),
-                          leading: Text(sub['emoji'], style: const TextStyle(fontSize: 20)),
-                          title: Text(sub['label'], style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800])),
-                          onTap: () {
-                            setState(() => category = sub['value']);
-                            Navigator.pop(ctx);
-                          },
-                        );
-                      }).toList(),
+                  final subs = mainCat['subs'] as List;
+                  
+                  return Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(mainCat['emoji'], style: const TextStyle(fontSize: 22)),
+                            const SizedBox(width: 10),
+                            Text(
+                              mainCat['main'],
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black87,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: subs.map<Widget>((subMap) {
+                            final sub = subMap as Map<String, String>;
+                            final isSelected = category == sub['value'];
+                            return InkWell(
+                              onTap: () {
+                                setState(() => category = sub['value']!);
+                                Navigator.pop(ctx);
+                              },
+                              borderRadius: BorderRadius.circular(16),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                decoration: BoxDecoration(
+                                  gradient: isSelected
+                                      ? const LinearGradient(colors: [Color(0xFF22C55E), Color(0xFF15803D)])
+                                      : (isDark ? const LinearGradient(colors: [Color(0xFF374151), Color(0xFF1F2937)]) : const LinearGradient(colors: [Colors.white, Color(0xFFF8FAFC)])),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isSelected ? const Color(0xFF22C55E) : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE2E8F0)),
+                                    width: isSelected ? 2 : 1,
+                                  ),
+                                  boxShadow: isSelected
+                                      ? [BoxShadow(color: const Color(0xFF22C55E).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))]
+                                      : [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 4, offset: const Offset(0, 1))],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(sub['emoji']!, style: const TextStyle(fontSize: 18)),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      sub['label']!,
+                                      style: TextStyle(
+                                        color: isSelected ? Colors.white : (isDark ? Colors.grey[200] : Colors.grey[800]),
+                                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                        fontSize: 13.5,
+                                      ),
+                                    ),
+                                    if (isSelected) ...[
+                                      const SizedBox(width: 6),
+                                      const Icon(LucideIcons.checkCircle2, color: Colors.white, size: 14),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ),
                   );
                 },
@@ -241,45 +359,116 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                   const SizedBox(height: 20),
 
                   // Category
-                  Text('Categoría 🏷️', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
-                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Categoría 🏷️', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14, fontWeight: FontWeight.bold)),
+                      if (category.isNotEmpty)
+                        GestureDetector(
+                          onTap: () => setState(() => category = ''),
+                          child: Text('Limpiar', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 12, fontWeight: FontWeight.w600)),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
                   InkWell(
                     onTap: () => _showCategoryPicker(isDark),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
-                        color: category.isNotEmpty 
-                            ? (isDark ? const Color(0xFF16A34A).withValues(alpha: 0.1) : const Color(0xFFDCFCE7).withValues(alpha: 0.5))
-                            : (isDark ? const Color(0xFF374151).withValues(alpha: 0.3) : Colors.grey[100]),
-                        borderRadius: BorderRadius.circular(16),
+                        gradient: category.isNotEmpty
+                            ? (isDark
+                                ? LinearGradient(colors: [const Color(0xFF16A34A).withValues(alpha: 0.25), const Color(0xFF14532D).withValues(alpha: 0.15)])
+                                : const LinearGradient(colors: [Color(0xFFF0FDF4), Color(0xFFDCFCE7)]))
+                            : (isDark
+                                ? LinearGradient(colors: [const Color(0xFF1F2937), const Color(0xFF111827).withValues(alpha: 0.8)])
+                                : const LinearGradient(colors: [Color(0xFFF8FAFC), Color(0xFFF1F5F9)])),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: category.isNotEmpty
+                              ? (isDark ? const Color(0xFF22C55E) : const Color(0xFF16A34A))
+                              : (isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
+                          width: category.isNotEmpty ? 2 : 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: category.isNotEmpty
+                                ? const Color(0xFF22C55E).withValues(alpha: 0.15)
+                                : Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          )
+                        ],
                       ),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
-                                ),
-                                child: Text(_getCategoryDetails(category)['emoji']!, style: const TextStyle(fontSize: 20)),
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              gradient: category.isNotEmpty
+                                  ? const LinearGradient(colors: [Color(0xFF22C55E), Color(0xFF15803D)], begin: Alignment.topLeft, end: Alignment.bottomRight)
+                                  : (isDark ? const LinearGradient(colors: [Color(0xFF374151), Color(0xFF1F2937)]) : const LinearGradient(colors: [Colors.white, Color(0xFFE2E8F0)])),
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 6, offset: const Offset(0, 2)),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                _getCategoryDetails(category)['emoji']!,
+                                style: const TextStyle(fontSize: 24),
                               ),
-                              const SizedBox(width: 16),
-                              Text(
-                                _getCategoryDetails(category)['label']!, 
-                                style: TextStyle(
-                                  color: category.isEmpty ? (isDark ? Colors.grey[500] : Colors.grey[400]) : (isDark ? Colors.white : Colors.black87), 
-                                  fontSize: 16, 
-                                  fontWeight: category.isEmpty ? FontWeight.normal : FontWeight.w600
-                                )
-                              ),
-                            ],
+                            ),
                           ),
-                          Icon(LucideIcons.chevronDown, color: isDark ? Colors.grey[500] : Colors.grey[400], size: 20),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  category.isEmpty ? 'Seleccionar Categoría' : _getCategoryDetails(category)['label']!,
+                                  style: TextStyle(
+                                    color: category.isEmpty ? (isDark ? Colors.grey[400] : Colors.grey[600]) : (isDark ? Colors.white : Colors.black87),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  category.isEmpty ? 'Toca para elegir una opción' : 'Categoría seleccionada',
+                                  style: TextStyle(
+                                    color: isDark ? Colors.grey[500] : Colors.grey[500],
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  category.isEmpty ? 'Elegir' : 'Cambiar',
+                                  style: TextStyle(
+                                    color: isDark ? Colors.grey[300] : Colors.grey[700],
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(LucideIcons.chevronDown, size: 14, color: isDark ? Colors.grey[300] : Colors.grey[700]),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),

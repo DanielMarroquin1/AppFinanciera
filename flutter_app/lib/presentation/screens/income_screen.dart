@@ -388,79 +388,143 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                                           crossAxisAlignment: CrossAxisAlignment.center,
                                           children: [
                                             Container(
-                                              width: 40, height: 4,
+                                              width: 48, height: 5,
                                               margin: const EdgeInsets.only(bottom: 24),
-                                              decoration: BoxDecoration(color: isDark ? Colors.grey[700] : Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+                                              decoration: BoxDecoration(color: isDark ? Colors.grey[700] : Colors.grey[300], borderRadius: BorderRadius.circular(3)),
                                             ),
                                             Container(
-                                              width: 72, height: 72,
-                                              decoration: BoxDecoration(color: (isDark ? Colors.blue[900] : Colors.blue[50])?.withOpacity(isDark ? 0.3 : 1.0), shape: BoxShape.circle),
-                                              child: Center(child: Text(_getCategoryEmoji(income.category), style: const TextStyle(fontSize: 32))),
+                                              width: 80, height: 80,
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  colors: isDark 
+                                                    ? [const Color(0xFF10B981).withValues(alpha: 0.3), const Color(0xFF059669).withValues(alpha: 0.1)] 
+                                                    : [const Color(0xFFECFDF5), const Color(0xFFD1FAE5)],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                ),
+                                                shape: BoxShape.circle,
+                                                border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4), width: 2),
+                                                boxShadow: [
+                                                  BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.2), blurRadius: 16, offset: const Offset(0, 6))
+                                                ],
+                                              ),
+                                              child: Center(child: Text(_getCategoryEmoji(income.category), style: const TextStyle(fontSize: 36))),
                                             ),
                                             const SizedBox(height: 16),
-                                            Text(
-                                              income.description.isNotEmpty ? income.description : income.category, 
-                                              style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: -0.5)
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              child: Text(
+                                                loc.translateCategory(income.category).toUpperCase(),
+                                                style: const TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.0),
+                                              ),
                                             ),
                                             const SizedBox(height: 8),
                                             Text(
-                                              CurrencyFormatter.format(income.amount, currencyCode), 
-                                              style: TextStyle(color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669), fontSize: 32, fontWeight: FontWeight.w900)
+                                              income.description.isNotEmpty ? income.description : loc.translateCategory(income.category), 
+                                              style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                                              textAlign: TextAlign.center,
                                             ),
-                                            const SizedBox(height: 32),
+                                            const SizedBox(height: 6),
+                                            Text(
+                                              CurrencyFormatter.format(income.amount, currencyCode), 
+                                              style: TextStyle(color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669), fontSize: 34, fontWeight: FontWeight.w900, letterSpacing: -1.0)
+                                            ),
+                                            const SizedBox(height: 28),
                                             Container(
-                                              padding: const EdgeInsets.all(16),
+                                              padding: const EdgeInsets.all(20),
                                               decoration: BoxDecoration(
-                                                color: isDark ? const Color(0xFF334155).withOpacity(0.5) : Colors.white,
-                                                border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                                                borderRadius: BorderRadius.circular(16),
-                                                boxShadow: [if (!isDark) BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2))],
+                                                color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                                                border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0), width: 1.5),
+                                                borderRadius: BorderRadius.circular(24),
                                               ),
                                               child: Column(
                                                 children: [
                                                   Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [
-                                                      Row(
-                                                        children: [
-                                                          Icon(LucideIcons.calendar, size: 20, color: isDark ? Colors.grey[400] : Colors.grey[500]),
-                                                          const SizedBox(width: 8),
-                                                          Text('Frecuencia', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
-                                                        ],
+                                                      Container(
+                                                        padding: const EdgeInsets.all(10),
+                                                        decoration: BoxDecoration(
+                                                          color: const Color(0xFF8B5CF6).withValues(alpha: 0.15),
+                                                          borderRadius: BorderRadius.circular(14),
+                                                        ),
+                                                        child: const Icon(LucideIcons.repeat, size: 20, color: Color(0xFF8B5CF6)),
                                                       ),
-                                                      Text(income.recurrenceType == 'weekly' ? 'Semanal' : (income.recurrenceType == 'bimonthly' ? 'Quincenal' : 'Mensual'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 14)),
+                                                      const SizedBox(width: 14),
+                                                      Expanded(
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text(loc.get('frequency'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w500)),
+                                                            const SizedBox(height: 2),
+                                                            Text(
+                                                              loc.get(income.recurrenceType == 'weekly' ? 'weekly' : (income.recurrenceType == 'bimonthly' ? 'bimonthly' : 'monthly')), 
+                                                              style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.w800, fontSize: 15),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
                                                     ],
                                                   ),
-                                                  const Divider(height: 24),
+                                                  Padding(
+                                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                                    child: Divider(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0), height: 1),
+                                                  ),
                                                   Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [
-                                                      Row(
-                                                        children: [
-                                                          Icon(LucideIcons.clock, size: 20, color: isDark ? Colors.grey[400] : Colors.grey[500]),
-                                                          const SizedBox(width: 8),
-                                                          Text('Día de cobro', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
-                                                        ],
+                                                      Container(
+                                                        padding: const EdgeInsets.all(10),
+                                                        decoration: BoxDecoration(
+                                                          color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                                                          borderRadius: BorderRadius.circular(14),
+                                                        ),
+                                                        child: const Icon(LucideIcons.calendarClock, size: 20, color: Color(0xFFF59E0B)),
                                                       ),
-                                                      Text(income.recurrenceType == 'bimonthly' ? '${income.recurrenceDay} y ${income.recurrenceDay2}' : '${income.recurrenceDay}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 14)),
+                                                      const SizedBox(width: 14),
+                                                      Expanded(
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text(loc.get('billing_day'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w500)),
+                                                            const SizedBox(height: 2),
+                                                            Text(
+                                                              income.recurrenceType == 'bimonthly' ? '${income.recurrenceDay} y ${income.recurrenceDay2}' : 'Día ${income.recurrenceDay} de cada mes', 
+                                                              style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.w800, fontSize: 15),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
                                                     ],
                                                   ),
                                                 ],
                                               ),
                                             ),
-                                            const SizedBox(height: 32),
+                                            const SizedBox(height: 28),
                                             SizedBox(
                                               width: double.infinity,
-                                              child: ElevatedButton(
-                                                onPressed: () => Navigator.of(context).pop(),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: isDark ? const Color(0xFF3B82F6) : const Color(0xFF2563EB),
-                                                  foregroundColor: Colors.white,
-                                                  padding: const EdgeInsets.symmetric(vertical: 18),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                                  elevation: 0,
+                                              child: DecoratedBox(
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    colors: isDark ? [const Color(0xFF10B981), const Color(0xFF059669)] : [const Color(0xFF059669), const Color(0xFF047857)],
+                                                  ),
+                                                  borderRadius: BorderRadius.circular(18),
+                                                  boxShadow: [
+                                                    BoxShadow(color: const Color(0xFF059669).withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))
+                                                  ],
                                                 ),
-                                                child: const Text('Entendido', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                                child: ElevatedButton(
+                                                  onPressed: () => Navigator.of(context).pop(),
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.transparent,
+                                                    shadowColor: Colors.transparent,
+                                                    padding: const EdgeInsets.symmetric(vertical: 18),
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                                                  ),
+                                                  child: Text(loc.get('understood'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.5)),
+                                                ),
                                               ),
                                             )
                                           ],

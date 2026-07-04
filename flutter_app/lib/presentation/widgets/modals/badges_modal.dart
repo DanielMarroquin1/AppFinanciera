@@ -37,6 +37,7 @@ class _BadgesModalInternal extends ConsumerStatefulWidget {
 
 class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with TickerProviderStateMixin {
   late AnimationController _entranceController;
+  int _selectedTab = 0; // 0: Todas, 1: Desbloqueadas, 2: Pendientes
 
   @override
   void initState() {
@@ -56,7 +57,7 @@ class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC); // Deeper background
+    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
     final user = ref.watch(authProvider).user;
 
     if (user == null) return const SizedBox.shrink();
@@ -65,8 +66,8 @@ class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with
     final badges = [
       {
         'id': 'profile',
-        'title': 'Pionero',
-        'description': 'Completa tu perfil',
+        'title': 'Pionero Antigravity',
+        'description': 'Completa tu perfil e identidad',
         'icon': LucideIcons.userCheck,
         'color': const Color(0xFF3B82F6), // Blue
         'current': user.profileComplete ? 1 : 0,
@@ -74,8 +75,8 @@ class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with
       },
       {
         'id': 'streak_7',
-        'title': 'Constante',
-        'description': '7 días seguidos',
+        'title': 'Fuego Constante',
+        'description': 'Mantén una racha de 7 días continuos',
         'icon': LucideIcons.flame,
         'color': const Color(0xFFF97316), // Orange
         'current': user.currentStreak > 7 ? 7 : user.currentStreak,
@@ -83,8 +84,8 @@ class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with
       },
       {
         'id': 'streak_30',
-        'title': 'Maestro',
-        'description': '30 días seguidos',
+        'title': 'Maestro del Hábito',
+        'description': '30 días ininterrumpidos en la app',
         'icon': LucideIcons.award,
         'color': const Color(0xFFEAB308), // Yellow
         'current': user.currentStreak > 30 ? 30 : user.currentStreak,
@@ -92,8 +93,8 @@ class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with
       },
       {
         'id': 'shopper_1',
-        'title': 'Comprador',
-        'description': '1 ítem en tienda',
+        'title': 'Comprador VIP',
+        'description': 'Canjea tu primer ítem en la tienda',
         'icon': LucideIcons.shoppingBag,
         'color': const Color(0xFF8B5CF6), // Purple
         'current': user.unlockedItems.isNotEmpty ? 1 : 0,
@@ -101,8 +102,8 @@ class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with
       },
       {
         'id': 'shopper_5',
-        'title': 'Coleccionista',
-        'description': '5 ítems en tienda',
+        'title': 'Coleccionista Supremo',
+        'description': 'Adquiere 5 ítems o temas exclusivos',
         'icon': LucideIcons.crown,
         'color': const Color(0xFFEC4899), // Pink
         'current': user.unlockedItems.length > 5 ? 5 : user.unlockedItems.length,
@@ -110,8 +111,8 @@ class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with
       },
       {
         'id': 'saver_100',
-        'title': 'Ahorrador',
-        'description': 'Acumula 100 puntos',
+        'title': 'Mente Financiera',
+        'description': 'Acumula 100 puntos de experiencia',
         'icon': LucideIcons.piggyBank,
         'color': const Color(0xFF06B6D4), // Cyan
         'current': user.points > 100 ? 100 : user.points,
@@ -119,114 +120,186 @@ class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with
       },
     ];
 
+    final unlockedCount = badges.where((b) => (b['current'] as int) >= (b['target'] as int)).length;
+    final pendingCount = badges.length - unlockedCount;
+
+    final filteredBadges = badges.where((b) {
+      final isUnlocked = (b['current'] as int) >= (b['target'] as int);
+      if (_selectedTab == 1) return isUnlocked;
+      if (_selectedTab == 2) return !isUnlocked;
+      return true;
+    }).toList();
+
     return Container(
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 40, offset: const Offset(0, -10)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 40, offset: const Offset(0, -10)),
         ],
       ),
       child: Column(
         children: [
           // Elegant Handle
           Container(
-            margin: const EdgeInsets.only(top: 16, bottom: 24),
+            margin: const EdgeInsets.only(top: 14, bottom: 16),
             height: 5, width: 48,
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.1),
+              color: isDark ? Colors.grey[700] : Colors.grey[300],
               borderRadius: BorderRadius.circular(4),
             ),
           ),
           
           // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
                   children: [
-                    Text('Logros e Insignias', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
-                    const SizedBox(height: 4),
-                    Text('Colecciona todas para demostrar tu maestría', style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 13)),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
+                      ),
+                      child: const Icon(LucideIcons.trophy, color: Colors.white, size: 24),
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Salón de Trofeos', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                        const SizedBox(height: 2),
+                        Text('$unlockedCount de ${badges.length} desbloqueados (${((unlockedCount/badges.length)*100).toInt()}%)', style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 13, fontWeight: FontWeight.w700)),
+                      ],
+                    ),
                   ],
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                    color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    icon: Icon(LucideIcons.x, color: isDark ? Colors.white : Colors.black, size: 24),
+                    icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[300] : Colors.grey[700], size: 22),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 )
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
-          // Badges Grid
-          Expanded(
-            child: GridView.builder(
-              controller: widget.scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 20,
-                mainAxisSpacing: 20,
-                childAspectRatio: 0.75,
-              ),
-              itemCount: badges.length,
-              itemBuilder: (context, index) {
-                final badge = badges[index];
-                final current = badge['current'] as int;
-                final target = badge['target'] as int;
-                final isUnlocked = current >= target;
-                final baseColor = badge['color'] as Color;
-
-                return AnimatedBuilder(
-                  animation: _entranceController,
-                  builder: (context, child) {
-                    final delay = index * 0.1;
-                    final slideAnim = CurvedAnimation(
-                      parent: _entranceController,
-                      curve: Interval(delay, (delay + 0.5).clamp(0.0, 1.0), curve: Curves.easeOutCubic),
-                    );
-                    final fadeAnim = CurvedAnimation(
-                      parent: _entranceController,
-                      curve: Interval(delay, (delay + 0.5).clamp(0.0, 1.0), curve: Curves.easeIn),
-                    );
-
-                    return Opacity(
-                      opacity: fadeAnim.value,
-                      child: Transform.translate(
-                        offset: Offset(0, 30 * (1 - slideAnim.value)),
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: _buildPremiumBadge(
-                    context, 
-                    badge: badge, 
-                    isUnlocked: isUnlocked, 
-                    baseColor: baseColor, 
-                    isDark: isDark, 
-                    current: current, 
-                    target: target
-                  ),
-                );
-              },
+          // Filter Tabs
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: [
+                _buildTabChip(isDark, 0, '🌟 Todas', badges.length),
+                const SizedBox(width: 10),
+                _buildTabChip(isDark, 1, '🏆 Obtenidas', unlockedCount),
+                const SizedBox(width: 10),
+                _buildTabChip(isDark, 2, '🔒 Pendientes', pendingCount),
+              ],
             ),
+          ),
+          const SizedBox(height: 16),
+          Divider(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0), height: 1),
+
+          // Badges List
+          Expanded(
+            child: filteredBadges.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(LucideIcons.award, size: 48, color: isDark ? Colors.grey[700] : Colors.grey[300]),
+                        const SizedBox(height: 12),
+                        Text(
+                          _selectedTab == 1 ? 'Aún no has desbloqueado insignias en esta categoría' : '¡Excelente! Has completado todas las insignias',
+                          style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 14, fontWeight: FontWeight.w600),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.separated(
+                    controller: widget.scrollController,
+                    padding: const EdgeInsets.all(24),
+                    itemCount: filteredBadges.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 14),
+                    itemBuilder: (context, index) {
+                      final badge = filteredBadges[index];
+                      final current = badge['current'] as int;
+                      final target = badge['target'] as int;
+                      final isUnlocked = current >= target;
+                      final baseColor = badge['color'] as Color;
+
+                      return AnimatedBuilder(
+                        animation: _entranceController,
+                        builder: (context, child) {
+                          final delay = (index * 0.08).clamp(0.0, 0.6);
+                          final fadeAnim = CurvedAnimation(
+                            parent: _entranceController,
+                            curve: Interval(delay, (delay + 0.4).clamp(0.0, 1.0), curve: Curves.easeIn),
+                          );
+                          return Opacity(
+                            opacity: fadeAnim.value,
+                            child: child,
+                          );
+                        },
+                        child: _buildAchievementCard(
+                          context,
+                          badge: badge,
+                          isUnlocked: isUnlocked,
+                          baseColor: baseColor,
+                          isDark: isDark,
+                          current: current,
+                          target: target,
+                        ),
+                      );
+                    },
+                  ),
           )
         ],
       ),
     );
   }
 
-  Widget _buildPremiumBadge(BuildContext context, {
+  Widget _buildTabChip(bool isDark, int tabIndex, String label, int count) {
+    final isSelected = _selectedTab == tabIndex;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _selectedTab = tabIndex),
+        borderRadius: BorderRadius.circular(14),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            gradient: isSelected ? const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)]) : null,
+            color: isSelected ? null : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: isSelected ? const Color(0xFF6366F1) : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))),
+            boxShadow: isSelected ? [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))] : [],
+          ),
+          child: Text(
+            '$label ($count)',
+            style: TextStyle(
+              color: isSelected ? Colors.white : (isDark ? Colors.grey[300] : Colors.grey[700]),
+              fontSize: 12.5,
+              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAchievementCard(BuildContext context, {
     required Map<String, dynamic> badge,
     required bool isUnlocked,
     required Color baseColor,
@@ -234,158 +307,142 @@ class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with
     required int current,
     required int target,
   }) {
+    final progress = (current / target).clamp(0.0, 1.0);
     return Container(
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: isUnlocked 
-            ? (isDark ? const Color(0xFF1E293B) : Colors.white) 
-            : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9)),
-        borderRadius: BorderRadius.circular(32),
+        color: isUnlocked
+            ? (isDark ? const Color(0xFF1E293B) : Colors.white)
+            : (isDark ? const Color(0xFF111827) : const Color(0xFFF8FAFC)),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isUnlocked 
-              ? baseColor.withOpacity(0.5) 
-              : (isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
-          width: isUnlocked ? 2 : 1,
+          color: isUnlocked
+              ? baseColor.withValues(alpha: 0.6)
+              : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+          width: isUnlocked ? 2 : 1.5,
         ),
-        boxShadow: isUnlocked ? [
-          BoxShadow(color: baseColor.withOpacity(0.2), blurRadius: 24, offset: const Offset(0, 12)),
-          BoxShadow(color: baseColor.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 4)),
-        ] : [],
+        boxShadow: isUnlocked
+            ? [BoxShadow(color: baseColor.withValues(alpha: 0.15), blurRadius: 16, offset: const Offset(0, 6))]
+            : [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 6, offset: const Offset(0, 2))],
       ),
-      child: Stack(
-        alignment: Alignment.center,
+      child: Row(
         children: [
-          // Background Glow for unlocked
-          if (isUnlocked)
-            Positioned(
-              top: 20,
-              child: Container(
-                width: 80, height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(color: baseColor.withOpacity(0.4), blurRadius: 40, spreadRadius: 10),
+          // Icon Box
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              gradient: isUnlocked
+                  ? LinearGradient(colors: [baseColor.withValues(alpha: 0.9), baseColor], begin: Alignment.topLeft, end: Alignment.bottomRight)
+                  : null,
+              color: isUnlocked ? null : (isDark ? const Color(0xFF1F2937) : const Color(0xFFE2E8F0)),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: isUnlocked ? Colors.white.withValues(alpha: 0.4) : Colors.transparent,
+                width: 2,
+              ),
+              boxShadow: isUnlocked
+                  ? [BoxShadow(color: baseColor.withValues(alpha: 0.4), blurRadius: 10, offset: const Offset(0, 4))]
+                  : [],
+            ),
+            child: Icon(
+              isUnlocked ? (badge['icon'] as IconData) : LucideIcons.lock,
+              color: isUnlocked ? Colors.white : (isDark ? Colors.grey[600] : Colors.grey[400]),
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 16),
+
+          // Details & Progress
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        badge['title'] as String,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ),
+                    if (isUnlocked)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: baseColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(LucideIcons.sparkles, color: baseColor, size: 12),
+                            const SizedBox(width: 4),
+                            Text('OBTENIDA', style: TextStyle(color: baseColor, fontSize: 10, fontWeight: FontWeight.w800)),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
-              ),
-            ),
-          
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Spacer(flex: 2),
-              
-              // Floating Icon
-              TweenAnimationBuilder(
-                tween: Tween<double>(begin: 0, end: 1),
-                duration: const Duration(seconds: 2),
-                curve: Curves.easeInOutSine,
-                builder: (context, double val, child) {
-                  return Transform.translate(
-                    offset: Offset(0, isUnlocked ? (val - 0.5) * 8 : 0),
-                    child: child,
-                  );
-                },
-                child: Container(
-                  width: 80, height: 80,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: isUnlocked ? LinearGradient(
-                      colors: [baseColor.withOpacity(0.8), baseColor],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ) : null,
-                    color: isUnlocked ? null : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
-                    border: Border.all(
-                      color: isUnlocked ? Colors.white.withOpacity(0.5) : Colors.transparent,
-                      width: 2,
-                    ),
-                    boxShadow: isUnlocked ? [
-                      BoxShadow(color: baseColor.withOpacity(0.5), blurRadius: 12, offset: const Offset(0, 6)),
-                    ] : [],
-                  ),
-                  child: isUnlocked 
-                      ? Icon(badge['icon'] as IconData, color: Colors.white, size: 40)
-                      : Icon(LucideIcons.lock, color: isDark ? const Color(0xFF334155) : const Color(0xFF94A3B8), size: 32),
-                ),
-              ),
-              
-              const Spacer(),
-              
-              // Texts
-              Text(
-                badge['title'] as String,
-                style: TextStyle(
-                  color: isUnlocked ? (isDark ? Colors.white : Colors.black) : (isDark ? const Color(0xFF475569) : const Color(0xFF94A3B8)),
-                  fontWeight: FontWeight.w900,
-                  fontSize: 16,
-                  letterSpacing: 0.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
+                const SizedBox(height: 4),
+                Text(
                   badge['description'] as String,
                   style: TextStyle(
-                    color: isUnlocked ? (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)) : (isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
-                    fontSize: 11,
-                    height: 1.2,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              
-              const Spacer(),
-              
-              // Progress Bar
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                child: Column(
+                const SizedBox(height: 12),
+
+                // Progress bar
+                Row(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '$current / $target',
-                          style: TextStyle(
-                            color: isUnlocked ? baseColor : (isDark ? const Color(0xFF475569) : const Color(0xFF94A3B8)),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Container(
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: progress,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: isUnlocked
+                                    ? [baseColor.withValues(alpha: 0.8), baseColor]
+                                    : [const Color(0xFF6366F1), const Color(0xFF818CF8)],
+                              ),
+                              borderRadius: BorderRadius.circular(4),
+                              boxShadow: isUnlocked
+                                  ? [BoxShadow(color: baseColor.withValues(alpha: 0.4), blurRadius: 4, offset: const Offset(0, 1))]
+                                  : [],
+                            ),
                           ),
                         ),
-                        if (isUnlocked)
-                          Icon(LucideIcons.sparkles, color: baseColor, size: 14)
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                        borderRadius: BorderRadius.circular(3),
-                        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 2)],
                       ),
-                      child: FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
-                        widthFactor: (current / target).clamp(0.0, 1.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: isUnlocked ? baseColor : (isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8)),
-                            borderRadius: BorderRadius.circular(3),
-                            boxShadow: isUnlocked ? [
-                              BoxShadow(color: baseColor.withOpacity(0.5), blurRadius: 4, offset: const Offset(0, 1)),
-                            ] : [],
-                          ),
-                        ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      '$current/$target',
+                      style: TextStyle(
+                        color: isUnlocked ? baseColor : (isDark ? Colors.grey[400] : Colors.grey[700]),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

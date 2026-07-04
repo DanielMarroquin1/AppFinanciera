@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../providers/transaction_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/utils/localization.dart';
 
 class TransactionsListModal extends ConsumerWidget {
   const TransactionsListModal({super.key});
@@ -51,6 +52,7 @@ class TransactionsListModalInternal extends ConsumerWidget {
     final transactionsAsync = ref.watch(transactionsProvider);
     final user = ref.watch(authProvider).user;
     final currencyCode = user?.currency;
+    final loc = ref.watch(localizationProvider);
 
     return Container(
       decoration: BoxDecoration(
@@ -126,11 +128,11 @@ class TransactionsListModalInternal extends ConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(tx.description.isNotEmpty ? tx.description : tx.category, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w500)),
+                                Text(tx.description.isNotEmpty ? tx.description : loc.translateCategory(tx.category), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w500)),
                                 const SizedBox(height: 2),
                                 Row(
                                   children: [
-                                    Text(tx.category, style: TextStyle(color: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5), fontSize: 12)),
+                                    Text(loc.translateCategory(tx.category), style: TextStyle(color: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5), fontSize: 12, fontWeight: FontWeight.w600)),
                                     Expanded(child: Text(' • $formattedDate', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12), overflow: TextOverflow.ellipsis)),
                                   ],
                                 ),

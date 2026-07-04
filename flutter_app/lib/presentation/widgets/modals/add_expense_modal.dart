@@ -8,7 +8,6 @@ import '../../providers/transaction_provider.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/localization.dart';
 import '../../providers/credit_card_provider.dart';
-import '../../../domain/entities/credit_card.dart';
 import '../common/recurrence_selector_widget.dart';
 import '../../providers/auth_provider.dart';
 
@@ -171,38 +170,156 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) => Container(
-        height: MediaQuery.of(context).size.height * 0.75,
+        height: MediaQuery.of(context).size.height * 0.82,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1F2937) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          color: isDark ? const Color(0xFF111827) : const Color(0xFFF8FAFC),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 30, offset: const Offset(0, -10)),
+          ],
         ),
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Text('Seleccionar Categoría', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            Container(
+              width: 48,
+              height: 5,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[700] : Colors.grey[300],
+                borderRadius: BorderRadius.circular(3),
+              ),
             ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 16, 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(colors: [Color(0xFFEF4444), Color(0xFFB91C1C)]),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [BoxShadow(color: const Color(0xFFEF4444).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))],
+                        ),
+                        child: const Icon(LucideIcons.tags, color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 14),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Elige una Categoría',
+                            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 0.3),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Organiza tus gastos por tipo de movimiento',
+                            style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    icon: Icon(LucideIcons.xCircle, color: isDark ? Colors.grey[400] : Colors.grey[600], size: 28),
+                  ),
+                ],
+              ),
+            ),
+            Divider(color: isDark ? const Color(0xFF1F2937) : const Color(0xFFE2E8F0), height: 1),
             Expanded(
-              child: ListView.builder(
+              child: ListView.separated(
+                padding: const EdgeInsets.all(20),
                 itemCount: detailedCategories.length,
+                separatorBuilder: (ctx, i) => const SizedBox(height: 16),
                 itemBuilder: (ctx, i) {
                   final mainCat = detailedCategories[i];
-                  return Theme(
-                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                    child: ExpansionTile(
-                      leading: Text(mainCat['emoji'], style: const TextStyle(fontSize: 24)),
-                      title: Text(mainCat['main'], style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
-                      children: (mainCat['subs'] as List).map<Widget>((sub) {
-                        return ListTile(
-                          contentPadding: const EdgeInsets.only(left: 72, right: 24),
-                          leading: Text(sub['emoji'], style: const TextStyle(fontSize: 20)),
-                          title: Text(sub['label'], style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800])),
-                          onTap: () {
-                            setState(() => category = sub['value']);
-                            Navigator.pop(ctx);
-                          },
-                        );
-                      }).toList(),
+                  final subs = mainCat['subs'] as List;
+                  
+                  return Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(mainCat['emoji'], style: const TextStyle(fontSize: 22)),
+                            const SizedBox(width: 10),
+                            Text(
+                              mainCat['main'],
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black87,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: subs.map<Widget>((subMap) {
+                            final sub = subMap as Map<String, String>;
+                            final isSelected = category == sub['value'];
+                            return InkWell(
+                              onTap: () {
+                                setState(() => category = sub['value']!);
+                                Navigator.pop(ctx);
+                              },
+                              borderRadius: BorderRadius.circular(16),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                decoration: BoxDecoration(
+                                  gradient: isSelected
+                                      ? const LinearGradient(colors: [Color(0xFFEF4444), Color(0xFFB91C1C)])
+                                      : (isDark ? const LinearGradient(colors: [Color(0xFF374151), Color(0xFF1F2937)]) : const LinearGradient(colors: [Colors.white, Color(0xFFF8FAFC)])),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isSelected ? const Color(0xFFEF4444) : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE2E8F0)),
+                                    width: isSelected ? 2 : 1,
+                                  ),
+                                  boxShadow: isSelected
+                                      ? [BoxShadow(color: const Color(0xFFEF4444).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))]
+                                      : [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 4, offset: const Offset(0, 1))],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(sub['emoji']!, style: const TextStyle(fontSize: 18)),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      sub['label']!,
+                                      style: TextStyle(
+                                        color: isSelected ? Colors.white : (isDark ? Colors.grey[200] : Colors.grey[800]),
+                                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                        fontSize: 13.5,
+                                      ),
+                                    ),
+                                    if (isSelected) ...[
+                                      const SizedBox(width: 6),
+                                      const Icon(LucideIcons.checkCircle2, color: Colors.white, size: 14),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ),
                   );
                 },
@@ -301,45 +418,116 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                   const SizedBox(height: 20),
 
                   // Category
-                  Text('${loc.get('category')} 🏷️', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
-                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('${loc.get('category')} 🏷️', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14, fontWeight: FontWeight.bold)),
+                      if (category.isNotEmpty)
+                        GestureDetector(
+                          onTap: () => setState(() => category = ''),
+                          child: Text('Limpiar', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 12, fontWeight: FontWeight.w600)),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
                   InkWell(
                     onTap: () => _showCategoryPicker(isDark),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
-                        color: category.isNotEmpty 
-                            ? (isDark ? const Color(0xFFDC2626).withValues(alpha: 0.1) : const Color(0xFFFEE2E2).withValues(alpha: 0.5))
-                            : (isDark ? const Color(0xFF374151).withValues(alpha: 0.3) : Colors.grey[100]),
-                        borderRadius: BorderRadius.circular(16),
+                        gradient: category.isNotEmpty
+                            ? (isDark
+                                ? LinearGradient(colors: [const Color(0xFFDC2626).withValues(alpha: 0.25), const Color(0xFF991B1B).withValues(alpha: 0.15)])
+                                : const LinearGradient(colors: [Color(0xFFFEF2F2), Color(0xFFFEE2E2)]))
+                            : (isDark
+                                ? LinearGradient(colors: [const Color(0xFF1F2937), const Color(0xFF111827).withValues(alpha: 0.8)])
+                                : const LinearGradient(colors: [Color(0xFFF8FAFC), Color(0xFFF1F5F9)])),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: category.isNotEmpty
+                              ? (isDark ? const Color(0xFFEF4444) : const Color(0xFFDC2626))
+                              : (isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
+                          width: category.isNotEmpty ? 2 : 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: category.isNotEmpty
+                                ? const Color(0xFFEF4444).withValues(alpha: 0.15)
+                                : Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          )
+                        ],
                       ),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
-                                ),
-                                child: Text(_getCategoryDetails(category)['emoji']!, style: const TextStyle(fontSize: 20)),
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              gradient: category.isNotEmpty
+                                  ? const LinearGradient(colors: [Color(0xFFEF4444), Color(0xFFB91C1C)], begin: Alignment.topLeft, end: Alignment.bottomRight)
+                                  : (isDark ? const LinearGradient(colors: [Color(0xFF374151), Color(0xFF1F2937)]) : const LinearGradient(colors: [Colors.white, Color(0xFFE2E8F0)])),
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 6, offset: const Offset(0, 2)),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                _getCategoryDetails(category)['emoji']!,
+                                style: const TextStyle(fontSize: 24),
                               ),
-                              const SizedBox(width: 16),
-                              Text(
-                                _getCategoryDetails(category)['label']!, 
-                                style: TextStyle(
-                                  color: category.isEmpty ? (isDark ? Colors.grey[500] : Colors.grey[400]) : (isDark ? Colors.white : Colors.black87), 
-                                  fontSize: 16, 
-                                  fontWeight: category.isEmpty ? FontWeight.normal : FontWeight.w600
-                                )
-                              ),
-                            ],
+                            ),
                           ),
-                          Icon(LucideIcons.chevronDown, color: isDark ? Colors.grey[500] : Colors.grey[400], size: 20),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  category.isEmpty ? 'Seleccionar Categoría' : _getCategoryDetails(category)['label']!,
+                                  style: TextStyle(
+                                    color: category.isEmpty ? (isDark ? Colors.grey[400] : Colors.grey[600]) : (isDark ? Colors.white : Colors.black87),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  category.isEmpty ? 'Toca para elegir una opción' : 'Categoría seleccionada',
+                                  style: TextStyle(
+                                    color: isDark ? Colors.grey[500] : Colors.grey[500],
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  category.isEmpty ? 'Elegir' : 'Cambiar',
+                                  style: TextStyle(
+                                    color: isDark ? Colors.grey[300] : Colors.grey[700],
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(LucideIcons.chevronDown, size: 14, color: isDark ? Colors.grey[300] : Colors.grey[700]),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -418,43 +606,171 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                   const SizedBox(height: 20),
                   
                   // Payment Method Selector
-                  Text('Método de Pago 💳', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF374151) : Colors.white,
-                      border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: creditCardsAsync.when(
-                        data: (cards) {
-                          final items = [
-                            const DropdownMenuItem<String?>(
-                              value: null,
-                              child: Text('Efectivo / Cuenta'),
-                            ),
-                            ...cards.map((card) => DropdownMenuItem<String?>(
-                              value: card.id,
-                              child: Text('TC: ${card.name} (${card.network})'),
-                            ))
-                          ];
-                          return DropdownButton<String?>(
-                            value: creditCardId,
-                            isExpanded: true,
-                            dropdownColor: isDark ? const Color(0xFF374151) : Colors.white,
-                            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
-                            items: items,
-                            onChanged: (val) {
-                              setState(() => creditCardId = val);
-                            },
-                          );
-                        },
-                        loading: () => const Center(child: CircularProgressIndicator()),
-                        error: (_, __) => const Text('Error al cargar tarjetas'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Método de Pago 💳', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14, fontWeight: FontWeight.bold)),
+                      creditCardsAsync.when(
+                        data: (cards) => Text(
+                          creditCardId == null ? '💵 Efectivo / Débito' : '💳 TC Seleccionada',
+                          style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12, fontWeight: FontWeight.w700),
+                        ),
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
                       ),
-                    ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  creditCardsAsync.when(
+                    data: (cards) {
+                      return SizedBox(
+                        height: 72,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: [
+                            // Cash / Debit Card
+                            InkWell(
+                              onTap: () => setState(() => creditCardId = null),
+                              borderRadius: BorderRadius.circular(18),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                width: 160,
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                decoration: BoxDecoration(
+                                  gradient: creditCardId == null
+                                      ? const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)])
+                                      : null,
+                                  color: creditCardId == null ? null : (isDark ? const Color(0xFF1F2937) : Colors.white),
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
+                                    color: creditCardId == null ? const Color(0xFF10B981) : (isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
+                                    width: creditCardId == null ? 2 : 1.5,
+                                  ),
+                                  boxShadow: creditCardId == null
+                                      ? [BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))]
+                                      : [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 4, offset: const Offset(0, 2))],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: creditCardId == null ? Colors.white.withValues(alpha: 0.2) : (isDark ? const Color(0xFF374151) : const Color(0xFFF1F5F9)),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Text('💵', style: TextStyle(fontSize: 18)),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Efectivo / Débito',
+                                            style: TextStyle(
+                                              color: creditCardId == null ? Colors.white : (isDark ? Colors.white : Colors.black87),
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 13,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            'Cuenta principal',
+                                            style: TextStyle(
+                                              color: creditCardId == null ? Colors.white.withValues(alpha: 0.8) : (isDark ? Colors.grey[400] : Colors.grey[500]),
+                                              fontSize: 10.5,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            
+                            // Credit Cards
+                            ...cards.map((card) {
+                              final isSelected = creditCardId == card.id;
+                              return Padding(
+                                padding: const EdgeInsets.only(left: 12),
+                                child: InkWell(
+                                  onTap: () => setState(() => creditCardId = card.id),
+                                  borderRadius: BorderRadius.circular(18),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    width: 180,
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                    decoration: BoxDecoration(
+                                      gradient: isSelected
+                                          ? const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)])
+                                          : null,
+                                      color: isSelected ? null : (isDark ? const Color(0xFF1F2937) : Colors.white),
+                                      borderRadius: BorderRadius.circular(18),
+                                      border: Border.all(
+                                        color: isSelected ? const Color(0xFF6366F1) : (isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
+                                        width: isSelected ? 2 : 1.5,
+                                      ),
+                                      boxShadow: isSelected
+                                          ? [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.35), blurRadius: 10, offset: const Offset(0, 4))]
+                                          : [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 4, offset: const Offset(0, 2))],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: isSelected ? Colors.white.withValues(alpha: 0.2) : (isDark ? const Color(0xFF374151) : const Color(0xFFF1F5F9)),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(LucideIcons.creditCard, color: Colors.white, size: 18),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                card.name,
+                                                style: TextStyle(
+                                                  color: isSelected ? Colors.white : (isDark ? Colors.white : Colors.black87),
+                                                  fontWeight: FontWeight.w800,
+                                                  fontSize: 13,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              Text(
+                                                card.network.toUpperCase(),
+                                                style: TextStyle(
+                                                  color: isSelected ? Colors.white.withValues(alpha: 0.8) : (isDark ? Colors.grey[400] : Colors.grey[500]),
+                                                  fontSize: 10.5,
+                                                  fontWeight: FontWeight.w700,
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      );
+                    },
+                    loading: () => const Center(child: Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator())),
+                    error: (_, __) => const Text('Error al cargar tarjetas'),
                   ),
 
                   if (widget.isFixed) ...[

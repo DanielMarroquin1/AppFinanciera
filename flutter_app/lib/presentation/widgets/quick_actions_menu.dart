@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../providers/notification_provider.dart';
 
 class QuickActionsMenu extends ConsumerWidget {
   const QuickActionsMenu({super.key});
@@ -9,7 +8,6 @@ class QuickActionsMenu extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final unreadCount = ref.watch(unreadNotificationsCountProvider);
 
     final actions = [
       {
@@ -47,17 +45,6 @@ class QuickActionsMenu extends ConsumerWidget {
             ? const [Color(0xFF7E22CE), Color(0xFF4338CA)]
             : const [Color(0xFF9333EA), Color(0xFF4F46E5)],
         'isPremium': true,
-      },
-      {
-        'id': 'notifications',
-        'label': 'Notificaciones',
-        'icon': LucideIcons.bell,
-        'gradient': isDark 
-            ? const [Color(0xFFB91C1C), Color(0xFF7F1D1D)]
-            : const [Color(0xFFEF4444), Color(0xFFB91C1C)],
-        'isPremium': false,
-        'hasBadge': unreadCount > 0,
-        'badgeCount': unreadCount,
       },
     ];
 

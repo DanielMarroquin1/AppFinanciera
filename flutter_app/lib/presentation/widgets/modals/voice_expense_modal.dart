@@ -145,20 +145,21 @@ Extrae la información en el siguiente formato JSON estricto:
 {
   "amount": número decimal (ej. 15.5),
   "category": "string exacto de la categoría",
+  "description": "nombre corto y limpio del establecimiento o producto comprando (ej. 'Burger King', 'Supermercado Walmart', 'Gasolina Shell', 'Café Starbucks'). NUNCA incluyas la cantidad, moneda, ni el método de pago en esta descripción.",
   "paymentMethod": "efectivo" o "tarjeta",
   "creditCardId": "id_de_la_tarjeta_o_null"
 }
 
 Categorías permitidas (USA EXACTAMENTE ESTOS VALORES EN INGLÉS COMO APARECEN AQUÍ):
-- Comida: food
-- Transporte: transport
-- Hogar: home
-- Servicios: bills
-- Compras: shopping
-- Ocio: entertainment
-- Salud: health
-- Educación: education
-- Otro: other
+- Comida y Restaurantes: food (ej. hamburguesas, Burger King, McDonald's, pizza, tacos, café, restaurantes, almuerzo, cena, supermercado)
+- Transporte y Gasolina: transport (ej. Uber, gasolina, taxi, pasaje, parqueo, bus, vuelos)
+- Servicios y Facturas: bills (ej. luz, agua, internet, teléfono, celular, gas)
+- Compras y Ropa: shopping (ej. ropa, zapatos, electrónica, centro comercial, regalos)
+- Ocio y Entretenimiento: entertainment (ej. cine, películas, Netflix, Spotify, videojuegos, salidas, fiesta)
+- Salud y Farmacia: health (ej. farmacia, pastillas, médico, doctor, clínica, gimnasio)
+- Hogar y Alquiler: home (ej. alquiler, casa, muebles, mantenimiento, reparación, ferretería)
+- Educación: education (ej. colegio, universidad, cursos, libros, útiles)
+- Otro: other (SOLO si verdaderamente no encaja en ninguna de las anteriores)
 
 Tarjetas de crédito del usuario disponibles:
 $cardsInfo
@@ -173,12 +174,21 @@ Reglas para paymentMethod y creditCardId:
           final data = jsonDecode(response.text!);
           _parsedAmount = (data['amount'] as num).toDouble();
           _parsedCategory = data['category'] ?? 'other';
+          if (_parsedCategory == 'other') {
+            final localCat = _fallbackClassifyCategory(_recognizedText);
+            if (localCat != 'other') _parsedCategory = localCat;
+          }
           if (_parsedCategory.contains('_')) {
             _parsedCategory = _parsedCategory.split('_')[0];
           }
           _parsedPaymentMethod = data['paymentMethod'] ?? 'efectivo';
           if (data['creditCardId'] != null) {
             _selectedCreditCardId = data['creditCardId'].toString();
+          }
+          if (data['description'] != null && data['description'].toString().trim().isNotEmpty) {
+            _parsedDescription = data['description'].toString().trim();
+          } else {
+            _parsedDescription = _extractCleanDescription(_recognizedText);
           }
         }
       }
@@ -193,23 +203,19 @@ Reglas para paymentMethod y creditCardId:
       if (match != null) {
         _parsedAmount = double.parse(match.group(0)!);
       }
+      _parsedCategory = _fallbackClassifyCategory(_recognizedText);
+      _parsedDescription = _extractCleanDescription(_recognizedText);
       
       final textLower = _recognizedText.toLowerCase();
-      if (textLower.contains('comida') || textLower.contains('restaurante') || textLower.contains('starbucks') || textLower.contains('café')) {
-        _parsedCategory = 'food';
-      } else if (textLower.contains('transporte') || textLower.contains('uber') || textLower.contains('taxi') || textLower.contains('gasolina')) {
-        _parsedCategory = 'transport';
-      } else if (textLower.contains('ropa') || textLower.contains('zapatos') || textLower.contains('compra')) {
-        _parsedCategory = 'shopping';
-      }
-      
       if (textLower.contains('tarjeta') || textLower.contains('crédito') || textLower.contains('credito') || textLower.contains('tc')) {
         _parsedPaymentMethod = 'tarjeta';
       }
-      
-      _parsedDescription = _recognizedText;
-    } else {
-      _parsedDescription = _recognizedText;
+    } else if (_parsedDescription.isEmpty || _parsedDescription == _recognizedText) {
+      _parsedDescription = _extractCleanDescription(_recognizedText);
+      if (_parsedCategory == 'other') {
+        final localCat = _fallbackClassifyCategory(_recognizedText);
+        if (localCat != 'other') _parsedCategory = localCat;
+      }
     }
 
     if (_parsedPaymentMethod == 'tarjeta') {
@@ -241,6 +247,60 @@ Reglas para paymentMethod y creditCardId:
         _errorMessage = 'No pude detectar una cantidad válida en: "$_recognizedText". Intenta de nuevo diciendo el número.';
       });
     }
+  }
+
+  String _extractCleanDescription(String rawText) {
+    String clean = rawText;
+    clean = clean.replaceAll(RegExp(r'\b\d+(\.\d+)?\b', caseSensitive: false), '');
+    clean = clean.replaceAll(RegExp(r'\b(quetzales|quetzal|dolares|dólares|usd|gtq|pesos|mxn|euros|eur|lempiras|soles|colones|gasto|gasté|gaste|pagué|pague|compre|compré|fueron|son|costó|costo|en|de|por)\b', caseSensitive: false), '');
+    clean = clean.replaceAll(RegExp(r'\b(con|tarjeta|crédito|credito|tc|efectivo|cash|usando|pago|pagado|débito|debito|mi|la|el|los|las|un|una|unos|unas)\b', caseSensitive: false), '');
+    
+    final cards = ref.read(creditCardsProvider).value ?? [];
+    for (final c in cards) {
+      if (c.name.isNotEmpty) clean = clean.replaceAll(RegExp(r'\b' + RegExp.escape(c.name) + r'\b', caseSensitive: false), '');
+      if (c.network.isNotEmpty) clean = clean.replaceAll(RegExp(r'\b' + RegExp.escape(c.network) + r'\b', caseSensitive: false), '');
+    }
+    
+    clean = clean.replaceAll(RegExp(r'\s+'), ' ').trim();
+    clean = clean.replaceAll(RegExp(r'^[,\.\s\-\_\:\;\/]+|[,\.\s\-\_\:\;\/]+$'), '').trim();
+    
+    if (clean.isEmpty) {
+      clean = rawText.replaceAll(RegExp(r'\b\d+(\.\d+)?\b', caseSensitive: false), '').trim();
+    }
+    
+    if (clean.isNotEmpty) {
+      return clean[0].toUpperCase() + clean.substring(1);
+    }
+    return 'Gasto general';
+  }
+
+  String _fallbackClassifyCategory(String text) {
+    final lower = text.toLowerCase();
+    if (RegExp(r'\b(burger|burguer|king|mcdonalds|mcdonald|wendys|kfc|taco|tacos|pizza|pizzas|sushi|pollo|comida|restaurante|almuerzo|cena|desayuno|café|cafe|starbucks|supermercado|súper|super|walmart|torre|paiz|coto|oxxo|panadería|postre|helado|carne|fruta|verdura|uber eats|pedidosya|rappi|grubhub|hamburguesa|hamburguesas|taquería|bebida|cerveza|vino|bar|alimentos)\b').hasMatch(lower)) {
+      return 'food';
+    }
+    if (RegExp(r'\b(gasolina|combustible|shell|puma|texaco|uno|bp|uber|indrive|didi|cabify|lyft|taxi|bus|autobús|transporte|metro|pasaje|peaje|estacionamiento|parqueo|vuelo|avión|boleto|mecánico|llantas|aceite|carro|vehículo)\b').hasMatch(lower)) {
+      return 'transport';
+    }
+    if (RegExp(r'\b(luz|electricidad|eegsa|deocsa|energuate|agua|empagua|internet|tigo|claro|movistar|teléfono|celular|saldo|recarga|gas propano|basura|servicio|factura|recibo)\b').hasMatch(lower)) {
+      return 'bills';
+    }
+    if (RegExp(r'\b(ropa|camisa|pantalón|zapatos|tenis|zapatillas|vestido|chaqueta|zara|h&m|bershka|nike|adidas|compra|compras|mall|tienda|amazon|electrónica|computadora|audífonos|cable|cargador|regalo)\b').hasMatch(lower)) {
+      return 'shopping';
+    }
+    if (RegExp(r'\b(cine|película|cinépolis|cinemark|netflix|spotify|disney|hbo|max|prime|youtube|suscripción|juego|videojuego|playstation|xbox|nintendo|steam|partido|estadio|concierto|diversión|fiesta|club)\b').hasMatch(lower)) {
+      return 'entertainment';
+    }
+    if (RegExp(r'\b(medicina|pastillas|farmacia|galeno|cruz verde|similares|batres|meykos|doctor|médico|hospital|clínica|dentista|odontólogo|examen|salud|terapia|psicólogo|gimnasio|gym|smart fit)\b').hasMatch(lower)) {
+      return 'health';
+    }
+    if (RegExp(r'\b(alquiler|renta|hipoteca|casa|departamento|mantenimiento|mueble|muebles|cama|mesa|silla|reparación|plomero|electricista|pintura|ferretería|cemaco|novex|limpieza)\b').hasMatch(lower)) {
+      return 'home';
+    }
+    if (RegExp(r'\b(universidad|colegio|escuela|colegiatura|matrícula|curso|udemy|coursera|platzi|clase|clases|libro|libros|cuaderno|papelería|útiles|educación)\b').hasMatch(lower)) {
+      return 'education';
+    }
+    return 'other';
   }
 
   Future<void> _saveTransaction() async {

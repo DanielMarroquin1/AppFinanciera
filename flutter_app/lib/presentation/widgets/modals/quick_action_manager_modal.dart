@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/utils/localization.dart';
 import '../../providers/transaction_provider.dart';
 import '../../providers/auth_provider.dart';
 import 'add_income_modal.dart';
@@ -54,6 +55,7 @@ class _QuickActionManagerModalInternal extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final loc = ref.watch(localizationProvider);
     final transactionsAsync = ref.watch(transactionsProvider);
     final user = ref.watch(authProvider).user;
     final currencyCode = user?.currency;
@@ -236,14 +238,14 @@ class _QuickActionManagerModalInternal extends ConsumerWidget {
                                     color: (isIncome ? Colors.green : Colors.blue).withOpacity(0.1), 
                                     borderRadius: BorderRadius.circular(16)
                                   ),
-                                  child: Center(child: Text(_getCategoryEmoji(expense.category), style: const TextStyle(fontSize: 26))),
+                                  child: Center(child: Text(loc.getCategoryEmoji(expense.category), style: const TextStyle(fontSize: 26))),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(expense.description.isNotEmpty ? expense.description : expense.category, style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: -0.3)),
+                                      Text(expense.description.isNotEmpty ? expense.description : loc.translateCategory(expense.category), style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: -0.3)),
                                       const SizedBox(height: 6),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

@@ -408,7 +408,7 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                                                   BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.2), blurRadius: 16, offset: const Offset(0, 6))
                                                 ],
                                               ),
-                                              child: Center(child: Text(_getCategoryEmoji(income.category), style: const TextStyle(fontSize: 36))),
+                                              child: Center(child: Text(loc.getCategoryEmoji(income.category), style: const TextStyle(fontSize: 36))),
                                             ),
                                             const SizedBox(height: 16),
                                             Container(
@@ -562,14 +562,14 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                                           color: Colors.green.withOpacity(0.1), 
                                           borderRadius: BorderRadius.circular(16)
                                         ),
-                                        child: Center(child: Text(_getCategoryEmoji(income.category), style: const TextStyle(fontSize: 26))),
+                                        child: Center(child: Text(loc.getCategoryEmoji(income.category), style: const TextStyle(fontSize: 26))),
                                       ),
                                       const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text(income.description.isNotEmpty ? income.description : income.category, style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: -0.3)),
+                                            Text(income.description.isNotEmpty ? income.description : loc.translateCategory(income.category), style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: -0.3)),
                                             const SizedBox(height: 6),
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -658,17 +658,17 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                                 color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
                                 shape: BoxShape.circle,
                               ),
-                              child: Center(child: Text(_getCategoryEmoji(income.category), style: const TextStyle(fontSize: 22))),
+                              child: Center(child: Text(loc.getCategoryEmoji(income.category), style: const TextStyle(fontSize: 22))),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(income.description.isNotEmpty ? income.description : income.category, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w600)),
+                                  Text(income.description.isNotEmpty ? income.description : loc.translateCategory(income.category), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w600)),
                                   const SizedBox(height: 2),
                                   Text(
-                                    '${categoryLabels[income.category] ?? income.category} • ${DateFormat('d MMM, HH:mm').format(income.date)}${income.isFixed ? ' • Fijo' : ''}',
+                                    '${loc.translateCategory(income.category)} • ${DateFormat('d MMM, HH:mm').format(income.date)}${income.isFixed ? ' • Fijo' : ''}',
                                     style: const TextStyle(color: Colors.grey, fontSize: 12),
                                   ),
                                 ],

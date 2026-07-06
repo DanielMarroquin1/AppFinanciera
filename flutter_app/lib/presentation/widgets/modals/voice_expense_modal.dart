@@ -12,6 +12,7 @@ import '../../../domain/entities/transaction.dart' as entity;
 import '../../../core/utils/currency_formatter.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/credit_card_provider.dart';
+import '../../../core/utils/localization.dart';
 
 class VoiceExpenseModal extends ConsumerStatefulWidget {
   const VoiceExpenseModal({super.key});
@@ -39,6 +40,8 @@ class _VoiceExpenseModalState extends ConsumerState<VoiceExpenseModal> with Sing
   String _parsedDescription = '';
   String _parsedPaymentMethod = 'efectivo'; // 'efectivo' or 'tarjeta'
   String _errorMessage = '';
+  bool _showPreview = false;
+  String? _selectedCreditCardId;
 
   @override
   void initState() {
@@ -73,7 +76,7 @@ class _VoiceExpenseModalState extends ConsumerState<VoiceExpenseModal> with Sing
   }
 
   Future<void> _toggleListening() async {
-    if (_isDone) {
+    if (_isDone || _showPreview) {
       Navigator.of(context).pop();
       return;
     }
@@ -116,10 +119,16 @@ class _VoiceExpenseModalState extends ConsumerState<VoiceExpenseModal> with Sing
   }
 
   void _processText() async {
-    if (_isProcessing) return; // Fix duplication
+    if (_isProcessing || _showPreview || _isDone) return; // Fix duplication
     if (_recognizedText.isEmpty) return;
 
     setState(() => _isProcessing = true);
+
+    final cards = ref.read(creditCardsProvider).value ?? [];
+    String cardsInfo = 'No hay tarjetas registradas.';
+    if (cards.isNotEmpty) {
+      cardsInfo = cards.map((c) => '- ID: "${c.id}", Nombre: "${c.name}", Red: "${c.network}"').join('\n');
+    }
 
     // Try using Gemini AI for extraction
     try {
@@ -136,7 +145,8 @@ Extrae la información en el siguiente formato JSON estricto:
 {
   "amount": número decimal (ej. 15.5),
   "category": "string exacto de la categoría",
-  "paymentMethod": "efectivo" o "tarjeta"
+  "paymentMethod": "efectivo" o "tarjeta",
+  "creditCardId": "id_de_la_tarjeta_o_null"
 }
 
 Categorías permitidas (USA EXACTAMENTE ESTOS VALORES EN INGLÉS COMO APARECEN AQUÍ):
@@ -150,7 +160,12 @@ Categorías permitidas (USA EXACTAMENTE ESTOS VALORES EN INGLÉS COMO APARECEN A
 - Educación: education
 - Otro: other
 
-Elige la categoría que mejor represente el gasto.
+Tarjetas de crédito del usuario disponibles:
+$cardsInfo
+
+Reglas para paymentMethod y creditCardId:
+1. Si el usuario menciona que pagó con tarjeta (o con crédito, tc, visa, mastercard, amex, nubank, bac, o cualquier banco o tarjeta del listado anterior), pon "paymentMethod": "tarjeta". De lo contrario, pon "efectivo".
+2. Si el usuario menciona detalles que coinciden con alguna tarjeta del listado (nombre del banco, titular, últimos 4 dígitos o marca), asigna el ID correspondiente en "creditCardId". Si menciona tarjeta pero no especifica cuál o hay varias y no se sabe cuál es, pon "creditCardId": null.
 ''';
 
         final response = await model.generateContent([Content.text(prompt)]);
@@ -162,6 +177,9 @@ Elige la categoría que mejor represente el gasto.
             _parsedCategory = _parsedCategory.split('_')[0];
           }
           _parsedPaymentMethod = data['paymentMethod'] ?? 'efectivo';
+          if (data['creditCardId'] != null) {
+            _selectedCreditCardId = data['creditCardId'].toString();
+          }
         }
       }
     } catch (e) {
@@ -191,38 +209,31 @@ Elige la categoría que mejor represente el gasto.
       
       _parsedDescription = _recognizedText;
     } else {
-      _parsedDescription = _recognizedText; // Use the raw text for the description in DB
+      _parsedDescription = _recognizedText;
+    }
+
+    if (_parsedPaymentMethod == 'tarjeta') {
+      if (_selectedCreditCardId == null && cards.isNotEmpty) {
+        if (cards.length == 1) {
+          _selectedCreditCardId = cards.first.id;
+        } else {
+          for (final c in cards) {
+            if (_recognizedText.toLowerCase().contains(c.name.toLowerCase()) || _recognizedText.toLowerCase().contains(c.network.toLowerCase())) {
+              _selectedCreditCardId = c.id;
+              break;
+            }
+          }
+          if (_selectedCreditCardId == null) {
+            _selectedCreditCardId = cards.first.id;
+          }
+        }
+      }
     }
 
     if (_parsedAmount > 0) {
-      final user = ref.read(authProvider).user;
-      
-      String? creditCardIdToUse;
-      if (_parsedPaymentMethod == 'tarjeta') {
-        final cards = ref.read(creditCardsProvider).value;
-        if (cards != null && cards.isNotEmpty) {
-          creditCardIdToUse = cards.first.id;
-        } else {
-          creditCardIdToUse = 'TC';
-        }
-      }
-
-      final expense = entity.TransactionModel(
-        id: '',
-        userId: firebase_auth.FirebaseAuth.instance.currentUser?.uid ?? '',
-        amount: _parsedAmount,
-        type: 'expense',
-        category: _parsedCategory,
-        description: _parsedDescription,
-        date: DateTime.now(),
-        isFixed: false,
-        creditCardId: creditCardIdToUse,
-      );
-      await ref.read(transactionNotifierProvider.notifier).addTransaction(expense);
-      
       setState(() {
         _isProcessing = false;
-        _isDone = true;
+        _showPreview = true;
       });
     } else {
       setState(() {
@@ -232,10 +243,48 @@ Elige la categoría que mejor represente el gasto.
     }
   }
 
+  Future<void> _saveTransaction() async {
+    if (_isProcessing || _isDone) return;
+    setState(() => _isProcessing = true);
+
+    String? creditCardIdToUse;
+    if (_parsedPaymentMethod == 'tarjeta') {
+      final cards = ref.read(creditCardsProvider).value;
+      if (_selectedCreditCardId != null) {
+        creditCardIdToUse = _selectedCreditCardId;
+      } else if (cards != null && cards.isNotEmpty) {
+        creditCardIdToUse = cards.first.id;
+      } else {
+        creditCardIdToUse = 'TC';
+      }
+    }
+
+    final expense = entity.TransactionModel(
+      id: '',
+      userId: firebase_auth.FirebaseAuth.instance.currentUser?.uid ?? '',
+      amount: _parsedAmount,
+      type: 'expense',
+      category: _parsedCategory,
+      description: _parsedDescription,
+      date: DateTime.now(),
+      isFixed: false,
+      creditCardId: creditCardIdToUse,
+    );
+    await ref.read(transactionNotifierProvider.notifier).addTransaction(expense);
+    
+    setState(() {
+      _isProcessing = false;
+      _showPreview = false;
+      _isDone = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final user = ref.watch(authProvider).user;
+    final loc = ref.watch(localizationProvider);
+    final cards = ref.watch(creditCardsProvider).value ?? [];
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -264,7 +313,7 @@ Elige la categoría que mejor represente el gasto.
                 child: Text(_errorMessage, style: const TextStyle(color: Colors.red, fontSize: 14)),
               ),
               
-            if (!_isProcessing && !_isDone) ...[
+            if (!_isProcessing && !_isDone && !_showPreview) ...[
               Text(
                 _isListening ? 'Te estoy escuchando...' : 'Toca para hablar',
                 style: TextStyle(
@@ -319,6 +368,166 @@ Elige la categoría que mejor represente el gasto.
               const CircularProgressIndicator(color: Color(0xFF4F46E5)),
               const SizedBox(height: 24),
               Text('Analizando tu voz...', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16)),
+            ] else if (_showPreview) ...[
+              Text('Confirmar Gasto', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Text(loc.getCategoryEmoji(_parsedCategory), style: const TextStyle(fontSize: 28)),
+                            const SizedBox(width: 10),
+                            Text(loc.translateCategory(_parsedCategory), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                        Text(
+                          '-${CurrencyFormatter.format(_parsedAmount, user?.currency)}',
+                          style: const TextStyle(color: Color(0xFFEF4444), fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    if (_parsedDescription.isNotEmpty && _parsedDescription != _recognizedText) ...[
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(_parsedDescription, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Método de pago:', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14, fontWeight: FontWeight.w600)),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _parsedPaymentMethod = 'efectivo'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: _parsedPaymentMethod == 'efectivo'
+                              ? (isDark ? const Color(0xFF4F46E5) : const Color(0xFF6366F1))
+                              : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text('💵 Efectivo', style: TextStyle(color: _parsedPaymentMethod == 'efectivo' ? Colors.white : (isDark ? Colors.white : Colors.black), fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _parsedPaymentMethod = 'tarjeta';
+                          if (_selectedCreditCardId == null && cards.isNotEmpty) {
+                            _selectedCreditCardId = cards.first.id;
+                          }
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: _parsedPaymentMethod == 'tarjeta'
+                              ? (isDark ? const Color(0xFF4F46E5) : const Color(0xFF6366F1))
+                              : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text('💳 Tarjeta', style: TextStyle(color: _parsedPaymentMethod == 'tarjeta' ? Colors.white : (isDark ? Colors.white : Colors.black), fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (_parsedPaymentMethod == 'tarjeta' && cards.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Selecciona tu Tarjeta:', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14, fontWeight: FontWeight.w600)),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: cards.any((c) => c.id == _selectedCreditCardId) ? _selectedCreditCardId : cards.first.id,
+                      isExpanded: true,
+                      dropdownColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+                      style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
+                      items: cards.map((c) {
+                        return DropdownMenuItem<String>(
+                          value: c.id,
+                          child: Text('${c.name} (${c.network})'),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _selectedCreditCardId = val);
+                      },
+                    ),
+                  ),
+                ),
+              ] else if (_parsedPaymentMethod == 'tarjeta' && cards.isEmpty) ...[
+                const SizedBox(height: 12),
+                Text('No tienes tarjetas registradas en la app.', style: TextStyle(color: Colors.amber[700], fontSize: 12)),
+              ],
+              const SizedBox(height: 28),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        setState(() {
+                          _showPreview = false;
+                          _recognizedText = '';
+                          _parsedAmount = 0.0;
+                        });
+                        _toggleListening();
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        side: BorderSide(color: isDark ? Colors.grey[600]! : Colors.grey[400]!),
+                      ),
+                      child: Text('Dictar otra vez', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton.icon(
+                      onPressed: _saveTransaction,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      icon: const Icon(LucideIcons.check, size: 20),
+                      label: const Text('Guardar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
+                  ),
+                ],
+              ),
             ] else if (_isDone) ...[
               Container(
                 padding: const EdgeInsets.all(20),

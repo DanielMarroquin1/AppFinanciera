@@ -121,7 +121,7 @@ class TransactionsListModalInternal extends ConsumerWidget {
                               color: isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Center(child: Text(_getCategoryEmoji(tx.category), style: const TextStyle(fontSize: 24))),
+                            child: Center(child: Text(loc.getCategoryEmoji(tx.category), style: const TextStyle(fontSize: 24))),
                           ),
                           const SizedBox(width: 16),
                           Expanded(

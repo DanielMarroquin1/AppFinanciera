@@ -502,7 +502,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                                   BoxShadow(color: const Color(0xFF3B82F6).withValues(alpha: 0.2), blurRadius: 16, offset: const Offset(0, 6))
                                                 ],
                                               ),
-                                              child: Center(child: Text(_getCategoryEmoji(expense.category), style: const TextStyle(fontSize: 36))),
+                                              child: Center(child: Text(loc.getCategoryEmoji(expense.category), style: const TextStyle(fontSize: 36))),
                                             ),
                                             const SizedBox(height: 16),
                                             Container(
@@ -656,14 +656,14 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                           color: Colors.blue.withOpacity(0.1), 
                                           borderRadius: BorderRadius.circular(16)
                                         ),
-                                        child: Center(child: Text(_getCategoryEmoji(expense.category), style: const TextStyle(fontSize: 26))),
+                                        child: Center(child: Text(loc.getCategoryEmoji(expense.category), style: const TextStyle(fontSize: 26))),
                                       ),
                                       const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text(expense.description.isNotEmpty ? expense.description : expense.category, style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: -0.3)),
+                                            Text(expense.description.isNotEmpty ? expense.description : loc.translateCategory(expense.category), style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: -0.3)),
                                             const SizedBox(height: 6),
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -752,17 +752,17 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                 color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
                                 shape: BoxShape.circle,
                               ),
-                              child: Center(child: Text(_getCategoryEmoji(expense.category), style: const TextStyle(fontSize: 22))),
+                              child: Center(child: Text(loc.getCategoryEmoji(expense.category), style: const TextStyle(fontSize: 22))),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(expense.description.isNotEmpty ? expense.description : expense.category, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w600)),
+                                  Text(expense.description.isNotEmpty ? expense.description : loc.translateCategory(expense.category), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w600)),
                                   const SizedBox(height: 2),
                                   Text(
-                                    '${categoryLabels[expense.category] ?? expense.category} • ${DateFormat('d MMM, HH:mm').format(expense.date)}${expense.isFixed ? ' • Fijo' : ''}',
+                                    '${loc.translateCategory(expense.category)} • ${DateFormat('d MMM, HH:mm').format(expense.date)}${expense.isFixed ? ' • Fijo' : ''}',
                                     style: const TextStyle(color: Colors.grey, fontSize: 12),
                                   ),
                                 ],

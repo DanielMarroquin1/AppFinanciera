@@ -902,7 +902,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 return Column(
                   children: recent.map((t) {
                     final isIncome = t.type == 'income';
-                    final emoji = _getCategoryEmoji(t.category);
+                    final emoji = loc.getCategoryEmoji(t.category);
                     final formattedDate = DateFormat('dd MMM, yyyy').format(t.date);
                     
                     String paymentMethod = t.creditCardId != null ? 'Tarjeta de Crédito' : (t.type == 'cc_payment' ? 'Pago a Tarjeta' : 'Efectivo / Débito');
@@ -916,7 +916,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                         bgColor: isIncome
                             ? (isDark ? const Color(0xFF14532D).withValues(alpha: 0.3) : const Color(0xFFF0FDF4))
                             : (isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.3) : const Color(0xFFFEF2F2)),
-                        title: t.description.isNotEmpty ? t.description : t.category,
+                        title: t.description.isNotEmpty ? t.description : loc.translateCategory(t.category),
                         subtitle: '$formattedDate • $paymentIcon $paymentMethod',
                         amount: '${isIncome ? '+' : '-'}${CurrencyFormatter.format(t.amount, currencyCode)}',
                         amountColor: isIncome

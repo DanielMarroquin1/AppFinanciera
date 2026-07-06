@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../modals/category_detail_modal.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/utils/localization.dart';
 
-class ExpenseReportModal extends StatefulWidget {
+class ExpenseReportModal extends ConsumerStatefulWidget {
   final List<MapEntry<String, double>> categoryList;
   final double totalExpenses;
   final String selectedMonth;
@@ -46,10 +48,10 @@ class ExpenseReportModal extends StatefulWidget {
   }
 
   @override
-  State<ExpenseReportModal> createState() => _ExpenseReportModalState();
+  ConsumerState<ExpenseReportModal> createState() => _ExpenseReportModalState();
 }
 
-class _ExpenseReportModalState extends State<ExpenseReportModal> {
+class _ExpenseReportModalState extends ConsumerState<ExpenseReportModal> {
   int touchedIndex = -1;
 
   static const Map<String, Color> categoryColors = {
@@ -74,41 +76,10 @@ class _ExpenseReportModalState extends State<ExpenseReportModal> {
     'debt': Color(0xFF14B8A6),
   };
 
-  static const Map<String, String> categoryLabels = {
-    '🍔': '🍔 Comida',
-    '🚗': '🚗 Transporte',
-    '🏠': '🏠 Hogar',
-    '🎮': '🎮 Entretenimiento',
-    '💊': '💊 Salud',
-    '📱': '📱 Servicios',
-    '📚': '📚 Educación',
-    '💸': '💸 Otro',
-    '💼': '💼 Salario',
-    'food': '🍔 Comida',
-    'transport': '🚗 Transporte',
-    'home': '🏠 Hogar',
-    'entertainment': '🎮 Entretenimiento',
-    'health': '💊 Salud',
-    'bills': '📱 Servicios',
-    'education': '📚 Educación',
-    'shopping': '🛍️ Compras',
-    'other': '💸 Otro',
-    'debt': '💳 Cuotas de Deudas',
-  };
-
-  String _getCategoryEmoji(String category) {
-    if (category.runes.isNotEmpty && category.runes.first > 127) return category;
-    const map = {
-      'food': '🍔', 'transport': '🚗', 'shopping': '🛍️', 'bills': '📱',
-      'entertainment': '🎮', 'health': '💊', 'education': '📚', 'home': '🏠',
-      'other': '💸', 'debt': '💳',
-    };
-    return map[category] ?? '💰';
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final loc = ref.watch(localizationProvider);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
@@ -139,43 +110,49 @@ class _ExpenseReportModalState extends State<ExpenseReportModal> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Reporte de Gastos', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text('Gastos por Categoría', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
-                    Text('${widget.selectedMonth} • ${widget.selectedCategory}', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                    Text('${widget.selectedCategory == "All" ? "Total" : widget.selectedCategory} • ${widget.selectedMonth}', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
                   ],
                 ),
                 IconButton(
-                  icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
                   onPressed: () => Navigator.of(context).pop(),
+                  icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                  style: IconButton.styleFrom(backgroundColor: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), padding: const EdgeInsets.all(8)),
                 )
               ],
             ),
           ),
-          const Divider(),
-
-          // Body
+          const SizedBox(height: 16),
+          
           Expanded(
             child: widget.categoryList.isEmpty
               ? Center(
                   child: Text('No hay gastos para este filtro.', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 16)),
                 )
               : SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Total
+                      // Total summary card
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF374151).withOpacity(0.5) : const Color(0xFFF3F4F6),
-                          borderRadius: BorderRadius.circular(20),
+                          gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [BoxShadow(color: const Color(0xFF6366F1).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
                         ),
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Total Gastado', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                            const Text('TOTAL GASTADO', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
                             const SizedBox(height: 8),
-                            Text(CurrencyFormatter.format(widget.totalExpenses, widget.currencyCode), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 32, fontWeight: FontWeight.bold)),
+                            Text(
+                              CurrencyFormatter.format(widget.totalExpenses, widget.currencyCode),
+                              style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w900, letterSpacing: -1),
+                            ),
                           ],
                         ),
                       ),
@@ -217,7 +194,7 @@ class _ExpenseReportModalState extends State<ExpenseReportModal> {
                               final percentage = widget.totalExpenses > 0 ? (entry.value / widget.totalExpenses * 100) : 0.0;
                               final mainCategory = entry.key.split('_')[0];
                               final color = categoryColors[mainCategory] ?? categoryColors[entry.key] ?? const Color(0xFF8B5CF6);
-                              final emoji = _getCategoryEmoji(mainCategory);
+                              final emoji = loc.getCategoryEmoji(entry.key);
                               
                               final radius = isTouched ? 80.0 : 70.0;
                               final fontSize = isTouched ? 16.0 : 14.0;
@@ -262,14 +239,9 @@ class _ExpenseReportModalState extends State<ExpenseReportModal> {
                         final percentage = widget.totalExpenses > 0 ? (entry.value / widget.totalExpenses * 100) : 0.0;
                         final mainCat = entry.key.split('_')[0];
                         
-                        String label = categoryLabels[entry.key] ?? categoryLabels[mainCat] ?? entry.key;
-                        if (entry.key.contains('_') && !categoryLabels.containsKey(entry.key)) {
-                          final sub = entry.key.split('_')[1];
-                          label = '$label - ${sub[0].toUpperCase()}${sub.substring(1)}';
-                        }
-                        
+                        String label = loc.translateCategory(entry.key);
                         final color = categoryColors[mainCat] ?? categoryColors[entry.key] ?? const Color(0xFF64748B);
-                        final emoji = _getCategoryEmoji(mainCat);
+                        final emoji = loc.getCategoryEmoji(entry.key);
                         
                         // Obtenemos transacciones reales de esta categoria
                         final transactionsForCat = widget.transactions?.where((t) => t.category == entry.key).toList() ?? [];

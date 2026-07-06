@@ -243,7 +243,14 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
                     (context, index) {
                       final category = sortedCategories[index];
                       final percentage = totalExpense > 0 ? (category.value / totalExpense) : 0.0;
-                      return _buildCategoryItem(category.key, category.value, percentage, currencyCode, isDark);
+                      return _buildCategoryItem(
+                        loc.translateCategory(category.key),
+                        category.value,
+                        percentage,
+                        currencyCode,
+                        isDark,
+                        emoji: loc.getCategoryEmoji(category.key),
+                      );
                     },
                     childCount: sortedCategories.length,
                   ),
@@ -272,23 +279,38 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
         children: [
           Row(
             children: [
-              Icon(icon, color: color, size: 16),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+                child: Icon(icon, color: color, size: 20),
+              ),
               const SizedBox(width: 8),
-              Text(title, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+              Text(title, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w500)),
             ],
           ),
           const SizedBox(height: 12),
-          Text(CurrencyFormatter.format(amount, currencyCode), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(CurrencyFormatter.format(amount, currencyCode), style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryItem(String name, double amount, double percentage, String currencyCode, bool isDark) {
+  Widget _buildCategoryItem(String name, double amount, double percentage, String currencyCode, bool isDark, {String emoji = '💰'}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       child: Row(
         children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF334155).withValues(alpha: 0.5) : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            alignment: Alignment.center,
+            child: Text(emoji, style: const TextStyle(fontSize: 20)),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

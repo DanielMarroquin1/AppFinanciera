@@ -551,6 +551,27 @@ class AppLocalizations {
     return _fallbackTranslate(key, mappedCode);
   }
 
+  String getCategoryEmoji(String category) {
+    if (category.runes.isNotEmpty && category.runes.first > 127 && category.length <= 4) return category;
+    final clean = category.toLowerCase().trim();
+    const map = {
+      'food': '🍔', 'food_grocery': '🛒', 'food_restaurant': '🍽️', 'food_coffee': '☕', 'food_delivery': '🛵',
+      'transport': '🚗', 'transport_gas': '⛽', 'transport_public': '🚌', 'transport_taxi': '🚕', 'transport_flight': '✈️',
+      'bills': '📱', 'bills_water': '💧', 'bills_electricity': '⚡', 'bills_internet': '🌐', 'bills_gas': '🔥',
+      'shopping': '🛍️', 'shopping_clothes': '👕', 'shopping_electronics': '💻', 'shopping_gifts': '🎁',
+      'entertainment': '🎮', 'entertainment_movies': '🍿', 'entertainment_music': '🎵', 'entertainment_sports': '⚽', 'entertainment_subscriptions': '📺',
+      'health': '💊', 'health_doctor': '👨‍⚕️', 'health_pharmacy': '🏥', 'health_gym': '🏋️',
+      'home': '🏠', 'home_rent': '🏢', 'home_maintenance': '🔧', 'home_furniture': '🛋️',
+      'education': '📚', 'education_tuition': '🎓', 'education_books': '📖', 'education_courses': '🖥️',
+      'other': '💸', 'salary': '💼', 'freelance': '💻', 'investments': '📈', 'business': '🏢',
+      'gifts': '🎁', 'car': '🚗', 'rent': '🏠', 'alquiler de casa': '🏠', 'credit_card': '💳',
+      'subscription': '📺', 'loan': '🏦', 'streak': '🔥', 'alert': '⚠️', 'ai': '🤖', 'debt': '💳',
+    };
+    if (map.containsKey(clean)) return map[clean]!;
+    final mainCat = clean.split('_')[0];
+    return map[mainCat] ?? '💰';
+  }
+
   String translateCategory(String code) {
     if (code.runes.isNotEmpty && code.runes.first > 127 && code.length <= 4) return code;
     final clean = code.toLowerCase().trim();
@@ -605,6 +626,11 @@ class AppLocalizations {
       'credit_card': 'Tarjeta de Crédito',
       'subscription': 'Suscripción',
       'loan': 'Préstamo',
+      'streak': 'Racha',
+      'alert': 'Alerta',
+      'ai': 'Asistente AI',
+      'debt': 'Cuotas de Deudas',
+      'cc_payment': 'Pago de Tarjeta',
     };
 
     final mapEn = {
@@ -656,6 +682,11 @@ class AppLocalizations {
       'credit_card': 'Credit Card',
       'subscription': 'Subscription',
       'loan': 'Loan',
+      'streak': 'Streak',
+      'alert': 'Alert',
+      'ai': 'AI Assistant',
+      'debt': 'Debt Installments',
+      'cc_payment': 'Card Payment',
     };
 
     final mapPt = {
@@ -707,6 +738,11 @@ class AppLocalizations {
       'credit_card': 'Cartão de Crédito',
       'subscription': 'Assinatura',
       'loan': 'Empréstimo',
+      'streak': 'Sequência',
+      'alert': 'Alerta',
+      'ai': 'Assistente IA',
+      'debt': 'Parcelas de Dívida',
+      'cc_payment': 'Pagamento de Cartão',
     };
 
     final mapFr = {
@@ -758,6 +794,11 @@ class AppLocalizations {
       'credit_card': 'Carte de Crédit',
       'subscription': 'Abonnement',
       'loan': 'Prêt',
+      'streak': 'Série',
+      'alert': 'Alerte',
+      'ai': 'Assistant IA',
+      'debt': 'Mensualités',
+      'cc_payment': 'Paiement de Carte',
     };
 
     final mapIt = {
@@ -809,6 +850,11 @@ class AppLocalizations {
       'credit_card': 'Carta di Credito',
       'subscription': 'Abbonamento',
       'loan': 'Prestito',
+      'streak': 'Serie',
+      'alert': 'Avviso',
+      'ai': 'Assistente IA',
+      'debt': 'Rate Debito',
+      'cc_payment': 'Pagamento Carta',
     };
 
     if (mappedCode == 'en') return mapEn[clean] ?? mapEs[clean] ?? code;

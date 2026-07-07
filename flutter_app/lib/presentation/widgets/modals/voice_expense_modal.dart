@@ -141,11 +141,12 @@ class _VoiceExpenseModalState extends ConsumerState<VoiceExpenseModal> with Sing
         
         final prompt = '''
 Analiza este gasto dictado por el usuario: "$_recognizedText"
-Extrae la información en el siguiente formato JSON estricto:
+El usuario hablará de forma natural, coloquial o informal usando frases como: "gasté", "gaste", "consumí", "consumi", "debítame", "debitame", "cóbrame", "cobrame", "pagué", "pague", "compré", "compre", "anota", "agrega", "pon", "registra", "fueron", "salió en", etc.
+Tu trabajo es interpretar su intención y extraer la información en el siguiente formato JSON estricto:
 {
   "amount": número decimal (ej. 15.5),
   "category": "string exacto de la categoría",
-  "description": "nombre corto y limpio del establecimiento o producto comprando (ej. 'Burger King', 'Supermercado Walmart', 'Gasolina Shell', 'Café Starbucks'). NUNCA incluyas la cantidad, moneda, ni el método de pago en esta descripción.",
+  "description": "nombre corto y limpio del producto, establecimiento o servicio (ej. 'Helado McDonald\\'s', 'Burger King', 'Supermercado Walmart', 'Gasolina Shell', 'Café Starbucks', 'Tenis Nike'). REGLA DE ORO: NUNCA incluyas verbos ni palabras de acción ('gasté', 'consumí', 'pagué', 'debítame', 'compré', 'anota'), NUNCA incluyas la cantidad, moneda, ni el método de pago en esta descripción. SOLO el nombre del producto o lugar.",
   "paymentMethod": "efectivo" o "tarjeta",
   "creditCardId": "id_de_la_tarjeta_o_null"
 }
@@ -186,7 +187,7 @@ Reglas para paymentMethod y creditCardId:
             _selectedCreditCardId = data['creditCardId'].toString();
           }
           if (data['description'] != null && data['description'].toString().trim().isNotEmpty) {
-            _parsedDescription = data['description'].toString().trim();
+            _parsedDescription = _extractCleanDescription(data['description'].toString().trim());
           } else {
             _parsedDescription = _extractCleanDescription(_recognizedText);
           }
@@ -250,22 +251,77 @@ Reglas para paymentMethod y creditCardId:
   }
 
   String _extractCleanDescription(String rawText) {
-    String clean = rawText;
-    clean = clean.replaceAll(RegExp(r'\b\d+(\.\d+)?\b', caseSensitive: false), '');
-    clean = clean.replaceAll(RegExp(r'\b(quetzales|quetzal|dolares|dólares|usd|gtq|pesos|mxn|euros|eur|lempiras|soles|colones|gasto|gasté|gaste|pagué|pague|compre|compré|fueron|son|costó|costo|en|de|por)\b', caseSensitive: false), '');
-    clean = clean.replaceAll(RegExp(r'\b(con|tarjeta|crédito|credito|tc|efectivo|cash|usando|pago|pagado|débito|debito|mi|la|el|los|las|un|una|unos|unas)\b', caseSensitive: false), '');
+    String clean = ' ' + rawText + ' ';
     
-    final cards = ref.read(creditCardsProvider).value ?? [];
-    for (final c in cards) {
-      if (c.name.isNotEmpty) clean = clean.replaceAll(RegExp(r'\b' + RegExp.escape(c.name) + r'\b', caseSensitive: false), '');
-      if (c.network.isNotEmpty) clean = clean.replaceAll(RegExp(r'\b' + RegExp.escape(c.network) + r'\b', caseSensitive: false), '');
+    // 1. Remove numbers/amounts (e.g. 15, 15.00, $15, Q15)
+    clean = clean.replaceAll(RegExp(r'[\$Q€£¥]?\s*\b\d+(\.\d+)?\b\s*[\$Q€£¥]?', caseSensitive: false), ' ');
+    
+    // 2. Remove verbs and command words (gaste, gasté, consumi, debitame, cobrame, compre, anota, agrega, etc.)
+    final verbs = [
+      'gasté', 'gaste', 'gasto', 'gastamos', 'gastado',
+      'consumí', 'consumi', 'consumo', 'consumimos', 'consumido',
+      'debítame', 'debitame', 'debita', 'débito', 'debito', 'debitar',
+      'cóbrame', 'cobrame', 'cobra', 'cobro', 'cobrar',
+      'cárgame', 'cargame', 'cargo', 'cargar',
+      'descúentame', 'descuentame', 'descuenta',
+      'pagué', 'pague', 'pago', 'pagamos', 'pagado',
+      'compré', 'compre', 'compra', 'compramos', 'comprado', 'adquirí', 'adquiri',
+      'anota', 'anotar', 'anótame', 'anotame', 'apunta', 'apúntame', 'apuntame',
+      'agrega', 'agregar', 'agrégame', 'agregame',
+      'pon', 'poner', 'ponme', 'registra', 'registrar', 'regístrame', 'registrame',
+      'metí', 'meti', 'mete', 'méteme', 'meteme',
+      'hice', 'hicimos', 'realicé', 'realice',
+      'fueron', 'son', 'serían', 'serian', 'salió', 'salio', 'salieron',
+      'costó', 'costo', 'costaron', 'valió', 'valio', 'valieron',
+      'importe', 'monto', 'valor', 'total', 'precio'
+    ];
+    for (final v in verbs) {
+      clean = clean.replaceAll(RegExp(r'(?:\b|\s+|^)' + v + r'(?:\b|\s+|$|[,\.\-\_\:\;\/\!\?])', caseSensitive: false), ' ');
     }
     
+    // 3. Remove currencies and prepositions/connectors
+    final fillers = [
+      'quetzales', 'quetzal', 'qs', 'dólares', 'dolares', 'dólar', 'dolar', 'usd', 'gtq',
+      'pesos', 'peso', 'mxn', 'euros', 'euro', 'eur', 'lempiras', 'soles', 'colones',
+      'en', 'de', 'por', 'para', 'a', 'con', 'sin', 'usando', 'mediante', 'sobre',
+      'un gasto', 'gasto de', 'un consumo', 'consumo de', 'pago de', 'compra de',
+      'mi', 'mis', 'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'al', 'del'
+    ];
+    for (final f in fillers) {
+      clean = clean.replaceAll(RegExp(r'(?:\b|\s+|^)' + f + r'(?:\b|\s+|$|[,\.\-\_\:\;\/\!\?])', caseSensitive: false), ' ');
+    }
+    
+    // 4. Remove payment methods and card keywords
+    final payments = [
+      'tarjeta', 'tarjetas', 'crédito', 'credito', 'tc', 'tcs',
+      'efectivo', 'cash', 'dinero', 'billetes', 'débito', 'debito',
+      'visa', 'mastercard', 'amex', 'american express', 'discover'
+    ];
+    for (final p in payments) {
+      clean = clean.replaceAll(RegExp(r'(?:\b|\s+|^)' + p + r'(?:\b|\s+|$|[,\.\-\_\:\;\/\!\?])', caseSensitive: false), ' ');
+    }
+    
+    // 5. Remove card names and networks from user creditCardsProvider
+    final cards = ref.read(creditCardsProvider).value ?? [];
+    for (final c in cards) {
+      if (c.name.trim().isNotEmpty) {
+        clean = clean.replaceAll(RegExp(r'(?:\b|\s+|^)' + RegExp.escape(c.name.trim()) + r'(?:\b|\s+|$|[,\.\-\_\:\;\/\!\?])', caseSensitive: false), ' ');
+      }
+      if (c.network.trim().isNotEmpty) {
+        clean = clean.replaceAll(RegExp(r'(?:\b|\s+|^)' + RegExp.escape(c.network.trim()) + r'(?:\b|\s+|$|[,\.\-\_\:\;\/\!\?])', caseSensitive: false), ' ');
+      }
+    }
+    
+    // 6. Clean extra spaces and punctuation
     clean = clean.replaceAll(RegExp(r'\s+'), ' ').trim();
-    clean = clean.replaceAll(RegExp(r'^[,\.\s\-\_\:\;\/]+|[,\.\s\-\_\:\;\/]+$'), '').trim();
+    clean = clean.replaceAll(RegExp(r'^[,\.\-\_\:\;\/\!\?]+|[,\.\-\_\:\;\/\!\?]+$'), '').trim();
     
     if (clean.isEmpty) {
       clean = rawText.replaceAll(RegExp(r'\b\d+(\.\d+)?\b', caseSensitive: false), '').trim();
+      for (final v in verbs) {
+        clean = clean.replaceAll(RegExp(r'(?:\b|\s+|^)' + v + r'(?:\b|\s+|$)', caseSensitive: false), ' ').trim();
+      }
+      clean = clean.replaceAll(RegExp(r'\s+'), ' ').trim();
     }
     
     if (clean.isNotEmpty) {

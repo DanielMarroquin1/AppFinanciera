@@ -585,7 +585,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                                             Text(loc.get('billing_day'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w500)),
                                                             const SizedBox(height: 2),
                                                             Text(
-                                                              expense.recurrenceType == 'bimonthly' ? '${expense.recurrenceDay} y ${expense.recurrenceDay2}' : 'Día ${expense.recurrenceDay} de cada mes', 
+                                                              loc.formatRecurrenceDay(expense.recurrenceType, expense.recurrenceDay, expense.recurrenceDay2), 
                                                               style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.w800, fontSize: 15),
                                                             ),
                                                           ],
@@ -672,7 +672,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                                 borderRadius: BorderRadius.circular(8),
                                               ),
                                               child: Text(
-                                                'Día ${expense.recurrenceDay} • ${expense.recurrenceType == 'weekly' ? 'Semanal' : (expense.recurrenceType == 'bimonthly' ? 'Quincenal' : 'Mensual')}',
+                                                loc.formatRecurrenceSubtitle(expense.recurrenceType, expense.recurrenceDay, expense.recurrenceDay2),
                                                 style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569), fontSize: 10, fontWeight: FontWeight.w600),
                                               ),
                                             ),
@@ -684,7 +684,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                         children: [
                                           Text(CurrencyFormatter.format(expense.amount, currencyCode), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.w900, fontSize: 16)),
                                           const SizedBox(height: 4),
-                                          Text('Suscripción', style: TextStyle(color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8), fontSize: 10)),
+                                          Text(loc.get('subscription'), style: TextStyle(color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8), fontSize: 10)),
                                         ],
                                       ),
                                       const SizedBox(width: 8),

@@ -551,6 +551,61 @@ class AppLocalizations {
     return _fallbackTranslate(key, mappedCode);
   }
 
+  String formatRecurrenceDay(String? recurrenceType, int? recurrenceDay, [int? recurrenceDay2]) {
+    final lang = intlLocale;
+    final day1 = recurrenceDay ?? 1;
+    final day2 = recurrenceDay2 ?? 30;
+    if (recurrenceType == 'weekly') {
+      final idx = day1.clamp(1, 7);
+      if (lang == 'en') return ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][idx];
+      if (lang == 'pt') return ['', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'][idx];
+      if (lang == 'fr') return ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'][idx];
+      if (lang == 'it') return ['', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'][idx];
+      return ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'][idx];
+    }
+    if (recurrenceType == 'bimonthly') {
+      if (lang == 'en') return 'Days $day1 & $day2';
+      if (lang == 'pt') return 'Dias $day1 e $day2';
+      if (lang == 'fr') return 'Jours $day1 et $day2';
+      if (lang == 'it') return 'Giorni $day1 e $day2';
+      return 'Días $day1 y $day2';
+    }
+    if (lang == 'en') return 'Day $day1 of every month';
+    if (lang == 'pt') return 'Dia $day1 de cada mês';
+    if (lang == 'fr') return 'Jour $day1 de chaque mois';
+    if (lang == 'it') return 'Giorno $day1 di ogni mese';
+    return 'Día $day1 de cada mes';
+  }
+
+  String formatRecurrenceSubtitle(String? recurrenceType, int? recurrenceDay, [int? recurrenceDay2]) {
+    final lang = intlLocale;
+    final day1 = recurrenceDay ?? 1;
+    final day2 = recurrenceDay2 ?? 30;
+    final freq = get(recurrenceType == 'weekly' ? 'weekly' : (recurrenceType == 'bimonthly' ? 'bimonthly' : 'monthly'));
+    if (recurrenceType == 'weekly') {
+      final idx = day1.clamp(1, 7);
+      String shortDay;
+      if (lang == 'en') shortDay = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx];
+      else if (lang == 'pt') shortDay = ['', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][idx];
+      else if (lang == 'fr') shortDay = ['', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'][idx];
+      else if (lang == 'it') shortDay = ['', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'][idx];
+      else shortDay = ['', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'][idx];
+      return '$shortDay • $freq';
+    }
+    if (recurrenceType == 'bimonthly') {
+      if (lang == 'en') return 'Days $day1 & $day2 • $freq';
+      if (lang == 'pt') return 'Dias $day1 e $day2 • $freq';
+      if (lang == 'fr') return 'Jours $day1 et $day2 • $freq';
+      if (lang == 'it') return 'Giorni $day1 e $day2 • $freq';
+      return 'Días $day1 y $day2 • $freq';
+    }
+    if (lang == 'en') return 'Day $day1 • $freq';
+    if (lang == 'pt') return 'Dia $day1 • $freq';
+    if (lang == 'fr') return 'Jour $day1 • $freq';
+    if (lang == 'it') return 'Giorno $day1 • $freq';
+    return 'Día $day1 • $freq';
+  }
+
   String getCategoryEmoji(String category) {
     if (category.runes.isNotEmpty && category.runes.first > 127 && category.length <= 4) return category;
     final clean = category.toLowerCase().trim();
@@ -563,8 +618,8 @@ class AppLocalizations {
       'health': '💊', 'health_doctor': '👨‍⚕️', 'health_pharmacy': '🏥', 'health_gym': '🏋️',
       'home': '🏠', 'home_rent': '🏢', 'home_maintenance': '🔧', 'home_furniture': '🛋️',
       'education': '📚', 'education_tuition': '🎓', 'education_books': '📖', 'education_courses': '🖥️',
-      'other': '💸', 'salary': '💼', 'freelance': '💻', 'investments': '📈', 'business': '🏢',
-      'gifts': '🎁', 'car': '🚗', 'rent': '🏠', 'alquiler de casa': '🏠', 'credit_card': '💳',
+      'other': '💸', 'salary': '💼', 'freelance': '💻', 'investments': '📈', 'investment': '📈', 'dividends': '💸', 'bonus': '🎁', 'sale': '🏷️', 'business': '🏢',
+      'gifts': '🎁', 'gift': '🎉', 'car': '🚗', 'rent': '🏠', 'alquiler de casa': '🏠', 'credit_card': '💳',
       'subscription': '📺', 'loan': '🏦', 'streak': '🔥', 'alert': '⚠️', 'ai': '🤖', 'debt': '💳',
     };
     if (map.containsKey(clean)) return map[clean]!;
@@ -618,8 +673,13 @@ class AppLocalizations {
       'salary': 'Salario',
       'freelance': 'Freelance',
       'investments': 'Inversiones',
+      'investment': 'Inversiones',
+      'dividends': 'Dividendos',
+      'bonus': 'Bonificación',
+      'sale': 'Venta de Activos',
       'business': 'Negocio',
       'gifts': 'Regalos',
+      'gift': 'Regalo',
       'car': 'Carro / Vehículo',
       'rent': 'Alquiler de casa',
       'alquiler de casa': 'Alquiler de casa',
@@ -674,8 +734,13 @@ class AppLocalizations {
       'salary': 'Salary',
       'freelance': 'Freelance',
       'investments': 'Investments',
+      'investment': 'Investments',
+      'dividends': 'Dividends',
+      'bonus': 'Bonus',
+      'sale': 'Asset Sale',
       'business': 'Business',
       'gifts': 'Gifts',
+      'gift': 'Gift',
       'car': 'Car / Vehicle',
       'rent': 'House Rent',
       'alquiler de casa': 'House Rent',
@@ -730,8 +795,13 @@ class AppLocalizations {
       'salary': 'Salário',
       'freelance': 'Freelance',
       'investments': 'Investimentos',
+      'investment': 'Investimentos',
+      'dividends': 'Dividendos',
+      'bonus': 'Bônus',
+      'sale': 'Venda de Ativos',
       'business': 'Negócios',
       'gifts': 'Presentes',
+      'gift': 'Presente',
       'car': 'Carro / Veículo',
       'rent': 'Aluguel de casa',
       'alquiler de casa': 'Aluguel de casa',
@@ -786,8 +856,13 @@ class AppLocalizations {
       'salary': 'Salaire',
       'freelance': 'Freelance',
       'investments': 'Investissements',
+      'investment': 'Investissements',
+      'dividends': 'Dividendes',
+      'bonus': 'Prime',
+      'sale': "Vente d'actifs",
       'business': 'Affaires',
       'gifts': 'Cadeaux',
+      'gift': 'Cadeau',
       'car': 'Voiture',
       'rent': 'Loyer',
       'alquiler de casa': 'Loyer',
@@ -842,8 +917,13 @@ class AppLocalizations {
       'salary': 'Stipendio',
       'freelance': 'Freelance',
       'investments': 'Investimenti',
+      'investment': 'Investimenti',
+      'dividends': 'Dividendi',
+      'bonus': 'Bonus',
+      'sale': 'Vendita di beni',
       'business': 'Affari',
       'gifts': 'Regali',
+      'gift': 'Regalo',
       'car': 'Auto / Veicolo',
       'rent': 'Affitto casa',
       'alquiler de casa': 'Affitto casa',

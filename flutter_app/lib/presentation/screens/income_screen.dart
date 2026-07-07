@@ -491,7 +491,7 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                                                             Text(loc.get('billing_day'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w500)),
                                                             const SizedBox(height: 2),
                                                             Text(
-                                                              income.recurrenceType == 'bimonthly' ? '${income.recurrenceDay} y ${income.recurrenceDay2}' : 'Día ${income.recurrenceDay} de cada mes', 
+                                                              loc.formatRecurrenceDay(income.recurrenceType, income.recurrenceDay, income.recurrenceDay2), 
                                                               style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.w800, fontSize: 15),
                                                             ),
                                                           ],
@@ -578,7 +578,7 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                                                 borderRadius: BorderRadius.circular(8),
                                               ),
                                               child: Text(
-                                                'Día ${income.recurrenceDay} • ${income.recurrenceType == 'weekly' ? 'Semanal' : (income.recurrenceType == 'bimonthly' ? 'Quincenal' : 'Mensual')}',
+                                                loc.formatRecurrenceSubtitle(income.recurrenceType, income.recurrenceDay, income.recurrenceDay2),
                                                 style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569), fontSize: 10, fontWeight: FontWeight.w600),
                                               ),
                                             ),
@@ -590,7 +590,7 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                                         children: [
                                           Text(CurrencyFormatter.format(income.amount, currencyCode), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.w900, fontSize: 16)),
                                           const SizedBox(height: 4),
-                                          Text('Ingreso Fijo', style: TextStyle(color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8), fontSize: 10)),
+                                          Text(loc.get('fixed_income'), style: TextStyle(color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8), fontSize: 10)),
                                         ],
                                       ),
                                       const SizedBox(width: 8),

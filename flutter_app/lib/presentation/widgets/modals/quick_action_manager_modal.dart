@@ -254,7 +254,7 @@ class _QuickActionManagerModalInternal extends ConsumerWidget {
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text(
-                                          'Día ${expense.recurrenceDay} • ${expense.recurrenceType == 'weekly' ? 'Semanal' : (expense.recurrenceType == 'bimonthly' ? 'Quincenal' : 'Mensual')}',
+                                          loc.formatRecurrenceSubtitle(expense.recurrenceType, expense.recurrenceDay, expense.recurrenceDay2),
                                           style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569), fontSize: 10, fontWeight: FontWeight.w600),
                                         ),
                                       ),
@@ -266,7 +266,7 @@ class _QuickActionManagerModalInternal extends ConsumerWidget {
                                   children: [
                                     Text(CurrencyFormatter.format(expense.amount, currencyCode), style: TextStyle(color: isIncome ? (isDark ? const Color(0xFF10B981) : const Color(0xFF059669)) : (isDark ? Colors.white : Colors.black), fontWeight: FontWeight.w900, fontSize: 16)),
                                     const SizedBox(height: 4),
-                                    Text('Suscripción', style: TextStyle(color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8), fontSize: 10)),
+                                    Text(isIncome ? loc.get('fixed_income') : loc.get('subscription'), style: TextStyle(color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8), fontSize: 10)),
                                   ],
                                 ),
                               const SizedBox(width: 8),

@@ -11,14 +11,14 @@ import '../../presentation/screens/debts_screen.dart';
 import '../../presentation/screens/onboarding_screen.dart';
 import '../../presentation/widgets/app_shell.dart';
 
-// Definición de GlobalKeys para enrutamiento anidado
-final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 class AppRouter {
+  static final rootNavigatorKey = GlobalKey<NavigatorState>();
+
   static GoRouter createRouter(bool hasSeenOnboarding) {
     return GoRouter(
-      navigatorKey: _rootNavigatorKey,
+      navigatorKey: rootNavigatorKey,
       initialLocation: '/login', // Removed onboarding logic per user request
       routes: [
       GoRoute(

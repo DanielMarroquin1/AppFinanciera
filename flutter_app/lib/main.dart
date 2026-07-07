@@ -8,6 +8,7 @@ import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/theme_provider.dart';
+import 'presentation/widgets/common/session_timeout_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,6 +47,9 @@ class MyApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       routerConfig: AppRouter.createRouter(hasSeenOnboarding),
+      builder: (context, child) {
+        return SessionTimeoutManager(child: child!);
+      },
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,6 +32,7 @@ class VoiceExpenseModal extends ConsumerStatefulWidget {
 class _VoiceExpenseModalState extends ConsumerState<VoiceExpenseModal> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   final SpeechToText _speechToText = SpeechToText();
+  Timer? _silenceTimer;
   bool _isListening = false;
   bool _isProcessing = false;
   bool _isDone = false;
@@ -70,6 +72,7 @@ class _VoiceExpenseModalState extends ConsumerState<VoiceExpenseModal> with Sing
 
   @override
   void dispose() {
+    _silenceTimer?.cancel();
     _controller.dispose();
     _speechToText.cancel();
     super.dispose();
@@ -82,6 +85,7 @@ class _VoiceExpenseModalState extends ConsumerState<VoiceExpenseModal> with Sing
     }
 
     if (_isListening) {
+      _silenceTimer?.cancel();
       await _speechToText.stop();
       setState(() => _isListening = false);
       _processText();
@@ -105,12 +109,27 @@ class _VoiceExpenseModalState extends ConsumerState<VoiceExpenseModal> with Sing
             setState(() {
               _recognizedText = result.recognizedWords;
             });
+            _silenceTimer?.cancel();
+            if (_recognizedText.trim().isNotEmpty) {
+              _silenceTimer = Timer(const Duration(seconds: 3), () {
+                if (_isListening) {
+                  _speechToText.stop();
+                  if (mounted) {
+                    setState(() => _isListening = false);
+                    _processText();
+                  }
+                }
+              });
+            }
             if (result.finalResult) {
+              _silenceTimer?.cancel();
               setState(() => _isListening = false);
               _processText();
             }
           },
           localeId: 'es_ES',
+          pauseFor: const Duration(seconds: 3),
+          listenFor: const Duration(seconds: 45),
         );
       } else {
         setState(() => _errorMessage = 'Reconocimiento de voz no disponible en este dispositivo');
@@ -144,9 +163,9 @@ Analiza este gasto dictado por el usuario: "$_recognizedText"
 El usuario hablará de forma natural, coloquial o informal usando frases como: "gasté", "gaste", "consumí", "consumi", "debítame", "debitame", "cóbrame", "cobrame", "pagué", "pague", "compré", "compre", "anota", "agrega", "pon", "registra", "fueron", "salió en", etc.
 Tu trabajo es interpretar su intención y extraer la información en el siguiente formato JSON estricto:
 {
-  "amount": número decimal (ej. 15.5),
+  "amount": número decimal del dinero pagado o gastado (ej. 125.0),
   "category": "string exacto de la categoría",
-  "description": "nombre corto y limpio del producto, establecimiento o servicio (ej. 'Helado McDonald\\'s', 'Burger King', 'Supermercado Walmart', 'Gasolina Shell', 'Café Starbucks', 'Tenis Nike'). REGLA DE ORO: NUNCA incluyas verbos ni palabras de acción ('gasté', 'consumí', 'pagué', 'debítame', 'compré', 'anota'), NUNCA incluyas la cantidad, moneda, ni el método de pago en esta descripción. SOLO el nombre del producto o lugar.",
+  "description": "nombre corto y limpio del producto, establecimiento o servicio (ej. 'Helado McDonald\\'s', 'Tambo de gas', 'Supermercado Walmart', 'Gasolina Shell', 'Café Starbucks', 'Tenis Nike'). REGLA DE ORO: NUNCA incluyas verbos ni palabras de acción ('gasté', 'consumí', 'pagué', 'debítame', 'compré', 'anota'), NUNCA incluyas la cantidad, moneda, ni el método de pago en esta descripción. SOLO el nombre del producto o lugar.",
   "paymentMethod": "efectivo" o "tarjeta",
   "creditCardId": "id_de_la_tarjeta_o_null"
 }
@@ -154,7 +173,7 @@ Tu trabajo es interpretar su intención y extraer la información en el siguient
 Categorías permitidas (USA EXACTAMENTE ESTOS VALORES EN INGLÉS COMO APARECEN AQUÍ):
 - Comida y Restaurantes: food (ej. hamburguesas, Burger King, McDonald's, pizza, tacos, café, restaurantes, almuerzo, cena, supermercado)
 - Transporte y Gasolina: transport (ej. Uber, gasolina, taxi, pasaje, parqueo, bus, vuelos)
-- Servicios y Facturas: bills (ej. luz, agua, internet, teléfono, celular, gas)
+- Servicios y Facturas: bills (ej. luz, agua, internet, teléfono, celular, gas, tambo de gas, cilindro de gas, propano, butano, estufa, basura, servicio, factura)
 - Compras y Ropa: shopping (ej. ropa, zapatos, electrónica, centro comercial, regalos)
 - Ocio y Entretenimiento: entertainment (ej. cine, películas, Netflix, Spotify, videojuegos, salidas, fiesta)
 - Salud y Farmacia: health (ej. farmacia, pastillas, médico, doctor, clínica, gimnasio)
@@ -164,6 +183,9 @@ Categorías permitidas (USA EXACTAMENTE ESTOS VALORES EN INGLÉS COMO APARECEN A
 
 Tarjetas de crédito del usuario disponibles:
 $cardsInfo
+
+Regla CRÍTICA para el monto ("amount"):
+- Si en la oración aparecen varios números (por ejemplo: "compré un tambo de gas de 25 lbs en 125 quetzales" o "3 pizzas por 150 pesos"), DEBES DISTINGUIR la cantidad o peso del producto (25 lbs, 3 pizzas) del PRECIO O DINERO GASTADO (125 quetzales, 150 pesos). El valor en "amount" SIEMPRE DEBE SER EL PRECIO PAGADO EN DINERO (ej. 125.0), JAMÁS el peso, volumen o cantidad de artículos comprados.
 
 Reglas para paymentMethod y creditCardId:
 1. Si el usuario menciona que pagó con tarjeta (o con crédito, tc, visa, mastercard, amex, nubank, bac, o cualquier banco o tarjeta del listado anterior), pon "paymentMethod": "tarjeta". De lo contrario, pon "efectivo".
@@ -198,11 +220,39 @@ Reglas para paymentMethod y creditCardId:
     }
 
     if (_parsedAmount == 0.0) {
-      // Fallback a Regex simple
-      final amountRegex = RegExp(r'\d+(\.\d+)?');
-      final match = amountRegex.firstMatch(_recognizedText);
-      if (match != null) {
-        _parsedAmount = double.parse(match.group(0)!);
+      // Fallback inteligente para múltiples números
+      final currencyPriceRegex = RegExp(r'(?:en|por|costó|cuesta|son|fueron|pagué|pague|gasto de|[\$Q€£¥])\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*(?:quetzales|quetzal|dólares|dolares|dólar|dolar|pesos|peso|mxn|euros|euro|eur|usd|gtq|lempiras|soles|colones|[\$Q€£¥])', caseSensitive: false);
+      final priceMatch = currencyPriceRegex.firstMatch(_recognizedText);
+      if (priceMatch != null) {
+        final valStr = priceMatch.group(1) ?? priceMatch.group(2);
+        if (valStr != null) {
+          _parsedAmount = double.tryParse(valStr) ?? 0.0;
+        }
+      }
+      if (_parsedAmount == 0.0) {
+        // Find all numbers not followed by units (lbs, kg, litros, etc.)
+        final allNumRegex = RegExp(r'\b(\d+(?:\.\d+)?)\b');
+        final matches = allNumRegex.allMatches(_recognizedText);
+        double maxNum = 0.0;
+        for (final m in matches) {
+          final str = m.group(1)!;
+          final afterIdx = m.end;
+          final remainder = _recognizedText.substring(afterIdx).trimLeft().toLowerCase();
+          if (remainder.startsWith('lb') || remainder.startsWith('libra') || remainder.startsWith('kg') || remainder.startsWith('kilo') || remainder.startsWith('g ') || remainder.startsWith('gr') || remainder.startsWith('ml') || remainder.startsWith('litro') || remainder.startsWith('oz') || remainder.startsWith('onza') || remainder.startsWith('unidad')) {
+            continue;
+          }
+          final val = double.tryParse(str) ?? 0.0;
+          if (val > maxNum) maxNum = val;
+        }
+        if (maxNum > 0) {
+          _parsedAmount = maxNum;
+        } else {
+          final amountRegex = RegExp(r'\d+(\.\d+)?');
+          final match = amountRegex.firstMatch(_recognizedText);
+          if (match != null) {
+            _parsedAmount = double.tryParse(match.group(0)!) ?? 0.0;
+          }
+        }
       }
       _parsedCategory = _fallbackClassifyCategory(_recognizedText);
       _parsedDescription = _extractCleanDescription(_recognizedText);
@@ -338,7 +388,7 @@ Reglas para paymentMethod y creditCardId:
     if (RegExp(r'\b(gasolina|combustible|shell|puma|texaco|uno|bp|uber|indrive|didi|cabify|lyft|taxi|bus|autobús|transporte|metro|pasaje|peaje|estacionamiento|parqueo|vuelo|avión|boleto|mecánico|llantas|aceite|carro|vehículo)\b').hasMatch(lower)) {
       return 'transport';
     }
-    if (RegExp(r'\b(luz|electricidad|eegsa|deocsa|energuate|agua|empagua|internet|tigo|claro|movistar|teléfono|celular|saldo|recarga|gas propano|basura|servicio|factura|recibo)\b').hasMatch(lower)) {
+    if (RegExp(r'\b(luz|electricidad|eegsa|deocsa|energuate|agua|empagua|internet|tigo|claro|movistar|teléfono|celular|saldo|recarga|gas|tambo|cilindro|propano|butano|estufa|cocina|basura|servicio|factura|recibo)\b').hasMatch(lower)) {
       return 'bills';
     }
     if (RegExp(r'\b(ropa|camisa|pantalón|zapatos|tenis|zapatillas|vestido|chaqueta|zara|h&m|bershka|nike|adidas|compra|compras|mall|tienda|amazon|electrónica|computadora|audífonos|cable|cargador|regalo)\b').hasMatch(lower)) {
@@ -350,7 +400,7 @@ Reglas para paymentMethod y creditCardId:
     if (RegExp(r'\b(medicina|pastillas|farmacia|galeno|cruz verde|similares|batres|meykos|doctor|médico|hospital|clínica|dentista|odontólogo|examen|salud|terapia|psicólogo|gimnasio|gym|smart fit)\b').hasMatch(lower)) {
       return 'health';
     }
-    if (RegExp(r'\b(alquiler|renta|hipoteca|casa|departamento|mantenimiento|mueble|muebles|cama|mesa|silla|reparación|plomero|electricista|pintura|ferretería|cemaco|novex|limpieza)\b').hasMatch(lower)) {
+    if (RegExp(r'\b(alquiler|renta|hipoteca|casa|departamento|hogar|doméstico|mantenimiento|mueble|muebles|cama|mesa|silla|reparación|plomero|electricista|pintura|ferretería|cemaco|novex|limpieza)\b').hasMatch(lower)) {
       return 'home';
     }
     if (RegExp(r'\b(universidad|colegio|escuela|colegiatura|matrícula|curso|udemy|coursera|platzi|clase|clases|libro|libros|cuaderno|papelería|útiles|educación)\b').hasMatch(lower)) {

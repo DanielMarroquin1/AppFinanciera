@@ -25,6 +25,8 @@ import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/notification_provider.dart';
 import '../widgets/modals/notifications_modal.dart';
+import '../widgets/modals/app_tutorial_modal.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -57,6 +59,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
   bool _profileChecked = false;
   bool _tipChecked = false;
   bool _streakChecked = false;
+  bool _tutorialChecked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +121,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.mounted) {
           CompleteProfileModal.show(context);
+        }
+      });
+    }
+
+    if (user != null && !_tutorialChecked) {
+      _tutorialChecked = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final prefs = await SharedPreferences.getInstance();
+        final hasSeen = prefs.getBool('has_seen_app_tutorial') ?? false;
+        if (!hasSeen && context.mounted) {
+          AppTutorialModal.show(context);
         }
       });
     }

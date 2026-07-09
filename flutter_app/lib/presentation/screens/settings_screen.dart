@@ -12,6 +12,7 @@ import '../widgets/modals/complete_profile_modal.dart';
 import '../../core/utils/localization.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/services/biometric_service.dart';
+import '../widgets/modals/app_tutorial_modal.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -289,7 +290,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _buildSettingItem(isDark, icon: LucideIcons.lock, iconBg: isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7), iconColor: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A), title: 'Cambiar Contraseña', subtitle: 'Última actualización hace 3 meses', onTap: () => _showChangePasswordModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.key, iconBg: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFEE2E2), iconColor: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), title: 'Autenticación de Dos Factores', subtitle: 'Protege tu cuenta', onTap: () => _showTwoFactorModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.fingerprint, iconBg: isDark ? const Color(0xFF0284C7).withValues(alpha: 0.3) : const Color(0xFFE0F2FE), iconColor: const Color(0xFF38BDF8), title: 'Huella Digital / Face ID', subtitle: 'Acceso rápido biométrico activado', onTap: () => _showBiometricTestModal(context, isDark)),
-                _buildSettingItem(isDark, icon: LucideIcons.timer, iconBg: isDark ? const Color(0xFF312E81).withValues(alpha: 0.5) : const Color(0xFFE0E7FF), iconColor: const Color(0xFF818CF8), title: 'Cierre Automático (1 min)', subtitle: 'Modo de seguridad bancaria activo', onTap: () => _showTimeoutInfoModal(context, isDark)),
+                _buildSettingItem(isDark, icon: LucideIcons.timer, iconBg: isDark ? const Color(0xFF312E81).withValues(alpha: 0.5) : const Color(0xFFE0E7FF), iconColor: const Color(0xFF818CF8), title: 'Cierre Automático (1 min)', subtitle: 'Protección patrimonial y privacidad activa', onTap: () => _showTimeoutInfoModal(context, isDark)),
               ],
             ),
             const SizedBox(height: 24),
@@ -341,6 +342,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _buildSettingItem(isDark, icon: LucideIcons.cloud, iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE), iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), title: 'Sincronización en la Nube', subtitle: 'Premium', badge: 'Premium', badgeColor: Colors.orange, onTap: () => _showCloudSyncModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.save, iconBg: isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF), iconColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), title: 'Respaldo Local', subtitle: 'Último respaldo: Hoy', onTap: () => _showLocalBackupModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.creditCard, iconBg: isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7), iconColor: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A), title: 'Exportar Datos', subtitle: 'Descargar en formato CSV', onTap: () => _showExportDataModal(context, isDark)),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            _buildSection(
+              isDark,
+              title: 'Ayuda y Tutoriales',
+              items: [
+                _buildSettingItem(
+                  isDark,
+                  icon: LucideIcons.compass,
+                  iconBg: isDark ? const Color(0xFF0284C7).withValues(alpha: 0.3) : const Color(0xFFE0F2FE),
+                  iconColor: const Color(0xFF38BDF8),
+                  title: 'Recorrido por la Aplicación',
+                  subtitle: 'Guía rápida de finanzas e IA para nuevos usuarios',
+                  onTap: () => AppTutorialModal.show(context),
+                ),
               ],
             ),
             const SizedBox(height: 24),

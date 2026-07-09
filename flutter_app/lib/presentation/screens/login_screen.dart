@@ -73,9 +73,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('¡Bienvenido al Centro de Control Financiero!', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white)),
+                  const Text('¡Bienvenido a Tu Ecosistema Financiero!', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white)),
                   const SizedBox(height: 2),
-                  Text('Sesión bancaria segura iniciada. Cierre automático activo tras 1 min de inactividad.', style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.9), height: 1.3)),
+                  Text('Sesión protegida iniciada. Cierre automático activo tras 1 min de inactividad.', style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.9), height: 1.3)),
                 ],
               ),
             ),
@@ -112,7 +112,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } on firebase_auth.FirebaseAuthException catch (e) {
       if (!mounted) return;
       String title = 'Error de Autenticación';
-      String message = e.message ?? 'Ocurrió un error inesperado en el servidor bancario.';
+      String message = e.message ?? 'Ocurrió un error inesperado en el servidor.';
 
       if (e.code == 'email-not-verified' || e.code == 'email-not-verified-registered') {
         title = 'Verificación Requerida';
@@ -184,7 +184,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('🏦 SEGURIDAD BIOMÉTRICA VIP', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: Color(0xFF38BDF8))),
+                    const Text('🔐 AUTENTICACIÓN BIOMÉTRICA SEGURA', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: Color(0xFF38BDF8))),
                     const SizedBox(height: 24),
                     TweenAnimationBuilder<double>(
                       tween: Tween(begin: 0.9, end: 1.1),
@@ -302,7 +302,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       children: [
                         Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle)),
                         const SizedBox(width: 8),
-                        Text('SISTEMA BANCARIO VIP • SSL 256-BIT', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.0, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7))),
+                        Text('INTELIGENCIA FINANCIERA • SSL 256-BIT', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.0, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7))),
                       ],
                     ),
                   ),
@@ -324,12 +324,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ],
                     ),
                     child: const Center(
-                      child: Icon(LucideIcons.landmark, color: Colors.white, size: 40),
+                      child: Icon(LucideIcons.wallet, color: Colors.white, size: 40),
                     ),
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    isLogin ? 'Acceso Bancario VIP' : 'Nueva Cuenta Patrimonial',
+                    isLogin ? 'Finanzas Personales Premium' : 'Comienza Tu Futuro Financiero',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 28,
@@ -340,7 +340,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    isLogin ? 'Protección biométrica y cierre automático tras 1 min' : 'Únete a la plataforma de gestión inteligente y segura',
+                    isLogin ? 'Protección biométrica y gestión inteligente de tu dinero' : 'Únete a la plataforma de control de gastos y ahorro inteligente',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: isDark ? Colors.grey[400] : Colors.grey[600],
@@ -458,7 +458,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          hasSavedBiometrics ? 'Huella / Face ID VIP' : 'Activar Huella / Face ID',
+                                          hasSavedBiometrics ? 'Huella / Face ID' : 'Activar Huella / Face ID',
                                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: isDark ? Colors.white : const Color(0xFF0F172A)),
                                         ),
                                         const SizedBox(height: 2),
@@ -496,7 +496,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           keyboardType: TextInputType.emailAddress,
                           style: TextStyle(color: isDark ? Colors.white : Colors.black87),
                           decoration: InputDecoration(
-                            hintText: 'ej. usuario@bancovip.com',
+                            hintText: 'ej. usuario@finanzas.com',
                             hintStyle: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 14),
                             prefixIcon: Icon(LucideIcons.mail, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7), size: 20),
                             filled: true,
@@ -589,7 +589,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         // Purposes (Solo registro)
                         if (!isLogin) ...[
                           const SizedBox(height: 20),
-                          Text('¿Cuál es tu objetivo financiero VIP?', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, fontWeight: FontWeight.w700)),
+                          Text('¿Cuál es tu principal meta financiera?', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, fontWeight: FontWeight.w700)),
                           const SizedBox(height: 10),
                           ...purposes.map((p) {
                             final isSelected = purpose == p['value'];
@@ -648,7 +648,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         style: TextStyle(color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7), fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
                                         recognizer: TapGestureRecognizer()..onTap = () => PrivacyPolicyModal.show(context),
                                       ),
-                                      const TextSpan(text: ' y Términos Bancarios.'),
+                                      const TextSpan(text: ' y Términos de Uso.'),
                                     ],
                                   ),
                                 ),
@@ -697,7 +697,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             Icon(isLogin ? LucideIcons.shieldCheck : LucideIcons.userPlus, color: isDisabled ? Colors.grey[500] : Colors.white, size: 20),
                                             const SizedBox(width: 10),
                                             Text(
-                                              isLogin ? 'Ingresar a mi Cuenta VIP' : 'Crear Cuenta Patrimonial',
+                                              isLogin ? 'Ingresar a mi Cuenta' : 'Crear Cuenta Financiera',
                                               style: TextStyle(
                                                 color: isDisabled ? Colors.grey[500] : Colors.white, 
                                                 fontSize: 15, 
@@ -762,7 +762,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '🔒 Finanzas App • Grado Bancario Internacional 2026',
+                    '🔒 Finanzas App • Gestión Inteligente de Presupuesto y Ahorro',
                     style: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 10),
                   ),
                 ],

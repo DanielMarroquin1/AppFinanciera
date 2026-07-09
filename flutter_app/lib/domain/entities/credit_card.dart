@@ -24,17 +24,41 @@ class CreditCard {
     required this.createdAt,
   });
 
+  static double _parseDouble(dynamic val) {
+    if (val == null) return 0.0;
+    if (val is num) return val.toDouble();
+    if (val is String) return double.tryParse(val) ?? 0.0;
+    return 0.0;
+  }
+
+  static int _parseInt(dynamic val) {
+    if (val == null) return 1;
+    if (val is int) return val;
+    if (val is num) return val.toInt();
+    if (val is String) return int.tryParse(val) ?? 1;
+    return 1;
+  }
+
+  static Color _parseColor(dynamic val) {
+    if (val is int) return Color(val);
+    if (val is String) {
+      final intVal = int.tryParse(val);
+      if (intVal != null) return Color(intVal);
+    }
+    return const Color(0xFF1E3A8A);
+  }
+
   factory CreditCard.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+    final data = (doc.data() as Map<String, dynamic>?) ?? {};
     return CreditCard(
       id: doc.id,
-      name: data['name'] ?? '',
-      limit: (data['limit'] ?? 0.0).toDouble(),
-      currentBalance: (data['currentBalance'] ?? 0.0).toDouble(),
-      cutOffDay: data['cutOffDay'] ?? 1,
-      paymentDay: data['paymentDay'] ?? 1,
-      network: data['network'] ?? 'Visa',
-      color: Color(data['color'] ?? 0xFF1E3A8A),
+      name: (data['name'] ?? '').toString(),
+      limit: _parseDouble(data['limit']),
+      currentBalance: _parseDouble(data['currentBalance']),
+      cutOffDay: _parseInt(data['cutOffDay']),
+      paymentDay: _parseInt(data['paymentDay']),
+      network: (data['network'] ?? 'Visa').toString(),
+      color: _parseColor(data['color']),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }

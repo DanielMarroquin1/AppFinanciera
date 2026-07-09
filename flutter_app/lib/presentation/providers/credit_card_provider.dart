@@ -12,9 +12,12 @@ final creditCardsProvider = StreamProvider<List<CreditCard>>((ref) {
       .collection('users')
       .doc(user.uid)
       .collection('credit_cards')
-      .orderBy('createdAt', descending: true)
       .snapshots()
-      .map((snapshot) => snapshot.docs.map((doc) => CreditCard.fromFirestore(doc)).toList());
+      .map((snapshot) {
+        final cards = snapshot.docs.map((doc) => CreditCard.fromFirestore(doc)).toList();
+        cards.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        return cards;
+      });
 });
 
 final computedCreditCardsProvider = Provider<AsyncValue<List<CreditCard>>>((ref) {

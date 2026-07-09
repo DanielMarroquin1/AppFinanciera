@@ -115,16 +115,19 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
             ),
           ),
           
-          // Filter Tabs
-          Padding(
+          // Filter Tabs (Scrollable for financial categories)
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             child: Row(
               children: [
                 _buildFilterTab(isDark, 0, '🔔 Todas'),
                 const SizedBox(width: 8),
-                _buildFilterTab(isDark, 1, '⚠️ Alertas'),
+                _buildFilterTab(isDark, 1, '💳 Deudas Cobradas'),
                 const SizedBox(width: 8),
-                _buildFilterTab(isDark, 2, '🔥 Racha & AI'),
+                _buildFilterTab(isDark, 2, '💰 Ingresos'),
+                const SizedBox(width: 8),
+                _buildFilterTab(isDark, 3, '🔄 Gastos Fijos'),
               ],
             ),
           ),
@@ -135,8 +138,39 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
             child: notificationsAsync.when(
               data: (notifications) {
                 final filtered = notifications.where((n) {
-                  if (_selectedFilter == 1) return n.category == 'debt' || n.category == 'alert' || n.category == 'credit_card' || n.title.toLowerCase().contains('sobregiro');
-                  if (_selectedFilter == 2) return n.category == 'streak' || n.category == 'ai' || n.title.toLowerCase().contains('racha');
+                  final titleLower = n.title.toLowerCase();
+                  final bodyLower = n.body.toLowerCase();
+                  if (_selectedFilter == 1) {
+                    return n.category == 'debt' ||
+                        n.category == 'loan' ||
+                        n.category == 'credit_card' ||
+                        titleLower.contains('deuda') ||
+                        titleLower.contains('préstamo') ||
+                        titleLower.contains('pago automático') ||
+                        bodyLower.contains('deuda') ||
+                        bodyLower.contains('cuota');
+                  }
+                  if (_selectedFilter == 2) {
+                    return n.type == 'income' ||
+                        n.category == 'salary' ||
+                        n.category == 'freelance' ||
+                        n.category == 'bonus' ||
+                        n.category == 'investment' ||
+                        n.category == 'gift' ||
+                        titleLower.contains('ingreso') ||
+                        bodyLower.contains('ingreso');
+                  }
+                  if (_selectedFilter == 3) {
+                    return n.type == 'expense' && (
+                        n.category == 'recurring' ||
+                        n.category == 'bills' ||
+                        titleLower.contains('cobro automático') ||
+                        titleLower.contains('gasto fijo') ||
+                        titleLower.contains('suscripción') ||
+                        bodyLower.contains('cobro automático') ||
+                        bodyLower.contains('gasto fijo')
+                    );
+                  }
                   return true;
                 }).toList();
 
@@ -302,26 +336,24 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
 
   Widget _buildFilterTab(bool isDark, int index, String label) {
     final isSelected = _selectedFilter == index;
-    return Expanded(
-      child: InkWell(
-        onTap: () => setState(() => _selectedFilter = index),
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            gradient: isSelected ? const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)]) : null,
-            color: isSelected ? null : (isDark ? const Color(0xFF111827) : const Color(0xFFF1F5F9)),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: isSelected ? const Color(0xFF6366F1) : (isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0))),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? Colors.white : (isDark ? Colors.grey[300] : Colors.grey[700]),
-              fontSize: 12,
-              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-            ),
+    return InkWell(
+      onTap: () => setState(() => _selectedFilter = index),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          gradient: isSelected ? const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)]) : null,
+          color: isSelected ? null : (isDark ? const Color(0xFF111827) : const Color(0xFFF1F5F9)),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isSelected ? const Color(0xFF6366F1) : (isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0))),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : (isDark ? Colors.grey[300] : Colors.grey[700]),
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
           ),
         ),
       ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/auth_provider.dart';
+import '../premium_modal.dart';
 
 class AppTutorialModal extends ConsumerStatefulWidget {
   const AppTutorialModal({super.key});
@@ -37,9 +38,10 @@ class _AppTutorialModalState extends ConsumerState<AppTutorialModal> {
       'icon': LucideIcons.mic,
       'color': Color(0xFF10B981),
       'title': '2. Registro por Voz Inteligente con IA',
-      'subtitle': 'Olvídate de escribir manualmente',
+      'subtitle': '👑 Exclusivo con el Plan Premium • Cero digitación',
+      'isPremiumFeature': true,
       'description':
-          'Toca el micrófono y habla naturalmente: "Gasté 45 quetzales en Burger King con tarjeta" o "Compré gas por 125". Nuestra IA reconoce el monto, comercio y categoría al instante.',
+          'Toca el micrófono y habla naturalmente: "Gasté 45 quetzales en Burger King con tarjeta" o "Compré gas por 125". Nuestra IA procesa y registra todo en segundos. (Exclusivo para usuarios con Plan Premium)',
     },
     {
       'icon': LucideIcons.creditCard,
@@ -51,11 +53,20 @@ class _AppTutorialModalState extends ConsumerState<AppTutorialModal> {
     },
     {
       'icon': LucideIcons.shieldCheck,
-      'color': Color(0xFFF59E0B),
+      'color': Color(0xFF3B82F6),
       'title': '4. Seguridad y Autenticación Biométrica',
       'subtitle': 'Tu patrimonio siempre protegido',
       'description':
           'Entra al instante con tu Huella Digital o Face ID. Además, si dejas la aplicación inactiva por 1 minuto, se bloqueará automáticamente para proteger tus datos.',
+    },
+    {
+      'icon': LucideIcons.crown,
+      'color': Color(0xFFF59E0B),
+      'title': '5. Desbloquea el Poder Total con Premium 👑',
+      'subtitle': 'Potencia tu control financiero al máximo nivel',
+      'isPremiumUpsell': true,
+      'description':
+          'Obtén Registro por Voz Ilimitado con IA, sincronización multi-dispositivo en la nube, reportes exportables en PDF/CSV y personalización PRO de paletas de colores.',
     },
   ];
 
@@ -189,11 +200,37 @@ class _AppTutorialModalState extends ConsumerState<AppTutorialModal> {
                       ),
                       const SizedBox(height: 28),
 
+                      // Premium Feature Badge (For step 2)
+                      if (step['isPremiumFeature'] == true) ...[
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.35), blurRadius: 8),
+                            ],
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(LucideIcons.crown, size: 13, color: Colors.white),
+                              SizedBox(width: 5),
+                              Text(
+                                'FUNCIÓN EXCLUSIVA PLAN PREMIUM',
+                                style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.w900, letterSpacing: 0.6),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+
                       Text(
                         step['title'],
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: 21,
                           fontWeight: FontWeight.w900,
                           color: isDark ? Colors.white : const Color(0xFF0F172A),
                           letterSpacing: -0.4,
@@ -204,21 +241,42 @@ class _AppTutorialModalState extends ConsumerState<AppTutorialModal> {
                         step['subtitle'],
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 13.5,
                           fontWeight: FontWeight.w700,
                           color: stepColor,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       Text(
                         step['description'],
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 14.5,
+                          fontSize: 14,
                           height: 1.45,
                           color: isDark ? Colors.grey[300] : Colors.grey[700],
                         ),
                       ),
+
+                      // Premium Upsell CTA Button inside slide 5
+                      if (step['isPremiumUpsell'] == true) ...[
+                        const SizedBox(height: 18),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            PremiumModal.show(context);
+                          },
+                          icon: const Icon(LucideIcons.crown, color: Colors.white, size: 18),
+                          label: const Text(
+                            'Ver Planes y Suscribirme a Premium',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13.5),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFD97706),
+                            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            elevation: 6,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 );

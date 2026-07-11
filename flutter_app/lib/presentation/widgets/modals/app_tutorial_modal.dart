@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/auth_provider.dart';
-import '../premium_modal.dart';
+import 'premium_modal.dart';
 
 class AppTutorialModal extends ConsumerStatefulWidget {
   const AppTutorialModal({super.key});

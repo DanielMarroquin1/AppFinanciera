@@ -678,14 +678,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: isDark ? const Color(0xFF14532D).withValues(alpha: 0.3) : const Color(0xFFF0FDF4),
-                          border: Border.all(color: isDark ? const Color(0xFF166534) : const Color(0xFFBBF7D0), width: 2),
+                          border: Border.all(color: isDark ? const Color(0xFF166534) : const Color(0xFFBBF7D0), width: 1.5),
                           borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: isDark ? Colors.transparent : const Color(0xFF16A34A).withValues(alpha: 0.08),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
                         child: Column(
                           children: [
                             Icon(LucideIcons.trendingUp, color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A), size: 22),
                             const SizedBox(height: 6),
-                            Text('Ingresos', style: TextStyle(color: isDark ? const Color(0xFFBBF7D0) : const Color(0xFF14532D), fontSize: 10, fontWeight: FontWeight.w500)),
+                            Text('Ingresos', style: TextStyle(color: isDark ? const Color(0xFFBBF7D0) : const Color(0xFF14532D), fontSize: 10, fontWeight: FontWeight.w600)),
                           ],
                         ),
                       ),
@@ -700,14 +707,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.3) : const Color(0xFFFEF2F2),
-                          border: Border.all(color: isDark ? const Color(0xFF991B1B) : const Color(0xFFFECACA), width: 2),
+                          border: Border.all(color: isDark ? const Color(0xFF991B1B) : const Color(0xFFFECACA), width: 1.5),
                           borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: isDark ? Colors.transparent : const Color(0xFFDC2626).withValues(alpha: 0.08),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
                         child: Column(
                           children: [
                             Icon(LucideIcons.trendingDown, color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), size: 22),
                             const SizedBox(height: 6),
-                            Text('Gastos', style: TextStyle(color: isDark ? const Color(0xFFFECACA) : const Color(0xFF7F1D1D), fontSize: 10, fontWeight: FontWeight.w500)),
+                            Text('Gastos', style: TextStyle(color: isDark ? const Color(0xFFFECACA) : const Color(0xFF7F1D1D), fontSize: 10, fontWeight: FontWeight.w600)),
                           ],
                         ),
                       ),
@@ -722,14 +736,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: isDark ? const Color(0xFF1E3A5F).withValues(alpha: 0.3) : const Color(0xFFEFF6FF),
-                          border: Border.all(color: isDark ? const Color(0xFF1D4ED8) : const Color(0xFFBFDBFE), width: 2),
+                          border: Border.all(color: isDark ? const Color(0xFF1D4ED8) : const Color(0xFFBFDBFE), width: 1.5),
                           borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: isDark ? Colors.transparent : const Color(0xFF2563EB).withValues(alpha: 0.08),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
                         child: Column(
                           children: [
                             Icon(LucideIcons.wallet, color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), size: 22),
                             const SizedBox(height: 6),
-                            Text('Deudas', style: TextStyle(color: isDark ? const Color(0xFFBFDBFE) : const Color(0xFF1E3A8A), fontSize: 10, fontWeight: FontWeight.w500)),
+                            Text('Deudas', style: TextStyle(color: isDark ? const Color(0xFFBFDBFE) : const Color(0xFF1E3A8A), fontSize: 10, fontWeight: FontWeight.w600)),
                           ],
                         ),
                       ),
@@ -749,14 +770,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: isDark ? const Color(0xFF92400E).withValues(alpha: 0.3) : const Color(0xFFFFFBEB),
-                                border: Border.all(color: isDark ? const Color(0xFFD97706) : const Color(0xFFFDE68A), width: 2),
+                                border: Border.all(color: isDark ? const Color(0xFFD97706) : const Color(0xFFFDE68A), width: 1.5),
                                 borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: isDark ? Colors.transparent : const Color(0xFFD97706).withValues(alpha: 0.08),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
                               ),
                               child: Column(
                                 children: [
                                   Icon(LucideIcons.creditCard, color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), size: 22),
                                   const SizedBox(height: 6),
-                                  Text('Tarjetas', style: TextStyle(color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E), fontSize: 10, fontWeight: FontWeight.w500)),
+                                  Text('Tarjetas', style: TextStyle(color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E), fontSize: 10, fontWeight: FontWeight.w600)),
                                 ],
                               ),
                             ),

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Light Theme Colors
-  static const Color backgroundLight = Color(0xFFF8FAFC);
+  // Light Theme Colors (Executive Luxury Modern Light)
+  static const Color backgroundLight = Color(0xFFF1F5F9);
   static const Color foregroundLight = Color(0xFF0F172A);
-  static const Color primaryLight = Color(0xFF312E81);
-  static const Color primaryForegroundLight = Color(0xFFF8FAFC);
+  static const Color primaryLight = Color(0xFF4F46E5);
+  static const Color primaryForegroundLight = Color(0xFFFFFFFF);
   static const Color cardLight = Color(0xFFFFFFFF);
   static const Color cardForegroundLight = Color(0xFF0F172A);
-  static const Color accentLight = Color(0xFFECFDF5);
-  static const Color accentForegroundLight = Color(0xFF065F46);
+  static const Color accentLight = Color(0xFFEEF2FF);
+  static const Color accentForegroundLight = Color(0xFF3730A3);
 
   // Dark Theme Colors
   static const Color backgroundDark = Color(0xFF0C0A1D);

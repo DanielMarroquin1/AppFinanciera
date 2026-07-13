@@ -86,22 +86,36 @@ class AppShell extends ConsumerWidget {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        elevation: 8,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(context, 'Inicio', LucideIcons.home, currentIndex == 0, '/dashboard', palette.colors[0]),
-              _buildNavItem(context, 'Gastos', LucideIcons.trendingUp, currentIndex == 1, '/expenses', palette.colors[0]),
-              const SizedBox(width: 48), // Space for FAB
-              _buildNavItem(context, 'Ahorros', LucideIcons.piggyBank, currentIndex == 3, '/savings', palette.colors[0]),
-              _buildNavItem(context, 'Ajustes', LucideIcons.settings, currentIndex == 4, '/settings', palette.colors[0]),
-            ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : AppColors.cardLight,
+          boxShadow: [
+            BoxShadow(
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.3)
+                  : const Color(0xFF0F172A).withValues(alpha: 0.06),
+              blurRadius: 16,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: BottomAppBar(
+          color: isDark ? AppColors.cardDark : AppColors.cardLight,
+          elevation: 0,
+          shape: const CircularNotchedRectangle(),
+          notchMargin: 8,
+          child: SizedBox(
+            height: 60,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(context, 'Inicio', LucideIcons.home, currentIndex == 0, '/dashboard', palette.colors[0]),
+                _buildNavItem(context, 'Gastos', LucideIcons.trendingUp, currentIndex == 1, '/expenses', palette.colors[0]),
+                const SizedBox(width: 48), // Space for FAB
+                _buildNavItem(context, 'Ahorros', LucideIcons.piggyBank, currentIndex == 3, '/savings', palette.colors[0]),
+                _buildNavItem(context, 'Ajustes', LucideIcons.settings, currentIndex == 4, '/settings', palette.colors[0]),
+              ],
+            ),
           ),
         ),
       ),
@@ -112,7 +126,7 @@ class AppShell extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final color = isSelected 
         ? activeColor
-        : (isDark ? Colors.grey[500] : Colors.grey[400]);
+        : (isDark ? Colors.grey[500] : const Color(0xFF64748B));
 
     return InkWell(
       onTap: () {
@@ -132,7 +146,7 @@ class AppShell extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 10,
                 color: color,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
           ],

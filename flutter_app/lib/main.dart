@@ -32,12 +32,19 @@ void main() async {
   );
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   final bool hasSeenOnboarding;
   const MyApp({super.key, required this.hasSeenOnboarding});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  late final _router = AppRouter.createRouter(widget.hasSeenOnboarding);
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeProvider);
 
     return MaterialApp.router(
@@ -46,7 +53,7 @@ class MyApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      routerConfig: AppRouter.createRouter(hasSeenOnboarding),
+      routerConfig: _router,
       builder: (context, child) {
         return SessionTimeoutManager(child: child!);
       },

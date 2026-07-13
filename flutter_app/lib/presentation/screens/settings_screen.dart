@@ -461,9 +461,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         Container(
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1F2937) : Colors.white,
-            border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+            border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.25)
+                    : const Color(0xFF0F172A).withValues(alpha: 0.06),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             children: items.asMap().entries.map((entry) {
@@ -473,7 +481,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 return Column(
                   children: [
                     child,
-                    Divider(height: 1, color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                    Divider(height: 1, color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
                   ],
                 );
               }

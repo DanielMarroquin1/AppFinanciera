@@ -48,19 +48,46 @@ class CreditCard {
     return const Color(0xFF1E3A8A);
   }
 
+  static DateTime _parseDate(dynamic val) {
+    if (val == null) return DateTime.now();
+    if (val is Timestamp) return val.toDate();
+    if (val is DateTime) return val;
+    if (val is String) {
+      return DateTime.tryParse(val) ?? DateTime.now();
+    }
+    if (val is int) {
+      return DateTime.fromMillisecondsSinceEpoch(val);
+    }
+    return DateTime.now();
+  }
+
   factory CreditCard.fromFirestore(DocumentSnapshot doc) {
-    final data = (doc.data() as Map<String, dynamic>?) ?? {};
-    return CreditCard(
-      id: doc.id,
-      name: (data['name'] ?? '').toString(),
-      limit: _parseDouble(data['limit']),
-      currentBalance: _parseDouble(data['currentBalance']),
-      cutOffDay: _parseInt(data['cutOffDay']),
-      paymentDay: _parseInt(data['paymentDay']),
-      network: (data['network'] ?? 'Visa').toString(),
-      color: _parseColor(data['color']),
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-    );
+    try {
+      final data = (doc.data() as Map<String, dynamic>?) ?? {};
+      return CreditCard(
+        id: doc.id,
+        name: (data['name'] ?? 'Tarjeta').toString(),
+        limit: _parseDouble(data['limit']),
+        currentBalance: _parseDouble(data['currentBalance']),
+        cutOffDay: _parseInt(data['cutOffDay']),
+        paymentDay: _parseInt(data['paymentDay']),
+        network: (data['network'] ?? 'Visa').toString(),
+        color: _parseColor(data['color']),
+        createdAt: _parseDate(data['createdAt']),
+      );
+    } catch (e) {
+      return CreditCard(
+        id: doc.id,
+        name: 'Tarjeta',
+        limit: 0,
+        currentBalance: 0,
+        cutOffDay: 1,
+        paymentDay: 1,
+        network: 'Visa',
+        color: const Color(0xFF1E3A8A),
+        createdAt: DateTime.now(),
+      );
+    }
   }
 
   Map<String, dynamic> toFirestore() {

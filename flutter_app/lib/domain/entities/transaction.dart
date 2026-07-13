@@ -29,22 +29,55 @@ class TransactionModel {
     this.creditCardId,
   });
 
+  static DateTime _parseDate(dynamic val) {
+    if (val == null) return DateTime.now();
+    if (val is Timestamp) return val.toDate();
+    if (val is DateTime) return val;
+    if (val is String) {
+      return DateTime.tryParse(val) ?? DateTime.now();
+    }
+    if (val is int) {
+      return DateTime.fromMillisecondsSinceEpoch(val);
+    }
+    return DateTime.now();
+  }
+
+  static double _parseDouble(dynamic val) {
+    if (val == null) return 0.0;
+    if (val is num) return val.toDouble();
+    if (val is String) return double.tryParse(val) ?? 0.0;
+    return 0.0;
+  }
+
   factory TransactionModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    return TransactionModel(
-      id: doc.id,
-      userId: data['userId'] ?? '',
-      amount: (data['amount'] ?? 0).toDouble(),
-      type: data['type'] ?? 'expense',
-      category: data['category'] ?? 'other',
-      description: data['description'] ?? '',
-      date: data['date'] != null ? (data['date'] as Timestamp).toDate() : DateTime.now(),
-      isFixed: data['isFixed'] ?? false,
-      recurrenceType: data['recurrenceType'],
-      recurrenceDay: data['recurrenceDay'],
-      recurrenceDay2: data['recurrenceDay2'],
-      creditCardId: data['creditCardId'],
-    );
+    try {
+      final data = (doc.data() as Map<String, dynamic>?) ?? {};
+      return TransactionModel(
+        id: doc.id,
+        userId: (data['userId'] ?? '').toString(),
+        amount: _parseDouble(data['amount']),
+        type: (data['type'] ?? 'expense').toString(),
+        category: (data['category'] ?? 'other').toString(),
+        description: (data['description'] ?? '').toString(),
+        date: _parseDate(data['date']),
+        isFixed: data['isFixed'] == true,
+        recurrenceType: data['recurrenceType']?.toString(),
+        recurrenceDay: data['recurrenceDay'] is int ? data['recurrenceDay'] : int.tryParse('${data['recurrenceDay']}'),
+        recurrenceDay2: data['recurrenceDay2'] is int ? data['recurrenceDay2'] : int.tryParse('${data['recurrenceDay2']}'),
+        creditCardId: data['creditCardId']?.toString(),
+      );
+    } catch (e) {
+      return TransactionModel(
+        id: doc.id,
+        userId: '',
+        amount: 0.0,
+        type: 'expense',
+        category: 'other',
+        description: '',
+        date: DateTime.now(),
+        isFixed: false,
+      );
+    }
   }
 
   Map<String, dynamic> toFirestore() {

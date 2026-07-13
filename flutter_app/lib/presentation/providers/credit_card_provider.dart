@@ -14,7 +14,12 @@ final creditCardsProvider = StreamProvider<List<CreditCard>>((ref) {
       .collection('credit_cards')
       .snapshots()
       .map((snapshot) {
-        final cards = snapshot.docs.map((doc) => CreditCard.fromFirestore(doc)).toList();
+        final cards = <CreditCard>[];
+        for (final doc in snapshot.docs) {
+          try {
+            cards.add(CreditCard.fromFirestore(doc));
+          } catch (_) {}
+        }
         cards.sort((a, b) => b.createdAt.compareTo(a.createdAt));
         return cards;
       });
@@ -24,9 +29,10 @@ final computedCreditCardsProvider = Provider<AsyncValue<List<CreditCard>>>((ref)
   final cardsAsync = ref.watch(creditCardsProvider);
   final txAsync = ref.watch(transactionsProvider);
 
-  if (cardsAsync.isLoading || txAsync.isLoading) return const AsyncValue.loading();
-  if (cardsAsync.hasError) return AsyncValue.error(cardsAsync.error!, cardsAsync.stackTrace!);
-  if (txAsync.hasError) return AsyncValue.error(txAsync.error!, txAsync.stackTrace!);
+  if (cardsAsync.isLoading) return const AsyncValue.loading();
+  if (cardsAsync.hasError && cardsAsync.value == null) {
+    return AsyncValue.error(cardsAsync.error!, cardsAsync.stackTrace!);
+  }
 
   final cards = cardsAsync.value ?? [];
   final txs = txAsync.value ?? [];

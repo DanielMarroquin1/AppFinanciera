@@ -80,6 +80,64 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
     return _allCategories.where((c) => c['id'] == 'specials').toList();
   }
 
+  void _showRewardActivatedDialog(BuildContext context, String name, String desc, String icon, bool isDark) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 76,
+                height: 76,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(child: Text(icon, style: const TextStyle(fontSize: 40))),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '¡RECOMPENSA ACTIVA!',
+                style: TextStyle(color: isDark ? const Color(0xFF34D399) : const Color(0xFF059669), fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1.2),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                name,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                desc,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14, height: 1.4),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: const Text('Entendido • ¡Aprovechar Recompensa!', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -414,6 +472,16 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                         ),
                                       );
                                     }
+                                  } else if (category['id'] == 'specials') {
+                                    _showRewardActivatedDialog(
+                                      context,
+                                      item['name'] as String,
+                                      itemId == 'spec2'
+                                          ? '❄️ ESCUDO ACTIVO: Tu racha está automáticamente protegida si olvidas entrar por 1 día completo (48h de gracia en total).'
+                                          : (item['desc'] as String),
+                                      item['icon'] as String,
+                                      isDark,
+                                    );
                                   } else {
                                     if (context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
@@ -431,15 +499,26 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                 if (canAfford) {
                                   final success = await ref.read(authProvider.notifier).purchaseItem(item['cost'] as int, itemId);
                                   if (success && context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('🎉 ¡Canje exitoso! Desbloqueaste: ${item['name']}'),
-                                        backgroundColor: const Color(0xFF10B981),
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
                                     if (category['id'] == 'avatars') {
                                       await ref.read(authProvider.notifier).equipAvatar(itemId);
+                                    } else if (category['id'] == 'specials') {
+                                      _showRewardActivatedDialog(
+                                        context,
+                                        item['name'] as String,
+                                        itemId == 'spec2'
+                                            ? '❄️ ESCUDO ACTIVO: Tu racha está automáticamente protegida si olvidas entrar por 1 día completo (48h de gracia en total).'
+                                            : (item['desc'] as String),
+                                        item['icon'] as String,
+                                        isDark,
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('🎉 ¡Canje exitoso! Desbloqueaste: ${item['name']}'),
+                                          backgroundColor: const Color(0xFF10B981),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
                                     }
                                   }
                                 } else {

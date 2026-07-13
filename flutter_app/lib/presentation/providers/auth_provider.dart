@@ -134,8 +134,23 @@ class AuthNotifier extends Notifier<AuthState> {
         final todayDateOnly = DateTime(now.year, now.month, now.day);
         final dayDiff = todayDateOnly.difference(lastActiveDateOnly).inDays;
 
-        if (dayDiff > 1 && user.currentStreak > 0) {
-          // Streak broken
+        if (dayDiff == 2 && user.currentStreak > 0) {
+          final hasFreeze = user.unlockedItems.contains('spec2') || user.unlockedItems.contains('streak_freeze');
+          if (hasFreeze) {
+            final updatedUnlocked = List<String>.from(user.unlockedItems)
+              ..remove('spec2')
+              ..remove('streak_freeze');
+            final yDay = todayDateOnly.subtract(const Duration(days: 1));
+            final yesterdayStr = "${yDay.year}-${yDay.month.toString().padLeft(2, '0')}-${yDay.day.toString().padLeft(2, '0')}";
+            final updatedUser = user.copyWith(
+              unlockedItems: updatedUnlocked,
+              lastActiveDate: yesterdayStr,
+            );
+            await _repository.saveUser(updatedUser);
+            state = state.copyWith(user: updatedUser);
+            return;
+          }
+        } else if (dayDiff > 2 && user.currentStreak > 0) {
           final updatedUser = user.copyWith(currentStreak: 0);
           await _repository.saveUser(updatedUser);
           state = state.copyWith(user: updatedUser);
@@ -152,7 +167,6 @@ class AuthNotifier extends Notifier<AuthState> {
     final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
 
     if (user.lastActiveDate == todayStr) {
-      // Already did an action today
       return false;
     }
 
@@ -166,14 +180,12 @@ class AuthNotifier extends Notifier<AuthState> {
         final todayDateOnly = DateTime(now.year, now.month, now.day);
         final dayDiff = todayDateOnly.difference(lastActiveDateOnly).inDays;
 
-        if (dayDiff == 1) {
-          // Consecutive day
+        if (dayDiff == 1 || dayDiff == 2) {
           newStreak += 1;
-        } else if (dayDiff > 1) {
-          // Streak broken
+        } else if (dayDiff > 2) {
           newStreak = 1;
         } else {
-            return false;
+          return false;
         }
       } else {
         newStreak = 1;

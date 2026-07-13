@@ -270,16 +270,21 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                   style: TextStyle(
                     fontSize: 52,
                     fontWeight: FontWeight.w900,
-                    color: widget.isActiveToday
+                    color: widget.isActiveToday && widget.currentStreak > 0
                         ? (isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C))
                         : (isDark ? Colors.grey[400] : Colors.grey[600]),
                     height: 1.0,
                   ),
                 ),
                 Text(
-                  widget.currentStreak == 1 ? 'día de racha acumulada' : 'días de racha acumulada',
+                  widget.currentStreak == 0
+                      ? 'días de racha (Llama Apagada estilo Duolingo)'
+                      : widget.currentStreak == 1
+                          ? 'día de racha (¡1 día más para encender llama permanente!)'
+                          : 'días de racha acumulada',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: isDark ? Colors.grey[300] : Colors.grey[700],
                   ),
@@ -307,7 +312,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                '¡Excelente! Has encendido tu llama de hoy. Regresa mañana y registra un movimiento para no perder tu progreso.',
+                                '¡Excelente! Has encendido tu llama de hoy. Regresa mañana y registra un movimiento para mantener tu racha viva.',
                                 style: TextStyle(color: isDark ? Colors.orange[200] : Colors.orange[900], fontSize: 13, fontWeight: FontWeight.w500),
                               ),
                             ),
@@ -321,14 +326,16 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                                 const Icon(LucideIcons.info, color: Color(0xFFF59E0B), size: 18),
                                 const SizedBox(width: 8),
                                 Text(
-                                  '¿CÓMO ACTIVAR TU RACHA?',
+                                  widget.currentStreak == 0 ? 'REGLA ESTILO DUOLINGO' : '¿CÓMO ACTIVAR TU RACHA?',
                                   style: TextStyle(color: isDark ? Colors.amber[400] : Colors.amber[800], fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.5),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Para encender el fuego y no perder tu progreso, debes registrar al menos un nuevo gasto o ingreso en el día.',
+                              widget.currentStreak == 0
+                                  ? 'Cuando tu racha está en 0, la llama aparece fría en gris. Registra una transacción hoy y mañana seguidos para encender el fuego naranja de tu racha. ¡Además cuentas con 48h de gracia y puedes protegerla en la Tienda!'
+                                  : 'Para encender el fuego y no perder tu progreso, registra al menos un nuevo gasto o ingreso. Si olvidas un día, tu racha se congela por 24h extras (48h en total).',
                               style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, height: 1.4),
                             ),
                           ],

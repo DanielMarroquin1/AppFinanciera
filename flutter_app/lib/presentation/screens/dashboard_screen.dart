@@ -242,57 +242,85 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                           final now = DateTime.now();
                           final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
                           final isActiveToday = user?.lastActiveDate == todayStr;
+                          final currentStreak = user?.currentStreak ?? 0;
+                          
+                          bool isFrozenGrace = false;
+                          if (user?.lastActiveDate != null) {
+                            final lastDate = DateTime.tryParse(user!.lastActiveDate!);
+                            if (lastDate != null) {
+                              final dOnly = DateTime(lastDate.year, lastDate.month, lastDate.day);
+                              final tOnly = DateTime(now.year, now.month, now.day);
+                              isFrozenGrace = tOnly.difference(dOnly).inDays == 2 && currentStreak > 0;
+                            }
+                          }
+                          
+                          final isZeroStreak = currentStreak == 0;
                           
                           return Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            gradient: isActiveToday
-                                ? (isDark 
-                                    ? const LinearGradient(colors: [Color(0xFF7C2D12), Color(0xFF7F1D1D)]) 
-                                    : const LinearGradient(colors: [Color(0xFFFFF7ED), Color(0xFFFEF2F2)]))
-                                : (isDark
-                                    ? const LinearGradient(colors: [Color(0xFF374151), Color(0xFF1F2937)])
-                                    : const LinearGradient(colors: [Color(0xFFF3F4F6), Color(0xFFE5E7EB)])),
-                            border: Border.all(
-                              color: isActiveToday
-                                  ? (isDark ? const Color(0xFFC2410C) : const Color(0xFFFDBA74))
-                                  : (isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB)),
-                              width: 2,
+                            decoration: BoxDecoration(
+                              gradient: isFrozenGrace
+                                  ? (isDark
+                                      ? const LinearGradient(colors: [Color(0xFF0C4A6E), Color(0xFF075985)])
+                                      : const LinearGradient(colors: [Color(0xFFE0F2FE), Color(0xFFBAE6FD)]))
+                                  : isActiveToday && !isZeroStreak
+                                      ? (isDark 
+                                          ? const LinearGradient(colors: [Color(0xFF7C2D12), Color(0xFF7F1D1D)]) 
+                                          : const LinearGradient(colors: [Color(0xFFFFF7ED), Color(0xFFFEF2F2)]))
+                                      : (isDark
+                                          ? const LinearGradient(colors: [Color(0xFF374151), Color(0xFF1F2937)])
+                                          : const LinearGradient(colors: [Color(0xFFF3F4F6), Color(0xFFE5E7EB)])),
+                              border: Border.all(
+                                color: isFrozenGrace
+                                    ? const Color(0xFF0EA5E9)
+                                    : isActiveToday && !isZeroStreak
+                                        ? (isDark ? const Color(0xFFC2410C) : const Color(0xFFFDBA74))
+                                        : (isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB)),
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: (isActiveToday && !isZeroStreak) ? [
+                                BoxShadow(
+                                  color: const Color(0xFFF97316).withValues(alpha: 0.3 + (_fireAnimController.value * 0.2)),
+                                  blurRadius: 8 + (_fireAnimController.value * 8),
+                                  spreadRadius: _fireAnimController.value * 2,
+                                ),
+                              ] : isFrozenGrace ? [
+                                BoxShadow(
+                                  color: const Color(0xFF0EA5E9).withValues(alpha: 0.35),
+                                  blurRadius: 10,
+                                ),
+                              ] : [],
                             ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: isActiveToday ? [
-                              BoxShadow(
-                                color: const Color(0xFFF97316).withValues(alpha: 0.3 + (_fireAnimController.value * 0.2)),
-                                blurRadius: 8 + (_fireAnimController.value * 8),
-                                spreadRadius: _fireAnimController.value * 2,
-                              ),
-                            ] : [],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Transform.scale(
-                                scale: isActiveToday ? 1.0 + (_fireAnimController.value * 0.1) : 1.0,
-                                child: Icon(
-                                  LucideIcons.flame, 
-                                  color: isActiveToday
-                                      ? (isDark ? const Color(0xFFF97316) : const Color(0xFFEA580C))
-                                      : (isDark ? Colors.grey[500] : Colors.grey[400]),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Transform.scale(
+                                  scale: (isActiveToday && !isZeroStreak) ? 1.0 + (_fireAnimController.value * 0.1) : 1.0,
+                                  child: Icon(
+                                    isFrozenGrace ? LucideIcons.snowflake : LucideIcons.flame, 
+                                    color: isFrozenGrace
+                                        ? const Color(0xFF0EA5E9)
+                                        : (isActiveToday && !isZeroStreak)
+                                            ? (isDark ? const Color(0xFFF97316) : const Color(0xFFEA580C))
+                                            : (isDark ? Colors.grey[500] : Colors.grey[400]),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${user?.currentStreak ?? 0}',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: isActiveToday
-                                      ? (isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C))
-                                      : (isDark ? Colors.grey[400] : Colors.grey[600]),
-                                ),
-                              )
-                            ],
-                          ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$currentStreak',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: isFrozenGrace
+                                        ? const Color(0xFF0EA5E9)
+                                        : (isActiveToday && !isZeroStreak)
+                                            ? (isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C))
+                                            : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                                  ),
+                                )
+                              ],
+                            ),
                         );
                         },
                       ),

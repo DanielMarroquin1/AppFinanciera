@@ -28,7 +28,7 @@ class AppTheme {
         centerTitle: false,
         iconTheme: IconThemeData(color: AppColors.foregroundLight),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.cardLight,
         elevation: 1.5,
         shadowColor: const Color(0xFF0F172A).withValues(alpha: 0.07),
@@ -41,7 +41,7 @@ class AppTheme {
         color: Color(0xFFE2E8F0),
         thickness: 1,
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(28),

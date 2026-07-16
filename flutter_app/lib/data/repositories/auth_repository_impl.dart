@@ -42,6 +42,9 @@ class AuthRepositoryImpl implements AuthRepository {
                unlockedItems: List<String>.from(map['unlockedItems'] ?? []),
                currentAvatar: map['currentAvatar'],
                monthlyLimit: map['monthlyLimit'] != null ? (map['monthlyLimit'] as num).toDouble() : null,
+               isTwoFactorEnabled: map['isTwoFactorEnabled'] ?? false,
+               twoFactorMethod: map['twoFactorMethod'],
+               categoryBudgets: map['categoryBudgets'] != null ? Map<String, double>.from((map['categoryBudgets'] as Map).map((k, v) => MapEntry(k.toString(), (v as num).toDouble()))) : null,
              );
            }
          } catch (e) {
@@ -73,6 +76,9 @@ class AuthRepositoryImpl implements AuthRepository {
         'unlockedItems': user.unlockedItems,
         'currentAvatar': user.currentAvatar,
         'monthlyLimit': user.monthlyLimit,
+        'isTwoFactorEnabled': user.isTwoFactorEnabled,
+        'twoFactorMethod': user.twoFactorMethod,
+        if (user.categoryBudgets != null) 'categoryBudgets': user.categoryBudgets,
       };
       await _firestore.collection('users').doc(firebaseUser.uid).set(map, SetOptions(merge: true));
     }
@@ -134,24 +140,27 @@ class AuthRepositoryImpl implements AuthRepository {
           );
         }
 
-        final dynamic googleUser = await googleSignIn.signIn();
+        // google_sign_in v7 API: initialize first, then authenticate
+        await googleSignIn.initialize();
         
-        if (googleUser == null) {
-          // User cancelled the sign-in flow
+        try {
+          final dynamic googleUser = await googleSignIn.authenticate();
+          
+          // v7: authentication is a sync property with idToken
+          final dynamic googleAuth = googleUser.authentication;
+
+          final credential = firebase_auth.GoogleAuthProvider.credential(
+            idToken: googleAuth.idToken,
+          );
+
+          userCredential = await _firebaseAuth.signInWithCredential(credential);
+        } catch (e) {
+          // User cancelled or other error
           throw firebase_auth.FirebaseAuthException(
             code: 'sign-in-cancelled',
-            message: 'Inicio de sesión con Google cancelado.',
+            message: 'Inicio de sesión con Google cancelado o falló: $e',
           );
         }
-
-        final dynamic googleAuth = await googleUser.authentication;
-
-        final credential = firebase_auth.GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
-        );
-
-        userCredential = await _firebaseAuth.signInWithCredential(credential);
       }
 
       final firebaseUser = userCredential.user!;
@@ -199,6 +208,9 @@ class AuthRepositoryImpl implements AuthRepository {
         unlockedItems: List<String>.from(data['unlockedItems'] ?? []),
         currentAvatar: data['currentAvatar'],
         monthlyLimit: data['monthlyLimit'] != null ? (data['monthlyLimit'] as num).toDouble() : null,
+        isTwoFactorEnabled: data['isTwoFactorEnabled'] ?? false,
+        twoFactorMethod: data['twoFactorMethod'],
+        categoryBudgets: data['categoryBudgets'] != null ? Map<String, double>.from((data['categoryBudgets'] as Map).map((k, v) => MapEntry(k.toString(), (v as num).toDouble()))) : null,
       );
     } catch (e) {
       if (e is firebase_auth.FirebaseAuthException) rethrow;

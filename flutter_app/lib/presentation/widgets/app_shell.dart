@@ -8,7 +8,9 @@ import '../../presentation/widgets/modals/ai_chat_modal.dart';
 import '../../presentation/widgets/modals/add_saving_goal_modal.dart';
 import '../../presentation/widgets/rewards_shop_modal.dart';
 import '../../presentation/widgets/modals/notifications_modal.dart';
+import '../../presentation/widgets/modals/category_budget_modal.dart';
 import '../../presentation/providers/color_palette_provider.dart';
+import '../../core/utils/localization.dart';
 
 class AppShell extends ConsumerWidget {
   final Widget child;
@@ -28,6 +30,7 @@ class AppShell extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final palette = ref.watch(colorPaletteProvider);
     final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
+    final loc = ref.watch(localizationProvider);
     
     return Scaffold(
       backgroundColor: isDark 
@@ -59,6 +62,8 @@ class AppShell extends ConsumerWidget {
               );
             } else if (action == 'notifications') {
               NotificationsModal.show(context);
+            } else if (action == 'category-budget') {
+              CategoryBudgetModal.show(context);
             }
           }
         },
@@ -109,11 +114,11 @@ class AppShell extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(context, 'Inicio', LucideIcons.home, currentIndex == 0, '/dashboard', palette.colors[0]),
-                _buildNavItem(context, 'Gastos', LucideIcons.trendingUp, currentIndex == 1, '/expenses', palette.colors[0]),
+                _buildNavItem(context, loc.get('home'), LucideIcons.home, currentIndex == 0, '/dashboard', palette.colors[0]),
+                _buildNavItem(context, loc.get('expenses'), LucideIcons.trendingUp, currentIndex == 1, '/expenses', palette.colors[0]),
                 const SizedBox(width: 48), // Space for FAB
-                _buildNavItem(context, 'Ahorros', LucideIcons.piggyBank, currentIndex == 3, '/savings', palette.colors[0]),
-                _buildNavItem(context, 'Ajustes', LucideIcons.settings, currentIndex == 4, '/settings', palette.colors[0]),
+                _buildNavItem(context, loc.get('savings'), LucideIcons.piggyBank, currentIndex == 3, '/savings', palette.colors[0]),
+                _buildNavItem(context, loc.get('nav_settings'), LucideIcons.settings, currentIndex == 4, '/settings', palette.colors[0]),
               ],
             ),
           ),

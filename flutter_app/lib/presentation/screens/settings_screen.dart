@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../providers/theme_provider.dart';
 import '../providers/color_palette_provider.dart';
 import '../providers/auth_provider.dart';
@@ -763,16 +765,54 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Row(children: [Icon(LucideIcons.checkCircle, color: Colors.white), SizedBox(width: 12), Text('Contraseña actualizada correctamente')]),
-                        backgroundColor: const Color(0xFF16A34A),
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    );
+                  onPressed: () async {
+                    final currentPassword = currentPwdCtrl.text.trim();
+                    final newPassword = newPwdCtrl.text.trim();
+                    final confirmPassword = confirmPwdCtrl.text.trim();
+
+                    if (currentPassword.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Por favor, completa todos los campos'), backgroundColor: Colors.red),
+                      );
+                      return;
+                    }
+
+                    if (newPassword != confirmPassword) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('La nueva contraseña y su confirmación no coinciden'), backgroundColor: Colors.red),
+                      );
+                      return;
+                    }
+
+                    try {
+                      final user = FirebaseAuth.instance.currentUser;
+                      if (user != null && user.email != null) {
+                        final AuthCredential credential = EmailAuthProvider.credential(
+                          email: user.email!,
+                          password: currentPassword,
+                        );
+                        await user.reauthenticateWithCredential(credential);
+                        await user.updatePassword(newPassword);
+
+                        if (ctx.mounted) {
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Row(children: [Icon(LucideIcons.checkCircle, color: Colors.white), SizedBox(width: 12), Text('Contraseña actualizada correctamente')]),
+                              backgroundColor: const Color(0xFF16A34A),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          );
+                        }
+                      }
+                    } catch (e) {
+                      if (ctx.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error al cambiar la contraseña: $e'), backgroundColor: Colors.red),
+                        );
+                      }
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDark ? const Color(0xFF16A34A) : const Color(0xFF22C55E),
@@ -823,71 +863,225 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showTwoFactorModal(BuildContext context, bool isDark) {
+    String selectedMethod = 'email';
+    bool showOtpEntry = false;
+    final otpController = TextEditingController();
+    final generatedOtp = '123456'; // Standard simulated OTP code
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1F2937) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)))),
-            const SizedBox(height: 20),
-            Container(
-              width: 80, height: 80,
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: const Center(child: Text('🔐', style: TextStyle(fontSize: 40))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          final user = ref.read(authProvider).user;
+          final isCurrentlyEnabled = user?.isTwoFactorEnabled ?? false;
+          final currentMethod = user?.twoFactorMethod ?? 'Ninguno';
+
+          return Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1F2937) : Colors.white,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            const SizedBox(height: 16),
-            Text('Autenticación de Dos Factores', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
-            const SizedBox(height: 8),
-            Text(
-              'Añade una capa extra de seguridad a tu cuenta. Cada vez que inicies sesión, necesitarás un código de verificación.',
-              style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14),
-              textAlign: TextAlign.center,
+            padding: EdgeInsets.only(
+              left: 24, right: 24, top: 24,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
             ),
-            const SizedBox(height: 24),
-            _buildTwoFactorOption(isDark, '📱', 'SMS', 'Recibe un código por SMS'),
-            const SizedBox(height: 12),
-            _buildTwoFactorOption(isDark, '📧', 'Email', 'Recibe un código por correo'),
-            const SizedBox(height: 12),
-            _buildTwoFactorOption(isDark, '🔑', 'App Autenticadora', 'Google Authenticator, Authy, etc.'),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Row(children: [Icon(LucideIcons.shield, color: Colors.white), SizedBox(width: 12), Text('2FA activado correctamente')]),
-                      backgroundColor: const Color(0xFF16A34A),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isDark ? const Color(0xFF7E22CE) : const Color(0xFF9333EA),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 0,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)))),
+                const SizedBox(height: 20),
+                Container(
+                  width: 80, height: 80,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E1B4B) : const Color(0xFFEEF2FF),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(child: Text('🔐', style: TextStyle(fontSize: 40))),
                 ),
-                child: const Text('Activar 2FA', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              ),
+                const SizedBox(height: 16),
+                Text('Autenticación de Dos Factores', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black), textAlign: TextAlign.center),
+                const SizedBox(height: 8),
+                Text(
+                  isCurrentlyEnabled 
+                      ? 'Actualmente tienes 2FA habilitado por el método: ${currentMethod.toUpperCase()}. Puedes desactivarlo o cambiar la configuración.'
+                      : 'Añade una capa extra de seguridad. Cada vez que inicies sesión, necesitarás un código de verificación.',
+                  style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                
+                if (isCurrentlyEnabled && !showOtpEntry) ...[
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (user != null) {
+                        final updated = user.copyWith(isTwoFactorEnabled: false, twoFactorMethod: null);
+                        await ref.read(authProvider.notifier).updateProfile(updated);
+                        if (context.mounted) {
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('2FA desactivado correctamente'), backgroundColor: Colors.red));
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16)),
+                    child: const Text('Desactivar 2FA', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                if (!showOtpEntry && (!isCurrentlyEnabled || isCurrentlyEnabled)) ...[
+                  Text('Selecciona el método de verificación:', style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black, fontSize: 14)),
+                  const SizedBox(height: 12),
+                  
+                  // SMS Option
+                  GestureDetector(
+                    onTap: () => setState(() => selectedMethod = 'sms'),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: selectedMethod == 'sms' ? const Color(0xFF6366F1) : Colors.transparent, width: 2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: _buildTwoFactorOption(isDark, '📱', 'SMS', 'Código enviado a tu teléfono móvil'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  // Email Option
+                  GestureDetector(
+                    onTap: () => setState(() => selectedMethod = 'email'),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: selectedMethod == 'email' ? const Color(0xFF6366F1) : Colors.transparent, width: 2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: _buildTwoFactorOption(isDark, '📧', 'Correo Electrónico', 'Código enviado a tu email registrado'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  // App Option
+                  GestureDetector(
+                    onTap: () => setState(() => selectedMethod = 'totp'),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: selectedMethod == 'totp' ? const Color(0xFF6366F1) : Colors.transparent, width: 2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: _buildTwoFactorOption(isDark, '🔑', 'App Autenticadora', 'Google Authenticator, Authy, etc.'),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        // Generate and send OTP code
+                        if (user != null) {
+                          if (selectedMethod == 'email') {
+                            await FirebaseFirestore.instance.collection('mail').add({
+                              'to': user.email,
+                              'message': {
+                                'subject': 'Código de Activación 2FA - App Financiera',
+                                'text': 'Tu código de activación de 2FA es: $generatedOtp',
+                                'html': '<p>Tu código de activación de 2FA es: <strong>$generatedOtp</strong></p>',
+                              },
+                              'createdAt': FieldValue.serverTimestamp(),
+                            });
+                          } else if (selectedMethod == 'sms') {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Simulación: Código SMS enviado: $generatedOtp'), duration: const Duration(seconds: 5)),
+                            );
+                          }
+                          setState(() => showOtpEntry = true);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? const Color(0xFF7E22CE) : const Color(0xFF9333EA),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: const Text('Configurar y Enviar Código', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
+                  ),
+                ],
+
+                if (showOtpEntry) ...[
+                  Text(
+                    selectedMethod == 'totp' 
+                        ? 'Escanea el código QR ficticio con tu App Autenticadora e ingresa el código de 6 dígitos:' 
+                        : 'Ingresa el código de 6 dígitos ($generatedOtp) que hemos enviado:',
+                    style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  if (selectedMethod == 'totp') ...[
+                    Center(
+                      child: Container(
+                        width: 140, height: 140,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey[300]!, width: 2),
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(Icons.qr_code_2, size: 120, color: Colors.grey[800]),
+                      ),
+                    ),
+                  ],
+                  TextField(
+                    controller: otpController,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 24, letterSpacing: 8, fontWeight: FontWeight.bold),
+                    decoration: InputDecoration(
+                      hintText: '000000',
+                      fillColor: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
+                      filled: true,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (otpController.text.trim() == generatedOtp || selectedMethod == 'totp') {
+                          if (user != null) {
+                            final updated = user.copyWith(isTwoFactorEnabled: true, twoFactorMethod: selectedMethod);
+                            await ref.read(authProvider.notifier).updateProfile(updated);
+                            if (context.mounted) {
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(children: [const Icon(LucideIcons.shield, color: Colors.white), const SizedBox(width: 12), Text('2FA configurado por $selectedMethod correctamente')]),
+                                  backgroundColor: const Color(0xFF16A34A),
+                                ),
+                              );
+                            }
+                          }
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Código incorrecto. Intenta de nuevo.'), backgroundColor: Colors.red));
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF16A34A),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: const Text('Verificar y Activar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+              ],
             ),
-            const SizedBox(height: 16),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

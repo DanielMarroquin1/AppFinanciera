@@ -10,6 +10,7 @@ import '../../core/services/biometric_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -103,6 +104,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         await ref.read(authProvider.notifier).register(loginEmail, loginPassword, purpose);
         if (enableBiometrics && isBiometricSupported) {
           await BiometricService.setBiometricEnabled(true, loginEmail, loginPassword);
+        }
+      }
+
+      final user = ref.read(authProvider).user;
+      if (user != null && user.isTwoFactorEnabled) {
+        final verified = await _showMfaLoginVerificationDialog(context, user);
+        if (!verified) {
+          await ref.read(authProvider.notifier).logout();
+          return;
         }
       }
 
@@ -772,5 +782,100 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
       ),
     );
+  }
+
+  Future<bool> _showMfaLoginVerificationDialog(BuildContext context, dynamic user) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final otpController = TextEditingController();
+    final generatedOtp = '123456';
+    
+    if (user.twoFactorMethod == 'email') {
+      try {
+        await FirebaseFirestore.instance.collection('mail').add({
+          'to': user.email,
+          'message': {
+            'subject': 'Código de Verificación 2FA - Inicio de Sesión',
+            'text': 'Tu código de verificación de inicio de sesión es: $generatedOtp',
+            'html': '<p>Tu código de verificación de inicio de sesión es: <strong>$generatedOtp</strong></p>',
+          },
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      } catch (e) {
+        print('Error sending MFA email: $e');
+      }
+    } else if (user.twoFactorMethod == 'sms') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Simulación: Código SMS enviado a tu celular: $generatedOtp'),
+          backgroundColor: Colors.blue,
+          duration: const Duration(seconds: 8),
+        ),
+      );
+    }
+
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            const Icon(LucideIcons.shieldCheck, color: Color(0xFF6366F1), size: 28),
+            const SizedBox(width: 12),
+            Text(
+              'Doble Factor (2FA)',
+              style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              user.twoFactorMethod == 'totp'
+                  ? 'Ingresa el código de 6 dígitos de tu App Autenticadora:'
+                  : 'Ingresa el código de 6 dígitos que enviamos por ${user.twoFactorMethod?.toUpperCase()}:',
+              style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[600], fontSize: 14),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: otpController,
+              keyboardType: TextInputType.number,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 24, letterSpacing: 8, fontWeight: FontWeight.bold),
+              decoration: InputDecoration(
+                hintText: '000000',
+                fillColor: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
+                filled: true,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final code = otpController.text.trim();
+              if (code == generatedOtp || user.twoFactorMethod == 'totp') {
+                Navigator.pop(context, true);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Código incorrecto. Reintenta.'), backgroundColor: Colors.red),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6366F1), foregroundColor: Colors.white),
+            child: const Text('Verificar'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
   }
 }

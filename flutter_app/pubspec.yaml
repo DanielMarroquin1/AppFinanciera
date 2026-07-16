@@ -47,7 +47,8 @@ dependencies:
   http: ^1.6.0
   google_generative_ai: ^0.4.7
   fl_chart: ^1.2.0
-  speech_to_text: ^6.6.0
+  speech_to_text: ^7.4.0
+  flutter_tts: ^4.1.2
   permission_handler: ^11.3.1
   local_auth: ^3.0.1
 

@@ -17,6 +17,9 @@ class User {
   final List<String> unlockedItems;
   final String? currentAvatar;
   final double? monthlyLimit;
+  final bool isTwoFactorEnabled;
+  final String? twoFactorMethod;
+  final Map<String, double>? categoryBudgets;
 
   User({
     required this.email,
@@ -35,6 +38,9 @@ class User {
     this.unlockedItems = const [],
     this.currentAvatar,
     this.monthlyLimit,
+    this.isTwoFactorEnabled = false,
+    this.twoFactorMethod,
+    this.categoryBudgets,
   });
 
   User copyWith({
@@ -54,6 +60,9 @@ class User {
     List<String>? unlockedItems,
     String? currentAvatar,
     double? monthlyLimit,
+    bool? isTwoFactorEnabled,
+    String? twoFactorMethod,
+    Map<String, double>? categoryBudgets,
   }) {
     return User(
       email: email ?? this.email,
@@ -72,14 +81,30 @@ class User {
       unlockedItems: unlockedItems ?? this.unlockedItems,
       currentAvatar: currentAvatar ?? this.currentAvatar,
       monthlyLimit: monthlyLimit ?? this.monthlyLimit,
+      isTwoFactorEnabled: isTwoFactorEnabled ?? this.isTwoFactorEnabled,
+      twoFactorMethod: twoFactorMethod ?? this.twoFactorMethod,
+      categoryBudgets: categoryBudgets ?? this.categoryBudgets,
     );
   }
 
   String get avatarEmoji {
+    if (currentAvatar == null) return '👤';
     switch (currentAvatar) {
       case 'avatar1': return '🦸';
       case 'avatar2': return '🧙';
-      default: return '👤';
+      case 'avatar3': return '👑';
+      case 'avatar4': return '🥷';
+      case 'avatar5': return '🧑‍🚀';
+      case 'avatar6': return '💎';
+      case 'avatar7': return '🐳';
+      case 'avatar8': return '⚔️';
+      case 'avatar9': return '🐉';
+      case 'avatar10': return '🔥';
+      default:
+        if (currentAvatar!.runes.isNotEmpty && currentAvatar!.runes.first > 127) {
+          return currentAvatar!;
+        }
+        return '👤';
     }
   }
 }

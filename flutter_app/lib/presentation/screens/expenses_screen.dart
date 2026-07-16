@@ -4,7 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../widgets/modals/expenses_filter_modal.dart';
 import '../widgets/modals/expense_report_modal.dart';
-import '../widgets/modals/voice_expense_modal.dart';
+import '../widgets/modals/voice_expense_modal.dart'; // VoiceTransactionModal (handles both expenses & incomes)
 import '../widgets/modals/category_detail_modal.dart';
 import '../widgets/modals/add_debt_modal.dart';
 import '../widgets/modals/add_expense_modal.dart';
@@ -433,7 +433,16 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                     Builder(
                       builder: (context) {
                         final allExpenses = transactionsAsync.value ?? [];
-                        final fixedExpenses = allExpenses.where((t) => t.isFixed && t.type == 'expense').toList();
+                        final fixedExpenses = allExpenses.where((t) => 
+                           t.isFixed && 
+                           t.type == 'expense' && 
+                           t.category != 'salary' && 
+                           t.category != 'freelance' && 
+                           t.category != 'bonus' && 
+                           t.category != 'investment' && 
+                           t.category != 'sale' && 
+                           t.category != 'gift'
+                         ).toList();
                         fixedExpenses.sort((a, b) => b.date.compareTo(a.date)); // Sort to get latest
                         final uniqueFixedExpenses = <String, dynamic>{};
                         for (var t in fixedExpenses) {
@@ -1179,7 +1188,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => VoiceExpenseModal.show(context),
+        onPressed: () => VoiceTransactionModal.show(context),
         backgroundColor: Colors.transparent,
         elevation: 10,
         child: Container(

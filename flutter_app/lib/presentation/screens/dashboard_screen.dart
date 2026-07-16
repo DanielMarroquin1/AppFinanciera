@@ -82,25 +82,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
       }
     });
     
+    final loc = ref.watch(localizationProvider);
+    
     final realBadges = <Map<String, dynamic>>[];
     if (user != null) {
       if (user.profileComplete == true) {
-        realBadges.add({'id': 'profile-complete', 'icon': LucideIcons.userCheck, 'name': 'Perfil Completo', 'color': const Color(0xFF3B82F6)});
+        realBadges.add({'id': 'profile-complete', 'icon': LucideIcons.userCheck, 'name': loc.get('badge_pioneer'), 'color': const Color(0xFF3B82F6)});
       }
       if ((user.currentStreak ?? 0) >= 7) {
-        realBadges.add({'id': 'week-streak', 'icon': LucideIcons.flame, 'name': 'Racha 7 Días', 'color': const Color(0xFFEF4444)});
+        realBadges.add({'id': 'week-streak', 'icon': LucideIcons.flame, 'name': loc.get('badge_constant_fire'), 'color': const Color(0xFFEF4444)});
       }
       if ((user.currentStreak ?? 0) >= 30) {
-        realBadges.add({'id': 'month-streak', 'icon': LucideIcons.award, 'name': 'Racha 30 Días', 'color': const Color(0xFFF59E0B)});
+        realBadges.add({'id': 'month-streak', 'icon': LucideIcons.award, 'name': loc.get('badge_habit_master'), 'color': const Color(0xFFF59E0B)});
       }
       if ((user.unlockedItems.isNotEmpty)) {
-        realBadges.add({'id': 'shopper', 'icon': LucideIcons.shoppingBag, 'name': 'Comprador', 'color': const Color(0xFFEC4899)});
+        realBadges.add({'id': 'shopper', 'icon': LucideIcons.shoppingBag, 'name': loc.get('badge_vip_shopper'), 'color': const Color(0xFFEC4899)});
       }
       if ((user.unlockedItems.length) >= 5) {
-        realBadges.add({'id': 'collector', 'icon': LucideIcons.crown, 'name': 'Coleccionista', 'color': const Color(0xFF8B5CF6)});
+        realBadges.add({'id': 'collector', 'icon': LucideIcons.crown, 'name': loc.get('badge_supreme_collector'), 'color': const Color(0xFF8B5CF6)});
       }
       if ((user.points ?? 0) >= 100) {
-        realBadges.add({'id': 'saver', 'icon': LucideIcons.piggyBank, 'name': 'Ahorrador', 'color': const Color(0xFF10B981)});
+        realBadges.add({'id': 'saver', 'icon': LucideIcons.piggyBank, 'name': loc.get('badge_financial_mind'), 'color': const Color(0xFF10B981)});
       }
     }
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -110,7 +112,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
 
 
     final transactionsAsync = ref.watch(transactionsProvider);
-    final loc = ref.watch(localizationProvider);
     final currencyCode = user?.currency;
     final unreadNotificationsCount = ref.watch(unreadNotificationsCountProvider);
     final creditCardsAsync = ref.watch(computedCreditCardsProvider);
@@ -692,7 +693,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                           children: [
                             Icon(LucideIcons.trendingUp, color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A), size: 22),
                             const SizedBox(height: 6),
-                            Text('Ingresos', style: TextStyle(color: isDark ? const Color(0xFFBBF7D0) : const Color(0xFF14532D), fontSize: 10, fontWeight: FontWeight.w600)),
+                            Text(loc.get('dashboard_income'), style: TextStyle(color: isDark ? const Color(0xFFBBF7D0) : const Color(0xFF14532D), fontSize: 10, fontWeight: FontWeight.w600)),
                           ],
                         ),
                       ),
@@ -721,7 +722,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                           children: [
                             Icon(LucideIcons.trendingDown, color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), size: 22),
                             const SizedBox(height: 6),
-                            Text('Gastos', style: TextStyle(color: isDark ? const Color(0xFFFECACA) : const Color(0xFF7F1D1D), fontSize: 10, fontWeight: FontWeight.w600)),
+                            Text(loc.get('dashboard_expenses'), style: TextStyle(color: isDark ? const Color(0xFFFECACA) : const Color(0xFF7F1D1D), fontSize: 10, fontWeight: FontWeight.w600)),
                           ],
                         ),
                       ),
@@ -750,7 +751,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                           children: [
                             Icon(LucideIcons.wallet, color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), size: 22),
                             const SizedBox(height: 6),
-                            Text('Deudas', style: TextStyle(color: isDark ? const Color(0xFFBFDBFE) : const Color(0xFF1E3A8A), fontSize: 10, fontWeight: FontWeight.w600)),
+                            Text(loc.get('dashboard_debts'), style: TextStyle(color: isDark ? const Color(0xFFBFDBFE) : const Color(0xFF1E3A8A), fontSize: 10, fontWeight: FontWeight.w600)),
                           ],
                         ),
                       ),
@@ -784,7 +785,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                                 children: [
                                   Icon(LucideIcons.creditCard, color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), size: 22),
                                   const SizedBox(height: 6),
-                                  Text('Tarjetas', style: TextStyle(color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E), fontSize: 10, fontWeight: FontWeight.w600)),
+                                  Text(loc.get('dashboard_cards'), style: TextStyle(color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E), fontSize: 10, fontWeight: FontWeight.w600)),
                                 ],
                               ),
                             ),
@@ -928,8 +929,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(loc.get('ai_assistant'), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
-                            SizedBox(height: 4),
-                            Text('Descubre cómo invertir tu dinero basado en tu negocio 💰', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                            const SizedBox(height: 4),
+                            Text(loc.get('ai_assistant_subtitle'), style: const TextStyle(color: Colors.white70, fontSize: 14)),
                           ],
                         ),
                       )
@@ -939,7 +940,72 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+
+            // "What If?" AI Simulator Card
+            InkWell(
+              onTap: () => context.push('/what-if'),
+              borderRadius: BorderRadius.circular(24),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark 
+                        ? const [Color(0xFF1E1B4B), Color(0xFF312E81)]
+                        : const [Color(0xFFEEF2FF), Color(0xFFE0E7FF)],
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: const Color(0xFF6366F1).withOpacity(0.3),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
+                  ]
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 56, height: 56,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6366F1).withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(LucideIcons.cpu, color: Color(0xFF6366F1), size: 28),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            loc.get('what_if_title'),
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            loc.get('what_if_subtitle'),
+                            style: TextStyle(
+                              color: isDark ? Colors.grey[300] : Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      LucideIcons.chevronRight,
+                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
 
             // Recent Transactions (simulated)
             Row(
@@ -1034,11 +1100,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                               child: const Icon(LucideIcons.shoppingBag, color: Colors.white, size: 24),
                             ),
                             const SizedBox(width: 12),
-                            const Column(
+                            Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Tienda de Recompensas', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                                Text('Canjea tus puntos ganados', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                                Text(loc.get('rewards_shop'), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                                Text(loc.get('rewards_shop_subtitle'), style: const TextStyle(color: Colors.white70, fontSize: 12)),
                               ],
                             ),
                           ],
@@ -1065,7 +1131,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Desbloquea avatares exclusivos, temas personalizados y consejos VIP para potenciar tus finanzas.',
+                      loc.get('rewards_shop_desc'),
                       style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 13, height: 1.4),
                     ),
                     const SizedBox(height: 16),
@@ -1074,18 +1140,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                       children: [
                         Row(
                           children: [
-                            _buildShopPreviewChip('🦸', 'Avatares'),
+                            _buildShopPreviewChip('🦸', loc.get('rewards_shop_avatars')),
                             const SizedBox(width: 8),
-                            _buildShopPreviewChip('🎨', 'Temas'),
+                            _buildShopPreviewChip('🎨', loc.get('rewards_shop_themes')),
                             const SizedBox(width: 8),
-                            _buildShopPreviewChip('💡', 'Consejos Pro'),
+                            _buildShopPreviewChip('💡', loc.get('rewards_shop_tips')),
                           ],
                         ),
-                        const Row(
+                        Row(
                           children: [
-                            Text('Entrar', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-                            SizedBox(width: 4),
-                            Icon(LucideIcons.arrowRight, color: Colors.white, size: 16),
+                            Text(loc.get('rewards_shop_enter'), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                            const SizedBox(width: 4),
+                            const Icon(LucideIcons.arrowRight, color: Colors.white, size: 16),
                           ],
                         ),
                       ],

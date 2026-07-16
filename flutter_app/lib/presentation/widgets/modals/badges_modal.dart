@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../providers/auth_provider.dart';
+import '../../../core/utils/localization.dart';
 
 class BadgesModal extends ConsumerWidget {
   const BadgesModal({super.key});
@@ -59,6 +60,7 @@ class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
     final user = ref.watch(authProvider).user;
+    final loc = ref.watch(localizationProvider);
 
     if (user == null) return const SizedBox.shrink();
 
@@ -66,8 +68,8 @@ class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with
     final badges = [
       {
         'id': 'profile',
-        'title': 'Pionero Antigravity',
-        'description': 'Completa tu perfil e identidad',
+        'title': loc.get('badge_pioneer'),
+        'description': loc.get('badge_pioneer_desc'),
         'icon': LucideIcons.userCheck,
         'color': const Color(0xFF3B82F6), // Blue
         'current': user.profileComplete ? 1 : 0,
@@ -75,8 +77,8 @@ class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with
       },
       {
         'id': 'streak_7',
-        'title': 'Fuego Constante',
-        'description': 'Mantén una racha de 7 días continuos',
+        'title': loc.get('badge_constant_fire'),
+        'description': loc.get('badge_constant_fire_desc'),
         'icon': LucideIcons.flame,
         'color': const Color(0xFFF97316), // Orange
         'current': user.currentStreak > 7 ? 7 : user.currentStreak,
@@ -84,8 +86,8 @@ class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with
       },
       {
         'id': 'streak_30',
-        'title': 'Maestro del Hábito',
-        'description': '30 días ininterrumpidos en la app',
+        'title': loc.get('badge_habit_master'),
+        'description': loc.get('badge_habit_master_desc'),
         'icon': LucideIcons.award,
         'color': const Color(0xFFEAB308), // Yellow
         'current': user.currentStreak > 30 ? 30 : user.currentStreak,
@@ -93,8 +95,8 @@ class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with
       },
       {
         'id': 'shopper_1',
-        'title': 'Comprador VIP',
-        'description': 'Canjea tu primer ítem en la tienda',
+        'title': loc.get('badge_vip_shopper'),
+        'description': loc.get('badge_vip_shopper_desc'),
         'icon': LucideIcons.shoppingBag,
         'color': const Color(0xFF8B5CF6), // Purple
         'current': user.unlockedItems.isNotEmpty ? 1 : 0,
@@ -102,8 +104,8 @@ class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with
       },
       {
         'id': 'shopper_5',
-        'title': 'Coleccionista Supremo',
-        'description': 'Adquiere 5 ítems o temas exclusivos',
+        'title': loc.get('badge_supreme_collector'),
+        'description': loc.get('badge_supreme_collector_desc'),
         'icon': LucideIcons.crown,
         'color': const Color(0xFFEC4899), // Pink
         'current': user.unlockedItems.length > 5 ? 5 : user.unlockedItems.length,
@@ -111,8 +113,8 @@ class _BadgesModalInternalState extends ConsumerState<_BadgesModalInternal> with
       },
       {
         'id': 'saver_100',
-        'title': 'Mente Financiera',
-        'description': 'Acumula 100 puntos de experiencia',
+        'title': loc.get('badge_financial_mind'),
+        'description': loc.get('badge_financial_mind_desc'),
         'icon': LucideIcons.piggyBank,
         'color': const Color(0xFF06B6D4), // Cyan
         'current': user.points > 100 ? 100 : user.points,

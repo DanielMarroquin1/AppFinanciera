@@ -12,7 +12,20 @@
           "package_name": "com.marro.appfinanciera.flutter_app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "164540827567-ec1f4kqqr6m2ach6e891h1u85v8l5bto.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.marro.appfinanciera.flutter_app",
+            "certificate_hash": "c58d0f2a03ea884e4d23983af093e19d8d488158"
+          }
+        },
+        {
+          "client_id": "164540827567-tvoqns335s6nu100chit15d3q99137bt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBMtI8eoEC8e3kMn_c4Vh5IfYVT6zrU7DA"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "164540827567-tvoqns335s6nu100chit15d3q99137bt.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "164540827567-mhrs4kjvaa0d1dkrggful1f3lu0hma40.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.marro.appfinanciera.flutterApp"
+              }
+            }
+          ]
         }
       }
     }

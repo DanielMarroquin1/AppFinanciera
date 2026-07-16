@@ -8,6 +8,7 @@ import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/theme_provider.dart';
+import 'presentation/providers/color_palette_provider.dart';
 import 'presentation/widgets/common/session_timeout_manager.dart';
 
 void main() async {
@@ -46,12 +47,31 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeProvider);
+    final palette = ref.watch(colorPaletteProvider);
+
+    final lightTheme = AppTheme.lightTheme.copyWith(
+      primaryColor: palette.colors[0],
+      colorScheme: AppTheme.lightTheme.colorScheme.copyWith(
+        primary: palette.colors[0],
+        secondary: palette.colors[1],
+        tertiary: palette.colors[2],
+      ),
+    );
+
+    final darkTheme = AppTheme.darkTheme.copyWith(
+      primaryColor: palette.colors[0],
+      colorScheme: AppTheme.darkTheme.colorScheme.copyWith(
+        primary: palette.colors[0],
+        secondary: palette.colors[1],
+        tertiary: palette.colors[2],
+      ),
+    );
 
     return MaterialApp.router(
       title: 'App Financiera',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: lightTheme,
+      darkTheme: darkTheme,
       themeMode: themeMode,
       routerConfig: _router,
       builder: (context, child) {

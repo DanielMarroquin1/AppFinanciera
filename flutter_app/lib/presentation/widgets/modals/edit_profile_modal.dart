@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/debts_provider.dart';
 import '../../providers/transaction_provider.dart';
@@ -42,6 +43,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
       if (user != null && uid != null && mounted) {
         nameController.text = user.name.isNotEmpty ? user.name : '';
         emailController.text = user.email;
+        selectedAvatar = user.avatarEmoji;
 
         // Load fixed expenses
         ref.read(transactionRepositoryProvider).watchTransactions(uid).first.then((transactions) {
@@ -370,14 +372,14 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                   const SizedBox(height: 16),
                   Text('Correo Electrónico', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
                   const SizedBox(height: 8),
-                  TextFormField(
+                   TextFormField(
                     controller: emailController,
-                    readOnly: true, // Correo is usually non-editable directly from here unless auth changes
+                    readOnly: false,
                     style: TextStyle(color: isDark ? Colors.white : Colors.black),
                     decoration: InputDecoration(
                       prefixIcon: Icon(LucideIcons.mail, color: isDark ? Colors.grey[500] : Colors.grey[400]),
                       filled: true,
-                      fillColor: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
+                      fillColor: isDark ? const Color(0xFF374151) : Colors.white,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2)),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2)),
                       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2)),
@@ -1084,6 +1086,68 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                       ),
                     ),
                   ],
+                  // Zona de Peligro (Danger Zone)
+                  Container(
+                    margin: const EdgeInsets.only(top: 24, bottom: 24),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF7F1D1D).withOpacity(0.1) : const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF991B1B).withOpacity(0.5) : const Color(0xFFFCA5A5),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(LucideIcons.alertTriangle, color: Colors.red, size: 22),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Zona de Peligro ⚠️',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF991B1B),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Estas acciones borrarán de forma definitiva tus registros de Firebase. Esta acción es irreversible.',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isDark ? Colors.grey[400] : Colors.grey[700],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildDangerButton(
+                          isDark,
+                          'Reiniciar Gastos 💸',
+                          'Borrará todos tus gastos registrados',
+                          () => _confirmAndReset('expenses'),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildDangerButton(
+                          isDark,
+                          'Reiniciar Ingresos 💰',
+                          'Borrará todos tus ingresos registrados',
+                          () => _confirmAndReset('incomes'),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildDangerButton(
+                          isDark,
+                          'Reiniciar Deudas 💳',
+                          'Borrará todas tus deudas activas e historial de cuotas',
+                          () => _confirmAndReset('debts'),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   const SizedBox(height: 24),
 
                   // Save Button
@@ -1097,8 +1161,34 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                             final user = ref.read(authProvider).user;
                             if (user != null) {
                               final currentName = nameController.text.trim();
+                              final currentEmail = emailController.text.trim();
+                              
+                              if (currentEmail != user.email) {
+                                try {
+                                  final fbUser = FirebaseAuth.instance.currentUser;
+                                  if (fbUser != null) {
+                                    await fbUser.verifyBeforeUpdateEmail(currentEmail);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Se ha enviado un enlace de verificación a $currentEmail. Debes verificarlo antes de que cambie tu correo.'),
+                                        backgroundColor: Colors.blue,
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Error al enviar verificación de email: $e'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                  return;
+                                }
+                              }
+
                               final updatedUser = user.copyWith(
                                 name: currentName.isEmpty ? 'Usuario' : currentName,
+                                currentAvatar: selectedAvatar,
                                 profileComplete: true,
                               );
                               await ref.read(authProvider.notifier).updateProfile(updatedUser);
@@ -1189,6 +1279,123 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
           fontSize: 12,
           fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
         )),
+      ),
+    );
+  }
+
+  Future<void> _confirmAndReset(String type) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+        title: Text('¿Confirmar reinicio?', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
+        content: Text(
+          '¿Estás seguro de que deseas eliminar permanentemente todos tus registros de $type? Esta acción no tiene marcha atrás.',
+          style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[600]),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: const Text('Eliminar Todo'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+      
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+      
+      try {
+        if (type == 'expenses') {
+          final snap = await FirebaseFirestore.instance
+              .collection('transactions')
+              .where('userId', isEqualTo: uid)
+              .where('type', isEqualTo: 'expense')
+              .get();
+          final batch = FirebaseFirestore.instance.batch();
+          for (final doc in snap.docs) {
+            batch.delete(doc.reference);
+          }
+          await batch.commit();
+          
+          setState(() {
+            fixedExpenses.clear();
+          });
+        } else if (type == 'incomes') {
+          final snap = await FirebaseFirestore.instance
+              .collection('transactions')
+              .where('userId', isEqualTo: uid)
+              .where('type', isEqualTo: 'income')
+              .get();
+          final batch = FirebaseFirestore.instance.batch();
+          for (final doc in snap.docs) {
+            batch.delete(doc.reference);
+          }
+          await batch.commit();
+          
+          setState(() {
+            fixedIncomes.clear();
+          });
+        } else if (type == 'debts') {
+          final snap = await FirebaseFirestore.instance
+              .collection('debts')
+              .where('userId', isEqualTo: uid)
+              .get();
+          final batch = FirebaseFirestore.instance.batch();
+          for (final doc in snap.docs) {
+            batch.delete(doc.reference);
+          }
+          await batch.commit();
+          
+          setState(() {
+            debts.clear();
+          });
+        }
+        
+        if (mounted) {
+          Navigator.pop(context); // Pop loading dialog
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Tus $type se han reiniciado con éxito.'), backgroundColor: Colors.green),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          Navigator.pop(context); // Pop loading dialog
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error al reiniciar: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
+  }
+
+  Widget _buildDangerButton(bool isDark, String label, String desc, VoidCallback onTap) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+      ),
+      child: ListTile(
+        title: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.redAccent, fontSize: 14)),
+        subtitle: Text(desc, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 11)),
+        trailing: const Icon(LucideIcons.trash2, color: Colors.redAccent, size: 20),
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }

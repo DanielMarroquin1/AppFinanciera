@@ -863,13 +863,14 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                           }
                         }
 
+                        BudgetAlertResult? budgetAlert;
                         if (widget.existingTransaction != null) {
-                          await ref.read(transactionNotifierProvider.notifier).updateTransaction(transaction);
+                          budgetAlert = await ref.read(transactionNotifierProvider.notifier).updateTransaction(transaction);
                         } else {
-                          await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
+                          budgetAlert = await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
                         }
 
-                        if (context.mounted) {
+                        if (mounted) {
                           Navigator.of(context).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -879,6 +880,52 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             ),
                           );
+
+                          // Handle category budget alert immediately
+                          if (budgetAlert != null) {
+                            final alert = budgetAlert;
+                            final sym = CurrencyFormatter.getSymbol(widget.currencyCode ?? ref.read(authProvider).user?.currency);
+                            if (alert.status == BudgetAlertStatus.limitReached) {
+                              showDialog(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+                                  title: Row(
+                                    children: [
+                                      const Icon(LucideIcons.alertOctagon, color: Colors.red, size: 28),
+                                      const SizedBox(width: 12),
+                                      const Text('Límite Excedido 🚨', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                  content: Text(
+                                    'Has agotado el 100% de tu presupuesto mensual para la categoría "${alert.categoryName}".\n\n'
+                                    'Límite establecido: $sym${alert.budgetLimit.toStringAsFixed(0)}\n'
+                                    'Total consumido: $sym${alert.totalSpent.toStringAsFixed(0)}',
+                                    style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800]),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx),
+                                      child: const Text('Entendido', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold)),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            } else if (alert.status == BudgetAlertStatus.nearLimit) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '⚠️ ¡Cuidado! Has consumido el ${alert.percentage.toStringAsFixed(0)}% del presupuesto mensual para "${alert.categoryName}" '
+                                    '($sym${alert.totalSpent.toStringAsFixed(0)} / $sym${alert.budgetLimit.toStringAsFixed(0)})',
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                  ),
+                                  backgroundColor: Colors.orange[800],
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                ),
+                              );
+                            }
+                          }
                         }
                       },
                       style: ElevatedButton.styleFrom(

@@ -46,7 +46,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Alcanza tus metas financieras',
+              loc.get('savings_subtitle'),
               style: TextStyle(
                 color: isDark ? Colors.grey[400] : Colors.grey[600],
               ),
@@ -73,7 +73,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Total Ahorrado', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                      Text(loc.get('total_saved'), style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
                       const SizedBox(height: 8),
                       Text('$sym${totalSaved.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 16),
@@ -81,7 +81,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                         children: [
                           const Icon(LucideIcons.trendingUp, color: Colors.white, size: 20),
                           const SizedBox(width: 8),
-                          Text('+12% este mes', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                          Text(loc.get('savings_month_progress'), style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
                         ],
                       ),
                     ],
@@ -89,7 +89,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => const Text('Error al cargar ahorros'),
+              error: (err, stack) => Text(loc.get('error_loading_savings')),
             ),
             const SizedBox(height: 24),
 
@@ -112,7 +112,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                       const Text('📚', style: TextStyle(fontSize: 24)),
                       const SizedBox(width: 12),
                       Text(
-                        'Plan de Ahorro con Guía',
+                        loc.get('savings_guide_plan'),
                         style: TextStyle(
                           color: isDark ? Colors.white : Colors.black,
                           fontWeight: FontWeight.bold,
@@ -138,7 +138,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Descubre cómo ahorrar más y alcanzar tus metas más rápido',
+                    loc.get('savings_guide_desc'),
                     style: TextStyle(
                       color: isDark ? Colors.grey[300] : Colors.grey[700],
                       fontSize: 12,
@@ -153,7 +153,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 0,
                     ),
-                    child: const Text('Ver Guía', style: TextStyle(fontSize: 12)),
+                    child: Text(loc.get('view_guide'), style: const TextStyle(fontSize: 12)),
                   )
                 ],
               ),
@@ -179,7 +179,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                   children: [
                     Icon(LucideIcons.plus, color: isDark ? Colors.grey[400] : Colors.grey[500]),
                     const SizedBox(width: 8),
-                    Text('Agregar Nueva Meta', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500])),
+                    Text(loc.get('add_new_goal'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500])),
                   ],
                 ),
               ),
@@ -187,7 +187,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
             const SizedBox(height: 24),
 
             // Goals
-            Text('Mis Metas de Ahorro', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
+            Text(loc.get('my_saving_goals'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
             const SizedBox(height: 12),
             goalsAsync.when(
               data: (goalsList) {
@@ -200,7 +200,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: Center(
-                      child: Text('Aún no tienes metas de ahorro.', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400])),
+                      child: Text(loc.get('no_goals_yet'), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400])),
                     ),
                   );
                 }
@@ -266,7 +266,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                                     color: isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: Text('¡Logrado!', style: TextStyle(color: isDark ? const Color(0xFF86EFAC) : const Color(0xFF15803D), fontSize: 12, fontWeight: FontWeight.bold)),
+                                  child: Text(loc.get('goal_achieved'), style: TextStyle(color: isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7), fontSize: 12, fontWeight: FontWeight.bold)),
                                 )
                             ],
                           ),
@@ -292,7 +292,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('${percentage.toStringAsFixed(0)}% completado', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                              Text('${percentage.toStringAsFixed(0)}% ${loc.get('completed')}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                               TextButton(
                                 onPressed: () => AddFundsModal.show(context, goalName: goal.name),
                                 style: TextButton.styleFrom(
@@ -300,7 +300,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                                   minimumSize: const Size(50, 30),
                                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                 ),
-                                child: Text('Agregar fondos', style: TextStyle(color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), fontSize: 12, fontWeight: FontWeight.bold)),
+                                child: Text(loc.get('add_funds'), style: TextStyle(color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), fontSize: 12, fontWeight: FontWeight.bold)),
                               )
                             ],
                           )
@@ -311,7 +311,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => const Text('Error al cargar metas de ahorro'),
+              error: (err, stack) => Text(loc.get('error_loading_goals')),
             ),
             const SizedBox(height: 80), // Fab space
           ],

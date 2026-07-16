@@ -141,6 +141,107 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
     );
   }
 
+  void _showDebtDetailsPopover(BuildContext context, DebtModel debt) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final sym = CurrencyFormatter.getSymbol(ref.read(authProvider).user?.currency);
+    final isCompleted = _isDebtCompleted(debt);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            border: Border.all(
+              color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40, height: 4,
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(color: isDark ? Colors.grey[700] : Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              Row(
+                children: [
+                  Container(
+                    width: 48, height: 48,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E1B4B) : const Color(0xFFEEF2FF),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(debt.category, style: const TextStyle(fontSize: 24)),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Detalles de Deuda',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? Colors.grey[400] : Colors.grey[500]),
+                        ),
+                        Text(
+                          debt.name,
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Text(
+                isCompleted 
+                    ? 'Esta deuda está completamente saldada. ¡Excelente gestión financiera! 🎉' 
+                    : 'Puedes registrar los pagos de cuotas para esta deuda de forma interactiva. Cada cuota registrada incrementará el progreso y creará un registro de gasto en tu historial.',
+                style: TextStyle(fontSize: 14, color: isDark ? Colors.grey[300] : Colors.grey[600]),
+              ),
+              const SizedBox(height: 28),
+              if (!isCompleted)
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _registerPayment(debt);
+                  },
+                  icon: const Icon(LucideIcons.plusCircle, size: 20),
+                  label: const Text('Agregar una cuota', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 0,
+                  ),
+                ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  side: BorderSide(color: isDark ? Colors.grey[700]! : Colors.grey[300]!),
+                ),
+                child: Text('Cerrar', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
 
 
   @override
@@ -341,22 +442,26 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
     final percentage = (progress * 100).toStringAsFixed(0);
     final debtColors = [paletteGradient[0], paletteGradient.length > 1 ? paletteGradient[1] : paletteGradient[0]];
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1F2937) : Colors.white,
-        border: Border.all(
-          color: isCompleted
-              ? (isDark ? const Color(0xFF064E3B) : const Color(0xFFA7F3D0))
-              : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-          width: isCompleted ? 2 : 1,
-        ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: InkWell(
+        onTap: () => _showDebtDetailsPopover(context, debt),
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
-      ),
-      child: Column(
-        children: [
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1F2937) : Colors.white,
+            border: Border.all(
+              color: isCompleted
+                  ? (isDark ? const Color(0xFF064E3B) : const Color(0xFFA7F3D0))
+                  : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+              width: isCompleted ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+          ),
+          child: Column(
+            children: [
           // Header row
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -483,6 +588,8 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
           ],
         ],
       ),
+    ),
+    ),
     );
   }
 

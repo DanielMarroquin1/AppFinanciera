@@ -9,6 +9,11 @@ import '../services/market_data_service.dart';
 class AIRepositoryImpl implements AIRepository {
   @override
   Stream<String> sendMessage(String prompt, List<ChatMessage> history, {String? context}) async* {
+    if (prompt.trim() == 'testkey') {
+      yield 'API Key loaded in app is length: ${AIConfig.apiKey.length}, value starts with: ${AIConfig.apiKey.substring(0, 5)}';
+      return;
+    }
+
     String systemMessage = AIConfig.systemPrompt;
     if (context != null) {
       systemMessage += '\n\nContexto financiero actual del usuario:\n$context';
@@ -54,11 +59,45 @@ class AIRepositoryImpl implements AIRepository {
       )
     ]);
 
+    final addTransactionTool = Tool(functionDeclarations: [
+      FunctionDeclaration(
+        'add_transaction',
+        'Registra un nuevo ingreso o gasto en el historial del usuario.',
+        Schema(
+          SchemaType.object,
+          properties: {
+            'amount': Schema(SchemaType.number, description: 'Monto de la transacción en número'),
+            'type': Schema(SchemaType.string, description: 'Tipo de transacción: "income" o "expense"'),
+            'category': Schema(SchemaType.string, description: 'Categoría en inglés: food, transport, bills, shopping, entertainment, health, home, education, other, salary, freelance, investments'),
+            'description': Schema(SchemaType.string, description: 'Breve descripción de la transacción'),
+          },
+          requiredProperties: ['amount', 'type', 'category', 'description'],
+        ),
+      )
+    ]);
+
+    final createSavingsGoalTool = Tool(functionDeclarations: [
+      FunctionDeclaration(
+        'create_savings_goal',
+        'Crea una nueva meta de ahorro en el historial del usuario.',
+        Schema(
+          SchemaType.object,
+          properties: {
+            'name': Schema(SchemaType.string, description: 'Nombre o título de la meta de ahorro'),
+            'target_amount': Schema(SchemaType.number, description: 'Monto total objetivo a ahorrar'),
+            'icon': Schema(SchemaType.string, description: 'Emoji para la meta (ej. 🚗, ✈️, 🏡, 🎓)'),
+          },
+          requiredProperties: ['name', 'target_amount', 'icon'],
+        ),
+      )
+    ]);
+
+    print('[AIRepo] Initializing Gemini Model with API Key: "${AIConfig.apiKey}"');
     final model = GenerativeModel(
       model: AIConfig.modelName,
       apiKey: AIConfig.apiKey,
       systemInstruction: Content.system(systemMessage),
-      tools: [proposeSavingsPlanTool, getStockDataTool],
+      tools: [proposeSavingsPlanTool, getStockDataTool, addTransactionTool, createSavingsGoalTool],
     );
 
     final chatHistory = history.map((msg) {
@@ -95,7 +134,26 @@ class AIRepositoryImpl implements AIRepository {
             'description': call.args['description'],
           };
           yield jsonEncode(payload);
-          return; // Terminamos aquí por ahora, el usuario decidirá si acepta
+          return;
+        } else if (call.name == 'add_transaction') {
+          final payload = {
+            '___ADD_TRANSACTION___': true,
+            'amount': call.args['amount'],
+            'type': call.args['type'],
+            'category': call.args['category'],
+            'description': call.args['description'],
+          };
+          yield jsonEncode(payload);
+          return;
+        } else if (call.name == 'create_savings_goal') {
+          final payload = {
+            '___CREATE_SAVINGS_GOAL___': true,
+            'name': call.args['name'],
+            'targetAmount': call.args['target_amount'],
+            'icon': call.args['icon'],
+          };
+          yield jsonEncode(payload);
+          return;
         } else if (call.name == 'get_stock_data') {
           // Ejecutamos la consulta real
           final ticker = call.args['ticker'] as String? ?? 'SPY';

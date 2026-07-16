@@ -9,6 +9,7 @@ import '../../presentation/screens/settings_screen.dart';
 import '../../presentation/screens/statistics_screen.dart';
 import '../../presentation/screens/debts_screen.dart';
 import '../../presentation/screens/onboarding_screen.dart';
+import '../../presentation/screens/what_if_screen.dart';
 import '../../presentation/widgets/app_shell.dart';
 
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -54,6 +55,10 @@ class AppRouter {
           GoRoute(
             path: '/settings',
             builder: (context, state) => const SettingsScreen(),
+          ),
+          GoRoute(
+            path: '/what-if',
+            builder: (context, state) => const WhatIfScreen(),
           ),
         ],
       ),

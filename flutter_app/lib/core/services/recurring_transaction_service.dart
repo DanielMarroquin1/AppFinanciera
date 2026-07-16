@@ -126,6 +126,19 @@ class RecurringTransactionService {
           );
           batch.set(notifRef, notif.toFirestore());
 
+          if (user.email != null) {
+            final mailRef = FirebaseFirestore.instance.collection('mail').doc();
+            batch.set(mailRef, {
+              'to': user.email,
+              'message': {
+                'subject': template.type == 'income' ? 'Ingreso Automático Registrado' : 'Cobro Automático Registrado',
+                'text': 'Se ha registrado "${template.description}" por un monto de ${template.perPaymentAmount.toStringAsFixed(2)}.',
+                'html': '<p>Se ha registrado <strong>"${template.description}"</strong> por un monto de ${template.perPaymentAmount.toStringAsFixed(2)}.</p>',
+              },
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+          }
+
           addedCount++;
         }
 
@@ -206,6 +219,19 @@ class RecurringTransactionService {
             category: debt.category,
           );
           batch.set(notifRef, notif.toFirestore());
+
+          if (user.email != null) {
+            final mailRef = FirebaseFirestore.instance.collection('mail').doc();
+            batch.set(mailRef, {
+              'to': user.email,
+              'message': {
+                'subject': 'Pago Automático de Deuda',
+                'text': 'Se ha cobrado la cuota de "${debt.name}" por un monto de ${debt.installmentAmount.toStringAsFixed(2)}.',
+                'html': '<p>Se ha cobrado la cuota de <strong>"${debt.name}"</strong> por un monto de ${debt.installmentAmount.toStringAsFixed(2)}.</p>',
+              },
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+          }
 
           addedInstallments++;
           addedCount++;
@@ -353,6 +379,20 @@ class RecurringTransactionService {
             category: 'debt',
           );
           batch.set(notifRef, notif.toFirestore());
+
+          if (user.email != null) {
+            final mailRef = FirebaseFirestore.instance.collection('mail').doc();
+            batch.set(mailRef, {
+              'to': user.email,
+              'message': {
+                'subject': title,
+                'text': body,
+                'html': '<p>$body</p>',
+              },
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+          }
+
           addedAlerts++;
         }
       }

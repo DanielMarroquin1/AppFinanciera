@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../core/utils/localization.dart';
 
 class QuickActionsMenu extends ConsumerWidget {
   const QuickActionsMenu({super.key});
@@ -8,11 +9,12 @@ class QuickActionsMenu extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final loc = ref.watch(localizationProvider);
 
     final actions = [
       {
         'id': 'savings-goal',
-        'label': 'Nueva Meta de Ahorro',
+        'label': loc.get('quick_actions_new_goal'),
         'icon': LucideIcons.target,
         'gradient': isDark 
             ? const [Color(0xFF1D4ED8), Color(0xFF0E7490)]
@@ -21,7 +23,7 @@ class QuickActionsMenu extends ConsumerWidget {
       },
       {
         'id': 'my-savings',
-        'label': 'Mis Ahorros',
+        'label': loc.get('my_savings').replaceAll(' 🎯', ''),
         'icon': LucideIcons.piggyBank,
         'gradient': isDark 
             ? const [Color(0xFF0E7490), Color(0xFF0369A1)]
@@ -30,7 +32,7 @@ class QuickActionsMenu extends ConsumerWidget {
       },
       {
         'id': 'rewards-shop',
-        'label': 'Tienda de Recompensas',
+        'label': loc.get('quick_actions_rewards_shop'),
         'icon': LucideIcons.shoppingBag,
         'gradient': isDark 
             ? const [Color(0xFFD97706), Color(0xFFC2410C)]
@@ -38,8 +40,17 @@ class QuickActionsMenu extends ConsumerWidget {
         'isPremium': false,
       },
       {
+        'id': 'category-budget',
+        'label': loc.get('category_budget'),
+        'icon': LucideIcons.sliders,
+        'gradient': isDark 
+            ? const [Color(0xFF047857), Color(0xFF065F46)]
+            : const [Color(0xFF059669), Color(0xFF10B981)],
+        'isPremium': false,
+      },
+      {
         'id': 'ai-chat',
-        'label': 'Consultar IA',
+        'label': loc.get('ai_assistant'),
         'icon': LucideIcons.messageSquare,
         'gradient': isDark 
             ? const [Color(0xFF7E22CE), Color(0xFF4338CA)]
@@ -73,9 +84,9 @@ class QuickActionsMenu extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Acciones Rápidas',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                Text(
+                  loc.get('quick_actions'),
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 IconButton(
                   icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
@@ -153,7 +164,7 @@ class QuickActionsMenu extends ConsumerWidget {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text('${action['badgeCount']} nueva(s)', style: const TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)),
+                                      Text(loc.get('quick_actions_new_badge').replaceAll('{count}', action['badgeCount'].toString()), style: const TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)),
                                     ],
                                   ),
                                 ),
@@ -168,7 +179,7 @@ class QuickActionsMenu extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Selecciona una acción para continuar',
+              loc.get('quick_actions_footer'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,

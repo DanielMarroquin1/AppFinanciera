@@ -6,20 +6,22 @@ import 'add_expense_modal.dart';
 class StreakModal extends StatefulWidget {
   final int currentStreak;
   final bool isActiveToday;
+  final bool isFrozen;
 
   const StreakModal({
     super.key,
     required this.currentStreak,
     required this.isActiveToday,
+    this.isFrozen = false,
   });
 
   @override
   State<StreakModal> createState() => _StreakModalState();
 
-  static Future<void> show(BuildContext context, {required int streak, required bool isActiveToday}) {
+  static Future<void> show(BuildContext context, {required int streak, required bool isActiveToday, bool isFrozen = false}) {
     return showDialog(
       context: context,
-      builder: (context) => StreakModal(currentStreak: streak, isActiveToday: isActiveToday),
+      builder: (context) => StreakModal(currentStreak: streak, isActiveToday: isActiveToday, isFrozen: isFrozen),
     );
   }
 }
@@ -142,7 +144,33 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Top Status Badge
-                if (widget.isActiveToday) ...[
+                if (widget.isFrozen) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(colors: [Color(0xFF38BDF8), Color(0xFF0284C7)]),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF0284C7).withValues(alpha: 0.4),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(LucideIcons.snowflake, color: Colors.white, size: 14),
+                        SizedBox(width: 6),
+                        Text(
+                          '❄️ RACHA CONGELADA (24H EXTRAS)',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.8),
+                        ),
+                      ],
+                    ),
+                  ),
+                ] else if (widget.isActiveToday) ...[
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
                     decoration: BoxDecoration(
@@ -200,7 +228,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                 Stack(
                   alignment: Alignment.center,
                   children: [
-                    if (widget.isActiveToday)
+                    if (widget.isActiveToday || widget.isFrozen)
                       AnimatedBuilder(
                         animation: _pulseController,
                         builder: (context, child) {
@@ -210,7 +238,8 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: const Color(0xFFF97316).withValues(alpha: 0.3 * (1.0 - _pulseController.value)),
+                                color: (widget.isFrozen ? const Color(0xFF0EA5E9) : const Color(0xFFF97316))
+                                    .withValues(alpha: 0.3 * (1.0 - _pulseController.value)),
                                 width: 3,
                               ),
                             ),
@@ -221,23 +250,29 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: widget.isActiveToday
+                        gradient: widget.isFrozen
                             ? (isDark
-                                ? const LinearGradient(colors: [Color(0xFF7C2D12), Color(0xFF9A3412)])
-                                : const LinearGradient(colors: [Color(0xFFFFF7ED), Color(0xFFFFEDD5)]))
-                            : (isDark
-                                ? const LinearGradient(colors: [Color(0xFF374151), Color(0xFF1F2937)])
-                                : const LinearGradient(colors: [Color(0xFFF3F4F6), Color(0xFFE5E7EB)])),
+                                ? const LinearGradient(colors: [Color(0xFF0C4A6E), Color(0xFF075985)])
+                                : const LinearGradient(colors: [Color(0xFFE0F2FE), Color(0xFFBAE6FD)]))
+                            : widget.isActiveToday
+                                ? (isDark
+                                    ? const LinearGradient(colors: [Color(0xFF7C2D12), Color(0xFF9A3412)])
+                                    : const LinearGradient(colors: [Color(0xFFFFF7ED), Color(0xFFFFEDD5)]))
+                                : (isDark
+                                    ? const LinearGradient(colors: [Color(0xFF374151), Color(0xFF1F2937)])
+                                    : const LinearGradient(colors: [Color(0xFFF3F4F6), Color(0xFFE5E7EB)])),
                         border: Border.all(
-                          color: widget.isActiveToday
-                              ? (isDark ? const Color(0xFFF97316) : const Color(0xFFFB923C))
-                              : (isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB)),
+                          color: widget.isFrozen
+                              ? const Color(0xFF0EA5E9)
+                              : widget.isActiveToday
+                                  ? (isDark ? const Color(0xFFF97316) : const Color(0xFFFB923C))
+                                  : (isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB)),
                           width: 3.5,
                         ),
-                        boxShadow: widget.isActiveToday
+                        boxShadow: (widget.isActiveToday || widget.isFrozen)
                             ? [
                                 BoxShadow(
-                                  color: const Color(0xFFF97316).withValues(alpha: 0.35),
+                                  color: (widget.isFrozen ? const Color(0xFF0EA5E9) : const Color(0xFFF97316)).withValues(alpha: 0.35),
                                   blurRadius: 16,
                                   spreadRadius: 2,
                                 )
@@ -248,13 +283,15 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                         animation: _pulseController,
                         builder: (context, child) {
                           return Transform.scale(
-                            scale: widget.isActiveToday ? 1.0 + (_pulseController.value * 0.18) : 1.0,
+                            scale: (widget.isActiveToday || widget.isFrozen) ? 1.0 + (_pulseController.value * 0.18) : 1.0,
                             child: Icon(
-                              LucideIcons.flame,
+                              widget.isFrozen ? LucideIcons.snowflake : LucideIcons.flame,
                               size: 52,
-                              color: widget.isActiveToday
-                                  ? (isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C))
-                                  : (isDark ? Colors.grey[500] : Colors.grey[400]),
+                              color: widget.isFrozen
+                                  ? const Color(0xFF0EA5E9)
+                                  : widget.isActiveToday
+                                      ? (isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C))
+                                      : (isDark ? Colors.grey[500] : Colors.grey[400]),
                             ),
                           );
                         },
@@ -270,18 +307,22 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                   style: TextStyle(
                     fontSize: 52,
                     fontWeight: FontWeight.w900,
-                    color: widget.isActiveToday && widget.currentStreak > 0
-                        ? (isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C))
-                        : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                    color: widget.isFrozen
+                        ? const Color(0xFF0EA5E9)
+                        : widget.isActiveToday && widget.currentStreak > 0
+                            ? (isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C))
+                            : (isDark ? Colors.grey[400] : Colors.grey[600]),
                     height: 1.0,
                   ),
                 ),
                 Text(
-                  widget.currentStreak == 0
-                      ? 'días de racha (Llama Apagada estilo Duolingo)'
-                      : widget.currentStreak == 1
-                          ? 'día de racha (¡1 día más para encender llama permanente!)'
-                          : 'días de racha acumulada',
+                  widget.isFrozen
+                      ? 'días de racha (Protegida por Escudo Congelador)'
+                      : widget.currentStreak == 0
+                          ? 'días de racha (Llama Apagada estilo Duolingo)'
+                          : widget.currentStreak == 1
+                              ? 'día de racha (¡1 día más para encender llama permanente!)'
+                              : 'días de racha acumulada',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
@@ -295,51 +336,68 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: widget.isActiveToday
-                        ? (isDark ? const Color(0xFF7C2D12).withValues(alpha: 0.2) : const Color(0xFFFFF7ED))
-                        : (isDark ? const Color(0xFF334155).withValues(alpha: 0.4) : const Color(0xFFF8FAFC)),
+                    color: widget.isFrozen
+                        ? (isDark ? const Color(0xFF0C4A6E).withValues(alpha: 0.2) : const Color(0xFFE0F2FE))
+                        : widget.isActiveToday
+                            ? (isDark ? const Color(0xFF7C2D12).withValues(alpha: 0.2) : const Color(0xFFFFF7ED))
+                            : (isDark ? const Color(0xFF334155).withValues(alpha: 0.4) : const Color(0xFFF8FAFC)),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: widget.isActiveToday
-                          ? (isDark ? const Color(0xFF9A3412) : const Color(0xFFFED7AA))
-                          : (isDark ? const Color(0xFF475569) : const Color(0xFFE2E8F0)),
+                      color: widget.isFrozen
+                          ? const Color(0xFF38BDF8)
+                          : widget.isActiveToday
+                              ? (isDark ? const Color(0xFF9A3412) : const Color(0xFFFED7AA))
+                              : (isDark ? const Color(0xFF475569) : const Color(0xFFE2E8F0)),
                     ),
                   ),
-                  child: widget.isActiveToday
+                  child: widget.isFrozen
                       ? Row(
                           children: [
-                            Icon(LucideIcons.checkCircle2, color: isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C), size: 24),
+                            const Icon(LucideIcons.shieldCheck, color: Color(0xFF0EA5E9), size: 24),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                '¡Excelente! Has encendido tu llama de hoy. Regresa mañana y registra un movimiento para mantener tu racha viva.',
-                                style: TextStyle(color: isDark ? Colors.orange[200] : Colors.orange[900], fontSize: 13, fontWeight: FontWeight.w500),
+                                'Tu racha está congelada y a salvo hoy gracias a tu Escudo Congelador. Registra un ingreso o gasto para salvarla y sumar un día más.',
+                                style: TextStyle(color: isDark ? const Color(0xFFBAE6FD) : const Color(0xFF0369A1), fontSize: 13, fontWeight: FontWeight.w500),
                               ),
                             ),
                           ],
                         )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                      : widget.isActiveToday
+                          ? Row(
                               children: [
-                                const Icon(LucideIcons.info, color: Color(0xFFF59E0B), size: 18),
-                                const SizedBox(width: 8),
+                                Icon(LucideIcons.checkCircle2, color: isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C), size: 24),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    '¡Excelente! Has encendido tu llama de hoy. Regresa mañana y registra un movimiento para mantener tu racha viva.',
+                                    style: TextStyle(color: isDark ? Colors.orange[200] : Colors.orange[900], fontSize: 13, fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(LucideIcons.info, color: Color(0xFFF59E0B), size: 18),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      widget.currentStreak == 0 ? 'REGLA ESTILO DUOLINGO' : '¿CÓMO ACTIVAR TU RACHA?',
+                                      style: TextStyle(color: isDark ? Colors.amber[400] : Colors.amber[800], fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
                                 Text(
-                                  widget.currentStreak == 0 ? 'REGLA ESTILO DUOLINGO' : '¿CÓMO ACTIVAR TU RACHA?',
-                                  style: TextStyle(color: isDark ? Colors.amber[400] : Colors.amber[800], fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                                  widget.currentStreak == 0
+                                      ? 'Cuando tu racha está en 0, la llama aparece fría en gris. Registra una transacción hoy y mañana seguidos para encender el fuego naranja de tu racha. ¡Además cuentas con 48h de gracia y puedes protegerla en la Tienda!'
+                                      : 'Para encender el fuego y no perder tu progreso, registra al menos un nuevo gasto o ingreso. Si olvidas un día, tu racha se congela por 24h extras (48h en total).',
+                                  style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, height: 1.4),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              widget.currentStreak == 0
-                                  ? 'Cuando tu racha está en 0, la llama aparece fría en gris. Registra una transacción hoy y mañana seguidos para encender el fuego naranja de tu racha. ¡Además cuentas con 48h de gracia y puedes protegerla en la Tienda!'
-                                  : 'Para encender el fuego y no perder tu progreso, registra al menos un nuevo gasto o ingreso. Si olvidas un día, tu racha se congela por 24h extras (48h en total).',
-                              style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, height: 1.4),
-                            ),
-                          ],
-                        ),
                 ),
                 const SizedBox(height: 24),
 

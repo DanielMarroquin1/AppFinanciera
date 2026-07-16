@@ -3,26 +3,32 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../../domain/entities/credit_card.dart';
 import 'transaction_provider.dart';
+import 'auth_provider.dart';
 
 final creditCardsProvider = StreamProvider<List<CreditCard>>((ref) {
-  final user = firebase_auth.FirebaseAuth.instance.currentUser;
-  if (user == null) return Stream.value([]);
-
-  return FirebaseFirestore.instance
-      .collection('users')
-      .doc(user.uid)
-      .collection('credit_cards')
-      .snapshots()
-      .map((snapshot) {
-        final cards = <CreditCard>[];
-        for (final doc in snapshot.docs) {
-          try {
-            cards.add(CreditCard.fromFirestore(doc));
-          } catch (_) {}
-        }
-        cards.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        return cards;
-      });
+  final authState = ref.watch(authProvider);
+  
+  if (authState.user != null) {
+    final uid = firebase_auth.FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      return FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('credit_cards')
+          .snapshots()
+          .map((snapshot) {
+            final cards = <CreditCard>[];
+            for (final doc in snapshot.docs) {
+              try {
+                cards.add(CreditCard.fromFirestore(doc));
+              } catch (_) {}
+            }
+            cards.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+            return cards;
+          });
+    }
+  }
+  return Stream.value([]);
 });
 
 final computedCreditCardsProvider = Provider<AsyncValue<List<CreditCard>>>((ref) {

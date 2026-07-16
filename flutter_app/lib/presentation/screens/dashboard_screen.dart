@@ -228,104 +228,122 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    InkWell(
-                      onTap: () {
+                    Builder(
+                      builder: (context) {
                         final now = DateTime.now();
                         final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
                         final isActiveToday = user?.lastActiveDate == todayStr;
-                        StreakModal.show(context, streak: user?.currentStreak ?? 0, isActiveToday: isActiveToday);
-                      },
-                      borderRadius: BorderRadius.circular(16),
-                      child: AnimatedBuilder(
-                        animation: _fireAnimController,
-                        builder: (context, child) {
-                          final now = DateTime.now();
-                          final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-                          final isActiveToday = user?.lastActiveDate == todayStr;
-                          final currentStreak = user?.currentStreak ?? 0;
-                          
-                          bool isFrozenGrace = false;
-                          if (user?.lastActiveDate != null) {
-                            final lastDate = DateTime.tryParse(user!.lastActiveDate!);
-                            if (lastDate != null) {
-                              final dOnly = DateTime(lastDate.year, lastDate.month, lastDate.day);
-                              final tOnly = DateTime(now.year, now.month, now.day);
-                              isFrozenGrace = tOnly.difference(dOnly).inDays == 2 && currentStreak > 0;
-                            }
+                        final currentStreak = user?.currentStreak ?? 0;
+
+                        bool isFrozenGrace = false;
+                        if (user?.lastActiveDate != null) {
+                          final lastDate = DateTime.tryParse(user!.lastActiveDate!);
+                          if (lastDate != null) {
+                            final dOnly = DateTime(lastDate.year, lastDate.month, lastDate.day);
+                            final tOnly = DateTime(now.year, now.month, now.day);
+                            final hasFreeze = user!.unlockedItems.contains('spec2') || user!.unlockedItems.contains('streak_freeze');
+                            isFrozenGrace = tOnly.difference(dOnly).inDays == 2 && currentStreak > 0 && hasFreeze;
                           }
-                          
-                          final isZeroStreak = currentStreak == 0;
-                          
-                          return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              gradient: isFrozenGrace
-                                  ? (isDark
-                                      ? const LinearGradient(colors: [Color(0xFF0C4A6E), Color(0xFF075985)])
-                                      : const LinearGradient(colors: [Color(0xFFE0F2FE), Color(0xFFBAE6FD)]))
-                                  : isActiveToday && !isZeroStreak
-                                      ? (isDark 
-                                          ? const LinearGradient(colors: [Color(0xFF7C2D12), Color(0xFF7F1D1D)]) 
-                                          : const LinearGradient(colors: [Color(0xFFFFF7ED), Color(0xFFFEF2F2)]))
-                                      : (isDark
-                                          ? const LinearGradient(colors: [Color(0xFF374151), Color(0xFF1F2937)])
-                                          : const LinearGradient(colors: [Color(0xFFF3F4F6), Color(0xFFE5E7EB)])),
-                              border: Border.all(
-                                color: isFrozenGrace
-                                    ? const Color(0xFF0EA5E9)
-                                    : isActiveToday && !isZeroStreak
-                                        ? (isDark ? const Color(0xFFC2410C) : const Color(0xFFFDBA74))
-                                        : (isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB)),
-                                width: 2,
-                              ),
+                        }
+
+                        if (currentStreak < 2 && !isFrozenGrace) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                StreakModal.show(
+                                  context,
+                                  streak: currentStreak,
+                                  isActiveToday: isActiveToday,
+                                  isFrozen: isFrozenGrace,
+                                );
+                              },
                               borderRadius: BorderRadius.circular(16),
-                              boxShadow: (isActiveToday && !isZeroStreak) ? [
-                                BoxShadow(
-                                  color: const Color(0xFFF97316).withValues(alpha: 0.3 + (_fireAnimController.value * 0.2)),
-                                  blurRadius: 8 + (_fireAnimController.value * 8),
-                                  spreadRadius: _fireAnimController.value * 2,
-                                ),
-                              ] : isFrozenGrace ? [
-                                BoxShadow(
-                                  color: const Color(0xFF0EA5E9).withValues(alpha: 0.35),
-                                  blurRadius: 10,
-                                ),
-                              ] : [],
+                              child: AnimatedBuilder(
+                                animation: _fireAnimController,
+                                builder: (context, child) {
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      gradient: isFrozenGrace
+                                          ? (isDark
+                                              ? const LinearGradient(colors: [Color(0xFF0C4A6E), Color(0xFF075985)])
+                                              : const LinearGradient(colors: [Color(0xFFE0F2FE), Color(0xFFBAE6FD)]))
+                                          : isActiveToday
+                                              ? (isDark
+                                                  ? const LinearGradient(colors: [Color(0xFF7C2D12), Color(0xFF7F1D1D)])
+                                                  : const LinearGradient(colors: [Color(0xFFFFF7ED), Color(0xFFFEF2F2)]))
+                                              : (isDark
+                                                  ? const LinearGradient(colors: [Color(0xFF374151), Color(0xFF1F2937)])
+                                                  : const LinearGradient(colors: [Color(0xFFF3F4F6), Color(0xFFE5E7EB)])),
+                                      border: Border.all(
+                                        color: isFrozenGrace
+                                            ? const Color(0xFF0EA5E9)
+                                            : isActiveToday
+                                                ? (isDark ? const Color(0xFFC2410C) : const Color(0xFFFDBA74))
+                                                : (isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB)),
+                                        width: 2,
+                                      ),
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: isActiveToday
+                                          ? [
+                                              BoxShadow(
+                                                color: const Color(0xFFF97316).withValues(alpha: 0.3 + (_fireAnimController.value * 0.2)),
+                                                blurRadius: 8 + (_fireAnimController.value * 8),
+                                                spreadRadius: _fireAnimController.value * 2,
+                                              ),
+                                            ]
+                                          : isFrozenGrace
+                                              ? [
+                                                  BoxShadow(
+                                                    color: const Color(0xFF0EA5E9).withValues(alpha: 0.35),
+                                                    blurRadius: 10,
+                                                  ),
+                                                ]
+                                              : [],
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Transform.scale(
+                                          scale: isActiveToday ? 1.0 + (_fireAnimController.value * 0.1) : 1.0,
+                                          child: Icon(
+                                            isFrozenGrace ? LucideIcons.snowflake : LucideIcons.flame,
+                                            color: isFrozenGrace
+                                                ? const Color(0xFF0EA5E9)
+                                                : isActiveToday
+                                                    ? (isDark ? const Color(0xFFF97316) : const Color(0xFFEA580C))
+                                                    : (isDark ? Colors.grey[500] : Colors.grey[400]),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '$currentStreak',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: isFrozenGrace
+                                                ? const Color(0xFF0EA5E9)
+                                                : isActiveToday
+                                                    ? (isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C))
+                                                    : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Transform.scale(
-                                  scale: (isActiveToday && !isZeroStreak) ? 1.0 + (_fireAnimController.value * 0.1) : 1.0,
-                                  child: Icon(
-                                    isFrozenGrace ? LucideIcons.snowflake : LucideIcons.flame, 
-                                    color: isFrozenGrace
-                                        ? const Color(0xFF0EA5E9)
-                                        : (isActiveToday && !isZeroStreak)
-                                            ? (isDark ? const Color(0xFFF97316) : const Color(0xFFEA580C))
-                                            : (isDark ? Colors.grey[500] : Colors.grey[400]),
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '$currentStreak',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: isFrozenGrace
-                                        ? const Color(0xFF0EA5E9)
-                                        : (isActiveToday && !isZeroStreak)
-                                            ? (isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C))
-                                            : (isDark ? Colors.grey[400] : Colors.grey[600]),
-                                  ),
-                                )
-                              ],
-                            ),
+                            const SizedBox(width: 8),
+                          ],
                         );
-                        },
-                      ),
+                      },
                     ),
-                    const SizedBox(width: 8),
                     Stack(
                       clipBehavior: Clip.none,
                       children: [
@@ -345,32 +363,34 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                                 width: 2,
                               ),
                               borderRadius: BorderRadius.circular(16),
+                              boxShadow: unreadNotificationsCount > 0
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+                                        blurRadius: 8,
+                                        spreadRadius: 1,
+                                      )
+                                    ]
+                                  : [],
                             ),
                             child: Icon(
                               LucideIcons.bell,
                               color: unreadNotificationsCount > 0
-                                  ? const Color(0xFFEF4444)
-                                  : (isDark ? Colors.white : Colors.black87),
+                                  ? (isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626))
+                                  : (isDark ? Colors.grey[400] : Colors.grey[600]),
                             ),
                           ),
                         ),
                         if (unreadNotificationsCount > 0)
                           Positioned(
-                            top: -4,
                             right: -4,
+                            top: -4,
                             child: Container(
                               padding: const EdgeInsets.all(6),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFEF4444),
-                                shape: BoxShape.circle,
-                              ),
+                              decoration: const BoxDecoration(color: Color(0xFFEF4444), shape: BoxShape.circle),
                               child: Text(
                                 unreadNotificationsCount > 9 ? '9+' : '$unreadNotificationsCount',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                               ),
                             ),
                           ),
@@ -385,11 +405,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 final now = DateTime.now();
                 final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
                 final isActiveToday = user?.lastActiveDate == todayStr;
-                
-                if (!isActiveToday) {
+                final currentStreak = user?.currentStreak ?? 0;
+
+                bool isFrozenGrace = false;
+                if (user?.lastActiveDate != null) {
+                  final lastDate = DateTime.tryParse(user!.lastActiveDate!);
+                  if (lastDate != null) {
+                    final dOnly = DateTime(lastDate.year, lastDate.month, lastDate.day);
+                    final tOnly = DateTime(now.year, now.month, now.day);
+                    final hasFreeze = user!.unlockedItems.contains('spec2') || user!.unlockedItems.contains('streak_freeze');
+                    isFrozenGrace = tOnly.difference(dOnly).inDays == 2 && currentStreak > 0 && hasFreeze;
+                  }
+                }
+
+                if (!isActiveToday && (currentStreak >= 2 || isFrozenGrace)) {
                   return Padding(
                     padding: const EdgeInsets.only(top: 16, bottom: 20),
-                    child: _buildFloatingStreakPrompt(context, isDark, user?.currentStreak ?? 0),
+                    child: _buildFloatingStreakPrompt(
+                      context,
+                      isDark,
+                      currentStreak,
+                      isFrozen: isFrozenGrace,
+                    ),
                   );
                 }
                 return const SizedBox(height: 24);
@@ -1164,21 +1201,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
     );
   }
 
-  Widget _buildFloatingStreakPrompt(BuildContext context, bool isDark, int currentStreak) {
+  Widget _buildFloatingStreakPrompt(BuildContext context, bool isDark, int currentStreak, {bool isFrozen = false}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: isDark
-            ? LinearGradient(colors: [const Color(0xFF7C2D12).withValues(alpha: 0.4), const Color(0xFF451A03).withValues(alpha: 0.3)])
-            : LinearGradient(colors: [const Color(0xFFFFF7ED), const Color(0xFFFFEDD5)]),
+        gradient: isFrozen
+            ? (isDark
+                ? LinearGradient(colors: [const Color(0xFF0C4A6E).withValues(alpha: 0.4), const Color(0xFF075985).withValues(alpha: 0.3)])
+                : const LinearGradient(colors: [Color(0xFFE0F2FE), Color(0xFFBAE6FD)]))
+            : (isDark
+                ? LinearGradient(colors: [const Color(0xFF7C2D12).withValues(alpha: 0.4), const Color(0xFF451A03).withValues(alpha: 0.3)])
+                : const LinearGradient(colors: [Color(0xFFFFF7ED), Color(0xFFFFEDD5)])),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xFFEA580C) : const Color(0xFFF97316),
+          color: isFrozen
+              ? const Color(0xFF0EA5E9)
+              : (isDark ? const Color(0xFFEA580C) : const Color(0xFFF97316)),
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF97316).withValues(alpha: 0.2),
+            color: (isFrozen ? const Color(0xFF0EA5E9) : const Color(0xFFF97316)).withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -1194,17 +1237,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF97316),
+                    color: isFrozen ? const Color(0xFF0EA5E9) : const Color(0xFFF97316),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFF97316).withValues(alpha: 0.5),
+                        color: (isFrozen ? const Color(0xFF0EA5E9) : const Color(0xFFF97316)).withValues(alpha: 0.5),
                         blurRadius: 12,
                         spreadRadius: _fireAnimController.value * 4,
                       )
                     ],
                   ),
-                  child: const Icon(LucideIcons.flame, color: Colors.white, size: 24),
+                  child: Icon(isFrozen ? LucideIcons.snowflake : LucideIcons.flame, color: Colors.white, size: 24),
                 ),
               );
             },
@@ -1216,20 +1259,26 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
               children: [
                 Row(
                   children: [
-                    Text(
-                      '🔥 ¡TU RACHA ESTÁ EN RIESGO!',
-                      style: TextStyle(
-                        color: isDark ? const Color(0xFFFB923C) : const Color(0xFFC2410C),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5,
+                    Expanded(
+                      child: Text(
+                        isFrozen ? '❄️ ¡RACHA CONGELADA (24H EXTRAS)!' : '🔥 ¡TU RACHA ESTÁ EN RIESGO!',
+                        style: TextStyle(
+                          color: isFrozen
+                              ? (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7))
+                              : (isDark ? const Color(0xFFFB923C) : const Color(0xFFC2410C)),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Registra al menos un gasto o ingreso hoy para activar tu fuego y sumar +50 pts.',
+                  isFrozen
+                      ? 'Tu racha está protegida hoy gracias a tu Escudo de la Tienda. Registra un movimiento para descongelarla y sumar a tu progreso.'
+                      : 'Registra al menos un gasto o ingreso hoy para activar tu fuego y sumar +50 pts.',
                   style: TextStyle(
                     color: isDark ? Colors.grey[200] : Colors.grey[800],
                     fontSize: 12.5,
@@ -1247,10 +1296,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFFF97316), Color(0xFFEA580C)]),
+                gradient: isFrozen
+                    ? const LinearGradient(colors: [Color(0xFF38BDF8), Color(0xFF0284C7)])
+                    : const LinearGradient(colors: [Color(0xFFF97316), Color(0xFFEA580C)]),
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
-                  BoxShadow(color: const Color(0xFFF97316).withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0, 3)),
+                  BoxShadow(color: (isFrozen ? const Color(0xFF0284C7) : const Color(0xFFF97316)).withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0, 3)),
                 ],
               ),
               child: const Row(

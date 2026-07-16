@@ -136,22 +136,22 @@ class AuthNotifier extends Notifier<AuthState> {
 
         if (dayDiff == 2 && user.currentStreak > 0) {
           final hasFreeze = user.unlockedItems.contains('spec2') || user.unlockedItems.contains('streak_freeze');
-          if (hasFreeze) {
-            final updatedUnlocked = List<String>.from(user.unlockedItems)
-              ..remove('spec2')
-              ..remove('streak_freeze');
-            final yDay = todayDateOnly.subtract(const Duration(days: 1));
-            final yesterdayStr = "${yDay.year}-${yDay.month.toString().padLeft(2, '0')}-${yDay.day.toString().padLeft(2, '0')}";
-            final updatedUser = user.copyWith(
-              unlockedItems: updatedUnlocked,
-              lastActiveDate: yesterdayStr,
-            );
+          if (!hasFreeze) {
+            // Si pasaron 24h (estamos en dayDiff == 2) y NO tiene comprado el escudo congelador, se pierde la racha
+            final updatedUser = user.copyWith(currentStreak: 0);
             await _repository.saveUser(updatedUser);
             state = state.copyWith(user: updatedUser);
-            return;
           }
+          // Si tiene escudo congelador (hasFreeze == true), se mantiene en dayDiff == 2 con racha congelada en UI
         } else if (dayDiff > 2 && user.currentStreak > 0) {
-          final updatedUser = user.copyWith(currentStreak: 0);
+          // Si pasaron más de 48h (dayDiff > 2), se pierde la racha haya tenido escudo o no
+          final updatedUnlocked = List<String>.from(user.unlockedItems)
+            ..remove('spec2')
+            ..remove('streak_freeze');
+          final updatedUser = user.copyWith(
+            currentStreak: 0,
+            unlockedItems: updatedUnlocked,
+          );
           await _repository.saveUser(updatedUser);
           state = state.copyWith(user: updatedUser);
         }
@@ -172,6 +172,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
     int newStreak = user.currentStreak;
     int newPoints = user.points;
+    List<String> updatedUnlocked = List<String>.from(user.unlockedItems);
 
     if (user.lastActiveDate != null) {
       final lastActive = DateTime.tryParse(user.lastActiveDate!);
@@ -180,8 +181,18 @@ class AuthNotifier extends Notifier<AuthState> {
         final todayDateOnly = DateTime(now.year, now.month, now.day);
         final dayDiff = todayDateOnly.difference(lastActiveDateOnly).inDays;
 
-        if (dayDiff == 1 || dayDiff == 2) {
+        if (dayDiff == 1) {
           newStreak += 1;
+        } else if (dayDiff == 2) {
+          final hasFreeze = updatedUnlocked.contains('spec2') || updatedUnlocked.contains('streak_freeze');
+          if (hasFreeze) {
+            // Se consume el escudo para descongelar y continuar sumando racha
+            updatedUnlocked.remove('spec2');
+            updatedUnlocked.remove('streak_freeze');
+            newStreak += 1;
+          } else {
+            newStreak = 1;
+          }
         } else if (dayDiff > 2) {
           newStreak = 1;
         } else {
@@ -207,6 +218,7 @@ class AuthNotifier extends Notifier<AuthState> {
       lastActiveDate: todayStr,
       currentStreak: newStreak,
       points: newPoints,
+      unlockedItems: updatedUnlocked,
     );
 
     await _repository.saveUser(updatedUser);

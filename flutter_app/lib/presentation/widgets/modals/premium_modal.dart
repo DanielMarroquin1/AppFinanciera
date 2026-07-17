@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../providers/auth_provider.dart';
 
-class PremiumModal extends StatefulWidget {
+class PremiumModal extends ConsumerStatefulWidget {
   const PremiumModal({super.key});
 
   static Future<void> show(BuildContext context) {
@@ -14,24 +16,26 @@ class PremiumModal extends StatefulWidget {
   }
 
   @override
-  State<PremiumModal> createState() => _PremiumModalState();
+  ConsumerState<PremiumModal> createState() => _PremiumModalState();
 }
 
-class _PremiumModalState extends State<PremiumModal> {
+class _PremiumModalState extends ConsumerState<PremiumModal> {
   String selectedPlan = 'annual';
 
   final features = [
-    {'icon': LucideIcons.palette, 'text': 'Paletas de colores personalizadas'},
-    {'icon': LucideIcons.cloud, 'text': 'Sincronización en la nube'},
-    {'icon': LucideIcons.barChart3, 'text': 'Reportes avanzados y exportación'},
-    {'icon': LucideIcons.sparkles, 'text': 'Consulta ilimitada con IA financiera'},
-    {'icon': LucideIcons.zap, 'text': 'Sin anuncios'},
-    {'icon': LucideIcons.crown, 'text': 'Insignia Premium'},
+    {'icon': LucideIcons.sliders, 'text': 'Límite de presupuesto mensual y por categoría'},
+    {'icon': LucideIcons.palette, 'text': 'Apariencia y paletas de colores VIP'},
+    {'icon': LucideIcons.sparkles, 'text': 'Asistente IA, Simulador "What If" y Botón IA de Ahorros'},
+    {'icon': LucideIcons.mic, 'text': 'Registro inteligente de gastos por VOZ'},
+    {'icon': LucideIcons.filter, 'text': 'Filtros avanzados en reportes de gastos'},
+    {'icon': LucideIcons.fileSpreadsheet, 'text': 'Reporte mensual detallado del balance general'},
+    {'icon': LucideIcons.zap, 'text': 'Experiencia sin límites publicitarios'},
   ];
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isPremium = ref.watch(authProvider).user?.isPremium ?? false;
 
     return Container(
       constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9),
@@ -212,53 +216,92 @@ class _PremiumModalState extends State<PremiumModal> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Button
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).pop();
+                  // Buttons
+                  if (!isPremium) ...[
+                    Builder(
+                      builder: (context) {
+                        return Ink(
+                          decoration: BoxDecoration(
+                            gradient: isDark 
+                                ? const LinearGradient(colors: [Color(0xFFD97706), Color(0xFFC2410C)]) 
+                                : const LinearGradient(colors: [Color(0xFFFBBF24), Color(0xFFF97316)]),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: InkWell(
+                            onTap: () async {
+                              await ref.read(authProvider.notifier).upgradeToPremium();
+                              if (context.mounted) {
+                                Navigator.of(context).pop();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('👑 ¡Felicidades! Has actualizado al Plan Premium. Disfruta de todas las funciones exclusivas.'),
+                                    backgroundColor: Color(0xFFD97706),
+                                  ),
+                                );
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              alignment: Alignment.center,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(LucideIcons.crown, color: Colors.white, size: 20),
+                                  SizedBox(width: 8),
+                                  Text('Actualizar a Premium', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                    ),
+                    const SizedBox(height: 12),
+                  ] else ...[
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.15),
+                        border: Border.all(color: Colors.green, width: 1.5),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(LucideIcons.checkCircle2, color: Colors.green, size: 22),
+                          SizedBox(width: 8),
+                          Text('Ya tienes el Plan Premium Activo 👑', style: TextStyle(color: Colors.green, fontSize: 15, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+
+                  // Test cancel / subscription management
+                  TextButton.icon(
+                    onPressed: () async {
+                      if (isPremium) {
+                        await ref.read(authProvider.notifier).cancelSubscription();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Suscripción Premium cancelada correctamente para pruebas.'),
+                              backgroundColor: Colors.redAccent,
+                            ),
+                          );
+                        }
+                      } else {
+                        Navigator.of(context).pop();
+                      }
                     },
-                    icon: const Icon(LucideIcons.crown, color: Colors.white, size: 20),
-                    label: const Text('Actualizar a Premium', style: TextStyle(fontSize: 16)),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Colors.transparent,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ).copyWith(
-                      backgroundColor: WidgetStateProperty.resolveWith((states) => null), // Handled by Ink
+                    icon: Icon(isPremium ? LucideIcons.xCircle : LucideIcons.arrowLeft, color: isPremium ? Colors.redAccent : (isDark ? Colors.grey[400] : Colors.grey[600]), size: 16),
+                    label: Text(
+                      isPremium ? 'Cancelar Suscripción (Para Probar)' : 'Volver atrás',
+                      style: TextStyle(color: isPremium ? Colors.redAccent : (isDark ? Colors.grey[400] : Colors.grey[600]), fontSize: 13),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Builder(
-                    builder: (context) {
-                      return Ink(
-                        decoration: BoxDecoration(
-                          gradient: isDark 
-                              ? const LinearGradient(colors: [Color(0xFFD97706), Color(0xFFC2410C)]) 
-                              : const LinearGradient(colors: [Color(0xFFFBBF24), Color(0xFFF97316)]),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: InkWell(
-                          onTap: () => Navigator.of(context).pop(),
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            alignment: Alignment.center,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(LucideIcons.crown, color: Colors.white, size: 20),
-                                SizedBox(width: 8),
-                                Text('Actualizar a Premium', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                  ),
-                  const SizedBox(height: 16),
                   Text('Cancela cuando quieras. Sin compromisos.', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12), textAlign: TextAlign.center),
                 ],
               ),

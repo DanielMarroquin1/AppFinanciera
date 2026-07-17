@@ -7,11 +7,18 @@ import 'package:flutter_app/presentation/widgets/modals/add_saving_goal_modal.da
 import 'package:flutter_app/domain/entities/saving_goal.dart';
 import 'package:flutter_app/presentation/providers/saving_goals_provider.dart';
 import 'package:flutter_app/presentation/providers/auth_provider.dart';
+import 'premium_modal.dart';
 
 class AIChatModal extends ConsumerStatefulWidget {
   const AIChatModal({super.key});
 
   static Future<void> show(BuildContext context) {
+    final container = ProviderScope.containerOf(context, listen: false);
+    final isPremium = container.read(authProvider).user?.isPremium ?? false;
+    if (!isPremium) {
+      PremiumModal.show(context);
+      return Future.value();
+    }
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,

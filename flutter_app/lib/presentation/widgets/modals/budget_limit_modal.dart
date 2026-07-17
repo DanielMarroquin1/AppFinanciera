@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../providers/auth_provider.dart';
+import 'premium_modal.dart';
 
 class BudgetLimitModal extends StatefulWidget {
   final double initialValue;
@@ -10,6 +13,12 @@ class BudgetLimitModal extends StatefulWidget {
   });
 
   static Future<double?> show(BuildContext context, {required double initialValue}) {
+    final container = ProviderScope.containerOf(context, listen: false);
+    final isPremium = container.read(authProvider).user?.isPremium ?? false;
+    if (!isPremium) {
+      PremiumModal.show(context);
+      return Future.value(null);
+    }
     return showDialog<double>(
       context: context,
       builder: (context) => BudgetLimitModal(initialValue: initialValue),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
+import '../providers/color_palette_provider.dart';
+import '../../core/utils/localization.dart';
 
 class RewardsShopModal extends ConsumerStatefulWidget {
   const RewardsShopModal({super.key});
@@ -10,6 +12,8 @@ class RewardsShopModal extends ConsumerStatefulWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const RewardsShopModal(),
     );
@@ -22,65 +26,73 @@ class RewardsShopModal extends ConsumerStatefulWidget {
 class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
   int _selectedTabIndex = 0; // 0: Todo, 1: Avatares, 2: Paletas, 3: Especiales
 
-  final List<String> _tabs = ['🔥 Todo', '🦸‍♂️ Avatares VIP', '🎨 Paletas de Estilo', '⚡ Especiales'];
-
-  final List<Map<String, dynamic>> _allCategories = [
-    {
-      'id': 'avatars',
-      'title': 'Avatares Exclusivos 🦸‍♂️',
-      'subtitle': 'Personaliza tu identidad en la plataforma',
-      'color': [const Color(0xFF8B5CF6), const Color(0xFFD946EF)],
-      'items': [
-        {'id': 'avatar1', 'name': 'Superhéroe Financiero', 'desc': 'Protector indiscutible de tu presupuesto diario', 'icon': '🦸', 'cost': 50},
-        {'id': 'avatar2', 'name': 'Mago Místico', 'desc': 'Multiplica y multiplica tus ahorros con magia pura', 'icon': '🧙', 'cost': 50},
-        {'id': 'avatar3', 'name': 'Rey del Ahorro', 'desc': 'Corona dorada que representa estatus imperial', 'icon': '👑', 'cost': 75},
-        {'id': 'avatar4', 'name': 'Ninja de las Finanzas', 'desc': 'Recorta gastos innecesarios en absoluto silencio', 'icon': '🥷', 'cost': 75},
-        {'id': 'avatar5', 'name': 'Inversionista Espacial', 'desc': 'Lleva tus portafolios e inversiones hasta la Luna 🚀', 'icon': '🧑‍🚀', 'cost': 100},
-        {'id': 'avatar6', 'name': 'Magnate de Diamantes', 'desc': 'Para quienes tienen manos de diamante y visión', 'icon': '💎', 'cost': 150},
-        {'id': 'avatar7', 'name': 'Ballena del Mercado', 'desc': 'Dominio absoluto del mercado y liquidez masiva', 'icon': '🐳', 'cost': 150},
-        {'id': 'avatar8', 'name': 'Samurái Disciplinado', 'desc': 'Honor y control impecable de cada transacción', 'icon': '⚔️', 'cost': 200},
-        {'id': 'avatar9', 'name': 'Dragón de Oro', 'desc': 'Guardián mitológico de tu riqueza ancestral', 'icon': '🐉', 'cost': 250},
-        {'id': 'avatar10', 'name': 'Leyenda Antigravity AI', 'desc': 'El avatar definitivo del futuro agentico y wealth', 'icon': '🔥', 'cost': 300},
-      ]
-    },
-    {
-      'id': 'themes',
-      'title': '🎨 Paletas de Colores VIP',
-      'subtitle': 'Transilumina y ambienta tu interfaz financiera',
-      'color': [const Color(0xFF3B82F6), const Color(0xFF10B981)],
-      'items': [
-        {'id': 'theme1', 'name': 'Océano Profundo', 'desc': 'Tonos relajantes azules y turquesa del mar pacífico', 'icon': '🌊', 'cost': 100, 'colors': [Colors.lightBlue, Colors.cyan, Colors.blue]},
-        {'id': 'theme2', 'name': 'Atardecer de Oro', 'desc': 'Tonos cálidos vibrantes de naranja, rosa y ámbar', 'icon': '🌅', 'cost': 100, 'colors': [Colors.orange, Colors.pink, Colors.amber]},
-        {'id': 'theme3', 'name': 'Cyberpunk Neón', 'desc': 'Luces futuristas de magenta, morado y cian intenso', 'icon': '🕹️', 'cost': 150, 'colors': [Colors.purpleAccent, Colors.cyanAccent, Colors.pinkAccent]},
-        {'id': 'theme4', 'name': 'Bosque Esmeralda', 'desc': 'Armonía, serenidad y tranquilidad verde natural', 'icon': '🌲', 'cost': 150, 'colors': [Colors.green, Colors.teal, Colors.lightGreen]},
-        {'id': 'theme5', 'name': 'Amatista Real', 'desc': 'Elegancia morada y destellos de índigo imperial', 'icon': '💜', 'cost': 200, 'colors': [Colors.deepPurple, Colors.purple, Colors.indigoAccent]},
-        {'id': 'theme6', 'name': 'Obsidiana Oscura', 'desc': 'Minimalismo absoluto en tonos grafito, plomo y plata', 'icon': '🌑', 'cost': 200, 'colors': [Colors.black87, Colors.grey, Colors.blueGrey]},
-        {'id': 'theme7', 'name': 'Llama Solar', 'desc': 'Energía desbordante en carmesí y oro ardiente', 'icon': '🔥', 'cost': 250, 'colors': [Colors.redAccent, Colors.deepOrange, Colors.amberAccent]},
-        {'id': 'theme8', 'name': 'Sakura Japonés', 'desc': 'Delicadeza floral en tonos flor de cerezo primaveral', 'icon': '🌸', 'cost': 250, 'colors': [Colors.pinkAccent, Colors.purpleAccent, Colors.redAccent]},
-      ]
-    },
-    {
-      'id': 'specials',
-      'title': '⚡ Ventajas y Especiales',
-      'subtitle': 'Poderes únicos y protección para tus métricas',
-      'color': [const Color(0xFFF59E0B), const Color(0xFFEA580C)],
-      'items': [
-        {'id': 'spec1', 'name': 'Prueba Premium 7 Días', 'desc': 'Acceso ilimitado a herramientas pro por 1 semana', 'icon': '👑', 'cost': 300},
-        {'id': 'spec2', 'name': 'Escudo Congelador de Racha', 'desc': 'Protege tu racha diaria si olvidas entrar un día', 'icon': '❄️', 'cost': 150},
-        {'id': 'spec3', 'name': 'Asesor AI VIP x 1 Mes', 'desc': 'Consultas avanzadas ilimitadas con inteligencia artificial', 'icon': '🤖', 'cost': 400},
-        {'id': 'spec4', 'name': 'Insignia Dorada de Mecenas', 'desc': 'Destaca tu perfil en el podio con un marco dorado', 'icon': '✨', 'cost': 500},
-      ]
-    }
+  List<String> _getTabs(AppLocalizations loc) => [
+    loc.get('shop_tab_all'),
+    loc.get('shop_tab_avatars'),
+    loc.get('shop_tab_themes'),
+    loc.get('shop_tab_specials'),
   ];
 
-  List<Map<String, dynamic>> _getFilteredCategories() {
-    if (_selectedTabIndex == 0) return _allCategories;
-    if (_selectedTabIndex == 1) return _allCategories.where((c) => c['id'] == 'avatars').toList();
-    if (_selectedTabIndex == 2) return _allCategories.where((c) => c['id'] == 'themes').toList();
-    return _allCategories.where((c) => c['id'] == 'specials').toList();
+  List<Map<String, dynamic>> _getCategories(AppLocalizations loc) {
+    return [
+      {
+        'id': 'avatars',
+        'title': loc.get('shop_cat_avatars_title'),
+        'subtitle': loc.get('shop_cat_avatars_sub'),
+        'color': [const Color(0xFF8B5CF6), const Color(0xFFD946EF)],
+        'items': [
+          {'id': 'avatar1', 'name': loc.get('item_avatar1_name'), 'desc': loc.get('item_avatar1_desc'), 'icon': '🦸', 'cost': 50},
+          {'id': 'avatar2', 'name': loc.get('item_avatar2_name'), 'desc': loc.get('item_avatar2_desc'), 'icon': '🧙', 'cost': 50},
+          {'id': 'avatar3', 'name': loc.get('item_avatar3_name'), 'desc': loc.get('item_avatar3_desc'), 'icon': '👑', 'cost': 75},
+          {'id': 'avatar4', 'name': loc.get('item_avatar4_name'), 'desc': loc.get('item_avatar4_desc'), 'icon': '🥷', 'cost': 75},
+          {'id': 'avatar5', 'name': loc.get('item_avatar5_name'), 'desc': loc.get('item_avatar5_desc'), 'icon': '🧑‍🚀', 'cost': 100},
+          {'id': 'avatar6', 'name': loc.get('item_avatar6_name'), 'desc': loc.get('item_avatar6_desc'), 'icon': '💎', 'cost': 150},
+          {'id': 'avatar7', 'name': loc.get('item_avatar7_name'), 'desc': loc.get('item_avatar7_desc'), 'icon': '🐳', 'cost': 150},
+          {'id': 'avatar8', 'name': loc.get('item_avatar8_name'), 'desc': loc.get('item_avatar8_desc'), 'icon': '⚔️', 'cost': 200},
+          {'id': 'avatar9', 'name': loc.get('item_avatar9_name'), 'desc': loc.get('item_avatar9_desc'), 'icon': '🐉', 'cost': 250},
+          {'id': 'avatar10', 'name': loc.get('item_avatar10_name'), 'desc': loc.get('item_avatar10_desc'), 'icon': '🔥', 'cost': 300},
+        ]
+      },
+      {
+        'id': 'themes',
+        'title': loc.get('shop_cat_themes_title'),
+        'subtitle': loc.get('shop_cat_themes_sub'),
+        'color': [const Color(0xFF3B82F6), const Color(0xFF10B981)],
+        'items': [
+          {'id': 'theme1', 'name': loc.get('item_theme1_name'), 'desc': loc.get('item_theme1_desc'), 'icon': '🌊', 'cost': 100, 'colors': presetPalettes.firstWhere((p) => p.id == 'theme1').colors},
+          {'id': 'theme2', 'name': loc.get('item_theme2_name'), 'desc': loc.get('item_theme2_desc'), 'icon': '🌅', 'cost': 100, 'colors': presetPalettes.firstWhere((p) => p.id == 'theme2').colors},
+          {'id': 'theme3', 'name': loc.get('item_theme3_name'), 'desc': loc.get('item_theme3_desc'), 'icon': '🕹️', 'cost': 150, 'colors': presetPalettes.firstWhere((p) => p.id == 'theme3').colors},
+          {'id': 'theme4', 'name': loc.get('item_theme4_name'), 'desc': loc.get('item_theme4_desc'), 'icon': '🌲', 'cost': 150, 'colors': presetPalettes.firstWhere((p) => p.id == 'theme4').colors},
+          {'id': 'theme5', 'name': loc.get('item_theme5_name'), 'desc': loc.get('item_theme5_desc'), 'icon': '💜', 'cost': 200, 'colors': presetPalettes.firstWhere((p) => p.id == 'theme5').colors},
+          {'id': 'theme6', 'name': loc.get('item_theme6_name'), 'desc': loc.get('item_theme6_desc'), 'icon': '🌑', 'cost': 200, 'colors': presetPalettes.firstWhere((p) => p.id == 'theme6').colors},
+          {'id': 'theme7', 'name': loc.get('item_theme7_name'), 'desc': loc.get('item_theme7_desc'), 'icon': '🔥', 'cost': 250, 'colors': presetPalettes.firstWhere((p) => p.id == 'theme7').colors},
+          {'id': 'theme8', 'name': loc.get('item_theme8_name'), 'desc': loc.get('item_theme8_desc'), 'icon': '🌸', 'cost': 250, 'colors': presetPalettes.firstWhere((p) => p.id == 'theme8').colors},
+        ]
+      },
+      {
+        'id': 'specials',
+        'title': loc.get('shop_cat_specials_title'),
+        'subtitle': loc.get('shop_cat_specials_sub'),
+        'color': [const Color(0xFFF59E0B), const Color(0xFFEA580C)],
+        'items': [
+          {'id': 'spec1', 'name': loc.get('item_spec1_name'), 'desc': loc.get('item_spec1_desc'), 'icon': '👑', 'cost': 300},
+          {'id': 'spec2', 'name': loc.get('item_spec2_name'), 'desc': loc.get('item_spec2_desc'), 'icon': '❄️', 'cost': 150},
+          {'id': 'spec3', 'name': loc.get('item_spec3_name'), 'desc': loc.get('item_spec3_desc'), 'icon': '🤖', 'cost': 400},
+          {'id': 'spec4', 'name': loc.get('item_spec4_name'), 'desc': loc.get('item_spec4_desc'), 'icon': '✨', 'cost': 500},
+        ]
+      }
+    ];
   }
 
-  void _showRewardActivatedDialog(BuildContext context, String name, String desc, String icon, bool isDark) {
+  List<Map<String, dynamic>> _getFilteredCategories(AppLocalizations loc) {
+    final all = _getCategories(loc);
+    if (_selectedTabIndex == 0) return all;
+    if (_selectedTabIndex == 1) return all.where((c) => c['id'] == 'avatars').toList();
+    if (_selectedTabIndex == 2) return all.where((c) => c['id'] == 'themes').toList();
+    return all.where((c) => c['id'] == 'specials').toList();
+  }
+
+  void _showRewardActivatedDialog(BuildContext context, String name, String desc, String icon, bool isDark, AppLocalizations loc) {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
@@ -102,7 +114,7 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
               ),
               const SizedBox(height: 16),
               Text(
-                '¡RECOMPENSA ACTIVA!',
+                loc.get('shop_reward_active'),
                 style: TextStyle(color: isDark ? const Color(0xFF34D399) : const Color(0xFF059669), fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1.2),
               ),
               const SizedBox(height: 8),
@@ -128,7 +140,7 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
-                  child: const Text('Entendido • ¡Aprovechar Recompensa!', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(loc.get('shop_got_it_btn'), style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -141,32 +153,44 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final loc = ref.watch(localizationProvider);
     final user = ref.watch(authProvider).user;
     final userPoints = user?.points ?? 0;
     final unlockedItems = user?.unlockedItems ?? [];
 
-    final filteredCategories = _getFilteredCategories();
+    final filteredCategories = _getFilteredCategories(loc);
+    final tabs = _getTabs(loc);
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.9,
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-      ),
-      child: Column(
-        children: [
-          // HEADER LOUNGE VIP
-          Container(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-            decoration: BoxDecoration(
-              gradient: isDark
-                  ? const LinearGradient(colors: [Color(0xFF312E81), Color(0xFF1E1B4B)], begin: Alignment.topLeft, end: Alignment.bottomRight)
-                  : const LinearGradient(colors: [Color(0xFF4F46E5), Color(0xFF312E81)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-              boxShadow: [
-                BoxShadow(color: const Color(0xFF312E81).withValues(alpha: 0.4), blurRadius: 16, offset: const Offset(0, 6)),
-              ],
-            ),
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.88,
+          maxWidth: 650,
+        ),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 24, offset: const Offset(0, 12)),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(32),
+          child: Column(
+            children: [
+              // HEADER LOUNGE VIP
+              Container(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                decoration: BoxDecoration(
+                  gradient: isDark
+                      ? const LinearGradient(colors: [Color(0xFF312E81), Color(0xFF1E1B4B)], begin: Alignment.topLeft, end: Alignment.bottomRight)
+                      : const LinearGradient(colors: [Color(0xFF4F46E5), Color(0xFF312E81)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  boxShadow: [
+                    BoxShadow(color: const Color(0xFF312E81).withValues(alpha: 0.4), blurRadius: 16, offset: const Offset(0, 6)),
+                  ],
+                ),
             child: Column(
               children: [
                 // Handle
@@ -179,38 +203,69 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 54,
-                          height: 54,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 2),
-                            boxShadow: [
-                              BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.4), blurRadius: 12, offset: const Offset(0, 4)),
-                            ],
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 54,
+                            height: 54,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 2),
+                              boxShadow: [
+                                BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.4), blurRadius: 12, offset: const Offset(0, 4)),
+                              ],
+                            ),
+                            child: const Center(child: Text('👑', style: TextStyle(fontSize: 28))),
                           ),
-                          child: const Center(child: Text('👑', style: TextStyle(fontSize: 28))),
-                        ),
-                        const SizedBox(width: 14),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'TIENDA DE RECOMPENSAS VIP',
-                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 0.8),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  loc.get('shop_title'),
+                                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 0.8),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  loc.get('shop_subtitle_main'),
+                                  style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Canjea tus puntos por ventajas y estilo único',
-                              style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(LucideIcons.rotateCcw, color: Color(0xFFFCD34D), size: 18),
+                      tooltip: 'Reiniciar canjes (Pruebas)',
+                      onPressed: () async {
+                        await ref.read(authProvider.notifier).resetUnlockedThemes();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('✨ Canjes de colores reiniciados y puntos restaurados.'),
+                              backgroundColor: const Color(0xFF2563EB),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            ),
+                          );
+                        }
+                      },
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.white.withValues(alpha: 0.15),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
                     IconButton(
                       icon: const Icon(LucideIcons.x, color: Colors.white),
                       onPressed: () => Navigator.pop(context),
@@ -239,20 +294,26 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: const BoxDecoration(color: Color(0xFFF59E0B), shape: BoxShape.circle),
-                            child: const Icon(LucideIcons.sparkles, color: Colors.white, size: 16),
-                          ),
-                          const SizedBox(width: 10),
-                          const Text(
-                            'Tus Puntos Disponibles',
-                            style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
-                          ),
-                        ],
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(color: Color(0xFFF59E0B), shape: BoxShape.circle),
+                              child: const Icon(LucideIcons.sparkles, color: Colors.white, size: 16),
+                            ),
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Text(
+                                loc.get('shop_points_avail'),
+                                style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Row(
                         children: [
                           Text(
@@ -260,7 +321,7 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                             style: const TextStyle(color: Color(0xFFFCD34D), fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: -0.5),
                           ),
                           const SizedBox(width: 4),
-                          const Text('PTS', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w800)),
+                          Text(loc.get('shop_pts'), style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w800)),
                         ],
                       ),
                     ],
@@ -277,7 +338,7 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: _tabs.length,
+              itemCount: tabs.length,
               itemBuilder: (context, idx) {
                 final isSel = _selectedTabIndex == idx;
                 return GestureDetector(
@@ -297,7 +358,7 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                     ),
                     child: Center(
                       child: Text(
-                        _tabs[idx],
+                        tabs[idx],
                         style: TextStyle(
                           color: isSel ? Colors.white : (isDark ? Colors.grey[300] : Colors.grey[700]),
                           fontWeight: isSel ? FontWeight.w900 : FontWeight.w600,
@@ -356,8 +417,13 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                     // Items
                     ...items.map((item) {
                       final itemId = item['id'] as String;
+                      final isAvatar = category['id'] == 'avatars';
+                      final isTheme = category['id'] == 'themes';
+                      final currentPalette = ref.watch(colorPaletteProvider);
                       final isUnlocked = unlockedItems.contains(itemId);
-                      final isEquipped = user?.currentAvatar == itemId;
+                      final isEquipped = isAvatar
+                          ? user?.currentAvatar == itemId
+                          : (isTheme ? currentPalette.id == itemId : false);
                       final canAfford = userPoints >= (item['cost'] as int);
 
                       return Container(
@@ -417,11 +483,11 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                             ),
                                           ),
                                           if (isEquipped)
-                                            _buildBadge('EQUIPADO 🌟', const Color(0xFF10B981))
+                                            _buildBadge(loc.get('shop_badge_equipped'), const Color(0xFF10B981))
                                           else if (isUnlocked)
-                                            _buildBadge('DESBLOQUEADO ✔️', const Color(0xFF6366F1))
+                                            _buildBadge(loc.get('shop_badge_unlocked'), const Color(0xFF6366F1))
                                           else
-                                            _buildBadge('${item['cost']} PTS', const Color(0xFFF59E0B)),
+                                            _buildBadge('${item['cost']} ${loc.get('shop_pts')}', const Color(0xFFF59E0B)),
                                         ],
                                       ),
                                       const SizedBox(height: 6),
@@ -456,19 +522,27 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                             ),
                             const SizedBox(height: 16),
 
-                            // Action Button
+                             // Action Button
                             InkWell(
                               onTap: () async {
                                 if (isEquipped) return;
                                 if (isUnlocked) {
                                   if (category['id'] == 'avatars') {
-                                    await ref.read(authProvider.notifier).equipAvatar(itemId);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(loc.get('shop_snack_avatar_unlocked')),
+                                        backgroundColor: const Color(0xFF6366F1),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  } else if (category['id'] == 'themes') {
                                     if (context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
-                                          content: Text('⚡ Avatar equipado con éxito: ${item['name']}'),
-                                          backgroundColor: const Color(0xFF10B981),
+                                          content: Text('✨ Paleta "${item['name']}" ya desbloqueada. Ve a Ajustes > Paleta de Colores para aplicarla.'),
+                                          backgroundColor: const Color(0xFF6366F1),
                                           behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                         ),
                                       );
                                     }
@@ -477,16 +551,17 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                       context,
                                       item['name'] as String,
                                       itemId == 'spec2'
-                                          ? '❄️ ESCUDO ACTIVO: Tu racha está automáticamente protegida si olvidas entrar por 1 día completo (48h de gracia en total).'
+                                          ? loc.get('shop_snack_shield_active')
                                           : (item['desc'] as String),
                                       item['icon'] as String,
                                       isDark,
+                                      loc,
                                     );
                                   } else {
                                     if (context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
-                                          content: Text('✨ Estilo activado: ${item['name']}'),
+                                          content: Text(loc.get('shop_snack_style_active').replaceAll('{name}', item['name'] as String)),
                                           backgroundColor: const Color(0xFF6366F1),
                                           behavior: SnackBarBehavior.floating,
                                         ),
@@ -500,21 +575,45 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                   final success = await ref.read(authProvider.notifier).purchaseItem(item['cost'] as int, itemId);
                                   if (success && context.mounted) {
                                     if (category['id'] == 'avatars') {
-                                      await ref.read(authProvider.notifier).equipAvatar(itemId);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(loc.get('shop_snack_avatar_success')),
+                                          backgroundColor: const Color(0xFF10B981),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    } else if (category['id'] == 'themes') {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Row(
+                                              children: [
+                                                const Icon(LucideIcons.sparkles, color: Colors.white, size: 18),
+                                                const SizedBox(width: 8),
+                                                Expanded(child: Text('🎉 ¡Paleta "${item['name']}" desbloqueada! Ve a Ajustes > Paleta de Colores para aplicarla.')),
+                                              ],
+                                            ),
+                                            backgroundColor: (item['colors'] as List<Color>)[0],
+                                            behavior: SnackBarBehavior.floating,
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                          ),
+                                        );
+                                      }
                                     } else if (category['id'] == 'specials') {
                                       _showRewardActivatedDialog(
                                         context,
                                         item['name'] as String,
                                         itemId == 'spec2'
-                                            ? '❄️ ESCUDO ACTIVO: Tu racha está automáticamente protegida si olvidas entrar por 1 día completo (48h de gracia en total).'
+                                            ? loc.get('shop_snack_shield_active')
                                             : (item['desc'] as String),
                                         item['icon'] as String,
                                         isDark,
+                                        loc,
                                       );
                                     } else {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
-                                          content: Text('🎉 ¡Canje exitoso! Desbloqueaste: ${item['name']}'),
+                                          content: Text(loc.get('shop_snack_redeem_success').replaceAll('{name}', item['name'] as String)),
                                           backgroundColor: const Color(0xFF10B981),
                                           behavior: SnackBarBehavior.floating,
                                         ),
@@ -525,7 +624,7 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                   final missing = (item['cost'] as int) - userPoints;
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text('🔒 Faltan $missing puntos para desbloquear esta recompensa.'),
+                                      content: Text(loc.get('shop_snack_missing_pts').replaceAll('{missing}', '$missing')),
                                       backgroundColor: const Color(0xFFEF4444),
                                       behavior: SnackBarBehavior.floating,
                                     ),
@@ -538,16 +637,14 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                 width: double.infinity,
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                                 decoration: BoxDecoration(
-                                  gradient: isEquipped
+                                  gradient: (isEquipped || isUnlocked)
                                       ? LinearGradient(colors: [const Color(0xFF10B981).withValues(alpha: 0.15), const Color(0xFF059669).withValues(alpha: 0.05)])
-                                      : isUnlocked
-                                          ? const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)])
-                                          : canAfford
-                                              ? const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)])
-                                              : null,
-                                  color: (isUnlocked || canAfford) ? null : (isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
+                                      : canAfford
+                                          ? const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)])
+                                          : null,
+                                  color: (isEquipped || isUnlocked || canAfford) ? null : (isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: isEquipped ? Border.all(color: const Color(0xFF10B981), width: 1.5) : null,
+                                  border: (isEquipped || isUnlocked) ? Border.all(color: const Color(0xFF10B981), width: 1.5) : null,
                                   boxShadow: (canAfford && !isUnlocked && !isEquipped)
                                       ? [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))]
                                       : null,
@@ -556,26 +653,26 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
-                                      isEquipped
+                                      (isEquipped || isUnlocked)
                                           ? LucideIcons.checkCircle2
-                                          : isUnlocked
-                                              ? LucideIcons.sparkles
-                                              : (canAfford ? LucideIcons.gift : LucideIcons.lock),
-                                      color: isEquipped ? const Color(0xFF10B981) : (isUnlocked || canAfford) ? Colors.white : Colors.grey,
+                                          : (canAfford ? LucideIcons.gift : LucideIcons.lock),
+                                      color: (isEquipped || isUnlocked) ? const Color(0xFF10B981) : (canAfford ? Colors.white : Colors.grey),
                                       size: 18,
                                     ),
                                     const SizedBox(width: 8),
-                                    Text(
-                                      isEquipped
-                                          ? 'ACTIVO EN TU PERFIL'
-                                          : isUnlocked
-                                              ? 'USAR O EQUIPAR AHORA'
-                                              : 'CANJEAR RECOMPENSA POR ${item['cost']} PTS',
-                                      style: TextStyle(
-                                        color: isEquipped ? const Color(0xFF10B981) : (isUnlocked || canAfford) ? Colors.white : Colors.grey,
-                                        fontWeight: FontWeight.w900,
-                                        fontSize: 13,
-                                        letterSpacing: 0.5,
+                                    Flexible(
+                                      child: Text(
+                                        (isEquipped || isUnlocked)
+                                            ? loc.get('shop_badge_unlocked')
+                                            : loc.get('shop_btn_redeem').replaceAll('{cost}', '${item['cost']}'),
+                                        style: TextStyle(
+                                          color: (isEquipped || isUnlocked) ? const Color(0xFF10B981) : (canAfford ? Colors.white : Colors.grey),
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 13,
+                                          letterSpacing: 0.5,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
                                       ),
                                     ),
                                   ],
@@ -590,11 +687,13 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                   ],
                 );
               },
-            ),
-          ),
+            ), // closes ListView.builder
+          ), // closes Expanded
         ],
-      ),
-    );
+      ), // closes Column
+    ), // closes ClipRRect
+    ), // closes Container
+    ); // closes Dialog
   }
 
   Widget _buildBadge(String text, Color color) {

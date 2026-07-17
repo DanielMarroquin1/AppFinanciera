@@ -7,6 +7,7 @@ import '../../domain/repositories/transaction_repository.dart';
 import '../../data/repositories/transaction_repository_impl.dart';
 import 'auth_provider.dart';
 import 'notification_provider.dart';
+import '../../core/utils/localization.dart';
 
 final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
   return TransactionRepositoryImpl();
@@ -110,13 +111,16 @@ class TransactionNotifier extends Notifier<void> {
     }
     final categoryName = getCategoryName(mainCategory);
 
+    final loc = ref.read(localizationProvider);
+    final translatedCategory = loc.translateCategory(categoryName);
+
     if (percentage >= 100) {
       final notifRef = FirebaseFirestore.instance.collection('notifications').doc();
       final notif = NotificationModel(
         id: notifRef.id,
         userId: uid,
-        title: 'Presupuesto Agotado 🚨',
-        body: 'Has alcanzado el 100% de tu presupuesto para la categoría "$categoryName" ($totalSpent / $budget).',
+        title: loc.get('notif_budget_exceeded_title'),
+        body: loc.get('notif_budget_exceeded_body').replaceAll('{cat}', translatedCategory).replaceAll('{nums}', '$totalSpent / $budget'),
         createdAt: DateTime.now(),
         isRead: false,
         type: 'expense',
@@ -129,9 +133,9 @@ class TransactionNotifier extends Notifier<void> {
         await FirebaseFirestore.instance.collection('mail').add({
           'to': user.email,
           'message': {
-            'subject': 'Alerta de Presupuesto Agotado 🚨',
-            'text': 'Has alcanzado el 100% de tu presupuesto para la categoría "$categoryName" ($totalSpent / $budget).',
-            'html': '<p>Has alcanzado el <strong>100%</strong> de tu presupuesto para la categoría <strong>"$categoryName"</strong> ($totalSpent / $budget).</p>',
+            'subject': loc.get('notif_budget_exceeded_title'),
+            'text': loc.get('notif_budget_exceeded_body').replaceAll('{cat}', translatedCategory).replaceAll('{nums}', '$totalSpent / $budget'),
+            'html': '<p>${loc.get('notif_budget_exceeded_body').replaceAll('{cat}', '<strong>"$translatedCategory"</strong>').replaceAll('{nums}', '$totalSpent / $budget')}</p>',
           },
           'createdAt': FieldValue.serverTimestamp(),
         });
@@ -150,8 +154,8 @@ class TransactionNotifier extends Notifier<void> {
       final notif = NotificationModel(
         id: notifRef.id,
         userId: uid,
-        title: 'Presupuesto al 80% ⚠️',
-        body: 'Has usado más del 80% de tu presupuesto para la categoría "$categoryName" ($totalSpent / $budget).',
+        title: loc.get('notif_budget_warning_title'),
+        body: loc.get('notif_budget_warning_body').replaceAll('{cat}', translatedCategory).replaceAll('{nums}', '$totalSpent / $budget'),
         createdAt: DateTime.now(),
         isRead: false,
         type: 'expense',
@@ -164,9 +168,9 @@ class TransactionNotifier extends Notifier<void> {
         await FirebaseFirestore.instance.collection('mail').add({
           'to': user.email,
           'message': {
-            'subject': 'Alerta de Límite de Presupuesto ⚠️',
-            'text': 'Has usado más del 80% de tu presupuesto para la categoría "$categoryName" ($totalSpent / $budget).',
-            'html': '<p>Has usado más del <strong>80%</strong> de tu presupuesto para la categoría <strong>"$categoryName"</strong> ($totalSpent / $budget).</p>',
+            'subject': loc.get('notif_budget_warning_title'),
+            'text': loc.get('notif_budget_warning_body').replaceAll('{cat}', translatedCategory).replaceAll('{nums}', '$totalSpent / $budget'),
+            'html': '<p>${loc.get('notif_budget_warning_body').replaceAll('{cat}', '<strong>"$translatedCategory"</strong>').replaceAll('{nums}', '$totalSpent / $budget')}</p>',
           },
           'createdAt': FieldValue.serverTimestamp(),
         });

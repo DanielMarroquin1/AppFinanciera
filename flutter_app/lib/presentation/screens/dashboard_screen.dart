@@ -21,6 +21,7 @@ import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/localization.dart';
 import '../widgets/modals/quick_action_manager_modal.dart';
 import '../widgets/modals/monthly_report_modal.dart';
+import '../widgets/modals/premium_modal.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/notification_provider.dart';
@@ -131,7 +132,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         final prefs = await SharedPreferences.getInstance();
         final hasSeen = prefs.getBool('has_seen_app_tutorial') ?? false;
-        if (!hasSeen && context.mounted) {
+        if (!hasSeen && !user.hasCompletedTour && context.mounted) {
           AppTutorialModal.show(context);
         }
       });
@@ -190,6 +191,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
       });
     }
 
+    final now = DateTime.now();
+    final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final isActiveToday = user?.lastActiveDate == todayStr;
+    final currentStreak = user?.currentStreak ?? 0;
+    bool isFrozenGrace = false;
+    if (user?.lastActiveDate != null) {
+      final lastDate = DateTime.tryParse(user!.lastActiveDate!);
+      if (lastDate != null) {
+        final dOnly = DateTime(lastDate.year, lastDate.month, lastDate.day);
+        final tOnly = DateTime(now.year, now.month, now.day);
+        final hasFreeze = user.unlockedItems.contains('spec2') || user.unlockedItems.contains('streak_freeze');
+        isFrozenGrace = tOnly.difference(dOnly).inDays == 2 && currentStreak > 0 && hasFreeze;
+      }
+    }
+    final isStreakActive = currentStreak >= 2 || isFrozenGrace;
+
     return Scaffold(
       backgroundColor: Colors.transparent, // Background handled by AppShell
       body: SingleChildScrollView(
@@ -214,14 +231,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                           color: isDark ? Colors.white : Colors.black,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        loc.get('on_track'),
-                        style: TextStyle(
-                          color: isDark ? Colors.orange[400] : Colors.orange[800],
-                          fontWeight: FontWeight.w600,
+                      if (isStreakActive) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          loc.get('on_track'),
+                          style: TextStyle(
+                            color: isDark ? Colors.orange[400] : Colors.orange[800],
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
@@ -229,31 +248,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Builder(
-                      builder: (context) {
-                        final now = DateTime.now();
-                        final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-                        final isActiveToday = user?.lastActiveDate == todayStr;
-                        final currentStreak = user?.currentStreak ?? 0;
-
-                        bool isFrozenGrace = false;
-                        if (user?.lastActiveDate != null) {
-                          final lastDate = DateTime.tryParse(user!.lastActiveDate!);
-                          if (lastDate != null) {
-                            final dOnly = DateTime(lastDate.year, lastDate.month, lastDate.day);
-                            final tOnly = DateTime(now.year, now.month, now.day);
-                            final hasFreeze = user!.unlockedItems.contains('spec2') || user!.unlockedItems.contains('streak_freeze');
-                            isFrozenGrace = tOnly.difference(dOnly).inDays == 2 && currentStreak > 0 && hasFreeze;
-                          }
-                        }
-
-                        if (currentStreak < 2 && !isFrozenGrace) {
-                          return const SizedBox.shrink();
-                        }
-
-                        return Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
+                    if (isStreakActive) ...[
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
                             InkWell(
                               onTap: () {
                                 StreakModal.show(
@@ -342,9 +340,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                             ),
                             const SizedBox(width: 8),
                           ],
-                        );
-                      },
-                    ),
+                        ),
+                    ],
                     Stack(
                       clipBehavior: Clip.none,
                       children: [
@@ -426,6 +423,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                       context,
                       isDark,
                       currentStreak,
+                      loc,
                       isFrozen: isFrozenGrace,
                     ),
                   );
@@ -669,6 +667,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
 
               return InkWell(
                 onTap: () async {
+                  final isPremium = ref.read(authProvider).user?.isPremium ?? false;
+                  if (!isPremium) {
+                    PremiumModal.show(context);
+                    return;
+                  }
                   final newValue = await BudgetLimitModal.show(context, initialValue: limitPercentage);
                   if (newValue != null) {
                     ref.read(authProvider.notifier).updateMonthlyLimit(newValue);
@@ -695,7 +698,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Icon(LucideIcons.pencil, size: 16, color: iconColor),
+                      if (!(ref.watch(authProvider).user?.isPremium ?? false))
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          decoration: BoxDecoration(color: const Color(0xFFD97706), borderRadius: BorderRadius.circular(8)),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(LucideIcons.lock, size: 12, color: Colors.white),
+                              SizedBox(width: 4),
+                              Text('PRO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        )
+                      else
+                        Icon(LucideIcons.pencil, size: 16, color: iconColor),
                     ],
                   ),
                 ),
@@ -981,7 +998,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
 
             // "What If?" AI Simulator Card
             InkWell(
-              onTap: () => context.push('/what-if'),
+              onTap: () {
+                final isPremium = ref.read(authProvider).user?.isPremium ?? false;
+                if (!isPremium) {
+                  PremiumModal.show(context);
+                  return;
+                }
+                context.push('/what-if');
+              },
               borderRadius: BorderRadius.circular(24),
               child: Container(
                 padding: const EdgeInsets.all(20),
@@ -1034,10 +1058,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                         ],
                       ),
                     ),
-                    Icon(
-                      LucideIcons.chevronRight,
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
-                    ),
+                    if (!(ref.watch(authProvider).user?.isPremium ?? false))
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(color: const Color(0xFFD97706), borderRadius: BorderRadius.circular(8)),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(LucideIcons.crown, size: 14, color: Colors.white),
+                            SizedBox(width: 4),
+                            Text('PRO', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      )
+                    else
+                      Icon(
+                        LucideIcons.chevronRight,
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      ),
                   ],
                 ),
               ),
@@ -1066,7 +1104,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Center(
-                      child: Text('No hay transacciones aún', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400])),
+                      child: Text(loc.get('tx_empty_recent'), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400])),
                     ),
                   );
                 }
@@ -1078,7 +1116,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                     final emoji = loc.getCategoryEmoji(t.category);
                     final formattedDate = DateFormat('dd MMM, yyyy').format(t.date);
                     
-                    String paymentMethod = t.creditCardId != null ? 'Tarjeta de Crédito' : (t.type == 'cc_payment' ? 'Pago a Tarjeta' : 'Efectivo / Débito');
+                    String paymentMethod = t.creditCardId != null ? loc.get('tx_payment_cc') : (t.type == 'cc_payment' ? loc.get('tx_payment_pay') : loc.get('tx_payment_cash'));
                     String paymentIcon = t.creditCardId != null ? '💳' : (t.type == 'cc_payment' ? '🏦' : '💵');
 
                     return Padding(
@@ -1101,7 +1139,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Text('Error al cargar transacciones'),
+              error: (_, __) => Text(loc.get('tx_load_err')),
             ),
             const SizedBox(height: 24),
 
@@ -1126,47 +1164,59 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                shape: BoxShape.circle,
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(LucideIcons.shoppingBag, color: Colors.white, size: 24),
                               ),
-                              child: const Icon(LucideIcons.shoppingBag, color: Colors.white, size: 24),
-                            ),
-                            const SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(loc.get('rewards_shop'), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                                Text(loc.get('rewards_shop_subtitle'), style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                              ],
-                            ),
-                          ],
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      loc.get('quick_actions_rewards_shop'),
+                                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                    Text(
+                                      loc.get('rewards_shop_subtitle'),
+                                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.25),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('🟡', style: TextStyle(fontSize: 12)),
+                              const Icon(LucideIcons.coins, color: Color(0xFFFBBF24), size: 16),
                               const SizedBox(width: 4),
-                              Text(
-                                '${user?.points ?? 0} pts',
-                                style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                              ),
+                              Text('${user?.points ?? 0} pts', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     Text(
                       loc.get('rewards_shop_desc'),
                       style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 13, height: 1.4),
@@ -1175,18 +1225,32 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            _buildShopPreviewChip('🦸', loc.get('rewards_shop_avatars')),
-                            const SizedBox(width: 8),
-                            _buildShopPreviewChip('🎨', loc.get('rewards_shop_themes')),
-                            const SizedBox(width: 8),
-                            _buildShopPreviewChip('💡', loc.get('rewards_shop_tips')),
-                          ],
+                        Expanded(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                _buildShopPreviewChip('🦸', loc.get('rewards_shop_avatars')),
+                                const SizedBox(width: 8),
+                                _buildShopPreviewChip('🎨', loc.get('rewards_shop_themes')),
+                                const SizedBox(width: 8),
+                                _buildShopPreviewChip('💡', loc.get('rewards_shop_tips')),
+                              ],
+                            ),
+                          ),
                         ),
+                        const SizedBox(width: 12),
                         Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(loc.get('rewards_shop_enter'), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                            Flexible(
+                              child: Text(
+                                loc.get('rewards_shop_enter'),
+                                style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
                             const SizedBox(width: 4),
                             const Icon(LucideIcons.arrowRight, color: Colors.white, size: 16),
                           ],
@@ -1267,7 +1331,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
     );
   }
 
-  Widget _buildFloatingStreakPrompt(BuildContext context, bool isDark, int currentStreak, {bool isFrozen = false}) {
+  Widget _buildFloatingStreakPrompt(BuildContext context, bool isDark, int currentStreak, AppLocalizations loc, {bool isFrozen = false}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1327,7 +1391,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   children: [
                     Expanded(
                       child: Text(
-                        isFrozen ? '❄️ ¡RACHA CONGELADA (24H EXTRAS)!' : '🔥 ¡TU RACHA ESTÁ EN RIESGO!',
+                        isFrozen ? loc.get('streak_prompt_frozen_title') : loc.get('streak_prompt_risk_title'),
                         style: TextStyle(
                           color: isFrozen
                               ? (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7))
@@ -1343,8 +1407,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 const SizedBox(height: 4),
                 Text(
                   isFrozen
-                      ? 'Tu racha está protegida hoy gracias a tu Escudo de la Tienda. Registra un movimiento para descongelarla y sumar a tu progreso.'
-                      : 'Registra al menos un gasto o ingreso hoy para activar tu fuego y sumar +50 pts.',
+                      ? loc.get('streak_prompt_frozen_desc')
+                      : loc.get('streak_prompt_risk_desc'),
                   style: TextStyle(
                     color: isDark ? Colors.grey[200] : Colors.grey[800],
                     fontSize: 12.5,

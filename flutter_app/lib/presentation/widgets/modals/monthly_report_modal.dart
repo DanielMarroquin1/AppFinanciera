@@ -7,11 +7,18 @@ import '../../providers/auth_provider.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/localization.dart';
 import '../../providers/color_palette_provider.dart';
+import 'premium_modal.dart';
 
 class MonthlyReportModal extends ConsumerStatefulWidget {
   const MonthlyReportModal({super.key});
 
   static void show(BuildContext context) {
+    final container = ProviderScope.containerOf(context, listen: false);
+    final isPremium = container.read(authProvider).user?.isPremium ?? false;
+    if (!isPremium) {
+      PremiumModal.show(context);
+      return;
+    }
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

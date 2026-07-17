@@ -16,7 +16,6 @@ class SessionTimeoutManager extends ConsumerStatefulWidget {
 
 class _SessionTimeoutManagerState extends ConsumerState<SessionTimeoutManager> {
   Timer? _inactivityTimer;
-  static const Duration _timeoutDuration = Duration(minutes: 1);
 
   @override
   void initState() {
@@ -34,15 +33,16 @@ class _SessionTimeoutManagerState extends ConsumerState<SessionTimeoutManager> {
     _inactivityTimer?.cancel();
     final authState = ref.read(authProvider);
     if (authState.isAuthenticated) {
-      _inactivityTimer = Timer(_timeoutDuration, _onTimeout);
+      final mins = authState.user?.autoLockMinutes ?? 1;
+      _inactivityTimer = Timer(Duration(minutes: mins), () => _onTimeout(mins));
     }
   }
 
-  void _onTimeout() {
+  void _onTimeout(int mins) {
     final authState = ref.read(authProvider);
     if (!authState.isAuthenticated) return;
 
-    // Cierre automático de sesión bancaria
+    // Cierre automático de sesión por inactividad
     ref.read(authProvider.notifier).logout();
 
     final context = AppRouter.rootNavigatorKey.currentContext;
@@ -59,10 +59,10 @@ class _SessionTimeoutManagerState extends ConsumerState<SessionTimeoutManager> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text('🔒 Sesión Expirada por Seguridad', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white)),
-                    SizedBox(height: 2),
-                    Text('Tu sesión bancaria VIP se cerró automáticamente tras 1 minuto de inactividad.', style: TextStyle(fontSize: 12, color: Colors.white70)),
+                  children: [
+                    const Text('🔒 Sesión Expirada por Privacidad', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white)),
+                    const SizedBox(height: 2),
+                    Text('Tu sesión se cerró automáticamente tras $mins minuto${mins > 1 ? 's' : ''} de inactividad.', style: const TextStyle(fontSize: 12, color: Colors.white70)),
                   ],
                 ),
               ),
@@ -82,7 +82,10 @@ class _SessionTimeoutManagerState extends ConsumerState<SessionTimeoutManager> {
   @override
   Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
-      if (next.isAuthenticated && !(previous?.isAuthenticated ?? false)) {
+      final prevAuth = previous?.isAuthenticated ?? false;
+      final prevMins = previous?.user?.autoLockMinutes ?? 1;
+      final nextMins = next.user?.autoLockMinutes ?? 1;
+      if ((next.isAuthenticated && !prevAuth) || (next.isAuthenticated && prevMins != nextMins)) {
         _resetTimer();
       } else if (!next.isAuthenticated) {
         _inactivityTimer?.cancel();

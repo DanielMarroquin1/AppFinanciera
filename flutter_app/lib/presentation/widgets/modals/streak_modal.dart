@@ -1,9 +1,11 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'add_expense_modal.dart';
+import '../../../core/utils/localization.dart';
 
-class StreakModal extends StatefulWidget {
+class StreakModal extends ConsumerStatefulWidget {
   final int currentStreak;
   final bool isActiveToday;
   final bool isFrozen;
@@ -16,7 +18,7 @@ class StreakModal extends StatefulWidget {
   });
 
   @override
-  State<StreakModal> createState() => _StreakModalState();
+  ConsumerState<StreakModal> createState() => _StreakModalState();
 
   static Future<void> show(BuildContext context, {required int streak, required bool isActiveToday, bool isFrozen = false}) {
     return showDialog(
@@ -26,7 +28,7 @@ class StreakModal extends StatefulWidget {
   }
 }
 
-class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin {
+class _StreakModalState extends ConsumerState<StreakModal> with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late AnimationController _particleController;
   final List<_CelebrationParticle> _particles = [];
@@ -82,6 +84,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final loc = ref.watch(localizationProvider);
 
     // Calculate continuous 5-day cycle starting day
     final int startDay = widget.currentStreak <= 0
@@ -158,14 +161,14 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                         ),
                       ],
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(LucideIcons.snowflake, color: Colors.white, size: 14),
-                        SizedBox(width: 6),
+                        const Icon(LucideIcons.snowflake, color: Colors.white, size: 14),
+                        const SizedBox(width: 6),
                         Text(
-                          '❄️ RACHA CONGELADA (24H EXTRAS)',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.8),
+                          loc.get('streak_badge_frozen'),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.8),
                         ),
                       ],
                     ),
@@ -184,14 +187,14 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                         ),
                       ],
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(LucideIcons.sparkles, color: Colors.white, size: 14),
-                        SizedBox(width: 6),
+                        const Icon(LucideIcons.sparkles, color: Colors.white, size: 14),
+                        const SizedBox(width: 6),
                         Text(
-                          '¡RACHA ACTIVADA HOY!',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1.2),
+                          loc.get('streak_badge_active'),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1.2),
                         ),
                       ],
                     ),
@@ -210,7 +213,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                         Icon(LucideIcons.flame, color: isDark ? Colors.orange[400] : Colors.orange[700], size: 14),
                         const SizedBox(width: 6),
                         Text(
-                          'RACHA PENDIENTE DE ACTIVAR',
+                          loc.get('streak_badge_pending'),
                           style: TextStyle(
                             color: isDark ? Colors.grey[200] : Colors.grey[800],
                             fontWeight: FontWeight.bold,
@@ -317,12 +320,12 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                 ),
                 Text(
                   widget.isFrozen
-                      ? 'días de racha (Protegida por Escudo Congelador)'
+                      ? loc.get('streak_sub_frozen')
                       : widget.currentStreak == 0
-                          ? 'días de racha (Llama Apagada estilo Duolingo)'
+                          ? loc.get('streak_sub_zero')
                           : widget.currentStreak == 1
-                              ? 'día de racha (¡1 día más para encender llama permanente!)'
-                              : 'días de racha acumulada',
+                              ? loc.get('streak_sub_one')
+                              : loc.get('streak_sub_multi'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
@@ -357,7 +360,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'Tu racha está congelada y a salvo hoy gracias a tu Escudo Congelador. Registra un ingreso o gasto para salvarla y sumar un día más.',
+                                loc.get('streak_desc_frozen'),
                                 style: TextStyle(color: isDark ? const Color(0xFFBAE6FD) : const Color(0xFF0369A1), fontSize: 13, fontWeight: FontWeight.w500),
                               ),
                             ),
@@ -370,7 +373,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    '¡Excelente! Has encendido tu llama de hoy. Regresa mañana y registra un movimiento para mantener tu racha viva.',
+                                    loc.get('streak_desc_active'),
                                     style: TextStyle(color: isDark ? Colors.orange[200] : Colors.orange[900], fontSize: 13, fontWeight: FontWeight.w500),
                                   ),
                                 ),
@@ -384,7 +387,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                                     const Icon(LucideIcons.info, color: Color(0xFFF59E0B), size: 18),
                                     const SizedBox(width: 8),
                                     Text(
-                                      widget.currentStreak == 0 ? 'REGLA ESTILO DUOLINGO' : '¿CÓMO ACTIVAR TU RACHA?',
+                                      widget.currentStreak == 0 ? loc.get('streak_title_zero') : loc.get('streak_title_pending'),
                                       style: TextStyle(color: isDark ? Colors.amber[400] : Colors.amber[800], fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.5),
                                     ),
                                   ],
@@ -392,8 +395,8 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                                 const SizedBox(height: 8),
                                 Text(
                                   widget.currentStreak == 0
-                                      ? 'Cuando tu racha está en 0, la llama aparece fría en gris. Registra una transacción hoy y mañana seguidos para encender el fuego naranja de tu racha. ¡Además cuentas con 48h de gracia y puedes protegerla en la Tienda!'
-                                      : 'Para encender el fuego y no perder tu progreso, registra al menos un nuevo gasto o ingreso. Si olvidas un día, tu racha se congela por 24h extras (48h en total).',
+                                      ? loc.get('streak_desc_zero')
+                                      : loc.get('streak_desc_pending'),
                                   style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, height: 1.4),
                                 ),
                               ],
@@ -411,7 +414,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                     return Column(
                       children: [
                         Text(
-                          'Día $dayNumber',
+                          '${loc.get('streak_day')} $dayNumber',
                           style: TextStyle(
                             color: isCompleted
                                 ? (isDark ? const Color(0xFFFB923C) : const Color(0xFFEA580C))
@@ -443,7 +446,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                         ),
                         if (isChest) ...[
                           const SizedBox(height: 4),
-                          Text('+200 pts', style: TextStyle(color: isDark ? const Color(0xFFFCD34D) : const Color(0xFFD97706), fontSize: 10, fontWeight: FontWeight.bold)),
+                          Text('+200 ${loc.get('streak_pts')}', style: TextStyle(color: isDark ? const Color(0xFFFCD34D) : const Color(0xFFD97706), fontSize: 10, fontWeight: FontWeight.bold)),
                         ]
                       ],
                     );
@@ -451,7 +454,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                 ),
                 const SizedBox(height: 28),
 
-                // Action Buttons
+                 // Action Buttons
                 if (widget.isActiveToday) ...[
                   SizedBox(
                     width: double.infinity,
@@ -467,14 +470,14 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                         elevation: 4,
                         shadowColor: const Color(0xFFF97316).withValues(alpha: 0.4),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(LucideIcons.flame, size: 20),
-                          SizedBox(width: 8),
+                          const Icon(LucideIcons.flame, size: 20),
+                          const SizedBox(width: 8),
                           Text(
-                            '¡GENIAL, A SEGUIR ASÍ!',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, letterSpacing: 1.0),
+                            loc.get('streak_btn_continue'),
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, letterSpacing: 1.0),
                           ),
                         ],
                       ),
@@ -498,14 +501,14 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                         elevation: 4,
                         shadowColor: const Color(0xFFEA580C).withValues(alpha: 0.4),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(LucideIcons.plusCircle, size: 20),
-                          SizedBox(width: 8),
+                          const Icon(LucideIcons.plusCircle, size: 20),
+                          const SizedBox(width: 8),
                           Text(
-                            'REGISTRAR GASTO AHORA (+50 PTS)',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                            loc.get('streak_btn_register'),
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.5),
                           ),
                         ],
                       ),
@@ -515,7 +518,7 @@ class _StreakModalState extends State<StreakModal> with TickerProviderStateMixin
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     child: Text(
-                      'Cerrar por ahora',
+                      loc.get('streak_btn_close'),
                       style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontWeight: FontWeight.w600),
                     ),
                   ),

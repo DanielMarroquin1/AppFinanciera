@@ -76,7 +76,7 @@ class TransactionsListModalInternal extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Todas las Transacciones', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+                Text(loc.get('all_transactions_title'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
                 IconButton(
                   icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
                   onPressed: () => Navigator.of(context).pop(),
@@ -90,7 +90,7 @@ class TransactionsListModalInternal extends ConsumerWidget {
             child: transactionsAsync.when(
               data: (transactions) {
                 if (transactions.isEmpty) {
-                  return Center(child: Text('No hay transacciones registradas', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400])));
+                  return Center(child: Text(loc.get('no_transactions_registered'), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400])));
                 }
                 
                 final sorted = transactions.where((t) => !t.isFixed).toList()..sort((a, b) => b.date.compareTo(a.date));
@@ -156,7 +156,7 @@ class TransactionsListModalInternal extends ConsumerWidget {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Center(child: Text('Error al cargar transacciones')),
+              error: (_, __) => Center(child: Text(loc.get('error_loading_tx'))),
             ),
           )
         ],

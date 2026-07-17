@@ -49,21 +49,71 @@ class _MyAppState extends ConsumerState<MyApp> {
     final themeMode = ref.watch(themeProvider);
     final palette = ref.watch(colorPaletteProvider);
 
+    final primaryColor = palette.colors[0];
+    final secondaryColor = palette.colors[1];
+    final accentColor = palette.colors[2];
+
     final lightTheme = AppTheme.lightTheme.copyWith(
-      primaryColor: palette.colors[0],
+      primaryColor: primaryColor,
       colorScheme: AppTheme.lightTheme.colorScheme.copyWith(
-        primary: palette.colors[0],
-        secondary: palette.colors[1],
-        tertiary: palette.colors[2],
+        primary: primaryColor,
+        secondary: secondaryColor,
+        tertiary: accentColor,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: primaryColor,
+        linearTrackColor: primaryColor.withValues(alpha: 0.15),
+      ),
+      sliderTheme: SliderThemeData(
+        activeTrackColor: primaryColor,
+        thumbColor: primaryColor,
+        inactiveTrackColor: primaryColor.withValues(alpha: 0.2),
+      ),
+      inputDecorationTheme: AppTheme.lightTheme.inputDecorationTheme.copyWith(
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: primaryColor, width: 2),
+        ),
       ),
     );
 
     final darkTheme = AppTheme.darkTheme.copyWith(
-      primaryColor: palette.colors[0],
+      primaryColor: primaryColor,
       colorScheme: AppTheme.darkTheme.colorScheme.copyWith(
-        primary: palette.colors[0],
-        secondary: palette.colors[1],
-        tertiary: palette.colors[2],
+        primary: primaryColor,
+        secondary: secondaryColor,
+        tertiary: accentColor,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: primaryColor,
+        linearTrackColor: primaryColor.withValues(alpha: 0.2),
+      ),
+      sliderTheme: SliderThemeData(
+        activeTrackColor: primaryColor,
+        thumbColor: primaryColor,
+        inactiveTrackColor: primaryColor.withValues(alpha: 0.25),
       ),
     );
 

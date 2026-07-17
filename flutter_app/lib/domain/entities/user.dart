@@ -19,7 +19,10 @@ class User {
   final double? monthlyLimit;
   final bool isTwoFactorEnabled;
   final String? twoFactorMethod;
+  final String? twoFactorPhone;
   final Map<String, double>? categoryBudgets;
+  final int autoLockMinutes;
+
 
   User({
     required this.email,
@@ -40,7 +43,9 @@ class User {
     this.monthlyLimit,
     this.isTwoFactorEnabled = false,
     this.twoFactorMethod,
+    this.twoFactorPhone,
     this.categoryBudgets,
+    this.autoLockMinutes = 1,
   });
 
   User copyWith({
@@ -62,7 +67,9 @@ class User {
     double? monthlyLimit,
     bool? isTwoFactorEnabled,
     String? twoFactorMethod,
+    String? twoFactorPhone,
     Map<String, double>? categoryBudgets,
+    int? autoLockMinutes,
   }) {
     return User(
       email: email ?? this.email,
@@ -83,9 +90,13 @@ class User {
       monthlyLimit: monthlyLimit ?? this.monthlyLimit,
       isTwoFactorEnabled: isTwoFactorEnabled ?? this.isTwoFactorEnabled,
       twoFactorMethod: twoFactorMethod ?? this.twoFactorMethod,
+      twoFactorPhone: twoFactorPhone ?? this.twoFactorPhone,
       categoryBudgets: categoryBudgets ?? this.categoryBudgets,
+      autoLockMinutes: autoLockMinutes ?? this.autoLockMinutes,
     );
   }
+
+  bool get isPremium => unlockedItems.contains('premium') || unlockedItems.contains('spec1') || unlockedItems.contains('vip');
 
   String get avatarEmoji {
     if (currentAvatar == null) return '👤';

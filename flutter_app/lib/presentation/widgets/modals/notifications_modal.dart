@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../../core/utils/localization.dart';
 import 'credit_cards_modal.dart';
 import 'streak_modal.dart';
 import 'transactions_list_modal.dart';
@@ -60,6 +61,7 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final loc = ref.watch(localizationProvider);
     final notificationsAsync = ref.watch(notificationsProvider);
     final notifier = ref.read(notificationNotifierProvider);
     final user = ref.watch(authProvider).user;
@@ -95,7 +97,7 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                       child: Icon(LucideIcons.bell, color: isDark ? Colors.blue[400] : Colors.blue[700]),
                     ),
                     const SizedBox(width: 12),
-                    Text('Notificaciones', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text(loc.get('notif_title_bar'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
                   ],
                 ),
                 Row(
@@ -103,7 +105,7 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                     if (user != null && FirebaseAuth.instance.currentUser != null)
                       TextButton(
                         onPressed: () => notifier.markAllAsRead(FirebaseAuth.instance.currentUser!.uid),
-                        child: Text('Leer Todo', style: TextStyle(color: isDark ? Colors.blue[400] : Colors.blue[700], fontWeight: FontWeight.bold)),
+                        child: Text(loc.get('notif_read_all'), style: TextStyle(color: isDark ? Colors.blue[400] : Colors.blue[700], fontWeight: FontWeight.bold)),
                       ),
                     IconButton(
                       icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
@@ -121,13 +123,13 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             child: Row(
               children: [
-                _buildFilterTab(isDark, 0, '🔔 Todas'),
+                _buildFilterTab(isDark, 0, loc.get('notif_tab_all')),
                 const SizedBox(width: 8),
-                _buildFilterTab(isDark, 1, '💳 Deudas Cobradas'),
+                _buildFilterTab(isDark, 1, loc.get('notif_tab_debts')),
                 const SizedBox(width: 8),
-                _buildFilterTab(isDark, 2, '💰 Ingresos'),
+                _buildFilterTab(isDark, 2, loc.get('notif_tab_incomes')),
                 const SizedBox(width: 8),
-                _buildFilterTab(isDark, 3, '🔄 Gastos Fijos'),
+                _buildFilterTab(isDark, 3, loc.get('notif_tab_fixed')),
               ],
             ),
           ),
@@ -138,8 +140,12 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
             child: notificationsAsync.when(
               data: (notifications) {
                 final filtered = notifications.where((n) {
-                  final titleLower = n.title.toLowerCase();
-                  final bodyLower = n.body.toLowerCase();
+                  final rawTitleLower = n.title.toLowerCase();
+                  final rawBodyLower = n.body.toLowerCase();
+                  final locTitleLower = _localizeTitle(n.title, loc).toLowerCase();
+                  final locBodyLower = _localizeBody(n.body, loc).toLowerCase();
+                  final titleLower = '$rawTitleLower $locTitleLower';
+                  final bodyLower = '$rawBodyLower $locBodyLower';
                   if (_selectedFilter == 1) {
                     return n.category == 'debt' ||
                         n.category == 'loan' ||
@@ -147,8 +153,16 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                         titleLower.contains('deuda') ||
                         titleLower.contains('préstamo') ||
                         titleLower.contains('pago automático') ||
+                        titleLower.contains('debt') ||
+                        titleLower.contains('dívida') ||
+                        titleLower.contains('dette') ||
+                        titleLower.contains('debito') ||
                         bodyLower.contains('deuda') ||
-                        bodyLower.contains('cuota');
+                        bodyLower.contains('cuota') ||
+                        bodyLower.contains('installment') ||
+                        bodyLower.contains('parcela') ||
+                        bodyLower.contains('mensualité') ||
+                        bodyLower.contains('rata');
                   }
                   if (_selectedFilter == 2) {
                     return n.type == 'income' ||
@@ -158,7 +172,15 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                         n.category == 'investment' ||
                         n.category == 'gift' ||
                         titleLower.contains('ingreso') ||
-                        bodyLower.contains('ingreso');
+                        titleLower.contains('income') ||
+                        titleLower.contains('receita') ||
+                        titleLower.contains('revenu') ||
+                        titleLower.contains('entrata') ||
+                        bodyLower.contains('ingreso') ||
+                        bodyLower.contains('income') ||
+                        bodyLower.contains('receita') ||
+                        bodyLower.contains('revenu') ||
+                        bodyLower.contains('entrata');
                   }
                   if (_selectedFilter == 3) {
                     return n.type == 'expense' && (
@@ -167,8 +189,13 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                         titleLower.contains('cobro automático') ||
                         titleLower.contains('gasto fijo') ||
                         titleLower.contains('suscripción') ||
-                        bodyLower.contains('cobro automático') ||
-                        bodyLower.contains('gasto fijo')
+                        titleLower.contains('charge') ||
+                        titleLower.contains('cobrança') ||
+                        titleLower.contains('prélèvement') ||
+                        titleLower.contains('addebito') ||
+                        bodyLower.contains('cobro') ||
+                        bodyLower.contains('charge') ||
+                        bodyLower.contains('cobrança')
                     );
                   }
                   return true;
@@ -181,7 +208,7 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                       children: [
                         Icon(LucideIcons.bellOff, size: 64, color: isDark ? Colors.grey[700] : Colors.grey[300]),
                         const SizedBox(height: 16),
-                        Text('No tienes notificaciones en este filtro', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 16)),
+                        Text(loc.get('notif_empty_filter'), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 16)),
                       ],
                     ),
                   );
@@ -254,7 +281,7 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                                           children: [
                                             Expanded(
                                               child: Text(
-                                                notif.title, 
+                                                _localizeTitle(notif.title, loc), 
                                                 style: TextStyle(
                                                   color: isDark ? Colors.white : Colors.black, 
                                                   fontSize: 15, 
@@ -271,12 +298,12 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          notif.body,
+                                          _localizeBody(notif.body, loc),
                                           style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13),
                                         ),
                                         const SizedBox(height: 8),
                                         Text(
-                                          _formatTimeAgo(notif.createdAt),
+                                          _formatTimeAgo(notif.createdAt, loc),
                                           style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 11, fontWeight: FontWeight.w500),
                                         ),
                                       ],
@@ -306,7 +333,7 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Text(
-                                            _getSmartActionLabel(notif.category, notif.title),
+                                            _getSmartActionLabel(notif.category, notif.title, loc),
                                             style: TextStyle(color: isDark ? Colors.blue[400] : Colors.blue[600], fontSize: 11.5, fontWeight: FontWeight.w700),
                                           ),
                                           const SizedBox(width: 4),
@@ -360,21 +387,21 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
     );
   }
 
-  String _getSmartActionLabel(String? category, String title) {
+  String _getSmartActionLabel(String? category, String title, AppLocalizations loc) {
     final t = title.toLowerCase();
     if (category == 'debt' || category == 'credit_card' || t.contains('sobregiro') || t.contains('tarjeta') || t.contains('mora') || t.contains('corte') || t.contains('vence') || t.contains('pago') || t.contains('abono') || t.contains('cuota')) {
-      return '💳 Ver Tarjeta / Pagar';
+      return loc.get('notif_action_card');
     }
     if (category == 'streak' || t.contains('racha')) {
-      return '🔥 Activar Racha Ahora';
+      return loc.get('notif_action_streak');
     }
     if (category == 'alert' || t.contains('alerta') || t.contains('presupuesto')) {
-      return '⚠️ Revisar Movimientos';
+      return loc.get('notif_action_alert');
     }
-    if (category == 'ai' || t.contains('ia') || t.contains('consejo') || t.contains('tip') || t.contains('asesor') || t.contains('antigravity')) {
-      return '🤖 Consultar Asesor IA';
+    if (category == 'ai' || t.contains('ia') || t.contains('consejo') || t.contains('tip') || t.contains('asesor')) {
+      return loc.get('notif_action_ai');
     }
-    return '✨ Ver Movimientos';
+    return loc.get('notif_action_view');
   }
 
   void _onNotificationTap(BuildContext context, dynamic notif, bool isUnread, dynamic notifier) {
@@ -393,7 +420,7 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
       final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
       final isActiveToday = user?.lastActiveDate == todayStr;
       StreakModal.show(context, streak: user?.currentStreak ?? 0, isActiveToday: isActiveToday);
-    } else if (category == 'ai' || t.contains('ia') || t.contains('consejo') || t.contains('tip') || t.contains('asesor') || t.contains('antigravity')) {
+    } else if (category == 'ai' || t.contains('ia') || t.contains('consejo') || t.contains('tip') || t.contains('asesor')) {
       AIChatModal.show(context);
     } else if (category == 'alert' || t.contains('alerta') || t.contains('presupuesto')) {
       TransactionsListModal.show(context);
@@ -402,11 +429,123 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
     }
   }
 
-  String _formatTimeAgo(DateTime date) {
+  String _formatTimeAgo(DateTime date, AppLocalizations loc) {
     final diff = DateTime.now().difference(date);
-    if (diff.inDays > 0) return 'Hace ${diff.inDays} d';
-    if (diff.inHours > 0) return 'Hace ${diff.inHours} h';
-    if (diff.inMinutes > 0) return 'Hace ${diff.inMinutes} m';
-    return 'Justo ahora';
+    if (diff.inDays > 0) return loc.get('time_ago_d').replaceAll('{n}', '${diff.inDays}');
+    if (diff.inHours > 0) return loc.get('time_ago_h').replaceAll('{n}', '${diff.inHours}');
+    if (diff.inMinutes > 0) return loc.get('time_ago_m').replaceAll('{n}', '${diff.inMinutes}');
+    return loc.get('time_ago_now');
+  }
+
+  String _localizeTitle(String rawTitle, AppLocalizations loc) {
+    if (rawTitle == 'Ingreso Automático' || rawTitle == 'Automatic Income') return loc.get('notif_auto_income_title');
+    if (rawTitle == 'Cobro Automático' || rawTitle == 'Automatic Charge') return loc.get('notif_auto_charge_title');
+    if (rawTitle == 'Pago Automático de Deuda' || rawTitle == 'Automatic Debt Payment') return loc.get('notif_auto_debt_title');
+    if (rawTitle.contains('Presupuesto Agotado') || rawTitle.contains('Budget Exceeded')) return loc.get('notif_budget_exceeded_title');
+    if (rawTitle.contains('Presupuesto al 80%') || rawTitle.contains('Budget at 80%')) return loc.get('notif_budget_warning_title');
+    
+    if (rawTitle.contains('Corte en 2 días:') || rawTitle.contains('Statement closing in 2 days:')) {
+      final parts = rawTitle.split(':');
+      final name = parts.length > 1 ? parts.sublist(1).join(':').trim() : '';
+      return loc.get('notif_cut_2_days_title').replaceAll('{name}', name);
+    }
+    if (rawTitle.contains('Mañana es el corte:') || rawTitle.contains('Statement closes tomorrow:')) {
+      final parts = rawTitle.split(':');
+      final name = parts.length > 1 ? parts.sublist(1).join(':').trim() : '';
+      return loc.get('notif_cut_1_day_title').replaceAll('{name}', name);
+    }
+    if (rawTitle.contains('Hoy corta tu tarjeta:') || rawTitle.contains('Statement closes today:')) {
+      final parts = rawTitle.split(':');
+      final name = parts.length > 1 ? parts.sublist(1).join(':').trim() : '';
+      return loc.get('notif_cut_today_title').replaceAll('{name}', name);
+    }
+    if (rawTitle.contains('Pago de tarjeta en 2 días:') || rawTitle.contains('Card payment due in 2 days:')) {
+      final parts = rawTitle.split(':');
+      final name = parts.length > 1 ? parts.sublist(1).join(':').trim() : '';
+      return loc.get('notif_pay_2_days_title').replaceAll('{name}', name);
+    }
+    if (rawTitle.contains('Mañana vence tu tarjeta:') || rawTitle.contains('Card payment due tomorrow:')) {
+      final parts = rawTitle.split(':');
+      final name = parts.length > 1 ? parts.sublist(1).join(':').trim() : '';
+      return loc.get('notif_pay_1_day_title').replaceAll('{name}', name);
+    }
+    if (rawTitle.contains('HOY vence tu tarjeta:') || rawTitle.contains('Card payment due TODAY:')) {
+      final parts = rawTitle.split(':');
+      final name = parts.length > 1 ? parts.sublist(1).join(':').trim() : '';
+      return loc.get('notif_pay_today_title').replaceAll('{name}', name);
+    }
+    if (rawTitle.contains('TARJETA EN MORA:') || rawTitle.contains('OVERDUE CARD:')) {
+      final parts = rawTitle.split(':');
+      final name = parts.length > 1 ? parts.sublist(1).join(':').trim() : '';
+      return loc.get('notif_overdue_title').replaceAll('{name}', name);
+    }
+    return rawTitle;
+  }
+
+  String _localizeBody(String rawBody, AppLocalizations loc) {
+    final firstQuote = rawBody.indexOf('"');
+    final secondQuote = rawBody.lastIndexOf('"');
+    if (firstQuote != -1 && secondQuote != -1 && secondQuote > firstQuote) {
+      final desc = rawBody.substring(firstQuote + 1, secondQuote);
+      final afterQuote = rawBody.substring(secondQuote + 1);
+      final amountMatch = RegExp(r'([\d,]+\.?\d*)').firstMatch(afterQuote);
+      final amount = amountMatch != null ? afterQuote.substring(amountMatch.start).trim().replaceAll('.', '') : '';
+      
+      if (rawBody.contains('Se ha registrado') || rawBody.contains('has been recorded')) {
+        return loc.get('notif_auto_income_body').replaceAll('{desc}', desc).replaceAll('{amount}', afterQuote.trim().replaceAll('por un monto de ', '').replaceAll('for the amount of ', '').replaceAll('.', ''));
+      }
+      if (rawBody.contains('Se ha cobrado la cuota') || rawBody.contains('The installment for')) {
+        return loc.get('notif_auto_debt_body').replaceAll('{desc}', desc).replaceAll('{amount}', afterQuote.trim().replaceAll('por un monto de ', '').replaceAll('has been charged for ', '').replaceAll('.', ''));
+      }
+      if (rawBody.contains('presupuesto para la categoría') || rawBody.contains('budget for category')) {
+        final nums = afterQuote.contains('(') ? afterQuote.substring(afterQuote.indexOf('(')).replaceAll('.', '') : '';
+        if (rawBody.contains('100%')) {
+          return loc.get('notif_budget_exceeded_body').replaceAll('{cat}', loc.translateCategory(desc)).replaceAll('{nums}', nums);
+        }
+        return loc.get('notif_budget_warning_body').replaceAll('{cat}', loc.translateCategory(desc)).replaceAll('{nums}', nums);
+      }
+    }
+
+    if (rawBody.contains('realiza su corte el día') || rawBody.contains('statement closes on day')) {
+      final dayMatch = RegExp(r'(\d+)').firstMatch(rawBody);
+      final day = dayMatch?.group(1) ?? '';
+      return loc.get('notif_cut_2_days_body').replaceAll('{day}', day);
+    }
+    if (rawBody.contains('es la fecha de corte') || rawBody.contains('is the closing date')) {
+      final dayMatch = RegExp(r'(\d+)').firstMatch(rawBody);
+      final day = dayMatch?.group(1) ?? '';
+      return loc.get('notif_cut_1_day_body').replaceAll('{day}', day);
+    }
+    if (rawBody.contains('Hoy cierra tu ciclo de facturación') || rawBody.contains('billing cycle closes today')) {
+      return loc.get('notif_cut_today_body');
+    }
+    if (rawBody.contains('Faltan 2 días para el pago') || rawBody.contains('2 days remaining to pay')) {
+      final dayMatch = RegExp(r'Día (\d+)|Day (\d+)').firstMatch(rawBody);
+      final day = dayMatch?.group(1) ?? dayMatch?.group(2) ?? '';
+      final balIndex = rawBody.indexOf(':');
+      final bal = balIndex != -1 ? rawBody.substring(balIndex + 1).trim().replaceAll('.', '') : '';
+      return loc.get('notif_pay_2_days_body').replaceAll('{day}', day).replaceAll('{bal}', bal);
+    }
+    if (rawBody.contains('fecha límite para pagar tu tarjeta sin intereses') || rawBody.contains('deadline to pay your card without interest')) {
+      final dayMatch = RegExp(r'(\d+)').firstMatch(rawBody);
+      final day = dayMatch?.group(1) ?? '';
+      return loc.get('notif_pay_1_day_body').replaceAll('{day}', day);
+    }
+    if (rawBody.contains('día límite de pago para') || rawBody.contains('payment deadline for')) {
+      final parts = rawBody.split('!');
+      final namePart = parts.first.replaceAll('¡Hoy es el día límite de pago para ', '').replaceAll('Today is the payment deadline for ', '').trim();
+      final balIndex = rawBody.indexOf(':');
+      final bal = balIndex != -1 ? rawBody.substring(balIndex + 1).split('.').first.trim() : '';
+      return loc.get('notif_pay_today_body').replaceAll('{name}', namePart).replaceAll('{bal}', bal);
+    }
+    if (rawBody.contains('Tu tarjeta venció el día') || rawBody.contains('Your card was due on day')) {
+      final dayMatch = RegExp(r'(\d+)').firstMatch(rawBody);
+      final day = dayMatch?.group(1) ?? '';
+      final balMatch = RegExp(r'de (\$.*?)\.|of (\$.*?)\.').firstMatch(rawBody);
+      final bal = balMatch?.group(1) ?? balMatch?.group(2) ?? '';
+      return loc.get('notif_overdue_body').replaceAll('{day}', day).replaceAll('{bal}', bal);
+    }
+
+    return rawBody;
   }
 }

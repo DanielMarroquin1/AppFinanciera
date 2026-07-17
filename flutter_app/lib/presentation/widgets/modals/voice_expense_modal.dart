@@ -15,11 +15,18 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/credit_card_provider.dart';
 import '../../../core/utils/localization.dart';
+import 'premium_modal.dart';
 
 class VoiceTransactionModal extends ConsumerStatefulWidget {
   const VoiceTransactionModal({super.key});
 
   static Future<void> show(BuildContext context) {
+    final container = ProviderScope.containerOf(context, listen: false);
+    final isPremium = container.read(authProvider).user?.isPremium ?? false;
+    if (!isPremium) {
+      PremiumModal.show(context);
+      return Future.value();
+    }
     return showDialog(
       context: context,
       builder: (context) => const VoiceTransactionModal(),

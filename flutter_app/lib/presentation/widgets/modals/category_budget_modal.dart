@@ -4,11 +4,19 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/utils/localization.dart';
+import 'premium_modal.dart';
 
 class CategoryBudgetModal extends ConsumerStatefulWidget {
   const CategoryBudgetModal({super.key});
 
   static Future<void> show(BuildContext context) {
+    final container = ProviderScope.containerOf(context, listen: false);
+    final isPremium = container.read(authProvider).user?.isPremium ?? false;
+    if (!isPremium) {
+      PremiumModal.show(context);
+      return Future.value();
+    }
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -50,6 +58,7 @@ class _CategoryBudgetModalState extends ConsumerState<CategoryBudgetModal> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final loc = ref.watch(localizationProvider);
     final user = ref.watch(authProvider).user;
     final transactions = ref.watch(transactionsProvider).value ?? [];
     final sym = CurrencyFormatter.getSymbol(user?.currency);
@@ -86,9 +95,9 @@ class _CategoryBudgetModalState extends ConsumerState<CategoryBudgetModal> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Presupuesto por Categoría', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                    Text(loc.get('category_budget_title'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
                     const SizedBox(height: 2),
-                    Text('Límites mensuales de gasto', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13)),
+                    Text(loc.get('category_budget_subtitle'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13)),
                   ],
                 ),
                 IconButton(
@@ -135,22 +144,113 @@ class _CategoryBudgetModalState extends ConsumerState<CategoryBudgetModal> {
                         ],
                       ),
                       const SizedBox(height: 12),
+                      // Quick Preset Chips
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            0.0, 100.0, 300.0, 500.0, 1000.0, 2000.0, 5000.0
+                          ].map((preset) {
+                            final isSelected = budget == preset;
+                            final label = preset == 0.0 ? 'Sin límite' : '$sym${preset.toStringAsFixed(0)}';
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    if (preset == 0.0) {
+                                      tempBudgets.remove(catId);
+                                    } else {
+                                      tempBudgets[catId] = preset;
+                                    }
+                                  });
+                                },
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? catColor : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isSelected ? catColor : (isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    label,
+                                    style: TextStyle(
+                                      color: isSelected ? Colors.white : (isDark ? Colors.grey[300] : Colors.grey[800]),
+                                      fontSize: 12,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
                       Row(
                         children: [
+                          // - $50 Button
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                final current = tempBudgets[catId] ?? 0.0;
+                                final next = (current - 50.0).clamp(0.0, 10000.0);
+                                if (next <= 0) {
+                                  tempBudgets.remove(catId);
+                                } else {
+                                  tempBudgets[catId] = next;
+                                }
+                              });
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF1E293B) : Colors.grey[200],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(LucideIcons.minus, size: 16, color: isDark ? Colors.grey[300] : Colors.grey[700]),
+                            ),
+                          ),
                           Expanded(
                             child: Slider(
-                              value: budget.clamp(0.0, 2000.0),
+                              value: budget.clamp(0.0, 5000.0),
                               min: 0,
-                              max: 2000,
-                              divisions: 40,
+                              max: 5000,
+                              divisions: 100,
                               activeColor: catColor,
                               inactiveColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
                               label: '$sym${budget.toStringAsFixed(0)}',
                               onChanged: (val) {
                                 setState(() {
-                                  tempBudgets[catId] = val;
+                                  if (val <= 0) {
+                                    tempBudgets.remove(catId);
+                                  } else {
+                                    tempBudgets[catId] = val;
+                                  }
                                 });
                               },
+                            ),
+                          ),
+                          // + $50 Button
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                final current = tempBudgets[catId] ?? 0.0;
+                                tempBudgets[catId] = (current + 50.0).clamp(0.0, 10000.0);
+                              });
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF1E293B) : Colors.grey[200],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(LucideIcons.plus, size: 16, color: isDark ? Colors.grey[300] : Colors.grey[700]),
                             ),
                           ),
                         ],
@@ -180,19 +280,19 @@ class _CategoryBudgetModalState extends ConsumerState<CategoryBudgetModal> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '${percentage.toStringAsFixed(0)}% usado',
+                            budget > 0 ? '${percentage.toStringAsFixed(0)}% usado' : 'Sin límite',
                             style: TextStyle(
-                              color: percentage >= 100 
+                              color: budget <= 0 ? Colors.grey : (percentage >= 100 
                                   ? Colors.red 
-                                  : (percentage >= 80 ? Colors.orange : Colors.grey),
+                                  : (percentage >= 80 ? Colors.orange : Colors.grey)),
                               fontSize: 12,
                               fontWeight: percentage >= 80 ? FontWeight.bold : FontWeight.normal,
                             ),
                           ),
-                          if (percentage >= 100)
-                            const Text('⚠️ ¡Límite alcanzado!', style: TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold))
-                          else if (percentage >= 80)
-                            const Text('⚠️ Cerca del límite', style: TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.bold)),
+                          if (budget > 0 && percentage >= 100)
+                            Text(loc.get('budget_limit_reached'), style: const TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold))
+                          else if (budget > 0 && percentage >= 80)
+                            Text(loc.get('budget_near_limit'), style: const TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ],
@@ -210,10 +310,57 @@ class _CategoryBudgetModalState extends ConsumerState<CategoryBudgetModal> {
                   if (user != null) {
                     final updated = user.copyWith(categoryBudgets: tempBudgets);
                     await ref.read(authProvider.notifier).updateProfile(updated);
-                    if (context.mounted) {
-                      Navigator.pop(context);
+                    if (!context.mounted) return;
+                    Navigator.pop(context);
+                    
+                    // Check if any category alert triggered
+                    String? breachedCategoryName;
+                    double breachedLimit = 0.0;
+                    double breachedSpent = 0.0;
+                    
+                    for (var entry in tempBudgets.entries) {
+                      final cLimit = entry.value;
+                      if (cLimit > 0) {
+                        final cSpent = spentByCategory[entry.key] ?? 0.0;
+                        if (cSpent >= cLimit) {
+                          breachedLimit = cLimit;
+                          breachedSpent = cSpent;
+                          final match = categories.firstWhere((element) => element['id'] == entry.key, orElse: () => {'name': entry.key});
+                          breachedCategoryName = match['name'] as String;
+                          break;
+                        }
+                      }
+                    }
+
+                    if (breachedCategoryName != null) {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+                          title: Row(
+                            children: [
+                              const Icon(LucideIcons.alertOctagon, color: Colors.red, size: 28),
+                              const SizedBox(width: 12),
+                              const Text('¡Límite Excedido! 🚨', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          content: Text(
+                            'Has agotado el 100% o más de tu presupuesto mensual para la categoría "$breachedCategoryName".\n\n'
+                            'Límite fijado: $sym${breachedLimit.toStringAsFixed(0)}\n'
+                            'Gasto actual: $sym${breachedSpent.toStringAsFixed(0)}',
+                            style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800]),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text('Entendido', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Presupuestos actualizados correctamente'), backgroundColor: Colors.green),
+                        SnackBar(content: Text(loc.get('budget_saved_snack')), backgroundColor: Colors.green),
                       );
                     }
                   }
@@ -224,7 +371,7 @@ class _CategoryBudgetModalState extends ConsumerState<CategoryBudgetModal> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
-                child: const Text('Guardar Presupuestos', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                child: Text(loc.get('save_budgets'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               ),
             ),
           ),

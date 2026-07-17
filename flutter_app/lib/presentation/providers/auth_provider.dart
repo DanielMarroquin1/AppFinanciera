@@ -267,6 +267,41 @@ class AuthNotifier extends Notifier<AuthState> {
     await _repository.saveUser(updatedUser);
     state = state.copyWith(user: updatedUser);
   }
+
+  Future<void> upgradeToPremium() async {
+    final user = state.user;
+    if (user == null) return;
+    final newUnlocked = List<String>.from(user.unlockedItems);
+    if (!newUnlocked.contains('premium')) newUnlocked.add('premium');
+    final updatedUser = user.copyWith(unlockedItems: newUnlocked);
+    await _repository.saveUser(updatedUser);
+    state = state.copyWith(user: updatedUser);
+  }
+
+  Future<void> cancelSubscription() async {
+    final user = state.user;
+    if (user == null) return;
+    final newUnlocked = List<String>.from(user.unlockedItems)
+      ..remove('premium')
+      ..remove('spec1')
+      ..remove('vip');
+    final updatedUser = user.copyWith(unlockedItems: newUnlocked);
+    await _repository.saveUser(updatedUser);
+    state = state.copyWith(user: updatedUser);
+  }
+
+  Future<void> resetUnlockedThemes() async {
+    final user = state.user;
+    if (user == null) return;
+    final newUnlocked = List<String>.from(user.unlockedItems)
+      ..removeWhere((item) => item.startsWith('theme') && item != 'theme_default');
+    final updatedUser = user.copyWith(
+      unlockedItems: newUnlocked,
+      points: user.points < 500 ? 500 : user.points,
+    );
+    await _repository.saveUser(updatedUser);
+    state = state.copyWith(user: updatedUser);
+  }
 }
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(() {

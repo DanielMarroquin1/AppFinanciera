@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../providers/auth_provider.dart';
+import '../../core/utils/localization.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -27,7 +28,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   String password = '';
   String purpose = '';
   bool acceptedPolicies = false;
-  bool enableBiometrics = true;
   bool hasSavedBiometrics = false;
   bool isBiometricSupported = false;
 
@@ -97,12 +97,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       if (isLogin) {
         await ref.read(authProvider.notifier).login(loginEmail, loginPassword);
-        if (enableBiometrics && isBiometricSupported) {
+        final isEnabled = await BiometricService.isBiometricEnabled();
+        if (isEnabled && isBiometricSupported) {
           await BiometricService.setBiometricEnabled(true, loginEmail, loginPassword);
         }
       } else {
         await ref.read(authProvider.notifier).register(loginEmail, loginPassword, purpose);
-        if (enableBiometrics && isBiometricSupported) {
+        final isEnabled = await BiometricService.isBiometricEnabled();
+        if (isEnabled && isBiometricSupported) {
           await BiometricService.setBiometricEnabled(true, loginEmail, loginPassword);
         }
       }
@@ -549,50 +551,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         
                         if (isLogin) ...[
                           const SizedBox(height: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              // Checkbox para habilitar biometría
-                              if (isBiometricSupported)
-                                Flexible(
-                                  child: GestureDetector(
-                                    onTap: () => setState(() => enableBiometrics = !enableBiometrics),
-                                    child: Row(
-                                      children: [
-                                        SizedBox(
-                                          width: 20, height: 20,
-                                          child: Checkbox(
-                                            value: enableBiometrics,
-                                            onChanged: (val) => setState(() => enableBiometrics = val ?? true),
-                                            activeColor: const Color(0xFF0284C7),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                            'Activar Huella / Face ID',
-                                            style: TextStyle(fontSize: 12, color: isDark ? Colors.grey[300] : Colors.grey[700], fontWeight: FontWeight.w600),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                )
-                              else
-                                const Spacer(),
-                              TextButton(
-                                onPressed: () => ForgotPasswordModal.show(context),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                                  minimumSize: Size.zero,
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                child: const Text('¿Olvidaste tu clave?', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () => ForgotPasswordModal.show(context),
+                              style: TextButton.styleFrom(
+                                foregroundColor: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
-                            ],
+                              child: const Text('¿Olvidaste tu clave?', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                            ),
                           ),
                         ],
 
@@ -786,6 +756,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<bool> _showMfaLoginVerificationDialog(BuildContext context, dynamic user) async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final loc = ref.read(localizationProvider);
     final otpController = TextEditingController();
     final generatedOtp = '123456';
     
@@ -794,9 +765,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         await FirebaseFirestore.instance.collection('mail').add({
           'to': user.email,
           'message': {
-            'subject': 'Código de Verificación 2FA - Inicio de Sesión',
-            'text': 'Tu código de verificación de inicio de sesión es: $generatedOtp',
-            'html': '<p>Tu código de verificación de inicio de sesión es: <strong>$generatedOtp</strong></p>',
+            'subject': '${loc.get('two_factor_title')} - Código de Verificación',
+            'text': '${loc.get('two_factor_enter_code')} ${user.email}: $generatedOtp',
+            'html': '<p>${loc.get('two_factor_enter_code')} <strong>$generatedOtp</strong></p>',
           },
           'createdAt': FieldValue.serverTimestamp(),
         });
@@ -806,8 +777,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } else if (user.twoFactorMethod == 'sms') {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Simulación: Código SMS enviado a tu celular: $generatedOtp'),
-          backgroundColor: Colors.blue,
+          content: Text('${loc.get('two_factor_sms_subtitle')}: $generatedOtp'),
+          backgroundColor: const Color(0xFF6366F1),
           duration: const Duration(seconds: 8),
         ),
       );
@@ -823,9 +794,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           children: [
             const Icon(LucideIcons.shieldCheck, color: Color(0xFF6366F1), size: 28),
             const SizedBox(width: 12),
-            Text(
-              'Doble Factor (2FA)',
-              style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 20),
+            Expanded(
+              child: Text(
+                loc.get('two_factor_title'),
+                style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 18),
+              ),
             ),
           ],
         ),
@@ -834,9 +807,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              user.twoFactorMethod == 'totp'
-                  ? 'Ingresa el código de 6 dígitos de tu App Autenticadora:'
-                  : 'Ingresa el código de 6 dígitos que enviamos por ${user.twoFactorMethod?.toUpperCase()}:',
+              '${loc.get('two_factor_enter_code')} ${user.twoFactorMethod?.toUpperCase() ?? ''}:',
               style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[600], fontSize: 14),
             ),
             const SizedBox(height: 20),
@@ -857,21 +828,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(loc.get('cancel') ?? 'Cancelar'),
           ),
           ElevatedButton(
             onPressed: () {
               final code = otpController.text.trim();
-              if (code == generatedOtp || user.twoFactorMethod == 'totp') {
+              if (code == generatedOtp) {
                 Navigator.pop(context, true);
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Código incorrecto. Reintenta.'), backgroundColor: Colors.red),
+                  SnackBar(content: Text(loc.get('two_factor_wrong_code')), backgroundColor: Colors.red),
                 );
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6366F1), foregroundColor: Colors.white),
-            child: const Text('Verificar'),
+            child: const Text('Verificar', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

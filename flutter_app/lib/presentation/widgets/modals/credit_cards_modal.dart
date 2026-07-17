@@ -9,6 +9,7 @@ import '../../providers/transaction_provider.dart';
 import '../../../domain/entities/transaction.dart';
 import '../../../domain/entities/credit_card.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import '../../../core/utils/localization.dart';
 import 'credit_card_history_modal.dart';
 import 'add_credit_card_modal.dart';
 import '../../../core/services/recurring_transaction_service.dart';
@@ -69,6 +70,7 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
     final creditCardsAsync = ref.watch(computedCreditCardsProvider);
     final user = ref.watch(authProvider).user;
     final currencyCode = user?.currency;
+    final loc = ref.watch(localizationProvider);
 
     return Container(
       decoration: BoxDecoration(
@@ -110,9 +112,9 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Tarjetas de Crédito', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                        Text(loc.get('credit_cards'), style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
                         const SizedBox(height: 2),
-                        Text('Administra tus plásticos al estilo Wallet', style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 13)),
+                        Text(loc.get('cc_subtitle'), style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 13)),
                       ],
                     ),
                   ],
@@ -161,7 +163,7 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                             children: [
                               Icon(LucideIcons.plusCircle, color: isDark ? const Color(0xFFF59E0B) : const Color(0xFFD97706), size: 22),
                               const SizedBox(width: 12),
-                              Text('Agregar Tarjeta de Crédito', style: TextStyle(color: isDark ? const Color(0xFFFCD34D) : const Color(0xFFB45309), fontWeight: FontWeight.bold, fontSize: 15)),
+                              Text(loc.get('cc_add'), style: TextStyle(color: isDark ? const Color(0xFFFCD34D) : const Color(0xFFB45309), fontWeight: FontWeight.bold, fontSize: 15)),
                             ],
                           ),
                         ),
@@ -177,7 +179,7 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                             children: [
                               Icon(LucideIcons.creditCard, size: 64, color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
                               const SizedBox(height: 16),
-                              Text('No tienes tarjetas registradas.', style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 16)),
+                              Text(loc.get('voice_no_cards'), style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 16)),
                             ],
                           ),
                         ),
@@ -218,7 +220,7 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => const Center(child: Text('Error al cargar tarjetas')),
+              error: (err, stack) => Center(child: Text(loc.get('cc_err_load'))),
             ),
           )
         ],
@@ -240,6 +242,7 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
     return SizedBox(
       height: 210,
       child: PageView.builder(
+        clipBehavior: Clip.none,
         controller: _pageController,
         itemCount: cards.length,
         onPageChanged: (idx) {
@@ -298,6 +301,7 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
   }
 
   Widget _buildActiveCardDetails(List<CreditCard> cards, bool isDark, String? currencyCode) {
+    final loc = ref.watch(localizationProvider);
     final int safeIdx = _selectedIndex < cards.length ? _selectedIndex : 0;
     final card = cards[safeIdx];
     final availableBalance = card.limit - card.currentBalance;
@@ -327,9 +331,13 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                 children: [
                   Icon(LucideIcons.touchpad, size: 16, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                   const SizedBox(width: 8),
-                  Text(
-                    '👆 Toca la tarjeta seleccionada para entrar a su detalle',
-                    style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 12, fontWeight: FontWeight.w600),
+                  Expanded(
+                    child: Text(
+                      loc.get('cc_tap_hint'),
+                      style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 12, fontWeight: FontWeight.w600),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
                   ),
                 ],
               ),
@@ -354,7 +362,7 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            isOverdrawn ? 'TARJETA SOBREGIRADA' : 'CERCA DEL LÍMITE',
+                            isOverdrawn ? loc.get('cc_overdrawn') : loc.get('cc_near_limit'),
                             style: TextStyle(
                               color: isOverdrawn ? Colors.red : Colors.orange,
                               fontWeight: FontWeight.bold,
@@ -365,8 +373,8 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                           const SizedBox(height: 2),
                           Text(
                             isOverdrawn
-                                ? 'Has superado el límite asignado de esta tarjeta.'
-                                : 'Has consumido más del 90% de tu crédito.',
+                                ? loc.get('cc_overdrawn_desc')
+                                : loc.get('cc_near_limit_desc'),
                             style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 11),
                           ),
                         ],
@@ -398,11 +406,11 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Límite Disponible', style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.bold)),
+                          Text(loc.get('cc_avail_limit'), style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
                           const SizedBox(height: 6),
                           Text(isOverdrawn ? '-\$0.00' : CurrencyFormatter.format(availableBalance, currencyCode), style: TextStyle(color: isOverdrawn ? Colors.red : (isDark ? Colors.white : Colors.black), fontWeight: FontWeight.w900, fontSize: 18)),
                           const SizedBox(height: 4),
-                          Text('de ${CurrencyFormatter.format(card.limit, currencyCode)}', style: TextStyle(color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8), fontSize: 11)),
+                          Text(loc.get('cc_of').replaceAll('{limit}', CurrencyFormatter.format(card.limit, currencyCode)), style: TextStyle(color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8), fontSize: 11), overflow: TextOverflow.ellipsis),
                         ],
                       ),
                     ),
@@ -422,7 +430,7 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                         elevation: 0,
                       ),
                       icon: const Icon(LucideIcons.checkCircle, size: 22),
-                      label: const Text('Abonar a\nDeuda', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, height: 1.2)),
+                      label: Text(loc.get('cc_pay_debt'), textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, height: 1.2)),
                     ),
                   ),
                 ],
@@ -459,9 +467,9 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Ver Historial y Movimientos', style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 15)),
+                            Text(loc.get('cc_view_history'), style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 15)),
                             const SizedBox(height: 2),
-                            Text('Consulta abonos, compras y corte', style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 12)),
+                            Text(loc.get('cc_view_history_sub'), style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 12)),
                           ],
                         ),
                       ],
@@ -479,6 +487,7 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
   }
 
   Widget _buildCardItem(CreditCard card, bool isDark, String? currencyCode, {bool isCenter = false}) {
+    final loc = ref.watch(localizationProvider);
     final bool isOverdrawn = card.currentBalance >= card.limit && card.limit > 0;
 
     return Stack(
@@ -594,17 +603,17 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                                       children: [
                                         Icon(LucideIcons.pencil, color: isDark ? Colors.white : Colors.black, size: 16),
                                         const SizedBox(width: 8),
-                                        Text('Editar Tarjeta', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+                                        Text(loc.get('cc_edit_card'), style: TextStyle(color: isDark ? Colors.white : Colors.black)),
                                       ],
                                     ),
                                   ),
-                                  const PopupMenuItem(
+                                  PopupMenuItem(
                                     value: 'delete',
                                     child: Row(
                                       children: [
-                                        Icon(LucideIcons.trash2, color: Colors.red, size: 16),
-                                        SizedBox(width: 8),
-                                        Text('Eliminar Tarjeta', style: TextStyle(color: Colors.red)),
+                                        const Icon(LucideIcons.trash2, color: Colors.red, size: 16),
+                                        const SizedBox(width: 8),
+                                        Text(loc.get('cc_delete_card'), style: const TextStyle(color: Colors.red)),
                                       ],
                                     ),
                                   ),
@@ -631,15 +640,15 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text('DEUDA ACTUAL', style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 8, letterSpacing: 1.5, fontWeight: FontWeight.w600)),
-                                  Text('LÍMITE', style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 8, letterSpacing: 1.5, fontWeight: FontWeight.w600)),
+                                  Text(loc.get('cc_current_debt'), style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 8, letterSpacing: 1.5, fontWeight: FontWeight.w600)),
+                                  Text(loc.get('cc_limit'), style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 8, letterSpacing: 1.5, fontWeight: FontWeight.w600)),
                                 ],
                               ),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   if (card.currentBalance <= 0)
-                                    const Text('¡AL DÍA!', style: TextStyle(color: Color(0xFF10B981), fontSize: 17, fontWeight: FontWeight.w900, letterSpacing: 1.0))
+                                    Text(loc.get('cc_up_to_date'), style: const TextStyle(color: Color(0xFF10B981), fontSize: 17, fontWeight: FontWeight.w900, letterSpacing: 1.0))
                                   else
                                     Text(CurrencyFormatter.format(card.currentBalance, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
                                   Text(CurrencyFormatter.format(card.limit, currencyCode), style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 13, fontWeight: FontWeight.w500)),
@@ -658,7 +667,7 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('TARJETA DE CRÉDITO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 1.5)),
+                                    Text(loc.get('cc_credit_card'), style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 1.5)),
                                   ],
                                 ),
                               ),
@@ -666,7 +675,7 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Text('Corte: ${card.cutOffDay}  •  Pago: ${card.paymentDay}', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 9, fontWeight: FontWeight.w500)),
+                                  Text(loc.get('cc_cut_off').replaceAll('{cut}', '${card.cutOffDay}').replaceAll('{pay}', '${card.paymentDay}'), style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 9, fontWeight: FontWeight.w500)),
                                   const SizedBox(height: 2),
                                   Text(card.network.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 11, fontStyle: FontStyle.italic, fontWeight: FontWeight.w900)),
                                 ],
@@ -693,13 +702,16 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
         ),
         if (isOverdrawn)
           Positioned(
-            top: -4,
-            right: 0,
+            top: 14,
+            right: 48,
             child: Container(
               padding: const EdgeInsets.all(6),
-              decoration: const BoxDecoration(
-                color: Color(0xFFEF4444),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444),
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2)),
+                ],
               ),
               child: const Icon(LucideIcons.alertTriangle, color: Colors.white, size: 14),
             ),
@@ -711,10 +723,13 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
   Future<void> _showPaymentDialog(BuildContext context, WidgetRef ref, CreditCard card, String? currencyCode) async {
     final TextEditingController amountController = TextEditingController();
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final loc = ref.read(localizationProvider);
     
     // Use card color
     Color cardColor1 = card.color;
     Color cardColor2 = card.color.withValues(alpha: 0.7);
+    final minPayment = card.currentBalance * 0.05;
+    final halfPayment = card.currentBalance * 0.5;
 
     int selectedChipIndex = -1;
     await showModalBottomSheet(
@@ -766,9 +781,9 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Abonar a Tarjeta de Crédito', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.w900)),
-                              const SizedBox(height: 2),
-                              Text('Estilo Wallet • Pago instantáneo', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13)),
+                              Text(loc.get('cc_pay_title'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.w900)),
+                              const SizedBox(height: 4),
+                              Text(loc.get('cc_pay_sub'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13)),
                             ],
                           ),
                         ),
@@ -814,7 +829,7 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('DEUDA ACTUAL A ABONAR', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
+                                  Text(loc.get('cc_pay_current_lbl'), style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
                                   const SizedBox(height: 4),
                                   Text(CurrencyFormatter.format(card.currentBalance, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900)),
                                 ],
@@ -828,14 +843,14 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                     const SizedBox(height: 24),
 
                     // Quick Selection Chips
-                    Text('SELECCIÓN RÁPIDA DE MONTO', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.8)),
-                    const SizedBox(height: 10),
+                    Text(loc.get('cc_pay_quick_lbl'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.8)),
+                    const SizedBox(height: 12),
                     Row(
                       children: [
                         Expanded(
                           child: _buildQuickChip(
-                            label: 'Pago Mínimo (5%)',
-                            amount: card.currentBalance * 0.05,
+                            label: loc.get('cc_pay_min'),
+                            amount: minPayment,
                             currencyCode: currencyCode,
                             isDark: isDark,
                             isHighlighted: selectedChipIndex == 0,
@@ -850,8 +865,8 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                         const SizedBox(width: 8),
                         Expanded(
                           child: _buildQuickChip(
-                            label: 'Mitad (50%)',
-                            amount: card.currentBalance * 0.5,
+                            label: loc.get('cc_pay_half'),
+                            amount: halfPayment,
                             currencyCode: currencyCode,
                             isDark: isDark,
                             isHighlighted: selectedChipIndex == 1,
@@ -866,7 +881,7 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                         const SizedBox(width: 8),
                         Expanded(
                           child: _buildQuickChip(
-                            label: 'Deuda Total (100%)',
+                            label: loc.get('cc_pay_total'),
                             amount: card.currentBalance,
                             currencyCode: currencyCode,
                             isDark: isDark,
@@ -915,7 +930,7 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                           child: TextButton(
                             onPressed: () => Navigator.pop(ctx),
                             style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 18)),
-                            child: Text('Cancelar', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontWeight: FontWeight.w700, fontSize: 16)),
+                            child: Text(loc.get('modal_cancel'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontWeight: FontWeight.w700, fontSize: 16)),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -923,52 +938,58 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
                           flex: 2,
                           child: ElevatedButton(
                             onPressed: () async {
-                              final amount = double.tryParse(amountController.text) ?? 0.0;
-                              if (amount <= 0) return;
+                              final double? amount = double.tryParse(amountController.text.trim());
+                              if (amount == null || amount <= 0) return;
                               
                               if (amount > card.currentBalance + 0.01) {
                                 ScaffoldMessenger.of(ctx).showSnackBar(
                                   SnackBar(
-                                    content: const Text('El monto a pagar no puede ser mayor a tu deuda actual.', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                                    backgroundColor: Colors.redAccent,
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    content: Text(loc.get('cc_err_amount_excess'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                    backgroundColor: Colors.red,
                                   ),
                                 );
                                 return;
                               }
 
-                              final user = firebase_auth.FirebaseAuth.instance.currentUser;
-                              if (user == null) return;
+                              try {
+                                final user = firebase_auth.FirebaseAuth.instance.currentUser;
+                                if (user == null) return;
 
-                              final transaction = TransactionModel(
-                                id: '',
-                                userId: user.uid,
-                                amount: amount,
-                                type: 'cc_payment',
-                                category: 'Pago de Tarjeta',
-                                description: 'Abono a ${card.name}',
-                                date: DateTime.now(),
-                                isFixed: false,
-                                creditCardId: card.id,
-                              );
-
-                              await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
-                              
-                              final newBalance = card.currentBalance - amount;
-                              final updatedCard = card.copyWith(currentBalance: newBalance < 0 ? 0 : newBalance);
-                              await ref.read(creditCardControllerProvider.notifier).updateCreditCard(updatedCard);
-                              
-                              if (ctx.mounted) {
-                                Navigator.pop(ctx);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text('Abono registrado exitosamente 🎉', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                                    backgroundColor: const Color(0xFF10B981),
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                  ),
+                                final transaction = TransactionModel(
+                                  id: '',
+                                  userId: user.uid,
+                                  amount: amount,
+                                  type: 'cc_payment',
+                                  category: 'Pago de Tarjeta',
+                                  description: 'Abono a ${card.name}',
+                                  date: DateTime.now(),
+                                  isFixed: false,
+                                  creditCardId: card.id,
                                 );
+
+                                await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
+                                
+                                final newBalance = card.currentBalance - amount;
+                                final updatedCard = card.copyWith(currentBalance: newBalance < 0 ? 0 : newBalance);
+                                await ref.read(creditCardControllerProvider.notifier).updateCreditCard(updatedCard);
+                                
+                                if (ctx.mounted) {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(loc.get('cc_snack_paid'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                      backgroundColor: const Color(0xFF10B981),
+                                      behavior: SnackBarBehavior.floating,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (ctx.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                                  );
+                                }
                               }
                             },
                             style: ElevatedButton.styleFrom(

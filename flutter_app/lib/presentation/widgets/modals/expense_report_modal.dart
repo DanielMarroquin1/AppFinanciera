@@ -5,6 +5,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../modals/category_detail_modal.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/localization.dart';
+import '../../providers/auth_provider.dart';
+import 'premium_modal.dart';
 
 class ExpenseReportModal extends ConsumerStatefulWidget {
   final List<MapEntry<String, double>> categoryList;
@@ -32,6 +34,12 @@ class ExpenseReportModal extends ConsumerStatefulWidget {
     String? currencyCode,
     List<dynamic>? transactions,
   }) {
+    final container = ProviderScope.containerOf(context, listen: false);
+    final isPremium = container.read(authProvider).user?.isPremium ?? false;
+    if (!isPremium) {
+      PremiumModal.show(context);
+      return Future.value();
+    }
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,

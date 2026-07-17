@@ -36,62 +36,62 @@ class AppShell extends ConsumerWidget {
       backgroundColor: isDark 
           ? AppColors.backgroundDark 
           : AppColors.backgroundLight,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: child,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final action = await showDialog<String>(
-            context: context,
-            builder: (context) => const QuickActionsMenu(),
-          );
-          if (action != null) {
-            if (!context.mounted) return;
-            if (action == 'savings-goal') {
-              AddSavingGoalModal.show(context);
-            } else if (action == 'my-savings') {
-              context.go('/savings');
-            } else if (action == 'rewards-shop') {
-              RewardsShopModal.show(context);
-            } else if (action == 'ai-chat') {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => const AIChatModal(),
-              );
-            } else if (action == 'notifications') {
-              NotificationsModal.show(context);
-            } else if (action == 'category-budget') {
-              CategoryBudgetModal.show(context);
-            }
-          }
-        },
-        backgroundColor: AppColors.primaryLight,
-        shape: const CircleBorder(),
-        child: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: paletteGradient,
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
+      floatingActionButton: MediaQuery.of(context).viewInsets.bottom > 0
+          ? null
+          : FloatingActionButton(
+              onPressed: () async {
+                final action = await showDialog<String>(
+                  context: context,
+                  builder: (context) => const QuickActionsMenu(),
+                );
+                if (action != null) {
+                  if (!context.mounted) return;
+                  if (action == 'savings-goal') {
+                    AddSavingGoalModal.show(context);
+                  } else if (action == 'my-savings') {
+                    context.go('/savings');
+                  } else if (action == 'rewards-shop') {
+                    RewardsShopModal.show(context);
+                  } else if (action == 'ai-chat') {
+                    AIChatModal.show(context);
+                  } else if (action == 'notifications') {
+                    NotificationsModal.show(context);
+                  } else if (action == 'category-budget') {
+                    CategoryBudgetModal.show(context);
+                  }
+                }
+              },
+              backgroundColor: paletteGradient[0],
+              shape: const CircleBorder(),
+              child: Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: paletteGradient,
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: paletteGradient[0].withValues(alpha: 0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    )
+                  ]
+                ),
+                child: const Icon(LucideIcons.plus, color: Colors.white, size: 28),
+              ),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: paletteGradient[0].withValues(alpha: 0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              )
-            ]
-          ),
-          child: const Icon(LucideIcons.plus, color: Colors.white, size: 28),
-        ),
-      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: Container(
+      bottomNavigationBar: MediaQuery.of(context).viewInsets.bottom > 0
+          ? const SizedBox.shrink()
+          : Container(
         decoration: BoxDecoration(
           color: isDark ? AppColors.cardDark : AppColors.cardLight,
           boxShadow: [

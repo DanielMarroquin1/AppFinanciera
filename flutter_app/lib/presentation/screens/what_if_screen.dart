@@ -8,6 +8,7 @@ import '../providers/debts_provider.dart';
 import '../providers/chat_provider.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/localization.dart';
+import '../widgets/modals/premium_modal.dart';
 
 class WhatIfScreen extends ConsumerStatefulWidget {
   const WhatIfScreen({super.key});
@@ -47,6 +48,50 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> with SingleTickerPr
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final user = ref.watch(authProvider).user;
+    final isPremium = user?.isPremium ?? false;
+    if (!isPremium) {
+      return Scaffold(
+        backgroundColor: isDark ? const Color(0xFF111827) : const Color(0xFFF8FAFC),
+        appBar: AppBar(
+          title: Text(ref.watch(localizationProvider).get('what_if_title')),
+          backgroundColor: Colors.transparent,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(LucideIcons.crown, color: Color(0xFFF59E0B), size: 64),
+                const SizedBox(height: 24),
+                Text(
+                  'Función Premium Exclusiva 👑',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'El Simulador AI "What If?" te permite predecir el impacto de cualquier decisión financiera con inteligencia artificial.',
+                  style: TextStyle(fontSize: 15, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton.icon(
+                  onPressed: () => PremiumModal.show(context),
+                  icon: const Icon(LucideIcons.crown, color: Colors.white),
+                  label: const Text('Actualizar a Premium VIP', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD97706),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     final transactions = ref.watch(transactionsProvider).value ?? [];
     final debts = ref.watch(debtsProvider).value ?? [];
     final sym = CurrencyFormatter.getSymbol(user?.currency);

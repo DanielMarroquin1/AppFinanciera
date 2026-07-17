@@ -44,7 +44,9 @@ class AuthRepositoryImpl implements AuthRepository {
                monthlyLimit: map['monthlyLimit'] != null ? (map['monthlyLimit'] as num).toDouble() : null,
                isTwoFactorEnabled: map['isTwoFactorEnabled'] ?? false,
                twoFactorMethod: map['twoFactorMethod'],
+               twoFactorPhone: map['twoFactorPhone'],
                categoryBudgets: map['categoryBudgets'] != null ? Map<String, double>.from((map['categoryBudgets'] as Map).map((k, v) => MapEntry(k.toString(), (v as num).toDouble()))) : null,
+               autoLockMinutes: map['autoLockMinutes'] ?? 1,
              );
            }
          } catch (e) {
@@ -78,7 +80,9 @@ class AuthRepositoryImpl implements AuthRepository {
         'monthlyLimit': user.monthlyLimit,
         'isTwoFactorEnabled': user.isTwoFactorEnabled,
         'twoFactorMethod': user.twoFactorMethod,
+        if (user.twoFactorPhone != null) 'twoFactorPhone': user.twoFactorPhone,
         if (user.categoryBudgets != null) 'categoryBudgets': user.categoryBudgets,
+        'autoLockMinutes': user.autoLockMinutes,
       };
       await _firestore.collection('users').doc(firebaseUser.uid).set(map, SetOptions(merge: true));
     }
@@ -210,7 +214,9 @@ class AuthRepositoryImpl implements AuthRepository {
         monthlyLimit: data['monthlyLimit'] != null ? (data['monthlyLimit'] as num).toDouble() : null,
         isTwoFactorEnabled: data['isTwoFactorEnabled'] ?? false,
         twoFactorMethod: data['twoFactorMethod'],
+        twoFactorPhone: data['twoFactorPhone'],
         categoryBudgets: data['categoryBudgets'] != null ? Map<String, double>.from((data['categoryBudgets'] as Map).map((k, v) => MapEntry(k.toString(), (v as num).toDouble()))) : null,
+        autoLockMinutes: data['autoLockMinutes'] ?? 1,
       );
     } catch (e) {
       if (e is firebase_auth.FirebaseAuthException) rethrow;

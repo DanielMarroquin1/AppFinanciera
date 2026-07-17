@@ -46,7 +46,7 @@ class QuickActionsMenu extends ConsumerWidget {
         'gradient': isDark 
             ? const [Color(0xFF047857), Color(0xFF065F46)]
             : const [Color(0xFF059669), Color(0xFF10B981)],
-        'isPremium': false,
+        'isPremium': true,
       },
       {
         'id': 'ai-chat',

@@ -194,6 +194,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
+      resizeToAvoidBottomInset: false,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -1187,24 +1188,41 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => VoiceTransactionModal.show(context),
-        backgroundColor: Colors.transparent,
-        elevation: 10,
-        child: Container(
-          width: 56, height: 56,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: const LinearGradient(colors: [Color(0xFF4F46E5), Color(0xFF10B981)]),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF4F46E5).withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              )
-            ]
-          ),
-          child: const Icon(LucideIcons.mic, color: Colors.white),
+      floatingActionButton: MediaQuery.of(context).viewInsets.bottom > 0
+          ? null
+          : FloatingActionButton(
+              onPressed: () => VoiceTransactionModal.show(context),
+              backgroundColor: Colors.transparent,
+              elevation: 10,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              width: 56, height: 56,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(colors: [Color(0xFF4F46E5), Color(0xFF10B981)]),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF4F46E5).withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              ),
+              child: const Icon(LucideIcons.mic, color: Colors.white),
+            ),
+            if (!(ref.watch(authProvider).user?.isPremium ?? false))
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(color: Color(0xFFD97706), shape: BoxShape.circle),
+                  child: const Icon(LucideIcons.crown, size: 10, color: Colors.white),
+                ),
+              ),
+          ],
         ),
       ),
     );

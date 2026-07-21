@@ -286,12 +286,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ? const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF090D16), Color(0xFF131C35), Color(0xFF1E1B4B)], 
+                  colors: [Color(0xFF0F172A), Color(0xFF1E1B4B), Color(0xFF090D16)],
                 )
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFFF8FAFC), Color(0xFFEFF6FF), Color(0xFFE0E7FF)],
+                  colors: [Color(0xFFFAF5FF), Color(0xFFEFF6FF), Color(0xFFE0E7FF)],
                 ),
         ),
         child: SafeArea(
@@ -301,50 +301,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Cabecera Institucional Tipo Banco VIP
+                  // Logo y Header Estilo Web (Login.tsx)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    width: 84,
+                    height: 84,
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.8),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle)),
-                        const SizedBox(width: 8),
-                        Text('INTELIGENCIA FINANCIERA • SSL 256-BIT', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.0, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7))),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Emblema de Lujo
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF38BDF8), Color(0xFF2563EB), Color(0xFF4F46E5)]),
-                      borderRadius: BorderRadius.circular(26),
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF9333EA), Color(0xFF2563EB)],
+                      ),
+                      borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF2563EB).withValues(alpha: 0.4),
-                          blurRadius: 28,
+                          color: const Color(0xFF9333EA).withValues(alpha: 0.35),
+                          blurRadius: 24,
                           offset: const Offset(0, 10),
                         ),
                       ],
                     ),
-                    child: const Center(
-                      child: Icon(LucideIcons.wallet, color: Colors.white, size: 40),
-                    ),
+                    alignment: Alignment.center,
+                    child: const Text('💸', style: TextStyle(fontSize: 42)),
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    isLogin ? 'Finanzas Personales Premium' : 'Comienza Tu Futuro Financiero',
+                    isLogin ? '¡Bienvenido!' : 'Crear Cuenta',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 32,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -0.5,
                       color: isDark ? Colors.white : const Color(0xFF0F172A),
@@ -352,29 +336,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    isLogin ? 'Protección biométrica y gestión inteligente de tu dinero' : 'Únete a la plataforma de control de gastos y ahorro inteligente',
+                    isLogin ? 'Inicia sesión para continuar' : 'Únete y empieza a ahorrar',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: isDark ? Colors.grey[400] : Colors.grey[600],
-                      fontSize: 14,
+                      fontSize: 15,
                     ),
                   ),
                   const SizedBox(height: 32),
 
-                  // Contenedor Principal Studio VIP (Glassmorphic)
+                  // Contenedor Principal (Glassmorphic & Clean)
                   Container(
                     width: double.infinity,
                     constraints: const BoxConstraints(maxWidth: 480),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.85) : Colors.white.withValues(alpha: 0.95),
+                      color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.88) : Colors.white.withValues(alpha: 0.95),
                       borderRadius: BorderRadius.circular(32),
                       border: Border.all(
-                        color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+                        color: isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFF9333EA).withValues(alpha: 0.15),
                         width: 1.5,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.08),
+                          color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.06),
                           blurRadius: 40,
                           offset: const Offset(0, 20),
                         ),
@@ -402,7 +386,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     decoration: BoxDecoration(
                                       color: isLogin ? (isDark ? const Color(0xFF334155) : Colors.white) : Colors.transparent,
                                       borderRadius: BorderRadius.circular(14),
-                                      boxShadow: isLogin ? [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8)] : [],
+                                      boxShadow: isLogin ? [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 8)] : [],
                                     ),
                                     alignment: Alignment.center,
                                     child: Text('🔐 Ingresar', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: isLogin ? (isDark ? Colors.white : const Color(0xFF0F172A)) : Colors.grey)),
@@ -422,7 +406,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     decoration: BoxDecoration(
                                       color: !isLogin ? (isDark ? const Color(0xFF334155) : Colors.white) : Colors.transparent,
                                       borderRadius: BorderRadius.circular(14),
-                                      boxShadow: !isLogin ? [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8)] : [],
+                                      boxShadow: !isLogin ? [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 8)] : [],
                                     ),
                                     alignment: Alignment.center,
                                     child: Text('✨ Crear Cuenta', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: !isLogin ? (isDark ? Colors.white : const Color(0xFF0F172A)) : Colors.grey)),
@@ -434,68 +418,145 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        // BOTÓN BIOMÉTRICO ESTILO BANCO VIP (Si está en modo Login y hay soporte biométrico)
-                        if (isLogin && isBiometricSupported) ...[
+                        // Google Sign In Button (Estilo Web: Arriba y con borde elegante)
+                        InkWell(
+                          onTap: ref.watch(authProvider).isLoading
+                              ? null
+                              : () async {
+                                  try {
+                                    await ref.read(authProvider.notifier).loginWithGoogle();
+                                    if (context.mounted) {
+                                      context.go('/dashboard');
+                                      _showWelcomeMessage(context);
+                                    }
+                                  } on firebase_auth.FirebaseAuthException catch (e) {
+                                    if (!context.mounted) return;
+                                    if (e.code == 'sign-in-cancelled') return;
+                                    _showErrorSnackBar(context, 'Error', e.message ?? 'Error al iniciar sesión con Google.');
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      _showErrorSnackBar(context, 'Error', 'Error al iniciar sesión con Google.');
+                                    }
+                                  }
+                                },
+                          borderRadius: BorderRadius.circular(18),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF0F172A) : Colors.white,
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+                                width: 1.8,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(LucideIcons.chrome, color: Color(0xFF4285F4), size: 22),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Continuar con Google',
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Divider con "o"
+                        Row(
+                          children: [
+                            Expanded(child: Divider(color: isDark ? Colors.grey[700] : Colors.grey[300], thickness: 1)),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Text('o', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 13, fontWeight: FontWeight.w600)),
+                            ),
+                            Expanded(child: Divider(color: isDark ? Colors.grey[700] : Colors.grey[300], thickness: 1)),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+
+                        // OPCIÓN BIOMÉTRICA SIEMPRE DISPONIBLE EN LOGIN (Huella Digital / Face ID)
+                        if (isLogin) ...[
                           InkWell(
                             onTap: _handleBiometricLogin,
                             borderRadius: BorderRadius.circular(20),
                             child: Container(
-                              padding: const EdgeInsets.all(18),
+                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: hasSavedBiometrics
-                                      ? [const Color(0xFF0284C7).withValues(alpha: 0.2), const Color(0xFF38BDF8).withValues(alpha: 0.1)]
-                                      : [Colors.grey.withValues(alpha: 0.1), Colors.grey.withValues(alpha: 0.05)],
+                                  colors: isDark
+                                      ? [const Color(0xFF9333EA).withValues(alpha: 0.18), const Color(0xFF2563EB).withValues(alpha: 0.18)]
+                                      : [const Color(0xFFFAF5FF), const Color(0xFFEFF6FF)],
                                 ),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: hasSavedBiometrics ? const Color(0xFF38BDF8) : Colors.grey.withValues(alpha: 0.3),
+                                  color: const Color(0xFF9333EA).withValues(alpha: isDark ? 0.45 : 0.6),
                                   width: 1.5,
                                 ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF9333EA).withValues(alpha: 0.1),
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
                               child: Row(
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: hasSavedBiometrics ? const Color(0xFF0284C7) : Colors.grey[700],
+                                      gradient: const LinearGradient(colors: [Color(0xFF9333EA), Color(0xFF2563EB)]),
                                       shape: BoxShape.circle,
-                                      boxShadow: hasSavedBiometrics ? [BoxShadow(color: const Color(0xFF38BDF8).withValues(alpha: 0.4), blurRadius: 12)] : [],
+                                      boxShadow: [
+                                        BoxShadow(color: const Color(0xFF9333EA).withValues(alpha: 0.4), blurRadius: 10),
+                                      ],
                                     ),
-                                    child: const Icon(LucideIcons.fingerprint, color: Colors.white, size: 28),
+                                    child: const Icon(LucideIcons.fingerprint, color: Colors.white, size: 26),
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          hasSavedBiometrics ? 'Huella / Face ID' : 'Activar Huella / Face ID',
-                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: isDark ? Colors.white : const Color(0xFF0F172A)),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              'Huella / Face ID',
+                                              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: isDark ? Colors.white : const Color(0xFF1E293B)),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: const Text('RÁPIDO', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFF10B981))),
+                                            ),
+                                          ],
                                         ),
-                                        const SizedBox(height: 2),
+                                        const SizedBox(height: 3),
                                         Text(
-                                          hasSavedBiometrics ? 'Toca para ingresar instantáneamente' : 'Inicia sesión con correo para habilitar',
-                                          style: TextStyle(fontSize: 12, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                                          hasSavedBiometrics
+                                              ? 'Toca para iniciar sesión de inmediato'
+                                              : 'Ingreso biométrico de alta seguridad',
+                                          style: TextStyle(fontSize: 12, color: isDark ? Colors.grey[300] : Colors.grey[600]),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  Icon(LucideIcons.chevronRight, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                                  Icon(LucideIcons.arrowRightCircle, color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), size: 24),
                                 ],
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 20),
-                          Row(
-                            children: [
-                              Expanded(child: Divider(color: isDark ? Colors.grey[700] : Colors.grey[300])),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 14),
-                                child: Text('O con tus credenciales', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 12, fontWeight: FontWeight.w600)),
-                              ),
-                              Expanded(child: Divider(color: isDark ? Colors.grey[700] : Colors.grey[300])),
-                            ],
                           ),
                           const SizedBox(height: 20),
                         ],
@@ -508,23 +569,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           keyboardType: TextInputType.emailAddress,
                           style: TextStyle(color: isDark ? Colors.white : Colors.black87),
                           decoration: InputDecoration(
-                            hintText: 'ej. usuario@finanzas.com',
+                            hintText: 'tu@email.com',
                             hintStyle: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 14),
-                            prefixIcon: Icon(LucideIcons.mail, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7), size: 20),
+                            prefixIcon: Icon(LucideIcons.mail, color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), size: 20),
                             filled: true,
-                            fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey[200]!)),
+                            fillColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isDark ? Colors.grey[700]! : Colors.grey[300]!, width: 1.5)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isDark ? Colors.grey[700]! : Colors.grey[300]!, width: 1.5)),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: Color(0xFF38BDF8), width: 2),
+                              borderSide: const BorderSide(color: Color(0xFF9333EA), width: 2),
                             ),
                           ),
                         ),
                         const SizedBox(height: 16),
 
                         // Formulario Password
-                        Text('Contraseña de Seguridad', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, fontWeight: FontWeight.w700)),
+                        Text('Contraseña', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, fontWeight: FontWeight.w700)),
                         const SizedBox(height: 6),
                         TextField(
                           onChanged: (val) => setState(() => password = val),
@@ -533,22 +594,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           decoration: InputDecoration(
                             hintText: '••••••••••••',
                             hintStyle: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 14),
-                            prefixIcon: Icon(LucideIcons.lock, color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7), size: 20),
+                            prefixIcon: Icon(LucideIcons.lock, color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), size: 20),
                             suffixIcon: IconButton(
                               icon: Icon(showPassword ? LucideIcons.eyeOff : LucideIcons.eye, color: isDark ? Colors.grey[400] : Colors.grey[500], size: 20),
                               onPressed: () => setState(() => showPassword = !showPassword),
                             ),
                             filled: true,
-                            fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey[200]!)),
+                            fillColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isDark ? Colors.grey[700]! : Colors.grey[300]!, width: 1.5)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isDark ? Colors.grey[700]! : Colors.grey[300]!, width: 1.5)),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: Color(0xFF38BDF8), width: 2),
+                              borderSide: const BorderSide(color: Color(0xFF9333EA), width: 2),
                             ),
                           ),
                         ),
-                        
+
                         if (isLogin) ...[
                           const SizedBox(height: 12),
                           Align(
@@ -556,12 +617,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             child: TextButton(
                               onPressed: () => ForgotPasswordModal.show(context),
                               style: TextButton.styleFrom(
-                                foregroundColor: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+                                foregroundColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA),
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                                 minimumSize: Size.zero,
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
-                              child: const Text('¿Olvidaste tu clave?', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                              child: const Text('¿Olvidaste tu contraseña?', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                             ),
                           ),
                         ],
@@ -569,7 +630,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         // Purposes (Solo registro)
                         if (!isLogin) ...[
                           const SizedBox(height: 20),
-                          Text('¿Cuál es tu principal meta financiera?', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, fontWeight: FontWeight.w700)),
+                          Text('¿Cuál es tu propósito para usar esta app?', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, fontWeight: FontWeight.w700)),
                           const SizedBox(height: 10),
                           ...purposes.map((p) {
                             final isSelected = purpose == p['value'];
@@ -581,13 +642,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? (isDark ? const Color(0xFF0284C7).withValues(alpha: 0.25) : const Color(0xFFE0F2FE))
-                                      : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC)),
+                                      ? (isDark ? const Color(0xFF9333EA).withValues(alpha: 0.25) : const Color(0xFFFAF5FF))
+                                      : (isDark ? const Color(0xFF0F172A) : Colors.white),
                                   border: Border.all(
                                     color: isSelected
-                                        ? const Color(0xFF38BDF8)
-                                        : (isDark ? Colors.grey[800]! : Colors.grey[200]!),
-                                    width: isSelected ? 2 : 1,
+                                        ? const Color(0xFF9333EA)
+                                        : (isDark ? Colors.grey[800]! : Colors.grey[300]!),
+                                    width: isSelected ? 2 : 1.5,
                                   ),
                                   borderRadius: BorderRadius.circular(14),
                                 ),
@@ -597,7 +658,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     const SizedBox(width: 12),
                                     Expanded(child: Text(p['label']!, style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, fontSize: 13))),
                                     if (isSelected)
-                                      const Icon(LucideIcons.checkCircle2, color: Color(0xFF38BDF8), size: 18),
+                                      const Icon(LucideIcons.checkCircle2, color: Color(0xFF9333EA), size: 18),
                                   ],
                                 ),
                               ),
@@ -612,7 +673,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 child: Checkbox(
                                   value: acceptedPolicies,
                                   onChanged: (val) => setState(() => acceptedPolicies = val ?? false),
-                                  activeColor: const Color(0xFF0284C7),
+                                  activeColor: const Color(0xFF9333EA),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                                 ),
                               ),
@@ -625,7 +686,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       const TextSpan(text: 'Acepto las '),
                                       TextSpan(
                                         text: 'Políticas de Privacidad',
-                                        style: TextStyle(color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7), fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                                        style: TextStyle(color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
                                         recognizer: TapGestureRecognizer()..onTap = () => PrivacyPolicyModal.show(context),
                                       ),
                                       const TextSpan(text: ' y Términos de Uso.'),
@@ -639,7 +700,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                         const SizedBox(height: 28),
 
-                        // Submit Button Estilo Banco VIP
+                        // Submit Button Estilo Web Gradient Purple/Blue
                         Consumer(
                           builder: (context, ref, child) {
                             final authState = ref.watch(authProvider);
@@ -658,12 +719,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 decoration: BoxDecoration(
                                   gradient: isDisabled
                                     ? LinearGradient(colors: [isDark ? const Color(0xFF334155) : Colors.grey[300]!, isDark ? const Color(0xFF334155) : Colors.grey[300]!])
-                                    : const LinearGradient(colors: [Color(0xFF0284C7), Color(0xFF2563EB), Color(0xFF4F46E5)]),
+                                    : const LinearGradient(colors: [Color(0xFF9333EA), Color(0xFF2563EB)]),
                                   borderRadius: BorderRadius.circular(18),
                                   boxShadow: isDisabled
                                     ? []
                                     : [
-                                        BoxShadow(color: const Color(0xFF2563EB).withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 8)),
+                                        BoxShadow(color: const Color(0xFF9333EA).withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 8)),
                                       ],
                                 ),
                                 child: Container(
@@ -671,56 +732,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   constraints: const BoxConstraints(minHeight: 56),
                                   child: isLoading
                                       ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                      : Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(isLogin ? LucideIcons.shieldCheck : LucideIcons.userPlus, color: isDisabled ? Colors.grey[500] : Colors.white, size: 20),
-                                            const SizedBox(width: 10),
-                                            Text(
-                                              isLogin ? 'Ingresar a mi Cuenta' : 'Crear Cuenta Financiera',
-                                              style: TextStyle(
-                                                color: isDisabled ? Colors.grey[500] : Colors.white, 
-                                                fontSize: 15, 
-                                                fontWeight: FontWeight.w800,
-                                                letterSpacing: 0.5,
-                                              ),
-                                            ),
-                                          ],
+                                      : Text(
+                                          isLogin ? 'Iniciar Sesión' : 'Crear Cuenta',
+                                          style: TextStyle(
+                                            color: isDisabled ? Colors.grey[500] : Colors.white, 
+                                            fontSize: 16, 
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: 0.5,
+                                          ),
                                         ),
                                 ),
                               ),
                             );
                           }
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Google Sign In
-                        OutlinedButton.icon(
-                          icon: const Icon(LucideIcons.chrome, color: Colors.blue, size: 20),
-                          label: Text('Continuar con Google', style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 13, fontWeight: FontWeight.w700)),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            backgroundColor: isDark ? const Color(0xFF0F172A).withValues(alpha: 0.5) : const Color(0xFFF8FAFC),
-                            side: BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey[300]!, width: 1.2),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          ),
-                          onPressed: ref.watch(authProvider).isLoading ? null : () async {
-                            try {
-                              await ref.read(authProvider.notifier).loginWithGoogle();
-                              if (context.mounted) {
-                                context.go('/dashboard');
-                                _showWelcomeMessage(context);
-                              }
-                            } on firebase_auth.FirebaseAuthException catch (e) {
-                              if (!context.mounted) return;
-                              if (e.code == 'sign-in-cancelled') return;
-                              _showErrorSnackBar(context, 'Error', e.message ?? 'Error al iniciar sesión con Google.');
-                            } catch (e) {
-                              if (context.mounted) {
-                                _showErrorSnackBar(context, 'Error', 'Error al iniciar sesión con Google.');
-                              }
-                            }
-                          },
                         ),
                       ],
                     ),
@@ -728,22 +752,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                   const SizedBox(height: 28),
 
-                  // Pie de página Institucional y de Seguridad
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(LucideIcons.shieldAlert, size: 14, color: isDark ? Colors.grey[500] : Colors.grey[600]),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Cierre automático en 1 min de inactividad activo',
-                        style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[600], fontSize: 11, fontWeight: FontWeight.w500),
+                  // Toggle Text Link abajo
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        isLogin = !isLogin;
+                        purpose = '';
+                        acceptedPolicies = false;
+                      });
+                    },
+                    child: Text(
+                      isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión',
+                      style: TextStyle(
+                        color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '🔒 Finanzas App • Gestión Inteligente de Presupuesto y Ahorro',
-                    style: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 10),
+                    ),
                   ),
                 ],
               ),

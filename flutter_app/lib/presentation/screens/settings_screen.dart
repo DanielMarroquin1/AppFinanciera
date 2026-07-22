@@ -10,6 +10,7 @@ import '../providers/auth_provider.dart';
 import '../widgets/modals/edit_profile_modal.dart';
 import '../widgets/modals/color_palette_modal.dart';
 import '../widgets/modals/premium_modal.dart';
+import '../widgets/modals/premium_sync_hub_modal.dart';
 import '../widgets/modals/complete_profile_modal.dart';
 import '../../core/utils/localization.dart';
 import '../../core/utils/currency_formatter.dart';
@@ -300,11 +301,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Presupuestos Section (New - from web)
+            // Presupuestos & Sincronización Section
             _buildSection(
               isDark,
-              title: 'Presupuestos',
+              title: 'Presupuestos & Sincronización',
               items: [
+                _buildSettingItem(
+                  isDark,
+                  icon: LucideIcons.zap,
+                  iconBg: isDark ? const Color(0xFF312E81).withValues(alpha: 0.6) : const Color(0xFFE0E7FF),
+                  iconColor: const Color(0xFF6366F1),
+                  title: 'Sincronización Bancaria & Siri',
+                  subtitle: 'Conecta notificaciones de TC/Débito en Android y comandos de voz en iOS',
+                  badge: !isPremium ? '🔒 VIP' : '⚡ Activo',
+                  badgeColor: !isPremium ? const Color(0xFFD97706) : const Color(0xFF6366F1),
+                  onTap: () => PremiumSyncHubModal.show(context),
+                ),
                 _buildSettingItem(isDark, icon: LucideIcons.pieChart, iconBg: isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF), iconColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), title: 'Presupuesto por Categoría', subtitle: 'Establece límites por rubro', badge: !isPremium ? '🔒 PRO' : null, badgeColor: !isPremium ? const Color(0xFFD97706) : null, onTap: () => CategoryBudgetModal.show(context)),
                 _buildSettingItem(isDark, icon: LucideIcons.bellRing, iconBg: isDark ? const Color(0xFF78350F).withValues(alpha: 0.5) : const Color(0xFFFEF3C7), iconColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), title: 'Alertas de Presupuesto', subtitle: 'Notificaciones al acercarte al límite', badge: !isPremium ? '🔒 PRO' : null, badgeColor: !isPremium ? const Color(0xFFD97706) : null, onTap: () => _showBudgetAlertModal(context, isDark)),
               ],
@@ -351,6 +363,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: 'Suscripción Premium',
                 items: [
                   _buildSettingItem(isDark, icon: LucideIcons.crown, iconBg: Colors.transparent, iconColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), title: 'Plan Premium Anual', subtitle: 'Próxima renovación: 24 Feb 2027', badge: 'Activo'),
+                  _buildSettingItem(
+                    isDark,
+                    icon: LucideIcons.zap,
+                    iconBg: isDark ? const Color(0xFF312E81).withValues(alpha: 0.6) : const Color(0xFFE0E7FF),
+                    iconColor: const Color(0xFF6366F1),
+                    title: 'Hub de Sincronización Automática',
+                    subtitle: 'Configurar lector de bancos y atajos de voz Siri',
+                    badge: '⚡ VIP',
+                    badgeColor: const Color(0xFF6366F1),
+                    onTap: () => PremiumSyncHubModal.show(context),
+                  ),
                   ListTile(
                     title: const Center(child: Text('Cancelar Suscripción', style: TextStyle(color: Colors.red, fontSize: 14))),
                     onTap: () { 
@@ -1361,9 +1384,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.get('biometrics_status_disabled')), backgroundColor: Colors.grey[700]));
                                 }
                               } else {
+                                if (passwordCtrl.text.trim().isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.get('biometrics_confirm_password_hint')), backgroundColor: Colors.amber[800]));
+                                  return;
+                                }
                                 final authSuccess = await BiometricService.authenticate(reason: loc.get('biometrics_modal_title'));
                                 if (authSuccess && user?.email != null) {
-                                  await BiometricService.setBiometricEnabled(true, user!.email!, passwordCtrl.text.trim().isNotEmpty ? passwordCtrl.text.trim() : 'saved_biometric_token');
+                                  await BiometricService.setBiometricEnabled(true, user!.email!, passwordCtrl.text.trim());
                                   setState(() {});
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.get('biometrics_status_enabled')), backgroundColor: const Color(0xFF16A34A)));

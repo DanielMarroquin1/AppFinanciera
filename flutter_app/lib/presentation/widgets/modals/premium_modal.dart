@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../providers/auth_provider.dart';
+import 'premium_sync_hub_modal.dart';
 
 class PremiumModal extends ConsumerStatefulWidget {
   const PremiumModal({super.key});
@@ -23,6 +24,7 @@ class _PremiumModalState extends ConsumerState<PremiumModal> {
   String selectedPlan = 'annual';
 
   final features = [
+    {'icon': LucideIcons.bellRing, 'text': 'Sincronización bancaria en Android y Atajos de Siri en iOS'},
     {'icon': LucideIcons.sliders, 'text': 'Límite de presupuesto mensual y por categoría'},
     {'icon': LucideIcons.palette, 'text': 'Apariencia y paletas de colores VIP'},
     {'icon': LucideIcons.sparkles, 'text': 'Asistente IA, Simulador "What If" y Botón IA de Ahorros'},
@@ -277,6 +279,27 @@ class _PremiumModalState extends ConsumerState<PremiumModal> {
                     ),
                     const SizedBox(height: 12),
                   ],
+
+                  // Botón para acceder al Hub de Sincronización Automática
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        PremiumSyncHubModal.show(context);
+                      },
+                      icon: const Icon(LucideIcons.bellRing, color: Color(0xFF8B5CF6), size: 18),
+                      label: const Text(
+                        '⚡ Sincronización Bancaria Android & Siri iOS',
+                        style: TextStyle(color: Color(0xFF8B5CF6), fontSize: 13.5, fontWeight: FontWeight.w800),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: Color(0xFF8B5CF6), width: 1.5),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                    ),
+                  ),
 
                   // Test cancel / subscription management
                   TextButton.icon(

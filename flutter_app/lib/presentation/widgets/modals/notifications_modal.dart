@@ -9,6 +9,7 @@ import 'credit_cards_modal.dart';
 import 'streak_modal.dart';
 import 'transactions_list_modal.dart';
 import 'ai_chat_modal.dart';
+import '../../../core/services/local_notification_service.dart';
 
 class NotificationsModal extends ConsumerWidget {
   const NotificationsModal({super.key});
@@ -66,49 +67,112 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
     final notifier = ref.read(notificationNotifierProvider);
     final user = ref.watch(authProvider).user;
 
-    final bgColor = isDark ? const Color(0xFF1F2937) : Colors.white;
+    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+    final cardBgColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+
+    // Calcular no leídas totales
+    final allNotifications = notificationsAsync.value ?? [];
+    final unreadCount = allNotifications.where((n) => !n.isRead).length;
 
     return Container(
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          ),
+        ],
       ),
       child: Column(
         children: [
+          // Drag handle
           Container(
             margin: const EdgeInsets.symmetric(vertical: 12),
-            height: 4, width: 40,
+            height: 5, width: 44,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
-              borderRadius: BorderRadius.circular(2),
+              color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+              borderRadius: BorderRadius.circular(3),
             ),
           ),
           
+          // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            padding: const EdgeInsets.fromLTRB(24, 8, 20, 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
                     Container(
-                      width: 40, height: 40,
-                      decoration: BoxDecoration(color: (isDark ? Colors.blue[900] : Colors.blue[100])?.withValues(alpha: isDark ? 0.3 : 1.0), borderRadius: BorderRadius.circular(12)),
-                      child: Icon(LucideIcons.bell, color: isDark ? Colors.blue[400] : Colors.blue[700]),
+                      width: 44, height: 44,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF3B82F6)]),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.35), blurRadius: 10, offset: const Offset(0, 3)),
+                        ],
+                      ),
+                      child: const Icon(LucideIcons.bellRing, color: Colors.white, size: 22),
                     ),
-                    const SizedBox(width: 12),
-                    Text(loc.get('notif_title_bar'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+                    const SizedBox(width: 14),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              loc.get('notif_title_bar'),
+                              style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.3),
+                            ),
+                            if (unreadCount > 0) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF2563EB)]),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '$unreadCount nuevas',
+                                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        Text(
+                          'Mantén el control de tus alertas',
+                          style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
                 Row(
                   children: [
-                    if (user != null && FirebaseAuth.instance.currentUser != null)
-                      TextButton(
-                        onPressed: () => notifier.markAllAsRead(FirebaseAuth.instance.currentUser!.uid),
-                        child: Text(loc.get('notif_read_all'), style: TextStyle(color: isDark ? Colors.blue[400] : Colors.blue[700], fontWeight: FontWeight.bold)),
+                    if (unreadCount > 0 && user != null && FirebaseAuth.instance.currentUser != null)
+                      InkWell(
+                        onTap: () => notifier.markAllAsRead(FirebaseAuth.instance.currentUser!.uid),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFBFDBFE)),
+                          ),
+                          child: Text(
+                            loc.get('notif_read_all'),
+                            style: TextStyle(color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), fontSize: 12, fontWeight: FontWeight.w700),
+                          ),
+                        ),
                       ),
+                    const SizedBox(width: 6),
                     IconButton(
-                      icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                      icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600], size: 22),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
@@ -116,25 +180,94 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
               ],
             ),
           ),
+
+          // Botón de Probar Notificación OS (WhatsApp style)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            child: InkWell(
+              onTap: () async {
+                await LocalNotificationService.showNotification(
+                  title: '🌟 Notificación del Teléfono',
+                  body: '¡Así te llegarán las alertas de presupuesto y racha diaria directamente en tu celular!',
+                  payload: 'test_notification',
+                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(children: [
+                        const Icon(LucideIcons.checkCircle, color: Colors.white, size: 18),
+                        const SizedBox(width: 10),
+                        const Expanded(child: Text('¡Notificación nativa enviada al sistema! Revisa tu barra superior.')),
+                      ]),
+                      backgroundColor: const Color(0xFF16A34A),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  );
+                }
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                        : [const Color(0xFFEFF6FF), const Color(0xFFDBEAFE)],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF334155) : const Color(0xFF93C5FD),
+                    width: 1.2,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(LucideIcons.smartphone, color: Color(0xFF3B82F6), size: 18),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('¿Quieres probar una alerta en tu celular?', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF1E293B), fontSize: 13, fontWeight: FontWeight.w800)),
+                          const SizedBox(height: 2),
+                          Text('Toca aquí para emitir una notificación push en el sistema operativo.', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 11)),
+                        ],
+                      ),
+                    ),
+                    const Icon(LucideIcons.send, color: Color(0xFF3B82F6), size: 16),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
           
-          // Filter Tabs (Scrollable for financial categories)
+          // Filter Tabs (Scrollable)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             child: Row(
               children: [
-                _buildFilterTab(isDark, 0, loc.get('notif_tab_all')),
+                _buildFilterTab(isDark, 0, loc.get('notif_tab_all'), LucideIcons.layers),
                 const SizedBox(width: 8),
-                _buildFilterTab(isDark, 1, loc.get('notif_tab_debts')),
+                _buildFilterTab(isDark, 1, loc.get('notif_tab_debts'), LucideIcons.alertTriangle),
                 const SizedBox(width: 8),
-                _buildFilterTab(isDark, 2, loc.get('notif_tab_incomes')),
+                _buildFilterTab(isDark, 2, loc.get('notif_tab_incomes'), LucideIcons.trendingUp),
                 const SizedBox(width: 8),
-                _buildFilterTab(isDark, 3, loc.get('notif_tab_fixed')),
+                _buildFilterTab(isDark, 3, loc.get('notif_tab_fixed'), LucideIcons.calendar),
               ],
             ),
           ),
-          const SizedBox(height: 8),
-          Divider(color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB), height: 1),
+          const SizedBox(height: 12),
+          Divider(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0), height: 1),
 
           Expanded(
             child: notificationsAsync.when(
@@ -206,9 +339,18 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(LucideIcons.bellOff, size: 64, color: isDark ? Colors.grey[700] : Colors.grey[300]),
-                        const SizedBox(height: 16),
-                        Text(loc.get('notif_empty_filter'), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 16)),
+                        Container(
+                          width: 84, height: 84,
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(LucideIcons.bellOff, size: 36, color: isDark ? Colors.grey[600] : Colors.grey[400]),
+                        ),
+                        const SizedBox(height: 18),
+                        Text(loc.get('notif_empty_filter'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 16, fontWeight: FontWeight.w700)),
+                        const SizedBox(height: 6),
+                        Text('No hay alertas en esta categoría por ahora', style: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 13)),
                       ],
                     ),
                   );
@@ -216,24 +358,43 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
 
                 return ListView.builder(
                   controller: widget.scrollController,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
                     final notif = filtered[index];
                     final isUnread = !notif.isRead;
 
+                    // Color de acento de categoría
+                    Color accentColor = const Color(0xFF3B82F6);
+                    if (notif.category == 'debt' || notif.category == 'credit_card' || notif.title.toLowerCase().contains('mora') || notif.title.toLowerCase().contains('vence')) {
+                      accentColor = const Color(0xFFEF4444);
+                    } else if (notif.type == 'income' || notif.title.toLowerCase().contains('ingreso')) {
+                      accentColor = const Color(0xFF10B981);
+                    } else if (notif.category == 'streak' || notif.title.toLowerCase().contains('racha')) {
+                      accentColor = const Color(0xFFF59E0B);
+                    } else if (notif.category == 'ai' || notif.title.toLowerCase().contains('ia')) {
+                      accentColor = const Color(0xFF8B5CF6);
+                    }
+
                     return Dismissible(
                       key: Key(notif.id),
                       direction: DismissDirection.endToStart,
                       background: Container(
-                        margin: const EdgeInsets.only(bottom: 12),
+                        margin: const EdgeInsets.only(bottom: 14),
                         decoration: BoxDecoration(
-                          color: Colors.redAccent,
-                          borderRadius: BorderRadius.circular(16),
+                          color: const Color(0xFFEF4444),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                         alignment: Alignment.centerRight,
                         padding: const EdgeInsets.only(right: 24),
-                        child: const Icon(LucideIcons.trash2, color: Colors.white),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: const [
+                            Icon(LucideIcons.trash2, color: Colors.white, size: 20),
+                            SizedBox(width: 8),
+                            Text('Eliminar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13)),
+                          ],
+                        ),
                       ),
                       onDismissed: (direction) {
                         notifier.deleteNotification(notif.id);
@@ -243,108 +404,138 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                           _onNotificationTap(context, notif, isUnread, notifier);
                         },
                         child: Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(16),
+                          margin: const EdgeInsets.only(bottom: 14),
                           decoration: BoxDecoration(
                             color: isUnread 
-                                ? (isDark ? const Color(0xFF2E3A4B) : const Color(0xFFEFF6FF))
-                                : (isDark ? const Color(0xFF111827) : Colors.white),
+                                ? (isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF))
+                                : cardBgColor,
+                            borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: isUnread 
-                                  ? (isDark ? Colors.blue.withValues(alpha: 0.4) : Colors.blue.withValues(alpha: 0.2))
-                                  : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                                  ? accentColor.withValues(alpha: 0.5)
+                                  : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                              width: isUnread ? 1.5 : 1.0,
                             ),
-                            borderRadius: BorderRadius.circular(18),
-                            boxShadow: [if (!isDark && isUnread) BoxShadow(color: Colors.blue.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+                            boxShadow: [
+                              if (!isDark)
+                                BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 3)),
+                            ],
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: IntrinsicHeight(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
+                                  // Barra lateral de acento de color
                                   Container(
-                                    width: 44, height: 44,
-                                    decoration: BoxDecoration(
-                                      color: isDark ? const Color(0xFF1F2937) : const Color(0xFFF3F4F6),
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                    child: Center(child: Text(_getCategoryEmoji(notif.category), style: const TextStyle(fontSize: 22))),
+                                    width: 5,
+                                    color: accentColor,
                                   ),
-                                  const SizedBox(width: 14),
                                   Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                _localizeTitle(notif.title, loc), 
-                                                style: TextStyle(
-                                                  color: isDark ? Colors.white : Colors.black, 
-                                                  fontSize: 15, 
-                                                  fontWeight: isUnread ? FontWeight.w800 : FontWeight.w600,
-                                                )
-                                              ),
-                                            ),
-                                            if (isUnread)
-                                              Container(
-                                                width: 8, height: 8,
-                                                decoration: const BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
-                                              )
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          _localizeBody(notif.body, loc),
-                                          style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          _formatTimeAgo(notif.createdAt, loc),
-                                          style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 11, fontWeight: FontWeight.w500),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              
-                              // Smart Action Pill
-                              const SizedBox(height: 12),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  InkWell(
-                                    onTap: () {
-                                      _onNotificationTap(context, notif, isUnread, notifier);
-                                    },
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: isDark ? const Color(0xFF374151) : const Color(0xFFF1F5F9),
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFE2E8F0)),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            _getSmartActionLabel(notif.category, notif.title, loc),
-                                            style: TextStyle(color: isDark ? Colors.blue[400] : Colors.blue[600], fontSize: 11.5, fontWeight: FontWeight.w700),
+                                          Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                width: 44, height: 44,
+                                                decoration: BoxDecoration(
+                                                  color: accentColor.withValues(alpha: isDark ? 0.2 : 0.12),
+                                                  borderRadius: BorderRadius.circular(14),
+                                                ),
+                                                child: Center(child: Text(_getCategoryEmoji(notif.category), style: const TextStyle(fontSize: 22))),
+                                              ),
+                                              const SizedBox(width: 14),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      children: [
+                                                        Expanded(
+                                                          child: Text(
+                                                            _localizeTitle(notif.title, loc), 
+                                                            style: TextStyle(
+                                                              color: isDark ? Colors.white : const Color(0xFF0F172A), 
+                                                              fontSize: 15, 
+                                                              fontWeight: isUnread ? FontWeight.w900 : FontWeight.w700,
+                                                            )
+                                                          ),
+                                                        ),
+                                                        if (isUnread)
+                                                          Container(
+                                                            margin: const EdgeInsets.only(left: 8),
+                                                            width: 9, height: 9,
+                                                            decoration: BoxDecoration(color: accentColor, shape: BoxShape.circle),
+                                                          )
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 6),
+                                                    Text(
+                                                      _localizeBody(notif.body, loc),
+                                                      style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[600], fontSize: 13, height: 1.3),
+                                                    ),
+                                                    const SizedBox(height: 10),
+                                                    Row(
+                                                      children: [
+                                                        Icon(LucideIcons.clock, size: 12, color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                                                        const SizedBox(width: 5),
+                                                        Text(
+                                                          _formatTimeAgo(notif.createdAt, loc),
+                                                          style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 11.5, fontWeight: FontWeight.w600),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                          const SizedBox(width: 4),
-                                          Icon(LucideIcons.arrowRight, size: 12, color: isDark ? Colors.blue[400] : Colors.blue[600]),
+                                          
+                                          // Smart Action Pill
+                                          const SizedBox(height: 14),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            children: [
+                                              InkWell(
+                                                onTap: () {
+                                                  _onNotificationTap(context, notif, isUnread, notifier);
+                                                },
+                                                borderRadius: BorderRadius.circular(12),
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                                                  decoration: BoxDecoration(
+                                                    color: accentColor.withValues(alpha: isDark ? 0.25 : 0.1),
+                                                    borderRadius: BorderRadius.circular(12),
+                                                    border: Border.all(color: accentColor.withValues(alpha: 0.3)),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      Text(
+                                                        _getSmartActionLabel(notif.category, notif.title, loc),
+                                                        style: TextStyle(color: isDark ? accentColor.withValues(alpha: 0.9) : accentColor, fontSize: 12, fontWeight: FontWeight.w800),
+                                                      ),
+                                                      const SizedBox(width: 5),
+                                                      Icon(LucideIcons.arrowRight, size: 13, color: isDark ? accentColor.withValues(alpha: 0.9) : accentColor),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
@@ -361,27 +552,36 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
     );
   }
 
-  Widget _buildFilterTab(bool isDark, int index, String label) {
+  Widget _buildFilterTab(bool isDark, int index, String label, IconData icon) {
     final isSelected = _selectedFilter == index;
     return InkWell(
       onTap: () => setState(() => _selectedFilter = index),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      borderRadius: BorderRadius.circular(14),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 9),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          gradient: isSelected ? const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)]) : null,
-          color: isSelected ? null : (isDark ? const Color(0xFF111827) : const Color(0xFFF1F5F9)),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isSelected ? const Color(0xFF6366F1) : (isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0))),
+          gradient: isSelected ? const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF3B82F6)]) : null,
+          color: isSelected ? null : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: isSelected ? const Color(0xFF6366F1) : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))),
+          boxShadow: isSelected ? [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))] : [],
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : (isDark ? Colors.grey[300] : Colors.grey[700]),
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: isSelected ? Colors.white : (isDark ? Colors.grey[400] : Colors.grey[600])),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : (isDark ? Colors.grey[300] : Colors.grey[700]),
+                fontSize: 12.5,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -8,6 +8,7 @@ import '../../data/repositories/transaction_repository_impl.dart';
 import 'auth_provider.dart';
 import 'notification_provider.dart';
 import '../../core/utils/localization.dart';
+import '../../core/services/local_notification_service.dart';
 
 final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
   return TransactionRepositoryImpl();
@@ -128,6 +129,11 @@ class TransactionNotifier extends Notifier<void> {
         category: mainCategory,
       );
       await FirebaseFirestore.instance.collection('notifications').doc(notifRef.id).set(notif.toFirestore());
+      LocalNotificationService.showNotification(
+        title: notif.title,
+        body: notif.body,
+        id: notif.id.hashCode.abs() % 100000,
+      );
       
       if (user.email.isNotEmpty) {
         await FirebaseFirestore.instance.collection('mail').add({
@@ -163,6 +169,11 @@ class TransactionNotifier extends Notifier<void> {
         category: mainCategory,
       );
       await FirebaseFirestore.instance.collection('notifications').doc(notifRef.id).set(notif.toFirestore());
+      LocalNotificationService.showNotification(
+        title: notif.title,
+        body: notif.body,
+        id: notif.id.hashCode.abs() % 100000,
+      );
       
       if (user.email.isNotEmpty) {
         await FirebaseFirestore.instance.collection('mail').add({

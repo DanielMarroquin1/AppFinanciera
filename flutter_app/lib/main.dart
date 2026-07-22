@@ -6,6 +6,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'firebase_options.dart';
 import 'core/routing/app_router.dart';
 import 'core/services/ad_service.dart';
+import 'core/services/local_notification_service.dart';
+import 'core/services/bank_notification_listener_service.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/theme_provider.dart';
@@ -20,6 +22,7 @@ void main() async {
   );
   await initializeDateFormatting('es');
   AdService().initialize();
+  await LocalNotificationService.init();
 
   final sharedPreferences = await SharedPreferences.getInstance();
 
@@ -45,6 +48,12 @@ class MyApp extends ConsumerStatefulWidget {
 
 class _MyAppState extends ConsumerState<MyApp> {
   late final _router = AppRouter.createRouter(widget.hasSeenOnboarding);
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => BankNotificationListenerService.startListening(ref));
+  }
 
   @override
   Widget build(BuildContext context) {

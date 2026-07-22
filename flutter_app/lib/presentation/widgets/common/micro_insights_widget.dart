@@ -82,9 +82,6 @@ class MicroInsightsSection extends ConsumerWidget {
               );
             },
           ),
-        ),
-        const SizedBox(height: 12),
-        AdBannerWidget(isPremium: ref.watch(authProvider).user?.isPremium ?? false),
       ],
     );
   }

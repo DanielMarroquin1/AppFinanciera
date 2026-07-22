@@ -6,6 +6,7 @@ import '../../domain/entities/debt.dart';
 import '../../domain/entities/notification.dart';
 import '../../domain/entities/credit_card.dart';
 import '../utils/currency_formatter.dart';
+import 'local_notification_service.dart';
 
 class RecurringTransactionService {
   static Future<void> evaluateRecurringTransactions() async {
@@ -125,6 +126,11 @@ class RecurringTransactionService {
             category: template.category,
           );
           batch.set(notifRef, notif.toFirestore());
+          LocalNotificationService.showNotification(
+            title: notif.title,
+            body: notif.body,
+            id: notif.id.hashCode.abs() % 100000,
+          );
 
           if (user.email != null) {
             final mailRef = FirebaseFirestore.instance.collection('mail').doc();
@@ -219,6 +225,11 @@ class RecurringTransactionService {
             category: debt.category,
           );
           batch.set(notifRef, notif.toFirestore());
+          LocalNotificationService.showNotification(
+            title: notif.title,
+            body: notif.body,
+            id: notif.id.hashCode.abs() % 100000,
+          );
 
           if (user.email != null) {
             final mailRef = FirebaseFirestore.instance.collection('mail').doc();
@@ -379,6 +390,11 @@ class RecurringTransactionService {
             category: 'debt',
           );
           batch.set(notifRef, notif.toFirestore());
+          LocalNotificationService.showNotification(
+            title: notif.title,
+            body: notif.body,
+            id: notif.id.hashCode.abs() % 100000,
+          );
 
           if (user.email != null) {
             final mailRef = FirebaseFirestore.instance.collection('mail').doc();

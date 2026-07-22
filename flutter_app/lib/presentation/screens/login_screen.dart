@@ -30,6 +30,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool acceptedPolicies = false;
   bool hasSavedBiometrics = false;
   bool isBiometricSupported = false;
+  bool rememberBiometric = true;
 
   final purposes = [
     {'value': 'save', 'label': 'Aprender a ahorrar', 'emoji': '💰'},
@@ -49,11 +50,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _checkBiometrics() async {
     final supported = await BiometricService.isDeviceSupported();
     final saved = await BiometricService.getSavedCredentials();
+    final enabled = await BiometricService.isBiometricEnabled();
     if (mounted) {
       setState(() {
         isBiometricSupported = supported;
-        hasSavedBiometrics = saved != null;
-        if (saved != null) {
+        hasSavedBiometrics = saved != null && enabled && saved['password'] != 'saved_biometric_token' && saved['password']!.isNotEmpty;
+        rememberBiometric = enabled || supported;
+        if (hasSavedBiometrics) {
           email = saved['email'] ?? '';
           password = saved['password'] ?? '';
         }
@@ -97,16 +100,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       if (isLogin) {
         await ref.read(authProvider.notifier).login(loginEmail, loginPassword);
-        final isEnabled = await BiometricService.isBiometricEnabled();
-        if (isEnabled && isBiometricSupported) {
-          await BiometricService.setBiometricEnabled(true, loginEmail, loginPassword);
-        }
       } else {
         await ref.read(authProvider.notifier).register(loginEmail, loginPassword, purpose);
-        final isEnabled = await BiometricService.isBiometricEnabled();
-        if (isEnabled && isBiometricSupported) {
-          await BiometricService.setBiometricEnabled(true, loginEmail, loginPassword);
-        }
+      }
+
+      if (rememberBiometric && isBiometricSupported) {
+        await BiometricService.setBiometricEnabled(true, loginEmail, loginPassword);
+      } else if (!rememberBiometric) {
+        await BiometricService.setBiometricEnabled(false);
       }
 
       final user = ref.read(authProvider).user;
@@ -153,8 +154,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _handleBiometricLogin() async {
     final credentials = await BiometricService.getSavedCredentials();
-    if (credentials == null) {
-      _showErrorSnackBar(context, 'Huella / Face ID no configurado', 'Inicia sesión con tu correo una vez y deja marcada la casilla de Acceso Biométrico.');
+    if (credentials == null || credentials['password'] == 'saved_biometric_token' || credentials['password']!.isEmpty) {
+      _showErrorSnackBar(context, 'Huella no vinculada', 'Ingresa una vez con tu correo y contraseña marcando la opción "Recordar y activar acceso con Huella" abajo para activarla.');
       return;
     }
 
@@ -623,6 +624,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
                               child: const Text('¿Olvidaste tu contraseña?', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                        ],
+
+                        if (isBiometricSupported) ...[
+                          const SizedBox(height: 14),
+                          InkWell(
+                            onTap: () => setState(() => rememberBiometric = !rememberBiometric),
+                            borderRadius: BorderRadius.circular(12),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                children: [
+                                  AnimatedContainer(
+                                    duration: const Duration(milliseconds: 150),
+                                    width: 22, height: 22,
+                                    decoration: BoxDecoration(
+                                      color: rememberBiometric ? const Color(0xFF9333EA) : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: rememberBiometric ? const Color(0xFF9333EA) : (isDark ? Colors.grey[600]! : Colors.grey[400]!), width: 1.8),
+                                    ),
+                                    child: rememberBiometric ? const Icon(LucideIcons.check, color: Colors.white, size: 14) : null,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      'Recordar y activar acceso con Huella / Face ID',
+                                      style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],

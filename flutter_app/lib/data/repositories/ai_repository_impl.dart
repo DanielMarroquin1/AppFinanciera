@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../../core/config/ai_config.dart';
@@ -111,7 +112,13 @@ class AIRepositoryImpl implements AIRepository {
 
     try {
       print('[AIRepo] Sending message to Gemini...');
-      final response = await chat.sendMessage(Content.text(prompt));
+      final response = await chat.sendMessage(Content.text(prompt))
+          .timeout(
+            Duration(seconds: AIConfig.apiTimeoutSeconds),
+            onTimeout: () => throw TimeoutException(
+              'La respuesta de Zent AI tardó demasiado. Por favor intenta de nuevo.',
+            ),
+          );
 
       // Bucle para manejar llamadas a funciones
       var functionCalls = response.functionCalls;
@@ -182,7 +189,11 @@ class AIRepositoryImpl implements AIRepository {
     } catch (e, stack) {
       print('[AIRepo] ERROR: $e');
       print('[AIRepo] Stack: $stack');
-      yield 'Error de conexión con Gemini AI: $e';
+      if (e is TimeoutException) {
+        yield '⏱️ La respuesta tardó demasiado. Verifica tu conexión e intenta de nuevo.';
+      } else {
+        yield '❌ Error de conexión con Zent AI. Por favor intenta de nuevo en unos momentos.';
+      }
     }
   }
 }

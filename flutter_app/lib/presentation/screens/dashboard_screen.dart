@@ -28,6 +28,8 @@ import '../providers/notification_provider.dart';
 import '../widgets/modals/notifications_modal.dart';
 import '../widgets/modals/app_tutorial_modal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../providers/ai_insights_provider.dart';
+import '../widgets/common/micro_insights_widget.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -40,7 +42,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
   late AnimationController _fireAnimController;
   bool _limitAlertShown = false;
   bool _fixedExpenseAlertShown = false;
-
+  bool _insightsLoaded = false;
 
   @override
   void initState() {
@@ -49,6 +51,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
       vsync: this,
       duration: const Duration(milliseconds: 2000),
     )..repeat(reverse: true);
+    // Cargar insights de forma diferida para no bloquear el primer render
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_insightsLoaded && mounted) {
+        _insightsLoaded = true;
+        ref.read(aiInsightsProvider.notifier).loadInsightsAndForecast();
+      }
+    });
   }
 
   @override
@@ -864,6 +873,32 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 ],
               ),
             const SizedBox(height: 24),
+
+            // ── Micro-Insights de Zent AI ────────────────────────────────────
+            const MicroInsightsSection(),
+            Builder(
+              builder: (context) {
+                final insights = ref.watch(microInsightsProvider);
+                return insights.isNotEmpty
+                    ? const SizedBox(height: 20)
+                    : const SizedBox.shrink();
+              },
+            ),
+
+            // ── Proyección de Fin de Mes ─────────────────────────────────────
+            Builder(
+              builder: (context) {
+                final forecast = ref.watch(cashFlowForecastProvider);
+                if (forecast == null) return const SizedBox.shrink();
+                final sym = CurrencyFormatter.getSymbol(user?.currency);
+                return Column(
+                  children: [
+                    CashFlowForecastCard(currencySymbol: sym),
+                    const SizedBox(height: 24),
+                  ],
+                );
+              },
+            ),
 
             // Badges Section (Insignias Desbloqueadas)
             Row(

@@ -104,12 +104,14 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                       child: const Icon(LucideIcons.sparkles, color: Colors.white, size: 24),
                     ),
                     const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Zent AI', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                        Text('Siempre disponible para ayudarte', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12)),
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Zent AI', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                          Text('Siempre disponible para ayudarte', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12), overflow: TextOverflow.ellipsis),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -277,14 +279,15 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                             children: [
                               const Icon(LucideIcons.sparkles, color: Color(0xFFC084FC), size: 16),
                               const SizedBox(width: 4),
-                              Text('Zent AI', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                              Text('Zent AI', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12), overflow: TextOverflow.ellipsis),
                             ],
                           ),
                           const SizedBox(height: 4),
                         ],
                         Text(
                           msg.text,
-                          style: TextStyle(color: isUser ? Colors.white : (isDark ? Colors.white : Colors.black), fontSize: 14),
+                          style: TextStyle(color: isUser ? Colors.white : (isDark ? Colors.white : Colors.black), fontSize: 14, height: 1.45),
+                          softWrap: true,
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -332,7 +335,7 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
           Container(
             padding: EdgeInsets.only(
               left: 16, right: 16, top: 12,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 12,
+              bottom: MediaQuery.of(context).viewInsets.bottom + MediaQuery.of(context).padding.bottom + 12,
             ),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF1F2937) : const Color(0xFFF9FAFB),

@@ -12,13 +12,41 @@ import '../../presentation/widgets/modals/category_budget_modal.dart';
 import '../../presentation/providers/color_palette_provider.dart';
 import '../../core/utils/localization.dart';
 
-class AppShell extends ConsumerWidget {
+class AppShell extends ConsumerStatefulWidget {
   final Widget child;
 
   const AppShell({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver {
+  bool _isKeyboardVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    final bottomInset = WidgetsBinding.instance.platformDispatcher.views.first.viewInsets.bottom;
+    final newValue = bottomInset > 0;
+    if (newValue != _isKeyboardVisible) {
+      setState(() => _isKeyboardVisible = newValue);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // Determine current route using go_router inside GoRouterState
     final String location = GoRouterState.of(context).uri.path;
     int currentIndex = -1;
@@ -38,9 +66,9 @@ class AppShell extends ConsumerWidget {
           : AppColors.backgroundLight,
       resizeToAvoidBottomInset: false,
       body: SafeArea(
-        child: child,
+        child: widget.child,
       ),
-      floatingActionButton: MediaQuery.of(context).viewInsets.bottom > 0
+      floatingActionButton: _isKeyboardVisible
           ? null
           : FloatingActionButton(
               onPressed: () async {
@@ -89,7 +117,7 @@ class AppShell extends ConsumerWidget {
               ),
             ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: MediaQuery.of(context).viewInsets.bottom > 0
+      bottomNavigationBar: _isKeyboardVisible
           ? const SizedBox.shrink()
           : Container(
         decoration: BoxDecoration(

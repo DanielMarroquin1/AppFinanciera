@@ -295,7 +295,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                             children: [
                               Text('${percentage.toStringAsFixed(0)}% ${loc.get('completed')}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                               TextButton(
-                                onPressed: () => AddFundsModal.show(context, goalName: goal.name),
+                                onPressed: () => AddFundsModal.show(context, goal: goal),
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
                                   minimumSize: const Size(50, 30),

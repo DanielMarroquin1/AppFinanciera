@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/saving_goals_provider.dart';
+import '../../../core/services/ad_service.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../domain/entities/saving_goal.dart';
 
@@ -25,23 +26,31 @@ class AddFundsModal extends ConsumerStatefulWidget {
 }
 
 class _AddFundsModalState extends ConsumerState<AddFundsModal> {
-  double amount = 0.0;
+  final _amountController = TextEditingController();
   bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final sym = CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency);
+    final currency = ref.watch(authProvider).user?.currency ?? 'USD';
+    final sym = CurrencyFormatter.getSymbol(currency);
+    final amount = double.tryParse(_amountController.text) ?? 0.0;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1F2937) : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: 24, right: 24, top: 24,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1F2937) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -52,44 +61,47 @@ class _AddFundsModalState extends ConsumerState<AddFundsModal> {
               children: [
                 Expanded(
                   child: Text(
-                    'Agregar fondos a ${widget.goal.name}',
-                    style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+                    'Aportar a "${widget.goal.name}"',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
                   ),
                 ),
                 IconButton(
                   icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
                   onPressed: () => Navigator.of(context).pop(),
-                )
+                ),
               ],
             ),
             const SizedBox(height: 8),
-            // Progreso actual
             Text(
               'Progreso actual: $sym${widget.goal.currentAmount.toStringAsFixed(2)} / $sym${widget.goal.targetAmount.toStringAsFixed(2)}',
               style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12),
             ),
             const SizedBox(height: 24),
-            Text('¿Cuánto quieres ahorrar hoy? 💰', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700])),
-            const SizedBox(height: 12),
             TextField(
-              autofocus: true,
+              controller: _amountController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              onChanged: (val) {
-                setState(() {
-                  amount = double.tryParse(val) ?? 0.0;
-                });
-              },
-              style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
+              autofocus: true,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+              ),
+              onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
-                prefixIcon: Container(
-                  padding: const EdgeInsets.all(12),
-                  child: Text(sym, style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-                ),
+                prefixText: '$sym ',
+                prefixStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF10B981)),
                 hintText: '0.00',
                 hintStyle: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400]),
                 filled: true,
                 fillColor: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -103,7 +115,16 @@ class _AddFundsModalState extends ConsumerState<AddFundsModal> {
                           currentAmount: widget.goal.currentAmount + amount,
                         );
                         await ref.read(savingGoalsProvider.notifier).updateGoal(updatedGoal);
-                        if (mounted) Navigator.of(context).pop();
+                        if (mounted) {
+                          final isPremium = ref.read(authProvider).user?.isPremium ?? false;
+                          await AdService().registerActionAndShowInterstitial(
+                            context,
+                            isPremium,
+                            onAdClosed: () {
+                              if (mounted) Navigator.of(context).pop();
+                            },
+                          );
+                        }
                       } catch (e) {
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(

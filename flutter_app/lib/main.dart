@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'firebase_options.dart';
 import 'core/routing/app_router.dart';
+import 'core/services/ad_service.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/theme_provider.dart';
@@ -18,6 +19,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await initializeDateFormatting('es');
+  AdService().initialize();
 
   final sharedPreferences = await SharedPreferences.getInstance();
 

@@ -24,6 +24,7 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
   late int selectedYear;
   String selectedCategory = 'Todas';
   String searchQuery = '';
+  bool _showAllIncomes = false;
 
   @override
   void initState() {
@@ -640,14 +641,28 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                     ),
 
                     // Recent income history
-                    Text('Historial de Ingresos', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Historial de Ingresos', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14, fontWeight: FontWeight.bold)),
+                        if (filteredIncomes.length > 3)
+                          TextButton(
+                            onPressed: () => setState(() => _showAllIncomes = !_showAllIncomes),
+                            style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4)),
+                            child: Text(
+                              _showAllIncomes ? 'Ver menos' : 'Ver todas (${filteredIncomes.length})',
+                              style: TextStyle(color: const Color(0xFF16A34A), fontSize: 13, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                      ],
+                    ),
                     const SizedBox(height: 12),
                     if (filteredIncomes.isEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         child: Center(child: Text('No hay ingresos recientes.', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600]))),
                       ),
-                    ...filteredIncomes.map((income) {
+                    ...(_showAllIncomes ? filteredIncomes : filteredIncomes.take(3)).map((income) {
                       return Container(
                         margin: const EdgeInsets.only(bottom: 16),
                         child: Row(
@@ -674,7 +689,7 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                                 ],
                               ),
                             ),
-                            Text('+${CurrencyFormatter.format(income.amount, currencyCode)}', style: TextStyle(color: isDark ? const Color(0xFF34D399) : const Color(0xFF059669), fontWeight: FontWeight.bold, fontSize: 16)),
+                            Text('+${CurrencyFormatter.format(income.amount, currencyCode)}', style: TextStyle(color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A), fontWeight: FontWeight.bold, fontSize: 16)),
                             PopupMenuButton<String>(
                               icon: Icon(LucideIcons.moreVertical, size: 20, color: isDark ? Colors.grey[400] : Colors.grey[600]),
                               color: isDark ? const Color(0xFF1F2937) : Colors.white,
@@ -732,6 +747,23 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                         ),
                       );
                     }),
+                    if (!_showAllIncomes && filteredIncomes.length > 3)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8, bottom: 20),
+                        child: OutlinedButton.icon(
+                          onPressed: () => setState(() => _showAllIncomes = true),
+                          icon: const Icon(LucideIcons.list, size: 18, color: Color(0xFF16A34A)),
+                          label: Text(
+                            'Ver los ${filteredIncomes.length} ingresos del mes',
+                            style: const TextStyle(color: Color(0xFF16A34A), fontWeight: FontWeight.bold),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: const Color(0xFF16A34A).withValues(alpha: 0.5)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                        ),
+                      ),
                   ],
                 );
               },

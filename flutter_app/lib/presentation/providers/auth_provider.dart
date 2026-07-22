@@ -248,6 +248,14 @@ class AuthNotifier extends Notifier<AuthState> {
     return false;
   }
 
+  Future<void> addPoints(int amountToAdd) async {
+    final user = state.user;
+    if (user == null) return;
+    final updatedUser = user.copyWith(points: user.points + amountToAdd);
+    await _repository.saveUser(updatedUser);
+    state = state.copyWith(user: updatedUser);
+  }
+
   Future<void> equipAvatar(String avatarId) async {
     final user = state.user;
     if (user == null) return;

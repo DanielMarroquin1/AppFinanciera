@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/models/micro_insight.dart';
 import '../../providers/ai_insights_provider.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/services/ad_service.dart';
+import '../../providers/auth_provider.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // WIDGET PRINCIPAL: SECCIÓN DE MICRO-INSIGHTS EN EL DASHBOARD
@@ -81,6 +83,8 @@ class MicroInsightsSection extends ConsumerWidget {
             },
           ),
         ),
+        const SizedBox(height: 12),
+        AdBannerWidget(isPremium: ref.watch(authProvider).user?.isPremium ?? false),
       ],
     );
   }

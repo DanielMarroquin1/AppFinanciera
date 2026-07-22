@@ -29,6 +29,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
   late int selectedYear;
   String selectedCategory = 'Todas';
   String searchQuery = '';
+  bool _showAllExpenses = false;
 
   @override
   void initState() {
@@ -744,14 +745,28 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                     ),
 
                     // Recent expense history
-                    Text('Historial de Gastos', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Historial de Gastos', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14, fontWeight: FontWeight.bold)),
+                        if (filteredExpenses.length > 3)
+                          TextButton(
+                            onPressed: () => setState(() => _showAllExpenses = !_showAllExpenses),
+                            style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4)),
+                            child: Text(
+                              _showAllExpenses ? 'Ver menos' : 'Ver todas (${filteredExpenses.length})',
+                              style: TextStyle(color: paletteGradient[0], fontSize: 13, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                      ],
+                    ),
                     const SizedBox(height: 12),
                     if (filteredExpenses.isEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         child: Center(child: Text('No hay gastos recientes.', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600]))),
                       ),
-                    ...filteredExpenses.map((expense) {
+                    ...(_showAllExpenses ? filteredExpenses : filteredExpenses.take(3)).map((expense) {
                       return Container(
                         margin: const EdgeInsets.only(bottom: 16),
                         child: Row(
@@ -836,6 +851,23 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                         ),
                       );
                     }),
+                    if (!_showAllExpenses && filteredExpenses.length > 3)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8, bottom: 20),
+                        child: OutlinedButton.icon(
+                          onPressed: () => setState(() => _showAllExpenses = true),
+                          icon: Icon(LucideIcons.list, size: 18, color: paletteGradient[0]),
+                          label: Text(
+                            'Ver los ${filteredExpenses.length} gastos del mes',
+                            style: TextStyle(color: paletteGradient[0], fontWeight: FontWeight.bold),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: paletteGradient[0].withValues(alpha: 0.5)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                        ),
+                      ),
                   ],
                 );
               },

@@ -10,6 +10,7 @@ import '../../../core/utils/localization.dart';
 import '../../providers/credit_card_provider.dart';
 import '../common/recurrence_selector_widget.dart';
 import '../../providers/auth_provider.dart';
+import '../../../core/services/ad_service.dart';
 
 class AddExpenseModal extends ConsumerStatefulWidget {
   final bool isFixed;
@@ -871,14 +872,23 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                         }
 
                         if (mounted) {
-                          Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(widget.existingTransaction != null ? 'Gasto actualizado' : loc.get('expense_added'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                              backgroundColor: isDark ? const Color(0xFF991B1B) : const Color(0xFFDC2626),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            ),
+                          final isPremium = ref.read(authProvider).user?.isPremium ?? false;
+                          await AdService().registerActionAndShowInterstitial(
+                            context,
+                            isPremium,
+                            onAdClosed: () {
+                              if (mounted) {
+                                Navigator.of(context).pop();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(widget.existingTransaction != null ? 'Gasto actualizado' : loc.get('expense_added'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                    backgroundColor: isDark ? const Color(0xFF991B1B) : const Color(0xFFDC2626),
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  ),
+                                );
+                              }
+                            },
                           );
 
                           // Handle category budget alert immediately

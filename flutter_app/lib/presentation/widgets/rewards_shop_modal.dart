@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
 import '../providers/color_palette_provider.dart';
 import '../../core/utils/localization.dart';
+import '../../core/services/ad_service.dart';
 
 class RewardsShopModal extends ConsumerStatefulWidget {
   const RewardsShopModal({super.key});
@@ -325,6 +326,55 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                         ],
                       ),
                     ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // REWARDED AD BUTTON (+50 PTS)
+                InkWell(
+                  onTap: () {
+                    final user = ref.read(authProvider).user;
+                    AdService().showRewardedAd(
+                      context,
+                      user?.isPremium ?? false,
+                      onRewardEarned: () async {
+                        await ref.read(authProvider.notifier).addPoints(50);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('🎉 ¡Ganaste +50 Puntos de Tienda por ver el anuncio!'),
+                              backgroundColor: const Color(0xFF10B981),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            ),
+                          );
+                        }
+                      },
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF059669), Color(0xFF10B981)],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFF34D399), width: 1.5),
+                      boxShadow: [
+                        BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 3)),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(LucideIcons.video, color: Colors.white, size: 20),
+                        SizedBox(width: 10),
+                        Text(
+                          '🎬 Ver Anuncio Recompensa (+50 Pts Gratis)',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

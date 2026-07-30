@@ -136,6 +136,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
       });
     }
 
+    if (user != null && !_tipChecked) {
+      _tipChecked = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (context.mounted) {
+          await Future.delayed(const Duration(milliseconds: 600));
+          if (context.mounted) {
+            DailyTipModal.showIfNeeded(context);
+          }
+        }
+      });
+    }
+
     if (user != null && !_tutorialChecked) {
       _tutorialChecked = true;
       WidgetsBinding.instance.addPostFrameCallback((_) async {

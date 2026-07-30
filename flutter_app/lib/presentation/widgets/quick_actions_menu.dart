@@ -31,6 +31,15 @@ class QuickActionsMenu extends ConsumerWidget {
         'isPremium': false,
       },
       {
+        'id': 'my-savings',
+        'label': 'Mis Ahorros',
+        'icon': LucideIcons.piggyBank,
+        'gradient': isDark 
+            ? const [Color(0xFF0E7490), Color(0xFF0369A1)] // cyan-700 to sky-700
+            : const [Color(0xFF06B6D4), Color(0xFF0EA5E9)], // cyan-500 to sky-500
+        'isPremium': false,
+      },
+      {
         'id': 'rewards-shop',
         'label': loc.get('quick_actions_rewards_shop'),
         'icon': LucideIcons.shoppingBag,

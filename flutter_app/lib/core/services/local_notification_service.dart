@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -61,14 +62,26 @@ class LocalNotificationService {
     if (!_initialized) await init();
 
     try {
-      const androidDetails = AndroidNotificationDetails(
+      final androidDetails = AndroidNotificationDetails(
         'finanza_high_importance_channel',
         'Notificaciones Finanza',
         channelDescription: 'Alertas de presupuesto, rachas, recordatorios y transacciones.',
         importance: Importance.max,
         priority: Priority.high,
         icon: '@mipmap/ic_launcher',
-        styleInformation: BigTextStyleInformation(''),
+        color: const Color(0xFF3B82F6), // Azul premium para el acento de la notificación
+        enableLights: true,
+        ledColor: const Color(0xFF3B82F6),
+        ledOnMs: 1000,
+        ledOffMs: 500,
+        styleInformation: BigTextStyleInformation(
+          body,
+          htmlFormatBigText: true,
+          contentTitle: '<b>$title</b>',
+          htmlFormatContentTitle: true,
+          summaryText: 'Finanzas Personales',
+          htmlFormatSummaryText: true,
+        ),
       );
 
       const iosDetails = DarwinNotificationDetails(
@@ -77,7 +90,7 @@ class LocalNotificationService {
         presentSound: true,
       );
 
-      const details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+      final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
 
       await _plugin.show(
         id,

@@ -82,6 +82,7 @@ class MicroInsightsSection extends ConsumerWidget {
               );
             },
           ),
+        ),
       ],
     );
   }

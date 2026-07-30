@@ -346,7 +346,17 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                       color: paletteGradient[0], 
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Center(child: Icon(LucideIcons.filter, color: Colors.white, size: 20)),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        const Icon(LucideIcons.filter, color: Colors.white, size: 20),
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: const Icon(LucideIcons.crown, color: Color(0xFFFBBF24), size: 10),
+                        ),
+                      ],
+                    ),
                   ),
                 )
               ],

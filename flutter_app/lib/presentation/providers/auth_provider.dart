@@ -276,6 +276,17 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(user: updatedUser);
   }
 
+  Future<void> unlockItemWithoutCost(String itemId) async {
+    final user = state.user;
+    if (user == null) return;
+    if (user.unlockedItems.contains(itemId)) return;
+    
+    final newUnlockedItems = List<String>.from(user.unlockedItems)..add(itemId);
+    final updatedUser = user.copyWith(unlockedItems: newUnlockedItems);
+    await _repository.saveUser(updatedUser);
+    state = state.copyWith(user: updatedUser);
+  }
+
   Future<void> upgradeToPremium() async {
     final user = state.user;
     if (user == null) return;

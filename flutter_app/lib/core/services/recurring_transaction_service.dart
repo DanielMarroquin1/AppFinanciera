@@ -78,9 +78,9 @@ class RecurringTransactionService {
             shouldAdd = true;
           }
         } else if (template.recurrenceType == 'weekly') {
-          // Simplification: if recurrenceDay represents weekday (1 = Monday, 7 = Sunday)
-          // For now, let's assume recurrenceDay is not used for weekly, or it represents weekday.
-          // In AddExpenseModal, recurrenceDay is 1-31. Let's assume weekly is not supported yet or skips.
+          if (current.weekday == template.recurrenceDay) {
+            shouldAdd = true;
+          }
         }
 
         if (shouldAdd) {
@@ -179,7 +179,7 @@ class RecurringTransactionService {
         } else if (debt.recurrenceType == 'bimonthly') {
           if (current.day == debt.recurrenceDay || current.day == debt.recurrenceDay2) shouldAdd = true;
         } else if (debt.recurrenceType == 'weekly') {
-          // simplified weekday
+          if (current.weekday == debt.recurrenceDay) shouldAdd = true;
         }
 
         if (shouldAdd) {

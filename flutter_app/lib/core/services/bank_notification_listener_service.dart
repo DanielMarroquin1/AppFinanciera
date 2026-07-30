@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:notification_listener_service/notification_listener_service.dart';
@@ -54,9 +55,9 @@ class ParsedBankCharge {
 class BankNotificationListenerService {
   static const String _prefsKey = 'pending_bank_charges_v1';
 
-  /// Verifica si el permiso de lector de notificaciones en Android está activo
+  /// Verifica si hay permisos para leer notificaciones
   static Future<bool> isPermissionGranted() async {
-    if (!Platform.isAndroid) return false;
+    if (kIsWeb || !Platform.isAndroid) return false;
     try {
       return await NotificationListenerService.isPermissionGranted();
     } catch (e) {
@@ -65,9 +66,9 @@ class BankNotificationListenerService {
     }
   }
 
-  /// Solicita el permiso de lectura de notificaciones (abre ajustes de Android)
+  /// Solicita permisos en Android para leer notificaciones
   static Future<void> requestPermission() async {
-    if (!Platform.isAndroid) return;
+    if (kIsWeb || !Platform.isAndroid) return;
     try {
       await NotificationListenerService.requestPermission();
     } catch (e) {
@@ -77,7 +78,7 @@ class BankNotificationListenerService {
 
   /// Escucha notificaciones en segundo plano/primer plano si el usuario es Premium
   static void startListening(WidgetRef ref) {
-    if (!Platform.isAndroid) return;
+    if (kIsWeb || !Platform.isAndroid) return;
     try {
       NotificationListenerService.notificationsStream.listen((ServiceNotificationEvent event) {
         _handleIncomingEvent(event, ref);

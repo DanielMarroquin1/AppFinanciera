@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/color_palette_provider.dart';
 import 'premium_modal.dart';
+import '../../../core/services/ad_service.dart';
 import '../rewards_shop_modal.dart';
 
 class ColorPaletteModal extends ConsumerStatefulWidget {
@@ -339,7 +340,7 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
 
                       const SizedBox(height: 24),
                       Text(
-                        'SELECCIONA TU PALETA VISUAL (${presetPalettes.length} DISPONIBLES)',
+                        'SELECCIONA TU PALETA VISUAL (${presetPalettes.length} OPCIONES)',
                         style: TextStyle(
                           color: isDark ? Colors.grey[400] : Colors.grey[600],
                           fontSize: 11,
@@ -443,7 +444,7 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                                               color: palette.colors[0].withValues(alpha: 0.15),
                                               borderRadius: BorderRadius.circular(12),
                                             ),
-                                            child: Text('DISPONIBLE', style: TextStyle(color: palette.colors[0], fontSize: 10, fontWeight: FontWeight.bold)),
+                                            child: Text('DESBLOQUEADO', style: TextStyle(color: palette.colors[0], fontSize: 10, fontWeight: FontWeight.bold)),
                                           )
                                         else
                                           Container(
@@ -563,56 +564,107 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                     const SizedBox(width: 14),
                     Expanded(
                       flex: 2,
-                      child: ElevatedButton(
-                        onPressed: isUnlocked(selectedPalette) && currentPalette.id != selectedPalette.id
-                            ? () async {
-                                if (selectedPalette.id != 'theme_default' && !isPremium) {
-                                  PremiumModal.show(context);
-                                  return;
-                                }
-                                await ref.read(colorPaletteProvider.notifier).setPaletteById(selectedPalette.id);
-                                if (context.mounted) {
-                                  Navigator.of(context).pop();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Row(
-                                        children: [
-                                          Icon(LucideIcons.palette, color: Colors.white, size: 20),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: Text(
-                                              '✨ Paleta "${selectedPalette.name}" aplicada a toda tu aplicación.',
-                                              style: const TextStyle(fontWeight: FontWeight.bold),
+                      child: currentPalette.id == selectedPalette.id
+                          ? ElevatedButton(
+                              onPressed: null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
+                              child: const Text('Ya está equipada ✔', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+                            )
+                          : (!isPremium && !isUnlocked(selectedPalette))
+                              ? ElevatedButton.icon(
+                                  onPressed: () async {
+                                    // 1. Mostrar el Anuncio de Video Bonificado
+                                    await AdService().showRewardedAd(
+                                      context,
+                                      isPremium,
+                                      onRewardEarned: () async {
+                                      // 2. Desbloquear y aplicar el color
+                                        await ref.read(authProvider.notifier).unlockItemWithoutCost(selectedPalette.id);
+                                        await ref.read(colorPaletteProvider.notifier).setPaletteById(selectedPalette.id);
+                                        if (context.mounted) {
+                                          Navigator.of(context).pop();
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Row(
+                                                children: [
+                                                  const Icon(LucideIcons.playCircle, color: Colors.white, size: 20),
+                                                  const SizedBox(width: 10),
+                                                  Expanded(
+                                                    child: Text(
+                                                      '✨ Paleta "${selectedPalette.name}" DESBLOQUEADA y aplicada. ¡Gracias por ver el anuncio!',
+                                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              backgroundColor: selectedPalette.colors[0],
+                                              behavior: SnackBarBehavior.floating,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                              duration: const Duration(seconds: 4),
                                             ),
+                                          );
+                                        }
+                                      },
+                                    );
+                                  },
+                                  icon: const Icon(LucideIcons.playCircle, color: Colors.white, size: 20),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: selectedPalette.colors[0],
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    elevation: 4,
+                                    shadowColor: selectedPalette.colors[0].withValues(alpha: 0.4),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  ),
+                                  label: const Text(
+                                    'Desbloquear con Video 🎬',
+                                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14),
+                                  ),
+                                )
+                              : ElevatedButton(
+                                  onPressed: () async {
+                                    await ref.read(colorPaletteProvider.notifier).setPaletteById(selectedPalette.id);
+                                    if (context.mounted) {
+                                      Navigator.of(context).pop();
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Row(
+                                            children: [
+                                              const Icon(LucideIcons.palette, color: Colors.white, size: 20),
+                                              const SizedBox(width: 10),
+                                              Expanded(
+                                                child: Text(
+                                                  '✨ Paleta "${selectedPalette.name}" aplicada a toda tu aplicación.',
+                                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                                      backgroundColor: selectedPalette.colors[0],
-                                      behavior: SnackBarBehavior.floating,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                      duration: const Duration(seconds: 4),
-                                    ),
-                                  );
-                                }
-                              }
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: selectedPalette.colors[0],
-                          foregroundColor: Colors.white,
-                          disabledBackgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
-                          disabledForegroundColor: isDark ? Colors.grey[500] : Colors.grey[600],
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          elevation: isUnlocked(selectedPalette) && currentPalette.id != selectedPalette.id ? 4 : 0,
-                          shadowColor: selectedPalette.colors[0].withValues(alpha: 0.4),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                        child: Text(
-                          currentPalette.id == selectedPalette.id 
-                            ? 'Ya está equipada ✔' 
-                            : (selectedPalette.id != 'theme_default' && !isPremium ? '👑 APLICAR (REQUIERE PREMIUM)' : 'Equipar y Aplicar ✨'),
-                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
-                        ),
-                      ),
+                                          backgroundColor: selectedPalette.colors[0],
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                          duration: const Duration(seconds: 4),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: selectedPalette.colors[0],
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    elevation: 4,
+                                    shadowColor: selectedPalette.colors[0].withValues(alpha: 0.4),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  ),
+                                  child: const Text(
+                                    'Equipar y Aplicar ✨',
+                                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
+                                  ),
+                                ),
                     ),
                   ],
                 ),

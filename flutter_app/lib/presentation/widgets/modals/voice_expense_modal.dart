@@ -21,12 +21,6 @@ class VoiceTransactionModal extends ConsumerStatefulWidget {
   const VoiceTransactionModal({super.key});
 
   static Future<void> show(BuildContext context) {
-    final container = ProviderScope.containerOf(context, listen: false);
-    final isPremium = container.read(authProvider).user?.isPremium ?? false;
-    if (!isPremium) {
-      PremiumModal.show(context);
-      return Future.value();
-    }
     return showDialog(
       context: context,
       builder: (context) => const VoiceTransactionModal(),
@@ -769,6 +763,69 @@ $cardsInfo
     final user = ref.watch(authProvider).user;
     final loc = ref.watch(localizationProvider);
     final cards = ref.watch(creditCardsProvider).value ?? [];
+
+    final isPremium = user?.isPremium ?? false;
+
+    if (!isPremium) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1F2937) : Colors.white,
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5), width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 24, offset: const Offset(0, 12)
+              )
+            ]
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(LucideIcons.crown, size: 64, color: Color(0xFFF59E0B)),
+              const SizedBox(height: 24),
+              Text(
+                'Función VIP',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'El asistente de voz inteligente es exclusivo para usuarios del Plan Premium.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 15),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    PremiumModal.show(context);
+                  },
+                  icon: const Icon(LucideIcons.crown, color: Colors.white, size: 20),
+                  label: const Text('Actualizar a Premium', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD97706),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cerrar', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
+              )
+            ],
+          ),
+        ),
+      );
+    }
 
     final isIncome = _parsedType == 'income';
     final accentColor = isIncome ? const Color(0xFF10B981) : const Color(0xFF4F46E5);

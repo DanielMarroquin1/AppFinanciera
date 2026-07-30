@@ -24,7 +24,7 @@ class _PremiumModalState extends ConsumerState<PremiumModal> {
   String selectedPlan = 'annual';
 
   final features = [
-    {'icon': LucideIcons.bellRing, 'text': 'Sincronización bancaria en Android y Atajos de Siri en iOS'},
+    {'icon': LucideIcons.bellRing, 'text': 'Lector de notificaciones (Android) y Atajos de Siri (iOS)'},
     {'icon': LucideIcons.sliders, 'text': 'Límite de presupuesto mensual y por categoría'},
     {'icon': LucideIcons.palette, 'text': 'Apariencia y paletas de colores VIP'},
     {'icon': LucideIcons.sparkles, 'text': 'Asistente IA, Simulador "What If" y Botón IA de Ahorros'},
@@ -93,111 +93,154 @@ class _PremiumModalState extends ConsumerState<PremiumModal> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Plan Selection
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => selectedPlan = 'monthly'),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: selectedPlan == 'monthly'
-                                  ? (isDark ? const Color(0xFF78350F).withValues(alpha: 0.5) : const Color(0xFFFEF3C7))
-                                  : (isDark ? const Color(0xFF374151) : Colors.white),
-                              border: Border.all(
-                                color: selectedPlan == 'monthly'
-                                    ? (isDark ? const Color(0xFFD97706) : const Color(0xFFF59E0B))
-                                    : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
-                                width: 2,
+                  // Plan Selection Modern Redesign
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => selectedPlan = 'monthly'),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+                              decoration: BoxDecoration(
+                                gradient: selectedPlan == 'monthly'
+                                    ? (isDark
+                                        ? const LinearGradient(colors: [Color(0xFF334155), Color(0xFF1E293B)])
+                                        : const LinearGradient(colors: [Color(0xFFFEF3C7), Color(0xFFFDE68A)]))
+                                    : null,
+                                color: selectedPlan != 'monthly'
+                                    ? (isDark ? const Color(0xFF111827) : Colors.white)
+                                    : null,
+                                border: Border.all(
+                                  color: selectedPlan == 'monthly'
+                                      ? (isDark ? const Color(0xFFF59E0B) : const Color(0xFFD97706))
+                                      : (isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
+                                  width: selectedPlan == 'monthly' ? 2 : 1.5,
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: selectedPlan == 'monthly'
+                                    ? [BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.15), blurRadius: 10, offset: const Offset(0, 4))]
+                                    : [],
                               ),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Column(
-                              children: [
-                                Text('Mensual', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
-                                const SizedBox(height: 4),
-                                Text('\$9.99', style: TextStyle(color: selectedPlan == 'monthly' ? (isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706)) : (isDark ? Colors.white : Colors.black), fontSize: 24, fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 4),
-                                Text('por mes', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12)),
-                              ],
+                              child: Column(
+                                children: [
+                                  Text('Plan Mensual', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 8),
+                                  Text('\$1.99', style: TextStyle(color: selectedPlan == 'monthly' ? (isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706)) : (isDark ? Colors.white : Colors.black), fontSize: 28, fontWeight: FontWeight.w900)),
+                                  const SizedBox(height: 4),
+                                  Text('Facturado mes a mes', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 11)),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => selectedPlan = 'annual'),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: selectedPlan == 'annual'
-                                  ? (isDark ? const Color(0xFF78350F).withValues(alpha: 0.5) : const Color(0xFFFEF3C7))
-                                  : (isDark ? const Color(0xFF374151) : Colors.white),
-                              border: Border.all(
-                                color: selectedPlan == 'annual'
-                                    ? (isDark ? const Color(0xFFD97706) : const Color(0xFFF59E0B))
-                                    : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
-                                width: 2,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => selectedPlan = 'annual'),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+                              decoration: BoxDecoration(
+                                gradient: selectedPlan == 'annual'
+                                    ? (isDark
+                                        ? const LinearGradient(colors: [Color(0xFF451A03), Color(0xFF78350F)])
+                                        : const LinearGradient(colors: [Color(0xFFFef08a), Color(0xFFFDE047)]))
+                                    : null,
+                                color: selectedPlan != 'annual'
+                                    ? (isDark ? const Color(0xFF111827) : Colors.white)
+                                    : null,
+                                border: Border.all(
+                                  color: selectedPlan == 'annual'
+                                      ? (isDark ? const Color(0xFFF59E0B) : const Color(0xFFD97706))
+                                      : (isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
+                                  width: selectedPlan == 'annual' ? 2 : 1.5,
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: selectedPlan == 'annual'
+                                    ? [BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.25), blurRadius: 12, offset: const Offset(0, 4))]
+                                    : [],
                               ),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                Positioned(
-                                  top: -24, right: -8,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                    decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(12)),
-                                    child: const Text('Ahorra 40%', style: TextStyle(color: Colors.white, fontSize: 10)),
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Positioned(
+                                    top: -30, right: -12, left: -12,
+                                    child: Center(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]),
+                                          borderRadius: BorderRadius.circular(12),
+                                          boxShadow: [BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2))],
+                                        ),
+                                        child: const Text('AHORRA \$3.89', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                Column(
-                                  children: [
-                                    Text('Anual', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
-                                    const SizedBox(height: 4),
-                                    Text('\$5.99', style: TextStyle(color: selectedPlan == 'annual' ? (isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706)) : (isDark ? Colors.white : Colors.black), fontSize: 24, fontWeight: FontWeight.bold)),
-                                    const SizedBox(height: 4),
-                                    Text('por mes', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12)),
-                                  ],
-                                ),
-                              ],
+                                  Column(
+                                    children: [
+                                      Text('Plan Anual', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 8),
+                                      Text('\$19.99', style: TextStyle(color: selectedPlan == 'annual' ? (isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706)) : (isDark ? Colors.white : Colors.black), fontSize: 28, fontWeight: FontWeight.w900)),
+                                      const SizedBox(height: 4),
+                                      Text('Facturado anualmente', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 11)),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                  ),
+
+                  // Features list updated
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1F2937) : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Beneficios Exclusivos:', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w800)),
+                        const SizedBox(height: 16),
+                        ...features.map((f) => Padding(
+                          padding: const EdgeInsets.only(bottom: 14),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 36, height: 36,
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF374151) : Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+                                ),
+                                child: Icon(f['icon'] as IconData, color: const Color(0xFFF59E0B), size: 18),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(child: Text(f['text'] as String, style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800], fontSize: 13.5, fontWeight: FontWeight.w600))),
+                            ],
+                          ),
+                        )),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 24),
 
-                  // Features
-                  Text('Incluye todo de Premium:', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
-                  const SizedBox(height: 16),
-                  ...features.map((f) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40, height: 40,
-                          decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(12)),
-                          child: Icon(f['icon'] as IconData, color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), size: 20),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(child: Text(f['text'] as String, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14))),
-                        const Icon(LucideIcons.check, color: Colors.green, size: 20),
-                      ],
-                    ),
-                  )),
-                  const SizedBox(height: 24),
-
-                  // Summary
+                  // Summary Redesign
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
-                      borderRadius: BorderRadius.circular(16),
+                      gradient: isDark ? const LinearGradient(colors: [Color(0xFF111827), Color(0xFF1F2937)]) : const LinearGradient(colors: [Color(0xFFF1F5F9), Color(0xFFF8FAFC)]),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -205,13 +248,19 @@ class _PremiumModalState extends ConsumerState<PremiumModal> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(selectedPlan == 'monthly' ? 'Facturación mensual' : 'Facturación anual', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
-                            Text(selectedPlan == 'monthly' ? '\$9.99/mes' : '\$71.88/año', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
+                            Text(selectedPlan == 'monthly' ? 'Total hoy (Mensual)' : 'Total hoy (Anual)', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14, fontWeight: FontWeight.bold)),
+                            Text(selectedPlan == 'monthly' ? '\$1.99' : '\$19.99', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.w900)),
                           ],
                         ),
                         if (selectedPlan == 'annual') ...[
-                          const SizedBox(height: 8),
-                          const Text('✓ Ahorras \$47.88 al año', style: TextStyle(color: Colors.green, fontSize: 12)),
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Equivalente mensual', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12)),
+                              Text('\$1.66 / mes', style: TextStyle(color: const Color(0xFF10B981), fontSize: 13, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
                         ]
                       ],
                     ),
@@ -222,14 +271,22 @@ class _PremiumModalState extends ConsumerState<PremiumModal> {
                   if (!isPremium) ...[
                     Builder(
                       builder: (context) {
-                        return Ink(
-                          decoration: BoxDecoration(
-                            gradient: isDark 
-                                ? const LinearGradient(colors: [Color(0xFFD97706), Color(0xFFC2410C)]) 
-                                : const LinearGradient(colors: [Color(0xFFFBBF24), Color(0xFFF97316)]),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: InkWell(
+                        return TweenAnimationBuilder<double>(
+                          tween: Tween<double>(begin: 1.0, end: 1.02),
+                          duration: const Duration(seconds: 1),
+                          curve: Curves.easeInOut,
+                          builder: (context, scale, child) {
+                            return Transform.scale(
+                              scale: scale,
+                              child: child,
+                            );
+                          },
+                          onEnd: () {
+                            // Este setState o rediseño forzaría el re-render infinito para latir,
+                            // pero como no tenemos un AnimationController aquí, lo dejaremos como 
+                            // un pequeño pop y un brillo. Usaremos solo un botón super vibrante.
+                          },
+                          child: GestureDetector(
                             onTap: () async {
                               await ref.read(authProvider.notifier).upgradeToPremium();
                               if (context.mounted) {
@@ -242,16 +299,27 @@ class _PremiumModalState extends ConsumerState<PremiumModal> {
                                 );
                               }
                             },
-                            borderRadius: BorderRadius.circular(16),
                             child: Container(
                               alignment: Alignment.center,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              child: const Row(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              decoration: BoxDecoration(
+                                gradient: isDark 
+                                    ? const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFEA580C)]) 
+                                    : const LinearGradient(colors: [Color(0xFFFBBF24), Color(0xFFF97316)]),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.6), blurRadius: 16, offset: const Offset(0, 6)),
+                                ],
+                              ),
+                              child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(LucideIcons.crown, color: Colors.white, size: 20),
-                                  SizedBox(width: 8),
-                                  Text('Actualizar a Premium', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                  const Icon(LucideIcons.crown, color: Colors.white, size: 24),
+                                  const SizedBox(width: 10),
+                                  const Text(
+                                    'Suscribirme al Plan Premium', 
+                                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                                  ),
                                 ],
                               ),
                             ),
@@ -280,26 +348,6 @@ class _PremiumModalState extends ConsumerState<PremiumModal> {
                     const SizedBox(height: 12),
                   ],
 
-                  // Botón para acceder al Hub de Sincronización Automática
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        PremiumSyncHubModal.show(context);
-                      },
-                      icon: const Icon(LucideIcons.bellRing, color: Color(0xFF8B5CF6), size: 18),
-                      label: const Text(
-                        '⚡ Sincronización Bancaria Android & Siri iOS',
-                        style: TextStyle(color: Color(0xFF8B5CF6), fontSize: 13.5, fontWeight: FontWeight.w800),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: const BorderSide(color: Color(0xFF8B5CF6), width: 1.5),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                    ),
-                  ),
 
                   // Test cancel / subscription management
                   TextButton.icon(

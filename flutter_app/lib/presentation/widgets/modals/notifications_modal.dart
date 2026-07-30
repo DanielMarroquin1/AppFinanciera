@@ -470,8 +470,20 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                                                         if (isUnread)
                                                           Container(
                                                             margin: const EdgeInsets.only(left: 8),
-                                                            width: 9, height: 9,
-                                                            decoration: BoxDecoration(color: accentColor, shape: BoxShape.circle),
+                                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                            decoration: BoxDecoration(
+                                                              color: accentColor.withValues(alpha: 0.15),
+                                                              borderRadius: BorderRadius.circular(12),
+                                                              border: Border.all(color: accentColor.withValues(alpha: 0.3)),
+                                                            ),
+                                                            child: Row(
+                                                              mainAxisSize: MainAxisSize.min,
+                                                              children: [
+                                                                Container(width: 6, height: 6, decoration: BoxDecoration(color: accentColor, shape: BoxShape.circle)),
+                                                                const SizedBox(width: 4),
+                                                                Text('NUEVA', style: TextStyle(color: accentColor, fontSize: 9, fontWeight: FontWeight.w900)),
+                                                              ],
+                                                            ),
                                                           )
                                                       ],
                                                     ),

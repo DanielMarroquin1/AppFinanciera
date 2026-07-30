@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:math';
 import '../providers/theme_provider.dart';
 import '../providers/color_palette_provider.dart';
 import '../providers/auth_provider.dart';
@@ -15,6 +16,7 @@ import '../widgets/modals/complete_profile_modal.dart';
 import '../../core/utils/localization.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/services/biometric_service.dart';
+import '../../core/services/local_notification_service.dart';
 import '../widgets/modals/app_tutorial_modal.dart';
 import '../widgets/modals/category_budget_modal.dart';
 import '../widgets/rewards_shop_modal.dart';
@@ -189,7 +191,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           children: [
                             Row(
                               children: [
-                                Text(user?.name ?? 'Usuario', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                                Flexible(child: Text(user?.name ?? 'Usuario', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
                                 if (isPremium) ...[
                                   const SizedBox(width: 8),
                                   Container(
@@ -311,8 +313,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   icon: LucideIcons.zap,
                   iconBg: isDark ? const Color(0xFF312E81).withValues(alpha: 0.6) : const Color(0xFFE0E7FF),
                   iconColor: const Color(0xFF6366F1),
-                  title: 'Sincronización Bancaria & Siri',
-                  subtitle: 'Conecta notificaciones de TC/Débito en Android y comandos de voz en iOS',
+                  title: 'Notificaciones Automáticas en Android',
+                  subtitle: 'Clasifica compras en automático',
                   badge: !isPremium ? '🔒 VIP' : '⚡ Activo',
                   badgeColor: !isPremium ? const Color(0xFFD97706) : const Color(0xFF6366F1),
                   onTap: () => PremiumSyncHubModal.show(context),
@@ -331,28 +333,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _buildSettingItem(isDark, icon: LucideIcons.palette, iconBg: isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF), iconColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), title: 'Paleta de Colores', subtitle: 'Personaliza tus colores', onTap: () {
                   ColorPaletteModal.show(context);
                 }),
-                _buildSettingItem(
-                  isDark,
-                  icon: LucideIcons.rotateCcw,
-                  iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE),
-                  iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB),
-                  title: 'Reiniciar Canjes de Colores',
-                  subtitle: 'Para realizar pruebas de compra en tienda nuevamente',
-                  badge: 'Pruebas',
-                  onTap: () async {
-                    await ref.read(authProvider.notifier).resetUnlockedThemes();
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('✨ Canjes de colores reiniciados y puntos restaurados (min 500 pts).'),
-                          backgroundColor: const Color(0xFF2563EB),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        ),
-                      );
-                    }
-                  },
-                ),
+
               ],
             ),
             const SizedBox(height: 24),
@@ -362,27 +343,43 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 isDark,
                 title: 'Suscripción Premium',
                 items: [
-                  _buildSettingItem(isDark, icon: LucideIcons.crown, iconBg: Colors.transparent, iconColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), title: 'Plan Premium Anual', subtitle: 'Próxima renovación: 24 Feb 2027', badge: 'Activo'),
+                  _buildSettingItem(isDark, icon: LucideIcons.crown, iconBg: Colors.transparent, iconColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), title: 'Plan Premium', subtitle: 'Próxima renovación: 24 Feb 2027', badge: 'Activo', badgeColor: const Color(0xFF10B981)),
                   _buildSettingItem(
                     isDark,
                     icon: LucideIcons.zap,
                     iconBg: isDark ? const Color(0xFF312E81).withValues(alpha: 0.6) : const Color(0xFFE0E7FF),
                     iconColor: const Color(0xFF6366F1),
                     title: 'Hub de Sincronización Automática',
-                    subtitle: 'Configurar lector de bancos y atajos de voz Siri',
+                    subtitle: 'Lector de notificaciones y atajos de voz Siri',
                     badge: '⚡ VIP',
                     badgeColor: const Color(0xFF6366F1),
                     onTap: () => PremiumSyncHubModal.show(context),
                   ),
-                  ListTile(
-                    title: const Center(child: Text('Cancelar Suscripción', style: TextStyle(color: Colors.red, fontSize: 14))),
-                    onTap: () { 
-                      _showCancelSubscriptionModal(context, isDark);
-                    },
-                  )
+                  const SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: () => _showCancelSubscriptionModal(context, isDark),
+                    child: Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.redAccent.withValues(alpha: 0.15) : Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Cancelar Suscripción',
+                          style: TextStyle(
+                            color: Colors.redAccent,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            
             if (isPremium) const SizedBox(height: 24),
 
             _buildSection(
@@ -560,9 +557,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(title, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
+                  ),
                   const SizedBox(height: 2),
-                  Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text(
+                    subtitle, 
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
             ),
@@ -969,7 +975,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     bool showOtpEntry = false;
     final phoneController = TextEditingController();
     final otpController = TextEditingController();
-    final generatedOtp = '123456';
+    String generatedOtp = '123456';
 
     final countries = [
       {'flag': '🇲🇽', 'code': '+52', 'name': 'México'},
@@ -1198,6 +1204,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           }
 
                           if (user != null) {
+                            generatedOtp = (100000 + Random().nextInt(900000)).toString();
+                            
                             if (selectedMethod == 'email') {
                               await FirebaseFirestore.instance.collection('mail').add({
                                 'to': user.email,
@@ -1208,12 +1216,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 },
                                 'createdAt': FieldValue.serverTimestamp(),
                               });
+                              
+                              // Simulamos notificación push del correo para pruebas rápidas
+                              Future.delayed(const Duration(seconds: 2), () {
+                                LocalNotificationService.showNotification(
+                                  id: 808,
+                                  title: 'App Financiera Seguridad',
+                                  body: 'Tu código de verificación por correo es: $generatedOtp. No lo compartas.',
+                                );
+                              });
                             } else if (selectedMethod == 'sms') {
                               final fullNumber = '$selectedCountryCode ${phoneController.text.trim()}';
+                              // Simulamos recepción de SMS nativo
+                              Future.delayed(const Duration(seconds: 2), () {
+                                LocalNotificationService.showNotification(
+                                  id: 809,
+                                  title: 'Mensajes',
+                                  body: 'Finanzas: Tu código SMS de verificación es $generatedOtp. (Para $fullNumber)',
+                                );
+                              });
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('📲 SMS de verificación ($generatedOtp) generado para $fullNumber'),
-                                  duration: const Duration(seconds: 6),
+                                  content: Text('📲 SMS de verificación generado para $fullNumber (Espera la notificación...)'),
+                                  duration: const Duration(seconds: 4),
                                   backgroundColor: const Color(0xFF0284C7),
                                   behavior: SnackBarBehavior.floating,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -1868,40 +1893,89 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _showCancelSubscriptionModal(BuildContext context, bool isDark) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text('¿Cancelar Premium?', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Perderás acceso a:', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
-            const SizedBox(height: 12),
-            _buildCancelFeature(isDark, '☁️', 'Sincronización en la nube'),
-            _buildCancelFeature(isDark, '🎨', 'Paletas de colores'),
-            _buildCancelFeature(isDark, '📊', 'Reportes avanzados'),
-            _buildCancelFeature(isDark, '🤖', 'Asistente de inversión'),
-          ],
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1F2937) : Colors.white,
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.5), width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 24, offset: const Offset(0, 12)
+              )
+            ]
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(LucideIcons.alertTriangle, size: 48, color: Color(0xFFEF4444)),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                '¿Cancelar Premium?',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Si cancelas ahora, perderás acceso inmediato a todos los beneficios VIP y tus datos avanzados no se sincronizarán.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    _buildCancelFeature(isDark, '🎨', 'Todas las Paletas VIP'),
+                    _buildCancelFeature(isDark, '📊', 'Reportes PDF e IA'),
+                    _buildCancelFeature(isDark, '🤖', 'Gasto por Voz (Siri / Mic)'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF59E0B),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  child: const Text('MANTENER PREMIUM', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  await ref.read(authProvider.notifier).cancelSubscription();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Suscripción cancelada correctamente.')),
+                    );
+                  }
+                },
+                child: const Text('Sí, cancelar suscripción', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Mantener Premium', style: TextStyle(color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), fontWeight: FontWeight.bold)),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await ref.read(authProvider.notifier).cancelSubscription();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Suscripción cancelada correctamente.')),
-                );
-              }
-            },
-            child: const Text('Cancelar', style: TextStyle(color: Colors.red)),
-          ),
-        ],
       ),
     );
   }

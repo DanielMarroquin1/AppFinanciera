@@ -525,7 +525,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('${loc.get('total_balance')} - $currentMonthName', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                      Row(
+                        children: [
+                          Text('${loc.get('total_balance')} - $currentMonthName', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                          const SizedBox(width: 8),
+                          const Icon(LucideIcons.crown, color: Color(0xFFF59E0B), size: 14),
+                        ],
+                      ),
                       const SizedBox(height: 8),
                       Text(CurrencyFormatter.format(totalBalance, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 16),

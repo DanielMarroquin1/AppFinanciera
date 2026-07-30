@@ -61,11 +61,6 @@ class BiometricService {
       if (!canCheck) return false;
       return await _auth.authenticate(
         localizedReason: reason,
-        options: const AuthenticationOptions(
-          biometricOnly: true,
-          stickyAuth: true,
-          useErrorDialogs: true,
-        ),
       );
     } catch (e) {
       return false;

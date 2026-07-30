@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/services/bank_notification_listener_service.dart';
 import '../../../core/services/siri_shortcuts_service.dart';
 import '../../../domain/entities/credit_card.dart';
@@ -98,17 +100,19 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
       final user = ref.read(authProvider).user;
       if (user == null) return;
 
-      final expense = CreditCardExpense(
+      final transaction = TransactionModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        description: charge.merchant,
+        userId: FirebaseAuth.instance.currentUser?.uid ?? '',
         amount: charge.amount,
-        date: charge.date,
+        type: 'expense',
         category: charge.category,
-        installments: 1,
+        description: '${charge.merchant} (Cargo en TC ${charge.bankName ?? ""})',
+        date: charge.date,
+        isFixed: false,
+        creditCardId: card.id,
       );
 
-      final repo = ref.read(creditCardRepositoryProvider);
-      await repo.addExpense(card.id, expense);
+      await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
       await BankNotificationListenerService.removePendingCharge(charge.id);
       await _loadData();
 
@@ -132,18 +136,16 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
 
       final transaction = TransactionModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        uid: user.uid,
+        userId: FirebaseAuth.instance.currentUser?.uid ?? '',
         amount: charge.amount,
         type: 'expense',
         category: charge.category,
-        subCategory: charge.merchant,
-        notes: 'Sincronización bancaria automática (${charge.bankName ?? "Débito"})',
+        description: '${charge.merchant} (Sincronización bancaria ${charge.bankName ?? "Débito"})',
         date: charge.date,
-        account: 'Efectivo',
+        isFixed: false,
       );
 
-      final repo = ref.read(transactionRepositoryProvider);
-      await repo.addTransaction(transaction);
+      await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
       await BankNotificationListenerService.removePendingCharge(charge.id);
       await _loadData();
 
@@ -226,7 +228,7 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                             ),
                           ],
                         ),
-                        Text('Bancos en Android & Siri en iOS', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12.5)),
+                        Text('Notificaciones en Android & Siri en iOS', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12.5)),
                       ],
                     ),
                   ],
@@ -259,11 +261,11 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                   const SizedBox(height: 12),
                   Text('Función Exclusiva del Plan Premium', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF78350F), fontSize: 17, fontWeight: FontWeight.w900)),
                   const SizedBox(height: 6),
-                  Text(
-                    'Conéctate en automático con tus notificaciones bancarias para clasificar compras de TC o Débito, y agrégale gastos a Siri con tu voz en iOS.',
-                    style: TextStyle(color: isDark ? Colors.grey[300] : const Color(0xFF92400E), fontSize: 13),
-                    textAlign: TextAlign.center,
-                  ),
+                    Text(
+                      'Conéctate en automático con tus notificaciones del teléfono para clasificar compras de TC o Débito, y agrégale gastos a Siri con tu voz en iOS.',
+                      style: TextStyle(color: isDark ? Colors.grey[300] : const Color(0xFF92400E), fontSize: 13),
+                      textAlign: TextAlign.center,
+                    ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: () {
@@ -302,7 +304,7 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                                 children: [
                                   const Icon(LucideIcons.bellRing, color: Color(0xFF6366F1), size: 18),
                                   const SizedBox(width: 8),
-                                  Text('Cargos Bancarios por Asignar (${_pendingCharges.length})', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.w800)),
+                                  Text('Notificaciones por Asignar (${_pendingCharges.length})', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.w800)),
                                 ],
                               ),
                               TextButton(
@@ -354,7 +356,7 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                                   const SizedBox(height: 10),
                                   Text(charge.merchant, style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.w800)),
                                   const SizedBox(height: 4),
-                                  Text('Banco: ${charge.bankName ?? "Detección automática"} • Categoría: ${charge.category}', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                                  Text('Detectado: ${charge.bankName ?? "App"} • Categoría: ${charge.category}', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
                                   const SizedBox(height: 14),
 
                                   // Selector de tarjeta si es TC o botón de efectivo si es Débito
@@ -430,17 +432,22 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(10),
-                                        decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(14)),
-                                        child: const Icon(LucideIcons.smartphone, color: Color(0xFF10B981), size: 22),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Text('Android: Lector Bancario', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.w800)),
-                                    ],
+                                  Expanded(
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(14)),
+                                          child: const Icon(LucideIcons.smartphone, color: Color(0xFF10B981), size: 22),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text('Android: Lector de Notificaciones', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.w800), overflow: TextOverflow.ellipsis),
+                                        ),
+                                      ],
+                                    ),
                                   ),
+                                  const SizedBox(width: 8),
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(
@@ -459,11 +466,11 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                'Cuando realices compras o pagos, la app leerá en tiempo real las alertas que te envíe BBVA, Santander, Nu, BAC, Banco Industrial y otros. Clasifica en automático Débito y Crédito.',
+                                'Cuando realices compras o pagos, la app leerá en tiempo real las alertas de pagos que lleguen a tu dispositivo (BBVA, Nu, BAC, etc). Clasifica en automático Débito y Crédito.',
                                 style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[600], fontSize: 13, height: 1.4),
                               ),
                               const SizedBox(height: 14),
-                              if (Platform.isAndroid) ...[
+                              if (!kIsWeb && Platform.isAndroid) ...[
                                 SizedBox(
                                   width: double.infinity,
                                   child: ElevatedButton.icon(

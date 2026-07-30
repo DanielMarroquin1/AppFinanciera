@@ -2,9 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'google_sign_in_factory.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../../firebase_options.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final SharedPreferences prefs;
@@ -263,7 +267,10 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> resetPassword(String email) async {
     try {
-      await _firebaseAuth.sendPasswordResetEmail(email: email);
+      // -- CÓDIGO PARA RESEND (Cloud Functions) --
+      final callable = FirebaseFunctions.instance.httpsCallable('sendCustomResetEmail');
+      await callable.call({'email': email});
+      
     } catch (e) {
       if (e is firebase_auth.FirebaseAuthException) {
         if (e.code == 'user-not-found') {
@@ -279,7 +286,22 @@ class AuthRepositoryImpl implements AuthRepository {
         }
         rethrow;
       }
-      throw Exception('Ocurrió un error al enviar el enlace de recuperación.');
+      
+      // Manejo de errores de Cloud Functions
+      if (e is FirebaseFunctionsException) {
+        if (e.code == 'not-found' || e.message == 'user-not-found') {
+          throw firebase_auth.FirebaseAuthException(
+            code: 'user-not-found',
+            message: 'No hay ninguna cuenta registrada con este correo.',
+          );
+        }
+        throw firebase_auth.FirebaseAuthException(
+          code: 'unknown',
+          message: 'Error al enviar el correo: ${e.message}',
+        );
+      }
+      
+      rethrow;
     }
   }
 }

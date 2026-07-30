@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/modals/premium_modal.dart';
 
 class StatisticsScreen extends ConsumerStatefulWidget {
   const StatisticsScreen({super.key});
@@ -42,7 +43,67 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final sym = CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency);
+    final user = ref.watch(authProvider).user;
+    final isPremium = user?.isPremium ?? false;
+
+    if (!isPremium) {
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Center(
+          child: Container(
+            margin: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1F2937) : Colors.white,
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5), width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 24, offset: const Offset(0, 12)
+                )
+              ]
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(LucideIcons.crown, size: 64, color: Color(0xFFF59E0B)),
+                const SizedBox(height: 24),
+                Text(
+                  'Reportes Avanzados',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Desbloquea estadísticas detalladas, análisis visuales y exportación de PDFs con el Plan Premium.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 15),
+                ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      PremiumModal.show(context);
+                    },
+                    icon: const Icon(LucideIcons.crown, color: Colors.white, size: 20),
+                    label: const Text('Actualizar a Premium', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD97706),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    final sym = CurrencyFormatter.getSymbol(user?.currency);
 
     final data = [
       {'month': 'Ene', 'income': 3500.0, 'expenses': 2300.0},

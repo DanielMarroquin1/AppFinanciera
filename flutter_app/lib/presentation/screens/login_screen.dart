@@ -56,7 +56,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         isBiometricSupported = supported;
         hasSavedBiometrics = saved != null && enabled && saved['password'] != 'saved_biometric_token' && saved['password']!.isNotEmpty;
         rememberBiometric = enabled || supported;
-        if (hasSavedBiometrics) {
+        if (saved != null) {
           email = saved['email'] ?? '';
           password = saved['password'] ?? '';
         }

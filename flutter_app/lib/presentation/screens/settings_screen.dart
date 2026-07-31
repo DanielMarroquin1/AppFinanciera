@@ -17,8 +17,8 @@ import '../../core/utils/localization.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/services/biometric_service.dart';
 import '../../core/services/local_notification_service.dart';
-import '../widgets/modals/app_tutorial_modal.dart';
 import '../widgets/modals/category_budget_modal.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/rewards_shop_modal.dart';
 import '../providers/transaction_provider.dart';
 
@@ -393,7 +393,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   iconColor: const Color(0xFF38BDF8),
                   title: 'Recorrido por la Aplicación',
                   subtitle: 'Guía rápida de finanzas e IA para nuevos usuarios',
-                  onTap: () => AppTutorialModal.show(context),
+                  onTap: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setBool('has_seen_app_tutorial', false);
+                    if (context.mounted) {
+                      // Cierra el drawer si está abierto, luego redirige
+                      if (Scaffold.of(context).isDrawerOpen) {
+                        Navigator.pop(context);
+                      }
+                      context.go('/dashboard');
+                    }
+                  },
                 ),
               ],
             ),

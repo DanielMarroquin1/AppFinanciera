@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'dart:ui';
 import '../../core/theme/app_colors.dart';
 import '../../presentation/widgets/quick_actions_menu.dart';
 import '../../presentation/widgets/modals/ai_chat_modal.dart';
@@ -11,6 +12,7 @@ import '../../presentation/widgets/modals/notifications_modal.dart';
 import '../../presentation/widgets/modals/category_budget_modal.dart';
 import '../../presentation/providers/color_palette_provider.dart';
 import '../../core/utils/localization.dart';
+import '../screens/settings_screen.dart';
 
 class AppShell extends ConsumerStatefulWidget {
   final Widget child;
@@ -65,6 +67,9 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
           ? AppColors.backgroundDark 
           : AppColors.backgroundLight,
       resizeToAvoidBottomInset: false,
+      drawer: const Drawer(
+        child: SettingsScreen(),
+      ),
       body: SafeArea(
         child: widget.child,
       ),
@@ -72,9 +77,29 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
           ? null
           : FloatingActionButton(
               onPressed: () async {
-                final action = await showDialog<String>(
+                final action = await showGeneralDialog<String>(
                   context: context,
-                  builder: (context) => const QuickActionsMenu(),
+                  barrierDismissible: true,
+                  barrierLabel: 'Cerrar',
+                  barrierColor: Colors.black.withOpacity(0.6),
+                  transitionDuration: const Duration(milliseconds: 250),
+                  pageBuilder: (context, animation, secondaryAnimation) {
+                    return BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                      child: const QuickActionsMenu(),
+                    );
+                  },
+                  transitionBuilder: (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: ScaleTransition(
+                        scale: Tween<double>(begin: 0.95, end: 1.0).animate(
+                          CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+                        ),
+                        child: child,
+                      ),
+                    );
+                  },
                 );
                 if (action != null) {
                   if (!context.mounted) return;

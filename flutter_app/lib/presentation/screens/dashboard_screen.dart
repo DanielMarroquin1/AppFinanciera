@@ -26,7 +26,8 @@ import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/notification_provider.dart';
 import '../widgets/modals/notifications_modal.dart';
-import '../widgets/modals/app_tutorial_modal.dart';
+import '../widgets/modals/add_saving_goal_modal.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/ai_insights_provider.dart';
 import '../widgets/common/micro_insights_widget.dart';
@@ -40,6 +41,8 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTickerProviderStateMixin {
   late AnimationController _fireAnimController;
+  final GlobalKey _expensesKey = GlobalKey();
+  final GlobalKey _aiChatKey = GlobalKey();
   bool _limitAlertShown = false;
   bool _fixedExpenseAlertShown = false;
   bool _insightsLoaded = false;
@@ -64,6 +67,84 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
   void dispose() {
     _fireAnimController.dispose();
     super.dispose();
+  }
+
+  void _showTutorial() {
+    TutorialCoachMark(
+      targets: [
+        TargetFocus(
+          identify: "Expenses",
+          keyTarget: _expensesKey,
+          alignSkip: Alignment.bottomRight,
+          contents: [
+            TargetContent(
+              align: ContentAlign.bottom,
+              builder: (context, controller) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Expense analytics",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      "You can view expense analytics",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+        TargetFocus(
+          identify: "AIChat",
+          keyTarget: _aiChatKey,
+          alignSkip: Alignment.bottomRight,
+          contents: [
+            TargetContent(
+              align: ContentAlign.top,
+              builder: (context, controller) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "ZENT AI Assistant",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      "Habla con nuestro asistente inteligente para registrar tus finanzas.",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      ],
+      colorShadow: Colors.black,
+      textSkip: "Skip",
+      paddingFocus: 10,
+      opacityShadow: 0.8,
+      onFinish: () {
+        SharedPreferences.getInstance().then((prefs) {
+          prefs.setBool('has_seen_app_tutorial', true);
+        });
+        if (mounted) ref.read(authProvider.notifier).completeTour();
+      },
+      onSkip: () {
+        SharedPreferences.getInstance().then((prefs) {
+          prefs.setBool('has_seen_app_tutorial', true);
+        });
+        if (mounted) ref.read(authProvider.notifier).completeTour();
+        return true;
+      },
+    ).show(context: context);
   }
 
   bool _profileChecked = false;
@@ -154,7 +235,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
         final prefs = await SharedPreferences.getInstance();
         final hasSeen = prefs.getBool('has_seen_app_tutorial') ?? false;
         if (!hasSeen && !user.hasCompletedTour && context.mounted) {
-          AppTutorialModal.show(context);
+          _showTutorial();
         }
       });
     }
@@ -783,6 +864,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   const SizedBox(width: 6),
                   Expanded(
                     child: InkWell(
+                      key: _expensesKey,
                       onTap: () => AddExpenseModal.show(context),
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
@@ -988,6 +1070,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
 
             // Investment Assistant
             InkWell(
+              key: _aiChatKey,
               onTap: () => AIChatModal.show(context),
               borderRadius: BorderRadius.circular(24),
               child: Container(

@@ -68,134 +68,140 @@ class QuickActionsMenu extends ConsumerWidget {
       },
     ];
 
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.all(16),
-      child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(maxWidth: 400),
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            )
-          ]
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  loc.get('quick_actions'),
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                IconButton(
-                  icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
-                  onPressed: () => Navigator.of(context).pop(),
-                )
-              ],
-            ),
-            const SizedBox(height: 16),
-            Flexible(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ...actions.map((action) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12.0),
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).pop(action['id']);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: action['gradient'] as List<Color>,
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
+    // Filtramos para eliminar duplicados de 'my-savings' que pudieran haber
+    final uniqueActions = <String, Map<String, dynamic>>{};
+    for (var action in actions) {
+      uniqueActions[action['id'] as String] = action;
+    }
+    final filteredActions = uniqueActions.values.toList();
+
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 16.0, bottom: 24.0),
+        child: Material(
+          color: Colors.transparent,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              // Cabecera "Acciones rápidas"
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    loc.get('quick_actions'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    padding: const EdgeInsets.all(8),
+                    child: const Icon(Icons.more_vert, color: Colors.white, size: 18),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              
+              // Lista de acciones
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      ...filteredActions.map((action) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pop(action['id']);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.only(left: 20, right: 8, top: 8, bottom: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                )
+                              ],
                             ),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 48,
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(action['icon'] as IconData, color: Colors.white),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Text(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (action['isPremium'] == true) ...[
+                                  const Icon(LucideIcons.crown, color: Colors.orange, size: 14),
+                                  const SizedBox(width: 4),
+                                ],
+                                Text(
                                   action['label'] as String,
                                   style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF1E293B), // Azul marino muy oscuro / gris oscuro
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                              ),
-                              if (action['isPremium'] == true)
+                                const SizedBox(width: 16),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: Colors.orange,
-                                    borderRadius: BorderRadius.circular(12),
+                                    gradient: LinearGradient(
+                                      colors: action['gradient'] as List<Color>,
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(LucideIcons.crown, color: Colors.white, size: 12),
-                                      SizedBox(width: 4),
-                                      Text('PRO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                                    ],
-                                  ),
+                                  child: Icon(action['icon'] as IconData, color: Colors.white, size: 20),
                                 ),
-                              if (action['hasBadge'] == true)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(loc.get('quick_actions_new_badge').replaceAll('{count}', action['badgeCount'].toString()), style: const TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)),
-                                    ],
-                                  ),
-                                ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    )),
-                  ],
+                      )),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              loc.get('quick_actions_footer'),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? Colors.grey[500] : Colors.grey[500],
+              
+              const SizedBox(height: 16),
+              
+              // Botón de cerrar "X"
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
+                  ),
+                  child: const Center(
+                    child: Icon(LucideIcons.x, color: Color(0xFF3B82F6), size: 24),
+                  ),
+                ),
               ),
-            )
-          ],
+              // Espaciado adicional para igualar la posición del FAB original
+              const SizedBox(height: 70),
+            ],
+          ),
         ),
       ),
     );

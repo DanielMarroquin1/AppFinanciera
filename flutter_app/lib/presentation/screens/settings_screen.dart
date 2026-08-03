@@ -12,6 +12,7 @@ import '../widgets/modals/edit_profile_modal.dart';
 import '../widgets/modals/color_palette_modal.dart';
 import '../widgets/modals/premium_modal.dart';
 import '../widgets/modals/premium_sync_hub_modal.dart';
+import '../widgets/modals/premium_paywall_dialog.dart';
 import '../widgets/modals/complete_profile_modal.dart';
 import '../../core/utils/localization.dart';
 import '../../core/utils/currency_formatter.dart';
@@ -317,7 +318,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   subtitle: 'Clasifica compras en automático',
                   badge: !isPremium ? '🔒 VIP' : '⚡ Activo',
                   badgeColor: !isPremium ? const Color(0xFFD97706) : const Color(0xFF6366F1),
-                  onTap: () => PremiumSyncHubModal.show(context),
+                  onTap: () {
+                    if (!isPremium) {
+                      PremiumPaywallDialog.show(context, customMessage: 'Conecta notificaciones bancarias y atajos de voz de Siri con el Plan Premium.');
+                    } else {
+                      PremiumSyncHubModal.show(context);
+                    }
+                  },
                 ),
                 _buildSettingItem(isDark, icon: LucideIcons.pieChart, iconBg: isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF), iconColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), title: 'Presupuesto por Categoría', subtitle: 'Establece límites por rubro', badge: !isPremium ? '🔒 PRO' : null, badgeColor: !isPremium ? const Color(0xFFD97706) : null, onTap: () => CategoryBudgetModal.show(context)),
                 _buildSettingItem(isDark, icon: LucideIcons.bellRing, iconBg: isDark ? const Color(0xFF78350F).withValues(alpha: 0.5) : const Color(0xFFFEF3C7), iconColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), title: 'Alertas de Presupuesto', subtitle: 'Notificaciones al acercarte al límite', badge: !isPremium ? '🔒 PRO' : null, badgeColor: !isPremium ? const Color(0xFFD97706) : null, onTap: () => _showBudgetAlertModal(context, isDark)),
@@ -353,7 +360,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     subtitle: 'Lector de notificaciones y atajos de voz Siri',
                     badge: '⚡ VIP',
                     badgeColor: const Color(0xFF6366F1),
-                    onTap: () => PremiumSyncHubModal.show(context),
+                    onTap: () {
+                      if (!isPremium) {
+                        PremiumPaywallDialog.show(context, customMessage: 'Conecta notificaciones bancarias y atajos de voz de Siri con el Plan Premium.');
+                      } else {
+                        PremiumSyncHubModal.show(context);
+                      }
+                    },
                   ),
                   const SizedBox(height: 16),
                   GestureDetector(
@@ -1697,7 +1710,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _showBudgetAlertModal(BuildContext context, bool isDark) {
     final isPremium = ref.read(authProvider).user?.isPremium ?? false;
     if (!isPremium) {
-      PremiumModal.show(context);
+      PremiumPaywallDialog.show(context, customMessage: 'Establece alertas de presupuesto y recibe notificaciones antes de exceder tu límite con el Plan Premium.');
       return;
     }
     final user = ref.read(authProvider).user;

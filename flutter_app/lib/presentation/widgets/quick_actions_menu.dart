@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/utils/localization.dart';
+import 'dart:ui';
 
 class QuickActionsMenu extends ConsumerWidget {
   const QuickActionsMenu({super.key});
@@ -31,15 +32,6 @@ class QuickActionsMenu extends ConsumerWidget {
         'isPremium': false,
       },
       {
-        'id': 'my-savings',
-        'label': 'Mis Ahorros',
-        'icon': LucideIcons.piggyBank,
-        'gradient': isDark 
-            ? const [Color(0xFF0E7490), Color(0xFF0369A1)] // cyan-700 to sky-700
-            : const [Color(0xFF06B6D4), Color(0xFF0EA5E9)], // cyan-500 to sky-500
-        'isPremium': false,
-      },
-      {
         'id': 'rewards-shop',
         'label': loc.get('quick_actions_rewards_shop'),
         'icon': LucideIcons.shoppingBag,
@@ -60,149 +52,192 @@ class QuickActionsMenu extends ConsumerWidget {
       {
         'id': 'ai-chat',
         'label': loc.get('ai_assistant'),
-        'icon': LucideIcons.messageSquare,
+        'icon': LucideIcons.sparkles,
         'gradient': isDark 
             ? const [Color(0xFF7E22CE), Color(0xFF4338CA)]
             : const [Color(0xFF9333EA), Color(0xFF4F46E5)],
         'isPremium': true,
       },
+      {
+        'id': 'notifications',
+        'label': 'Notificaciones',
+        'icon': LucideIcons.bell,
+        'gradient': isDark 
+            ? const [Color(0xFFBE123C), Color(0xFF9F1239)]
+            : const [Color(0xFFF43F5E), Color(0xFFE11D48)],
+        'isPremium': false,
+      },
     ];
 
-    // Filtramos para eliminar duplicados de 'my-savings' que pudieran haber
-    final uniqueActions = <String, Map<String, dynamic>>{};
-    for (var action in actions) {
-      uniqueActions[action['id'] as String] = action;
-    }
-    final filteredActions = uniqueActions.values.toList();
-
-    return Align(
-      alignment: Alignment.bottomRight,
-      child: Padding(
-        padding: const EdgeInsets.only(right: 16.0, bottom: 24.0),
-        child: Material(
-          color: Colors.transparent,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              // Cabecera "Acciones rápidas"
-              Row(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          // Fondo oscuro difuminado (opcional, el BackdropFilter principal ya hace parte del trabajo)
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                color: (isDark ? Colors.black : Colors.blueGrey[900])?.withValues(alpha: 0.2),
+              ),
+            ),
+          ),
+          
+          // Contenido principal alineado al fondo inferior
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 40, left: 24, right: 24),
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    loc.get('quick_actions'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    padding: const EdgeInsets.all(8),
-                    child: const Icon(Icons.more_vert, color: Colors.white, size: 18),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              
-              // Lista de acciones
-              Flexible(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      ...filteredActions.map((action) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12.0),
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).pop(action['id']);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.only(left: 20, right: 8, top: 8, bottom: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.2),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                )
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (action['isPremium'] == true) ...[
-                                  const Icon(LucideIcons.crown, color: Colors.orange, size: 14),
-                                  const SizedBox(width: 4),
-                                ],
-                                Text(
-                                  action['label'] as String,
-                                  style: const TextStyle(
-                                    color: Color(0xFF1E293B), // Azul marino muy oscuro / gris oscuro
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: action['gradient'] as List<Color>,
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                        ),
+                        child: Text(
+                          loc.get('quick_actions').toUpperCase(),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1.5, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  // Grid de Acciones 2x3
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 16,
+                    alignment: WrapAlignment.center,
+                    children: actions.map((action) {
+                      final itemWidth = (MediaQuery.of(context).size.width - 48 - 16) / 2;
+                      return GestureDetector(
+                        onTap: () => Navigator.pop(context, action['id']),
+                        child: Container(
+                          width: itemWidth,
+                          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.9) : Colors.white.withValues(alpha: 0.95),
+                            borderRadius: BorderRadius.circular(28),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.5),
+                            boxShadow: [
+                              BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 20, offset: const Offset(0, 10))
+                            ],
+                          ),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: action['gradient'] as List<Color>,
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: (action['gradient'] as List<Color>)[0].withValues(alpha: 0.4),
+                                            blurRadius: 12,
+                                            offset: const Offset(0, 4),
+                                          )
+                                        ],
+                                      ),
+                                      child: Icon(action['icon'] as IconData, color: Colors.white, size: 28),
                                     ),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Icon(action['icon'] as IconData, color: Colors.white, size: 20),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      action['label'] as String,
+                                      style: TextStyle(
+                                        color: isDark ? Colors.white : const Color(0xFF1E293B),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                              if (action['isPremium'] == true)
+                                Positioned(
+                                  top: -12,
+                                  right: -4,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF59E0B),
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: [BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.4), blurRadius: 4)],
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(LucideIcons.crown, color: Colors.white, size: 12),
+                                        SizedBox(width: 4),
+                                        Text('PRO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-                      )),
-                    ],
+                      );
+                    }).toList(),
                   ),
-                ),
+                  
+                  const SizedBox(height: 32),
+                  
+                  // Botón flotante para cerrar simulando el FAB
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF334155) : Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          )
+                        ],
+                      ),
+                      child: Center(
+                        child: AnimatedBuilder(
+                          animation: ModalRoute.of(context)?.animation ?? const AlwaysStoppedAnimation(1.0),
+                          builder: (context, child) {
+                            final val = ModalRoute.of(context)?.animation?.value ?? 1.0;
+                            final angle = (val * (45 + 180)) * 3.1415927 / 180; // gira 180 + queda en 45 (X)
+                            return Transform.rotate(
+                              angle: angle,
+                              child: Icon(LucideIcons.plus, color: isDark ? Colors.white : Colors.black, size: 32),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
               ),
-              
-              const SizedBox(height: 16),
-              
-              // Botón de cerrar "X"
-              GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      )
-                    ],
-                  ),
-                  child: const Center(
-                    child: Icon(LucideIcons.x, color: Color(0xFF3B82F6), size: 24),
-                  ),
-                ),
-              ),
-              // Espaciado adicional para igualar la posición del FAB original
-              const SizedBox(height: 70),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../domain/entities/transaction.dart';
 import '../widgets/modals/add_income_modal.dart';
+import '../widgets/modals/premium_income_modal.dart';
+import '../widgets/modals/premium_paywall_dialog.dart';
 import '../providers/color_palette_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/debts_provider.dart';
@@ -114,6 +116,86 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
     return timeFiltered;
   }
 
+  void _showMonthPicker() {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        int tempMonth = selectedMonth;
+        int tempYear = selectedYear;
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+              title: Text('Seleccionar mes', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
+              content: Row(
+                children: [
+                  Expanded(
+                    child: DropdownButton<int>(
+                      value: tempMonth,
+                      isExpanded: true,
+                      dropdownColor: isDark ? const Color(0xFF374151) : Colors.white,
+                      style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
+                      underline: Container(height: 1, color: isDark ? Colors.grey[600] : Colors.grey[300]),
+                      items: List.generate(12, (index) {
+                        String monthStr = DateFormat('MMMM', 'es').format(DateTime(2000, index + 1));
+                        monthStr = monthStr[0].toUpperCase() + monthStr.substring(1);
+                        return DropdownMenuItem(
+                          value: index + 1,
+                          child: Text(monthStr),
+                        );
+                      }),
+                      onChanged: (val) {
+                        if (val != null) setDialogState(() => tempMonth = val);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: DropdownButton<int>(
+                      value: tempYear,
+                      isExpanded: true,
+                      dropdownColor: isDark ? const Color(0xFF374151) : Colors.white,
+                      style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
+                      underline: Container(height: 1, color: isDark ? Colors.grey[600] : Colors.grey[300]),
+                      items: List.generate(10, (index) {
+                        final year = DateTime.now().year - 5 + index;
+                        return DropdownMenuItem(
+                          value: year,
+                          child: Text(year.toString()),
+                        );
+                      }),
+                      onChanged: (val) {
+                        if (val != null) setDialogState(() => tempYear = val);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text('Cancelar', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      selectedMonth = tempMonth;
+                      selectedYear = tempYear;
+                    });
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text('Aceptar', style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
 
 
   @override
@@ -167,10 +249,25 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        '$displayMonthStr${selectedCategory != 'Todas' ? ' • $selectedCategory' : ''}',
-                        style: TextStyle(
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      InkWell(
+                        onTap: _showMonthPicker,
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '$displayMonthStr${selectedCategory != 'Todas' ? ' • $selectedCategory' : ''}',
+                                style: TextStyle(
+                                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(LucideIcons.chevronDown, size: 16, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -297,9 +394,18 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
+                    InkWell(
+                      onTap: () {
+                        if (authState.user?.isPremium == true) {
+                          PremiumIncomeModal.show(context, selectedMonth, selectedYear);
+                        } else {
+                          PremiumPaywallDialog.show(context, customMessage: 'Obtén el Plan Premium para ver el detalle exclusivo de todos tus ingresos mensuales.');
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(24),
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: paletteGradient,
                       begin: Alignment.topLeft,
@@ -334,9 +440,10 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+              ),
+              const SizedBox(height: 24),
 
-                // Active Fixed Incomes Section
+                    // Active Fixed Incomes Section
                 Builder(
                       builder: (context) {
                         final allIncomes = transactionsAsync.value ?? [];

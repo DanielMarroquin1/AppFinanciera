@@ -77,44 +77,53 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
           ? null
           : FloatingActionButton(
               onPressed: () async {
-                final action = await showGeneralDialog<String>(
-                  context: context,
-                  barrierDismissible: true,
-                  barrierLabel: 'Cerrar',
-                  barrierColor: Colors.black.withOpacity(0.6),
-                  transitionDuration: const Duration(milliseconds: 250),
-                  pageBuilder: (context, animation, secondaryAnimation) {
-                    return BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                      child: const QuickActionsMenu(),
-                    );
-                  },
-                  transitionBuilder: (context, animation, secondaryAnimation, child) {
-                    return FadeTransition(
-                      opacity: animation,
-                      child: ScaleTransition(
-                        scale: Tween<double>(begin: 0.95, end: 1.0).animate(
-                          CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+                bool keepMenuOpen = true;
+                while (keepMenuOpen && context.mounted) {
+                  final action = await showGeneralDialog<String>(
+                    context: context,
+                    barrierDismissible: true,
+                    barrierLabel: 'Cerrar',
+                    barrierColor: Colors.black.withOpacity(0.6),
+                    transitionDuration: const Duration(milliseconds: 300),
+                    pageBuilder: (context, animation, secondaryAnimation) {
+                      return BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                        child: const QuickActionsMenu(),
+                      );
+                    },
+                    transitionBuilder: (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: ScaleTransition(
+                          scale: Tween<double>(begin: 0.9, end: 1.0).animate(
+                            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+                          ),
+                          child: child,
                         ),
-                        child: child,
-                      ),
-                    );
-                  },
-                );
-                if (action != null) {
-                  if (!context.mounted) return;
+                      );
+                    },
+                  );
+                  
+                  if (action == null) {
+                    keepMenuOpen = false;
+                    break;
+                  }
+                  
+                  if (!context.mounted) break;
+                  
                   if (action == 'savings-goal') {
-                    AddSavingGoalModal.show(context);
+                    await AddSavingGoalModal.show(context);
                   } else if (action == 'my-savings') {
                     context.go('/savings');
+                    keepMenuOpen = false;
                   } else if (action == 'rewards-shop') {
-                    RewardsShopModal.show(context);
+                    await RewardsShopModal.show(context);
                   } else if (action == 'ai-chat') {
-                    AIChatModal.show(context);
+                    await AIChatModal.show(context);
                   } else if (action == 'notifications') {
-                    NotificationsModal.show(context);
+                    await NotificationsModal.show(context);
                   } else if (action == 'category-budget') {
-                    CategoryBudgetModal.show(context);
+                    await CategoryBudgetModal.show(context);
                   }
                 }
               },

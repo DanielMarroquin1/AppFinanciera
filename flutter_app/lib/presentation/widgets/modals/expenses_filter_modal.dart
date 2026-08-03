@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import '../../providers/auth_provider.dart';
-import 'premium_modal.dart';
+import 'premium_paywall_dialog.dart';
 
 class ExpensesFilterModal extends StatefulWidget {
   final int? initialMonth;
@@ -16,7 +16,7 @@ class ExpensesFilterModal extends StatefulWidget {
     final container = ProviderScope.containerOf(context, listen: false);
     final isPremium = container.read(authProvider).user?.isPremium ?? false;
     if (!isPremium) {
-      PremiumModal.show(context);
+      PremiumPaywallDialog.show(context, customMessage: 'Aplica filtros avanzados a tus gastos mensuales y analiza tu información con el Plan Premium.');
       return Future.value(null);
     }
     return showModalBottomSheet<Map<String, dynamic>>(

@@ -21,7 +21,7 @@ import '../../core/utils/currency_formatter.dart';
 import '../../core/utils/localization.dart';
 import '../widgets/modals/quick_action_manager_modal.dart';
 import '../widgets/modals/monthly_report_modal.dart';
-import '../widgets/modals/premium_modal.dart';
+import '../widgets/modals/premium_paywall_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/notification_provider.dart';
@@ -777,7 +777,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 onTap: () async {
                   final isPremium = ref.read(authProvider).user?.isPremium ?? false;
                   if (!isPremium) {
-                    PremiumModal.show(context);
+                    PremiumPaywallDialog.show(context, customMessage: 'Establece y personaliza tu límite de presupuesto mensual con el Plan Premium.');
                     return;
                   }
                   final newValue = await BudgetLimitModal.show(context, initialValue: limitPercentage);
@@ -833,142 +833,41 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: () => context.push('/incomes'),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF14532D).withValues(alpha: 0.3) : const Color(0xFFF0FDF4),
-                          border: Border.all(color: isDark ? const Color(0xFF166534) : const Color(0xFFBBF7D0), width: 1.5),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: isDark ? Colors.transparent : const Color(0xFF16A34A).withValues(alpha: 0.08),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Icon(LucideIcons.trendingUp, color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A), size: 22),
-                            const SizedBox(height: 6),
-                            Text(loc.get('dashboard_income'), style: TextStyle(color: isDark ? const Color(0xFFBBF7D0) : const Color(0xFF14532D), fontSize: 10, fontWeight: FontWeight.w600)),
-                          ],
-                        ),
-                      ),
-                    ),
+                  _buildPremiumQuickAction(
+                    context: context,
+                    icon: LucideIcons.trendingUp,
+                    label: loc.get('dashboard_income'),
+                    isDark: isDark,
+                    color: const Color(0xFF10B981), // Emerald
+                    onTap: () => context.push('/incomes'),
                   ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: InkWell(
-                      key: _expensesKey,
-                      onTap: () => AddExpenseModal.show(context),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.3) : const Color(0xFFFEF2F2),
-                          border: Border.all(color: isDark ? const Color(0xFF991B1B) : const Color(0xFFFECACA), width: 1.5),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: isDark ? Colors.transparent : const Color(0xFFDC2626).withValues(alpha: 0.08),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Icon(LucideIcons.trendingDown, color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), size: 22),
-                            const SizedBox(height: 6),
-                            Text(loc.get('dashboard_expenses'), style: TextStyle(color: isDark ? const Color(0xFFFECACA) : const Color(0xFF7F1D1D), fontSize: 10, fontWeight: FontWeight.w600)),
-                          ],
-                        ),
-                      ),
-                    ),
+                  const SizedBox(width: 8),
+                  _buildPremiumQuickAction(
+                    context: context,
+                    icon: LucideIcons.trendingDown,
+                    label: loc.get('dashboard_expenses'),
+                    isDark: isDark,
+                    color: const Color(0xFFEF4444), // Red
+                    onTap: () => AddExpenseModal.show(context),
                   ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: InkWell(
-                      onTap: () => context.go('/debts'),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1E3A5F).withValues(alpha: 0.3) : const Color(0xFFEFF6FF),
-                          border: Border.all(color: isDark ? const Color(0xFF1D4ED8) : const Color(0xFFBFDBFE), width: 1.5),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: isDark ? Colors.transparent : const Color(0xFF2563EB).withValues(alpha: 0.08),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Icon(LucideIcons.wallet, color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), size: 22),
-                            const SizedBox(height: 6),
-                            Text(loc.get('dashboard_debts'), style: TextStyle(color: isDark ? const Color(0xFFBFDBFE) : const Color(0xFF1E3A8A), fontSize: 10, fontWeight: FontWeight.w600)),
-                          ],
-                        ),
-                      ),
-                    ),
+                  const SizedBox(width: 8),
+                  _buildPremiumQuickAction(
+                    context: context,
+                    icon: LucideIcons.wallet,
+                    label: loc.get('dashboard_debts'),
+                    isDark: isDark,
+                    color: const Color(0xFF3B82F6), // Blue
+                    onTap: () => context.go('/debts'),
                   ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: InkWell(
-                            onTap: () => CreditCardsModal.show(context),
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF92400E).withValues(alpha: 0.3) : const Color(0xFFFFFBEB),
-                                border: Border.all(color: isDark ? const Color(0xFFD97706) : const Color(0xFFFDE68A), width: 1.5),
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: isDark ? Colors.transparent : const Color(0xFFD97706).withValues(alpha: 0.08),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(LucideIcons.creditCard, color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), size: 22),
-                                  const SizedBox(height: 6),
-                                  Text(loc.get('dashboard_cards'), style: TextStyle(color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E), fontSize: 10, fontWeight: FontWeight.w600)),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (hasOverlimitCard)
-                          Positioned(
-                            top: -4,
-                            right: -4,
-                            child: Container(
-                              padding: const EdgeInsets.all(5),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFEF4444),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(LucideIcons.alertTriangle, color: Colors.white, size: 12),
-                            ),
-                          ),
-                      ],
-                    ),
+                  const SizedBox(width: 8),
+                  _buildPremiumQuickAction(
+                    context: context,
+                    icon: LucideIcons.creditCard,
+                    label: loc.get('dashboard_cards'),
+                    isDark: isDark,
+                    color: const Color(0xFFF59E0B), // Amber
+                    onTap: () => CreditCardsModal.show(context),
+                    showBadge: hasOverlimitCard,
                   ),
                 ],
               ),
@@ -1137,7 +1036,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
               onTap: () {
                 final isPremium = ref.read(authProvider).user?.isPremium ?? false;
                 if (!isPremium) {
-                  PremiumModal.show(context);
+                  PremiumPaywallDialog.show(context, customMessage: 'Desbloquea el simulador inteligente "What If?" impulsado por IA con el Plan Premium.');
                   return;
                 }
                 context.push('/what-if');
@@ -1583,6 +1482,87 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPremiumQuickAction({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required bool isDark,
+    required Color color,
+    required VoidCallback onTap,
+    bool showBadge = false,
+  }) {
+    return Expanded(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark ? Colors.black.withValues(alpha: 0.2) : color.withValues(alpha: 0.1),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: isDark ? color.withValues(alpha: 0.15) : color.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(icon, color: color, size: 22),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (showBadge)
+            Positioned(
+              top: -4,
+              right: -4,
+              child: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFEF4444),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(LucideIcons.alertTriangle, color: Colors.white, size: 12),
+              ),
+            ),
         ],
       ),
     );

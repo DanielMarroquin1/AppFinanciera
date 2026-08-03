@@ -146,95 +146,275 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
     final sym = CurrencyFormatter.getSymbol(ref.read(authProvider).user?.currency);
     final isCompleted = _isDebtCompleted(debt);
 
+    String recurrenceText = 'No automático';
+    if (debt.isAutoPay && debt.recurrenceType != null) {
+      if (debt.recurrenceType == 'monthly') {
+        recurrenceText = 'Automático: Día ${debt.recurrenceDay} de cada mes';
+      } else if (debt.recurrenceType == 'bimonthly') {
+        recurrenceText = 'Automático: Días ${debt.recurrenceDay} y ${debt.recurrenceDay2} del mes';
+      } else if (debt.recurrenceType == 'weekly') {
+        final weekdays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+        final dayName = (debt.recurrenceDay != null && debt.recurrenceDay! >= 1 && debt.recurrenceDay! <= 7) 
+            ? weekdays[debt.recurrenceDay! - 1] 
+            : 'semanal';
+        recurrenceText = 'Automático: Todos los $dayName';
+      }
+    }
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) {
         return Container(
-          padding: const EdgeInsets.all(28),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+            color: isDark ? const Color(0xFF111827) : const Color(0xFFF8FAFC),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-            border: Border.all(
-              color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-              width: 1,
-            ),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 20, offset: const Offset(0, -10)),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Center(
-                child: Container(
-                  width: 40, height: 4,
-                  margin: const EdgeInsets.only(bottom: 24),
-                  decoration: BoxDecoration(color: isDark ? Colors.grey[700] : Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+              const SizedBox(height: 12),
+              Container(
+                width: 48, height: 5,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey[700] : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(3)
                 ),
               ),
-              Row(
-                children: [
-                  Container(
-                    width: 48, height: 48,
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E1B4B) : const Color(0xFFEEF2FF),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(debt.category, style: const TextStyle(fontSize: 24)),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
                       children: [
-                        Text(
-                          'Detalles de Deuda',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? Colors.grey[400] : Colors.grey[500]),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF2563EB)]),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(color: const Color(0xFF3B82F6).withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))
+                            ],
+                          ),
+                          child: Text(debt.category, style: const TextStyle(fontSize: 24)),
                         ),
-                        Text(
-                          debt.name,
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Detalle de Deuda',
+                              style: TextStyle(color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                            ),
+                            Text(
+                              debt.name,
+                              style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 22, fontWeight: FontWeight.w900),
+                            ),
+                          ],
                         ),
                       ],
                     ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(LucideIcons.xCircle, color: isDark ? Colors.grey[400] : Colors.grey[600], size: 28),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Total Amount Box
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: isDark 
+                      ? const LinearGradient(colors: [Color(0xFF1F2937), Color(0xFF111827)])
+                      : const LinearGradient(colors: [Colors.white, Color(0xFFF1F5F9)]),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Monto Restante', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                        const SizedBox(height: 4),
+                        Text(
+                          '$sym${_getDebtRemainingAmount(debt).toStringAsFixed(2)}',
+                          style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 32, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Text('Cuota: $sym${debt.installmentAmount.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFF3B82F6), fontWeight: FontWeight.w700)),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF172554) : const Color(0xFFDBEAFE),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(LucideIcons.creditCard, color: Color(0xFF3B82F6), size: 32),
+                    ),
+                  ],
+                ),
+              ),
+
+              if (debt.isAutoPay)
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
                   ),
-                ],
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(LucideIcons.calendarCheck, size: 18, color: Color(0xFF10B981)),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(recurrenceText, style: const TextStyle(color: Color(0xFF10B981), fontSize: 13, fontWeight: FontWeight.w800)),
+                      ),
+                    ],
+                  ),
+                ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
+                        ),
+                        child: Column(
+                          children: [
+                            Text('Pagado', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13)),
+                            const SizedBox(height: 4),
+                            Text('$sym${_getDebtPaidAmount(debt).toStringAsFixed(0)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
+                        ),
+                        child: Column(
+                          children: [
+                            Text('Total', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13)),
+                            const SizedBox(height: 4),
+                            Text('$sym${_getDebtTotalAmount(debt).toStringAsFixed(0)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 20),
-              Text(
-                isCompleted 
-                    ? 'Esta deuda está completamente saldada. ¡Excelente gestión financiera! 🎉' 
-                    : 'Puedes registrar los pagos de cuotas para esta deuda de forma interactiva. Cada cuota registrada incrementará el progreso y creará un registro de gasto en tu historial.',
-                style: TextStyle(fontSize: 14, color: isDark ? Colors.grey[300] : Colors.grey[600]),
-              ),
-              const SizedBox(height: 28),
+
               if (!isCompleted)
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _registerPayment(debt);
-                  },
-                  icon: const Icon(LucideIcons.plusCircle, size: 20),
-                  label: const Text('Agregar una cuota', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    elevation: 0,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF2563EB)]),
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(color: const Color(0xFF3B82F6).withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))
+                            ],
+                          ),
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _registerPayment(debt);
+                            },
+                            icon: const Icon(LucideIcons.checkCircle2, size: 20),
+                            label: const Text('Pagar Cuota', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 18),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 1,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            AddDebtModal.show(context, existingDebt: debt, currencyCode: ref.read(authProvider).user?.currency);
+                          },
+                          icon: const Icon(LucideIcons.edit2, size: 18),
+                          label: const Text('Editar', style: TextStyle(fontWeight: FontWeight.bold)),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                            side: BorderSide(color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0), width: 2),
+                            foregroundColor: isDark ? Colors.grey[300] : Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              const SizedBox(height: 12),
-              OutlinedButton(
-                onPressed: () => Navigator.pop(context),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  side: BorderSide(color: isDark ? Colors.grey[700]! : Colors.grey[300]!),
+              
+              if (isCompleted)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                    ),
+                    child: const Text(
+                      'Esta deuda está completamente saldada. ¡Excelente gestión financiera! 🎉',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ),
-                child: Text('Cerrar', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
-              ),
+              const SizedBox(height: 16),
             ],
           ),
         );
@@ -262,9 +442,9 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
         data: (debts) {
           final activeDebts = debts.where((d) => !_isDebtCompleted(d)).toList();
           final completedDebts = debts.where((d) => _isDebtCompleted(d)).toList();
-          final totalRemaining = debts.fold(0.0, (sum, d) => sum + _getDebtRemainingAmount(d));
-          final totalPaidInstallments = debts.fold(0, (sum, d) => sum + d.paidInstallments);
-          final totalAllInstallments = debts.fold(0, (sum, d) => sum + d.totalInstallments);
+          final totalRemaining = activeDebts.fold(0.0, (sum, d) => sum + _getDebtRemainingAmount(d));
+          final totalPaidInstallments = activeDebts.fold(0, (sum, d) => sum + d.paidInstallments);
+          final totalAllInstallments = activeDebts.fold(0, (sum, d) => sum + d.totalInstallments);
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(24),
@@ -327,15 +507,15 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                             ],
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Column(
                               children: [
-                                Text('$totalPaidInstallments/$totalAllInstallments', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                                Text('cuotas', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 11)),
+                                Text('${totalAllInstallments - totalPaidInstallments}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                                Text('pendientes', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 11, fontWeight: FontWeight.w600)),
                               ],
                             ),
                           ),
@@ -352,7 +532,7 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                           child: Container(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8))),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       Text(
                         '${activeDebts.length} deuda${activeDebts.length != 1 ? 's' : ''} activa${activeDebts.length != 1 ? 's' : ''} · ${completedDebts.length} completada${completedDebts.length != 1 ? 's' : ''}',
                         style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12),

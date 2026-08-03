@@ -7,7 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/localization.dart';
 import '../../providers/color_palette_provider.dart';
-import 'premium_modal.dart';
+import 'premium_paywall_dialog.dart';
 
 class MonthlyReportModal extends ConsumerStatefulWidget {
   const MonthlyReportModal({super.key});
@@ -16,7 +16,7 @@ class MonthlyReportModal extends ConsumerStatefulWidget {
     final container = ProviderScope.containerOf(context, listen: false);
     final isPremium = container.read(authProvider).user?.isPremium ?? false;
     if (!isPremium) {
-      PremiumModal.show(context);
+      PremiumPaywallDialog.show(context, customMessage: 'Genera y exporta tu reporte mensual detallado en PDF con el Plan Premium.');
       return;
     }
     showModalBottomSheet(

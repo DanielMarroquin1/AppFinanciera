@@ -13,6 +13,7 @@ class DebtModel {
   final int? recurrenceDay;
   final int? recurrenceDay2;
   final DateTime createdAt;
+  final DateTime? lastProcessedDate;
 
   DebtModel({
     required this.id,
@@ -27,6 +28,7 @@ class DebtModel {
     this.recurrenceDay,
     this.recurrenceDay2,
     required this.createdAt,
+    this.lastProcessedDate,
   });
 
   factory DebtModel.fromFirestore(DocumentSnapshot doc) {
@@ -44,6 +46,7 @@ class DebtModel {
       recurrenceDay: data['recurrenceDay'],
       recurrenceDay2: data['recurrenceDay2'],
       createdAt: data['createdAt'] != null ? (data['createdAt'] as Timestamp).toDate() : DateTime.now(),
+      lastProcessedDate: data['lastProcessedDate'] != null ? (data['lastProcessedDate'] as Timestamp).toDate() : null,
     );
   }
 
@@ -60,6 +63,7 @@ class DebtModel {
       if (recurrenceDay != null) 'recurrenceDay': recurrenceDay,
       if (recurrenceDay2 != null) 'recurrenceDay2': recurrenceDay2,
       'createdAt': Timestamp.fromDate(createdAt),
+      if (lastProcessedDate != null) 'lastProcessedDate': Timestamp.fromDate(lastProcessedDate!),
     };
   }
 
@@ -76,6 +80,7 @@ class DebtModel {
     int? recurrenceDay,
     int? recurrenceDay2,
     DateTime? createdAt,
+    DateTime? lastProcessedDate,
   }) {
     return DebtModel(
       id: id ?? this.id,
@@ -90,6 +95,7 @@ class DebtModel {
       recurrenceDay: recurrenceDay ?? this.recurrenceDay,
       recurrenceDay2: recurrenceDay2 ?? this.recurrenceDay2,
       createdAt: createdAt ?? this.createdAt,
+      lastProcessedDate: lastProcessedDate ?? this.lastProcessedDate,
     );
   }
 }

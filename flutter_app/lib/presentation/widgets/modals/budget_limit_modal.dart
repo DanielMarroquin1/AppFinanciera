@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../providers/auth_provider.dart';
-import 'premium_modal.dart';
+import 'premium_paywall_dialog.dart';
 
 class BudgetLimitModal extends StatefulWidget {
   final double initialValue;
@@ -16,7 +16,7 @@ class BudgetLimitModal extends StatefulWidget {
     final container = ProviderScope.containerOf(context, listen: false);
     final isPremium = container.read(authProvider).user?.isPremium ?? false;
     if (!isPremium) {
-      PremiumModal.show(context);
+      PremiumPaywallDialog.show(context, customMessage: 'Establece un límite de presupuesto mensual personalizado con el Plan Premium.');
       return Future.value(null);
     }
     return showDialog<double>(
@@ -119,47 +119,120 @@ class _BudgetLimitModalState extends State<BudgetLimitModal> {
                 fontSize: 14,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             
-            // Slider for percentage
-            Column(
-              children: [
-                Text(
-                  '${_currentValue.toInt()}%',
-                  style: TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669),
+            // Circular Dial / Velocimeter
+            Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 220,
+                    height: 220,
+                    child: CircularProgressIndicator(
+                      value: 1.0,
+                      strokeWidth: 20,
+                      backgroundColor: Colors.transparent,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                      ),
+                      strokeCap: StrokeCap.round,
+                    ),
                   ),
+                  SizedBox(
+                    width: 220,
+                    height: 220,
+                    child: CircularProgressIndicator(
+                      value: _currentValue / 100,
+                      strokeWidth: 20,
+                      backgroundColor: Colors.transparent,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        _currentValue >= 90
+                            ? const Color(0xFFEF4444)
+                            : (_currentValue >= 80 ? const Color(0xFFF59E0B) : const Color(0xFF10B981)),
+                      ),
+                      strokeCap: StrokeCap.round,
+                    ),
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${_currentValue.toInt()}%',
+                        style: TextStyle(
+                          fontSize: 56,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -2,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      Text(
+                        'DEL INGRESO',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                          color: isDark ? Colors.grey[500] : Colors.grey[400],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 40),
+            
+            // Sleek Slider
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+              ),
+              child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  trackHeight: 8,
+                  activeTrackColor: _currentValue >= 90
+                      ? const Color(0xFFEF4444)
+                      : (_currentValue >= 80 ? const Color(0xFFF59E0B) : const Color(0xFF10B981)),
+                  inactiveTrackColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  thumbColor: Colors.white,
+                  overlayColor: (_currentValue >= 90
+                          ? const Color(0xFFEF4444)
+                          : (_currentValue >= 80 ? const Color(0xFFF59E0B) : const Color(0xFF10B981)))
+                      .withValues(alpha: 0.2),
+                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 14, elevation: 4),
+                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 24),
                 ),
-                Slider(
+                child: Slider(
                   value: _currentValue,
                   min: 50,
                   max: 100,
-                  divisions: 10,
-                  activeColor: isDark ? const Color(0xFF10B981) : const Color(0xFF059669),
-                  inactiveColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  divisions: 50,
                   onChanged: (value) {
                     setState(() {
                       _currentValue = value;
                     });
                   },
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('50%', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 12)),
-                      Text('100%', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 12)),
-                    ],
-                  ),
-                ),
-              ],
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('50%', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontWeight: FontWeight.bold)),
+                  Text('100%', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontWeight: FontWeight.bold)),
+                ],
+              ),
             ),
             const SizedBox(height: 32),
             
-            // Botones
+            // Action Buttons
             Row(
               children: [
                 Expanded(

@@ -13,6 +13,7 @@ class TransactionModel {
   final int? recurrenceDay; // primary day of month (1-31) or day of week (1-7 for weekly)
   final int? recurrenceDay2; // secondary day for bimonthly (e.g. pay on 15 and 30)
   final String? creditCardId; // Si es null, fue en efectivo/cuenta. Si tiene ID, fue con TC.
+  final DateTime? lastProcessedDate;
 
   TransactionModel({
     required this.id,
@@ -27,6 +28,7 @@ class TransactionModel {
     this.recurrenceDay,
     this.recurrenceDay2,
     this.creditCardId,
+    this.lastProcessedDate,
   });
 
   static DateTime _parseDate(dynamic val) {
@@ -65,6 +67,7 @@ class TransactionModel {
         recurrenceDay: data['recurrenceDay'] is int ? data['recurrenceDay'] : int.tryParse('${data['recurrenceDay']}'),
         recurrenceDay2: data['recurrenceDay2'] is int ? data['recurrenceDay2'] : int.tryParse('${data['recurrenceDay2']}'),
         creditCardId: data['creditCardId']?.toString(),
+        lastProcessedDate: data['lastProcessedDate'] != null ? _parseDate(data['lastProcessedDate']) : null,
       );
     } catch (e) {
       return TransactionModel(
@@ -93,6 +96,7 @@ class TransactionModel {
       if (recurrenceDay != null) 'recurrenceDay': recurrenceDay,
       if (recurrenceDay2 != null) 'recurrenceDay2': recurrenceDay2,
       'creditCardId': creditCardId,
+      if (lastProcessedDate != null) 'lastProcessedDate': Timestamp.fromDate(lastProcessedDate!),
     };
   }
 
@@ -109,6 +113,7 @@ class TransactionModel {
     int? recurrenceDay,
     int? recurrenceDay2,
     String? creditCardId,
+    DateTime? lastProcessedDate,
   }) {
     return TransactionModel(
       id: id ?? this.id,
@@ -123,6 +128,7 @@ class TransactionModel {
       recurrenceDay: recurrenceDay ?? this.recurrenceDay,
       recurrenceDay2: recurrenceDay2 ?? this.recurrenceDay2,
       creditCardId: creditCardId ?? this.creditCardId,
+      lastProcessedDate: lastProcessedDate ?? this.lastProcessedDate,
     );
   }
 

@@ -3,7 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/user.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
-import '../../core/services/recurring_transaction_service.dart';
+import '../../core/services/recurrence_service.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide User;
 
 // Provider for SharedPreferences to be injected
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
@@ -48,7 +49,11 @@ class AuthNotifier extends Notifier<AuthState> {
     final user = await _repository.getStoredUser();
     state = AuthState(user: user, isLoading: false);
     if (user != null) {
-      RecurringTransactionService.evaluateRecurringTransactions();
+      FirebaseAuth.instance.authStateChanges().firstWhere((u) => u != null).then((fbUser) {
+        if (fbUser != null) {
+          RecurrenceService.processRecurrences(fbUser.uid);
+        }
+      }).catchError((_) {});
     }
   }
 
@@ -57,7 +62,10 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final user = await _repository.login(email, password);
       state = AuthState(user: user, isLoading: false);
-      RecurringTransactionService.evaluateRecurringTransactions();
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        RecurrenceService.processRecurrences(uid);
+      }
     } catch (e) {
       state = state.copyWith(isLoading: false);
       rethrow;

@@ -332,6 +332,18 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
     );
   }
 
+  String _formatPremiumDate(DateTime d) {
+    final now = DateTime.now();
+    if (d.year == now.year && d.month == now.month && d.day == now.day) {
+      return 'Hoy';
+    }
+    if (d.year == now.year && d.month == now.month && d.day == now.day - 1) {
+      return 'Ayer';
+    }
+    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    return '${d.day} de ${months[d.month - 1]} ${d.year != now.year ? d.year : ''}'.trim();
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -394,35 +406,42 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Amount
-                  Text('${loc.get('amount')} 💵', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _amountController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    onChanged: (val) => amount = val,
-                    style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
-                    decoration: InputDecoration(
-                      hintText: '0.00',
-                      hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400]),
-                      prefixIcon: Container(
-                        padding: const EdgeInsets.all(12),
-                        child: Text(CurrencyFormatter.getSymbol(widget.currencyCode ?? ref.watch(authProvider).user?.currency), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-                      ),
-                      filled: true,
-                      fillColor: isDark ? const Color(0xFF374151) : Colors.white,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2)), // red-500
+                  // Massive Amount Input
+                  Center(
+                    child: Column(
+                      children: [
+                        Text(loc.get('amount').toUpperCase(), style: TextStyle(color: isDark ? const Color(0xFFEF4444) : const Color(0xFFDC2626), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                        const SizedBox(height: 8),
+                        IntrinsicWidth(
+                          child: TextField(
+                            controller: _amountController,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            onChanged: (val) => amount = val,
+                            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 56, fontWeight: FontWeight.w900, letterSpacing: -2),
+                            textAlign: TextAlign.center,
+                            decoration: InputDecoration(
+                              hintText: '0.00',
+                              hintStyle: TextStyle(color: isDark ? Colors.grey[700] : Colors.grey[300]),
+                              prefixText: CurrencyFormatter.getSymbol(widget.currencyCode ?? ref.watch(authProvider).user?.currency),
+                              prefixStyle: TextStyle(color: isDark ? const Color(0xFFEF4444) : const Color(0xFFDC2626), fontSize: 32, fontWeight: FontWeight.bold),
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  const SizedBox(height: 32),
                   const SizedBox(height: 20),
 
-                  // Category
+                  // Premium Category Selector
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('${loc.get('category')} 🏷️', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14, fontWeight: FontWeight.bold)),
+                      Text(loc.get('category').toUpperCase(), style: TextStyle(color: isDark ? const Color(0xFFEF4444) : const Color(0xFFDC2626), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 2)),
                       if (category.isNotEmpty)
                         GestureDetector(
                           onTap: () => setState(() => category = ''),
@@ -430,135 +449,137 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                         ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   InkWell(
                     onTap: () => _showCategoryPicker(isDark),
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(24),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        gradient: category.isNotEmpty
-                            ? (isDark
-                                ? LinearGradient(colors: [const Color(0xFFDC2626).withValues(alpha: 0.25), const Color(0xFF991B1B).withValues(alpha: 0.15)])
-                                : const LinearGradient(colors: [Color(0xFFFEF2F2), Color(0xFFFEE2E2)]))
-                            : (isDark
-                                ? LinearGradient(colors: [const Color(0xFF1F2937), const Color(0xFF111827).withValues(alpha: 0.8)])
-                                : const LinearGradient(colors: [Color(0xFFF8FAFC), Color(0xFFF1F5F9)])),
-                        borderRadius: BorderRadius.circular(18),
+                        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(24),
                         border: Border.all(
                           color: category.isNotEmpty
-                              ? (isDark ? const Color(0xFFEF4444) : const Color(0xFFDC2626))
-                              : (isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
-                          width: category.isNotEmpty ? 2 : 1.5,
+                              ? (isDark ? const Color(0xFFEF4444).withValues(alpha: 0.5) : const Color(0xFFEF4444).withValues(alpha: 0.3))
+                              : Colors.transparent,
+                          width: 1.5,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: category.isNotEmpty
-                                ? const Color(0xFFEF4444).withValues(alpha: 0.15)
-                                : Colors.black.withValues(alpha: 0.03),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          )
-                        ],
                       ),
                       child: Row(
                         children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              gradient: category.isNotEmpty
-                                  ? const LinearGradient(colors: [Color(0xFFEF4444), Color(0xFFB91C1C)], begin: Alignment.topLeft, end: Alignment.bottomRight)
-                                  : (isDark ? const LinearGradient(colors: [Color(0xFF374151), Color(0xFF1F2937)]) : const LinearGradient(colors: [Colors.white, Color(0xFFE2E8F0)])),
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: [
-                                BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 6, offset: const Offset(0, 2)),
-                              ],
-                            ),
-                            child: Center(
-                              child: Text(
-                                _getCategoryDetails(category)['emoji']!,
-                                style: const TextStyle(fontSize: 24),
+                          if (category.isEmpty) ...[
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Icon(LucideIcons.grid, color: isDark ? Colors.grey[400] : Colors.grey[600], size: 20),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  category.isEmpty ? 'Seleccionar Categoría' : _getCategoryDetails(category)['label']!,
-                                  style: TextStyle(
-                                    color: category.isEmpty ? (isDark ? Colors.grey[400] : Colors.grey[600]) : (isDark ? Colors.white : Colors.black87),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Text(
+                                'Elige una categoría...',
+                                style: TextStyle(
+                                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  category.isEmpty ? 'Toca para elegir una opción' : 'Categoría seleccionada',
-                                  style: TextStyle(
-                                    color: isDark ? Colors.grey[500] : Colors.grey[500],
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
+                          ] else ...[
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2))],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  _getCategoryDetails(category)['emoji']!,
+                                  style: const TextStyle(fontSize: 24),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _getCategoryDetails(category)['label']!,
+                                    style: TextStyle(
+                                      color: isDark ? Colors.white : Colors.black87,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Categoría seleccionada',
+                                    style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+                              color: category.isNotEmpty 
+                                  ? (isDark ? const Color(0xFFEF4444).withValues(alpha: 0.15) : const Color(0xFFFEE2E2)) 
+                                  : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  category.isEmpty ? 'Elegir' : 'Cambiar',
-                                  style: TextStyle(
-                                    color: isDark ? Colors.grey[300] : Colors.grey[700],
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Icon(LucideIcons.chevronDown, size: 14, color: isDark ? Colors.grey[300] : Colors.grey[700]),
-                              ],
+                            child: Text(
+                              category.isEmpty ? 'Explorar' : 'Cambiar',
+                              style: TextStyle(
+                                color: category.isNotEmpty 
+                                    ? (isDark ? const Color(0xFFFCA5A5) : const Color(0xFFDC2626)) 
+                                    : (isDark ? Colors.white : Colors.black87),
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
-                  // Description
-                  Text('${loc.get('description_optional')} 📝', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _descController,
-                    onChanged: (val) => description = val,
-                    maxLines: 3,
-                    style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
-                    decoration: InputDecoration(
-                      hintText: 'Ej: Compras en supermercado...',
-                      hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400]),
-                      prefixIcon: Padding(padding: const EdgeInsets.only(bottom: 40), child: Icon(LucideIcons.tag, color: isDark ? Colors.grey[500] : Colors.grey[400])),
-                      filled: true,
-                      fillColor: isDark ? const Color(0xFF374151) : Colors.white,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2)),
+                  // Premium Description Field
+                  Text(loc.get('description_optional').toUpperCase(), style: TextStyle(color: isDark ? const Color(0xFFEF4444) : const Color(0xFFDC2626), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                  const SizedBox(height: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: TextField(
+                      controller: _descController,
+                      onChanged: (val) => description = val,
+                      maxLines: null,
+                      minLines: 1,
+                      style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
+                      decoration: InputDecoration(
+                        hintText: '¿En qué gastaste esto?',
+                        hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                        prefixIcon: Icon(LucideIcons.penTool, color: isDark ? Colors.grey[500] : Colors.grey[400], size: 18),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
-                  // Date (Simplified for UI copy)
-                  Text('${loc.get('date')} 📅', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
-                  const SizedBox(height: 8),
+                  // Premium Date Field
+                  Text(loc.get('date').toUpperCase(), style: TextStyle(color: isDark ? const Color(0xFFEF4444) : const Color(0xFFDC2626), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                  const SizedBox(height: 12),
                   InkWell(
                     onTap: () async {
                       final picked = await showDatePicker(
@@ -581,25 +602,38 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                         setState(() => date = picked);
                       }
                     },
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(20),
                     child: Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF374151) : Colors.white,
-                        border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2),
-                        borderRadius: BorderRadius.circular(12),
+                        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
-                              Icon(LucideIcons.calendar, color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                              Icon(LucideIcons.calendar, color: isDark ? Colors.grey[500] : Colors.grey[400], size: 20),
                               const SizedBox(width: 12),
-                              Text('${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16)),
+                              Text(
+                                _formatPremiumDate(date),
+                                style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black87,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ],
                           ),
-                          Icon(LucideIcons.edit2, size: 16, color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(LucideIcons.edit2, size: 14, color: isDark ? Colors.white : Colors.black87),
+                          ),
                         ],
                       ),
                     ),

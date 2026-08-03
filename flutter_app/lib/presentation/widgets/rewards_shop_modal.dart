@@ -7,16 +7,18 @@ import '../../core/utils/localization.dart';
 import '../../core/services/ad_service.dart';
 
 class RewardsShopModal extends ConsumerStatefulWidget {
-  const RewardsShopModal({super.key});
+  const RewardsShopModal({super.key, this.points});
+  
+  final int? points;
 
-  static void show(BuildContext context, {int? points}) {
-    showModalBottomSheet(
+  static Future<void> show(BuildContext context, {int? points}) {
+    return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useRootNavigator: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const RewardsShopModal(),
+      builder: (context) => RewardsShopModal(points: points),
     );
   }
 

@@ -6,7 +6,7 @@ import '../modals/category_detail_modal.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/localization.dart';
 import '../../providers/auth_provider.dart';
-import 'premium_modal.dart';
+import 'premium_paywall_dialog.dart';
 
 class ExpenseReportModal extends ConsumerStatefulWidget {
   final List<MapEntry<String, double>> categoryList;
@@ -37,7 +37,7 @@ class ExpenseReportModal extends ConsumerStatefulWidget {
     final container = ProviderScope.containerOf(context, listen: false);
     final isPremium = container.read(authProvider).user?.isPremium ?? false;
     if (!isPremium) {
-      PremiumModal.show(context);
+      PremiumPaywallDialog.show(context, customMessage: 'Visualiza reportes detallados y el balance total de tus finanzas con el Plan Premium.');
       return Future.value();
     }
     return showModalBottomSheet(

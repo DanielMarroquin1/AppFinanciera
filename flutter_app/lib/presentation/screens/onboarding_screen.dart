@@ -24,7 +24,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       'image': 'assets/images/onboarding_1.png',
     },
     {
-      'title': 'Zent AI',
+      'title': 'QUIVO',
       'description': 'Habla con la Inteligencia Artificial para registrar gastos automáticamente usando solo tu voz.',
       'image': 'assets/images/onboarding_2.png',
     },

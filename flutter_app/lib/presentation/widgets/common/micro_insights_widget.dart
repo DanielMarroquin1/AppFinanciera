@@ -48,7 +48,7 @@ class MicroInsightsSection extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Insights de Zent AI',
+                'Insights de QUIVO',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,

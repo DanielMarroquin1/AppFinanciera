@@ -70,7 +70,7 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
     final messages = chatState.messages.isEmpty 
       ? [
           ChatMessage(
-            text: '¡Hola! 👋 Soy Zent AI, tu asistente financiero. Estoy aquí para ayudarte con consejos de ahorro, análisis de gastos y planificación financiera basada en tus datos reales. ¿En qué puedo ayudarte hoy?',
+            text: '¡Hola! 👋 Soy QUIVO, tu asistente financiero. Estoy aquí para ayudarte con consejos de ahorro, análisis de gastos y planificación financiera basada en tus datos reales. ¿En qué puedo ayudarte hoy?',
             role: MessageRole.assistant,
           )
         ]
@@ -108,7 +108,7 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Zent AI', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                          const Text('QUIVO', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
                           Text('Siempre disponible para ayudarte', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12), overflow: TextOverflow.ellipsis),
                         ],
                       ),
@@ -146,7 +146,7 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                         children: [
                           Icon(LucideIcons.sparkles, color: Color(0xFFC084FC), size: 16),
                           SizedBox(width: 8),
-                          Text(' Zent AI está pensando...', style: TextStyle(color: Colors.grey)),
+                          Text(' QUIVO está pensando...', style: TextStyle(color: Colors.grey)),
                         ],
                       ),
                     ),
@@ -177,7 +177,7 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                             children: [
                               const Icon(LucideIcons.sparkles, color: Color(0xFFC084FC), size: 16),
                               const SizedBox(width: 4),
-                              Text('Zent AI ha propuesto un Plan de Ahorro', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                              Text('QUIVO ha propuesto un Plan de Ahorro', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
                             ],
                           ),
                           const SizedBox(height: 12),
@@ -279,7 +279,7 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                             children: [
                               const Icon(LucideIcons.sparkles, color: Color(0xFFC084FC), size: 16),
                               const SizedBox(width: 4),
-                              Text('Zent AI', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12), overflow: TextOverflow.ellipsis),
+                              Text('QUIVO', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12), overflow: TextOverflow.ellipsis),
                             ],
                           ),
                           const SizedBox(height: 4),

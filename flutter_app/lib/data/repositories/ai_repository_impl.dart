@@ -116,7 +116,7 @@ class AIRepositoryImpl implements AIRepository {
           .timeout(
             Duration(seconds: AIConfig.apiTimeoutSeconds),
             onTimeout: () => throw TimeoutException(
-              'La respuesta de Zent AI tardó demasiado. Por favor intenta de nuevo.',
+              'La respuesta de QUIVO tardó demasiado. Por favor intenta de nuevo.',
             ),
           );
 
@@ -192,7 +192,7 @@ class AIRepositoryImpl implements AIRepository {
       if (e is TimeoutException) {
         yield '⏱️ La respuesta tardó demasiado. Verifica tu conexión e intenta de nuevo.';
       } else {
-        yield '❌ Error de conexión con Zent AI. Por favor intenta de nuevo en unos momentos.';
+        yield '❌ Error de conexión con QUIVO. Por favor intenta de nuevo en unos momentos.';
       }
     }
   }

@@ -112,7 +112,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      "ZENT AI Assistant",
+                      "QUIVO Assistant",
                       style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
                     ),
                     const SizedBox(height: 10),
@@ -873,7 +873,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
               ),
             const SizedBox(height: 24),
 
-            // ── Micro-Insights de Zent AI ────────────────────────────────────
+            // ── Micro-Insights de QUIVO ────────────────────────────────────
             const MicroInsightsSection(),
             Builder(
               builder: (context) {

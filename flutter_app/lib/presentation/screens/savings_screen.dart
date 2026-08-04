@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../widgets/modals/add_saving_goal_modal.dart';
@@ -31,292 +32,358 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent, // Handled by AppShell
       resizeToAvoidBottomInset: false,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Header
-            Text(
-              loc.get('my_savings'),
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              loc.get('savings_subtitle'),
-              style: TextStyle(
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Total Savings
-            goalsAsync.when(
-              data: (goalsList) {
-                final totalSaved = goalsList.fold(0.0, (sum, item) => sum + item.currentAmount);
-                return Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: paletteGradient,
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    loc.get('my_savings'),
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                      color: isDark ? Colors.white : Colors.black,
                     ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    loc.get('savings_subtitle'),
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: goalsAsync.when(
+                data: (goalsList) {
+                  final totalSaved = goalsList.fold(0.0, (sum, item) => sum + item.currentAmount);
+                  return Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(32),
+                      gradient: LinearGradient(
+                        colors: paletteGradient,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: paletteGradient[0].withOpacity(0.4),
+                          blurRadius: 24,
+                          offset: const Offset(0, 12),
+                        )
+                      ],
+                    ),
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          right: -20,
+                          top: -20,
+                          child: Container(
+                            width: 150,
+                            height: 150,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withOpacity(0.1),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(28),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(loc.get('total_saved'), style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 16, fontWeight: FontWeight.w500)),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(LucideIcons.piggyBank, color: Colors.white, size: 14),
+                                        const SizedBox(width: 6),
+                                        Text('${goalsList.length} Metas', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Text('$sym${totalSaved.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white, fontSize: 42, fontWeight: FontWeight.w900, letterSpacing: -1)),
+                              const SizedBox(height: 24),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(LucideIcons.trendingUp, color: Colors.white, size: 16),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(loc.get('savings_month_progress'), style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, stack) => Text(loc.get('error_loading_savings')),
+              ),
+            ),
+          ),
+          
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              child: GestureDetector(
+                onTap: () => SavingGuideModal.show(context),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
                     borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
                     boxShadow: [
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))
+                      BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))
                     ]
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text(loc.get('total_saved'), style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
-                      const SizedBox(height: 8),
-                      Text('$sym${totalSaved.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          const Icon(LucideIcons.trendingUp, color: Colors.white, size: 20),
-                          const SizedBox(width: 8),
-                          Text(loc.get('savings_month_progress'), style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Text(loc.get('error_loading_savings')),
-            ),
-            const SizedBox(height: 24),
-
-            // Savings Guide Banner
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF581C87).withValues(alpha: 0.4) : const Color(0xFFF3E8FF),
-                border: Border.all(
-                  color: isDark ? const Color(0xFF6B21A8) : const Color(0xFFE9D5FF),
-                  width: 2,
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Text('📚', style: TextStyle(fontSize: 24)),
-                      const SizedBox(width: 12),
-                      Text(
-                        loc.get('savings_guide_plan'),
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF59E0B),
-                          borderRadius: BorderRadius.circular(12),
+                          color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
+                        child: const Icon(LucideIcons.bookOpen, color: Color(0xFF8B5CF6), size: 24),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(LucideIcons.crown, color: Colors.white, size: 12),
-                            SizedBox(width: 4),
-                            Text('PRO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                            Row(
+                              children: [
+                                Text(
+                                  loc.get('savings_guide_plan'),
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF59E0B),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text('PRO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              loc.get('savings_guide_desc'),
+                              style: TextStyle(
+                                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                fontSize: 13,
+                              ),
+                            ),
                           ],
                         ),
                       ),
+                      Icon(LucideIcons.chevronRight, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    loc.get('savings_guide_desc'),
-                    style: TextStyle(
-                      color: isDark ? Colors.grey[300] : Colors.grey[700],
-                      fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+          
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(loc.get('my_saving_goals'), style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 20, fontWeight: FontWeight.bold)),
+                  InkWell(
+                    onTap: () => AddSavingGoalModal.show(context),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(LucideIcons.plus, color: isDark ? Colors.white : Colors.black, size: 20),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: () => SavingGuideModal.show(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? const Color(0xFF7E22CE) : const Color(0xFF9333EA),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
-                    ),
-                    child: Text(loc.get('view_guide'), style: const TextStyle(fontSize: 12)),
                   )
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-
-            // Add New Goal Button
-            InkWell(
-              onTap: () => AddSavingGoalModal.show(context),
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                  border: Border.all(
-                    color: isDark ? const Color(0xFF374151) : const Color(0xFFD1D5DB),
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(LucideIcons.plus, color: isDark ? Colors.grey[400] : Colors.grey[500]),
-                    const SizedBox(width: 8),
-                    Text(loc.get('add_new_goal'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500])),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Goals
-            Text(loc.get('my_saving_goals'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
-            const SizedBox(height: 12),
-            goalsAsync.when(
+          ),
+          
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            sliver: goalsAsync.when(
               data: (goalsList) {
                 if (goalsList.isEmpty) {
-                  return Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                      border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Center(
-                      child: Text(loc.get('no_goals_yet'), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400])),
+                  return SliverToBoxAdapter(
+                    child: Container(
+                      padding: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                      ),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            Icon(LucideIcons.target, size: 48, color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
+                            const SizedBox(height: 16),
+                            Text(loc.get('no_goals_yet'), style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 16)),
+                          ],
+                        ),
+                      ),
                     ),
                   );
                 }
-                return Column(
-                  children: goalsList.map((goal) {
-                    final percentage = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0.0;
-                    final isComplete = percentage >= 100;
-                    
-                    // Fallback colors if not specified
-                    final List<Color> goalColors = goal.colorInts != null 
-                        ? goal.colorInts!.map((c) => Color(c)).toList()
-                        : (isDark ? [const Color(0xFF1E3A8A), const Color(0xFF164E63)] : [const Color(0xFF3B82F6), const Color(0xFF06B6D4)]);
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final goal = goalsList[index];
+                      final percentage = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0.0;
+                      final isComplete = percentage >= 100;
+                      
+                      final List<Color> goalColors = goal.colorInts != null 
+                          ? goal.colorInts!.map((c) => Color(c)).toList()
+                          : (isDark ? [const Color(0xFF3B82F6), const Color(0xFF1D4ED8)] : [const Color(0xFF60A5FA), const Color(0xFF2563EB)]);
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                        border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: 56, height: 56,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: goalColors,
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Center(child: Text(goal.icon, style: const TextStyle(fontSize: 24))),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(goal.name, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.bold)),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                                      textBaseline: TextBaseline.alphabetic,
-                                      children: [
-                                        Text('$sym${goal.currentAmount.toStringAsFixed(0)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
-                                        const SizedBox(width: 4),
-                                        Text('de $sym${goal.targetAmount.toStringAsFixed(0)}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              ),
-                              if (isComplete)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(loc.get('goal_achieved'), style: TextStyle(color: isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7), fontSize: 12, fontWeight: FontWeight.bold)),
-                                )
-                            ],
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: isComplete ? const Color(0xFF10B981).withOpacity(0.5) : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                            width: isComplete ? 2 : 1,
                           ),
-                          const SizedBox(height: 16),
-                          Container(
-                            height: 12,
-                            width: double.infinity,
-                            decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(8)),
-                            child: FractionallySizedBox(
-                              alignment: Alignment.centerLeft,
-                              widthFactor: (percentage / 100).clamp(0.0, 1.0),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: goalColors,
+                          boxShadow: [
+                            if (isComplete) BoxShadow(color: const Color(0xFF10B981).withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 8))
+                            else BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 56, height: 56,
+                                  decoration: BoxDecoration(
+                                    color: goalColors[0].withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
-                                  borderRadius: BorderRadius.circular(8),
+                                  child: Center(child: Text(goal.icon, style: const TextStyle(fontSize: 26))),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(goal.name, style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 4),
+                                      Text('${percentage.toStringAsFixed(0)}% ${loc.get('completed')}', style: TextStyle(color: goalColors[0], fontSize: 13, fontWeight: FontWeight.w600)),
+                                    ],
+                                  ),
+                                ),
+                                if (isComplete)
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF10B981).withOpacity(0.2),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(LucideIcons.check, color: Color(0xFF10B981), size: 16),
+                                  )
+                                else
+                                  InkWell(
+                                    onTap: () => AddFundsModal.show(context, goal: goal),
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(loc.get('add_funds'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 13, fontWeight: FontWeight.bold)),
+                                    ),
+                                  )
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('$sym${goal.currentAmount.toStringAsFixed(0)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.w900)),
+                                Text('$sym${goal.targetAmount.toStringAsFixed(0)}', style: TextStyle(color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8), fontSize: 14, fontWeight: FontWeight.w600)),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              height: 10,
+                              width: double.infinity,
+                              decoration: BoxDecoration(color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(5)),
+                              child: FractionallySizedBox(
+                                alignment: Alignment.centerLeft,
+                                widthFactor: (percentage / 100).clamp(0.0, 1.0),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(colors: goalColors),
+                                    borderRadius: BorderRadius.circular(5),
+                                    boxShadow: [BoxShadow(color: goalColors[0].withOpacity(0.5), blurRadius: 6)],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('${percentage.toStringAsFixed(0)}% ${loc.get('completed')}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                              TextButton(
-                                onPressed: () => AddFundsModal.show(context, goal: goal),
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: const Size(50, 30),
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                child: Text(loc.get('add_funds'), style: TextStyle(color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), fontSize: 12, fontWeight: FontWeight.bold)),
-                              )
-                            ],
-                          )
-                        ],
-                      ),
-                    );
-                  }).toList(),
+                          ],
+                        ),
+                      );
+                    },
+                    childCount: goalsList.length,
+                  ),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Text(loc.get('error_loading_goals')),
+              loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
+              error: (err, stack) => SliverToBoxAdapter(child: Text(loc.get('error_loading_goals'))),
             ),
-            const SizedBox(height: 80), // Fab space
-          ],
-        ),
+          ),
+          
+          const SliverToBoxAdapter(child: SizedBox(height: 100)), // Space for FAB
+        ],
       ),
       floatingActionButton: MediaQuery.of(context).viewInsets.bottom > 0
           ? null
@@ -334,7 +401,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                 gradient: const LinearGradient(colors: [Color(0xFFA855F7), Color(0xFFEC4899)]), 
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFA855F7).withValues(alpha: 0.3),
+                    color: const Color(0xFFA855F7).withOpacity(0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   )

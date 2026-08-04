@@ -362,7 +362,7 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                             if (unlocked) {
                               setState(() => selectedPaletteId = palette.id);
                             } else {
-                              _showLockedOptionsDialog(context, palette, cost);
+                              _showLockedOptionsDialog(context, palette, cost, isPremium);
                             }
                           },
                           child: AnimatedContainer(
@@ -676,7 +676,7 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
     );
   }
 
-  void _showLockedOptionsDialog(BuildContext context, ColorPalette palette, int cost) {
+  void _showLockedOptionsDialog(BuildContext context, ColorPalette palette, int cost, bool isPremium) {
     showDialog(
       context: context,
       builder: (ctx) {
@@ -705,6 +705,32 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
               onPressed: () => Navigator.of(ctx).pop(),
               child: Text('Cancelar', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
             ),
+            if (!isPremium)
+              TextButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  AdService().showRewardedAd(
+                    context,
+                    false,
+                    onRewardEarned: () {
+                      setState(() => selectedPaletteId = palette.id);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Si ya no quieres ver anuncios, ¡hazte PREMIUM! 👑'),
+                          backgroundColor: const Color(0xFF7E22CE),
+                          action: SnackBarAction(
+                            label: 'Ver Planes',
+                            textColor: Colors.white,
+                            onPressed: () => PremiumModal.show(context),
+                          ),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                  );
+                },
+                child: const Text('Ver Anuncio', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+              ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(ctx).pop();

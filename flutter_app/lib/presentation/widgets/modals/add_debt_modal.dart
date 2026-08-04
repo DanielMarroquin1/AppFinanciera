@@ -1,14 +1,13 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/localization.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../../domain/entities/debt.dart';
 import '../../providers/debts_provider.dart';
 import '../common/recurrence_selector_widget.dart';
-import '../../providers/color_palette_provider.dart';
 import '../../providers/auth_provider.dart';
 
 class AddDebtModal extends ConsumerStatefulWidget {
@@ -35,7 +34,7 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
   int totalInstallments = 1;
   int currentInstallment = 0;
   bool isAutoPay = true;
-  String? recurrenceType; // default null so day selector only shows when selected
+  String? recurrenceType;
   int recurrenceDay = 1;
   int? recurrenceDay2 = 16;
   String selectedEmoji = '🏦';
@@ -57,188 +56,162 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
     }
   }
 
+  Widget _buildGlassField({required Widget child, required bool isDark}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.02),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05)),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final loc = ref.watch(localizationProvider);
-    final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
     final userCurrency = widget.currencyCode ?? ref.watch(authProvider).user?.currency;
 
     return Container(
+      height: MediaQuery.of(context).size.height * 0.9,
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1F2937) : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        image: DecorationImage(
+          image: const AssetImage('assets/images/noise.png'),
+          opacity: isDark ? 0.03 : 0.01,
+          repeat: ImageRepeat.repeat,
+        ),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          // Header
+          // Drag handle
+          const SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: isDark 
-                  ? const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)]) // purple-500 to purple-700
-                  : const LinearGradient(colors: [Color(0xFFA855F7), Color(0xFF7E22CE)]), // purple-400 to purple-600
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 40, height: 40,
-                          decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
-                          child: const Icon(LucideIcons.creditCard, color: Colors.white, size: 24),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(widget.existingDebt != null ? 'Editar Deuda' : loc.get('new_debt'), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    IconButton(
-                      icon: const Icon(LucideIcons.x, color: Colors.white),
-                      onPressed: () => Navigator.of(context).pop(),
-                    )
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text('Lleva un control de tus pagos a plazos o tarjetas de crédito', style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14)),
-              ],
-            ),
+            width: 48, height: 5,
+            decoration: BoxDecoration(color: isDark ? Colors.grey[700] : Colors.grey[300], borderRadius: BorderRadius.circular(3)),
           ),
-
-          Flexible(
+          
+          Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.only(
-                left: 24, right: 24, top: 24,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-              ),
+              padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: MediaQuery.of(context).viewInsets.bottom + 32),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Emoji selector
-                  // Premium Emoji Category Selector
-                  Text('CATEGORÍA', style: TextStyle(color: isDark ? const Color(0xFF3B82F6) : const Color(0xFF2563EB), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 2)),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Wrap(
-                      spacing: 8, runSpacing: 8,
-                      alignment: WrapAlignment.center,
-                      children: emojis.map((e) {
-                        final isSelected = selectedEmoji == e;
-                        return GestureDetector(
-                          onTap: () => setState(() => selectedEmoji = e),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            width: 52, height: 52,
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? (isDark ? const Color(0xFF3B82F6).withValues(alpha: 0.2) : const Color(0xFFDBEAFE))
-                                  : (isDark ? const Color(0xFF334155) : Colors.white),
-                              border: Border.all(
-                                color: isSelected 
-                                    ? (isDark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6))
-                                    : Colors.transparent, 
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: isSelected
-                                  ? [BoxShadow(color: const Color(0xFF3B82F6).withValues(alpha: 0.2), blurRadius: 8, offset: const Offset(0, 4))]
-                                  : [const BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
-                            ),
-                            child: Center(
-                              child: Text(e, style: TextStyle(fontSize: isSelected ? 26 : 22)),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Premium Concept/Description Field
-                  Text('CONCEPTO', style: TextStyle(color: isDark ? const Color(0xFF3B82F6) : const Color(0xFF2563EB), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 2)),
-                  const SizedBox(height: 12),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: TextField(
-                      controller: TextEditingController(text: name)..selection = TextSelection.collapsed(offset: name.length),
-                      onChanged: (val) => name = val,
-                      maxLines: null,
-                      minLines: 1,
-                      style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
-                      decoration: InputDecoration(
-                        hintText: 'Ej: iPhone 15 Pro...',
-                        hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400]),
-                        prefixIcon: Icon(LucideIcons.penTool, color: isDark ? Colors.grey[500] : Colors.grey[400], size: 18),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Massive Amount Input
-                  Center(
-                    child: Column(
-                      children: [
-                        Text(loc.get('amount').toUpperCase(), style: TextStyle(color: isDark ? const Color(0xFF3B82F6) : const Color(0xFF2563EB), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 2)),
-                        const SizedBox(height: 8),
-                        IntrinsicWidth(
-                          child: TextField(
-                            controller: TextEditingController(text: amountPerInstallment > 0 ? amountPerInstallment.toString() : '')..selection = TextSelection.collapsed(offset: amountPerInstallment > 0 ? amountPerInstallment.toString().length : 0),
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            onChanged: (val) => amountPerInstallment = double.tryParse(val) ?? 0.0,
-                            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 56, fontWeight: FontWeight.w900, letterSpacing: -2),
-                            textAlign: TextAlign.center,
-                            decoration: InputDecoration(
-                              hintText: '0.00',
-                              hintStyle: TextStyle(color: isDark ? Colors.grey[700] : Colors.grey[300]),
-                              prefixText: CurrencyFormatter.getSymbol(userCurrency),
-                              prefixStyle: TextStyle(color: isDark ? const Color(0xFF3B82F6) : const Color(0xFF2563EB), fontSize: 32, fontWeight: FontWeight.bold),
-                              border: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              contentPadding: EdgeInsets.zero,
-                            ),
-                          ),
+                  // Title
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF2563EB)]),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [BoxShadow(color: const Color(0xFF3B82F6).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
                         ),
-                      ],
-                    ),
+                        child: const Icon(LucideIcons.calendarClock, color: Colors.white, size: 24),
+                      ),
+                      const SizedBox(width: 16),
+                      Text(widget.existingDebt != null ? 'Editar Deuda' : loc.get('new_debt'), style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                    ],
                   ),
                   const SizedBox(height: 32),
 
-                  // Installments Selector
+                  // Emoji Selector
+                  Text('Icono Representativo', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 55,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: emojis.length,
+                      itemBuilder: (context, index) {
+                        final emoji = emojis[index];
+                        final isSelected = selectedEmoji == emoji;
+                        return GestureDetector(
+                          onTap: () => setState(() => selectedEmoji = emoji),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            margin: const EdgeInsets.only(right: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: isSelected ? (isDark ? const Color(0xFF3B82F6).withOpacity(0.2) : const Color(0xFFDBEAFE)) : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: isSelected ? const Color(0xFF3B82F6) : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)), width: isSelected ? 2 : 1),
+                            ),
+                            child: Text(emoji, style: const TextStyle(fontSize: 22)),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Name
+                  Text('Nombre de la Deuda', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  _buildGlassField(
+                    isDark: isDark,
+                    child: TextFormField(
+                      initialValue: name,
+                      style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w600),
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Ej. Préstamo Auto, iPhone...',
+                        hintStyle: TextStyle(color: Colors.grey),
+                      ),
+                      onChanged: (val) => setState(() => name = val),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Amount
+                  Text('Monto por Cuota', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  _buildGlassField(
+                    isDark: isDark,
+                    child: TextFormField(
+                      initialValue: amountPerInstallment > 0 ? amountPerInstallment.toStringAsFixed(0) : '',
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      style: TextStyle(color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6), fontSize: 24, fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        prefixText: CurrencyFormatter.getSymbol(userCurrency),
+                        prefixStyle: TextStyle(color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6), fontSize: 24, fontWeight: FontWeight.bold),
+                        hintText: '0',
+                        hintStyle: TextStyle(color: Colors.grey.withOpacity(0.5)),
+                      ),
+                      onChanged: (val) => setState(() => amountPerInstallment = double.tryParse(val) ?? 0.0),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Installments Info
                   Row(
                     children: [
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(loc.get('total_installments'), style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                            Text('Cuotas Totales', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w600)),
                             const SizedBox(height: 8),
-                            TextField(
-                              controller: TextEditingController(text: totalInstallments.toString())..selection = TextSelection.collapsed(offset: totalInstallments.toString().length),
-                              keyboardType: TextInputType.number,
-                              onChanged: (val) => totalInstallments = int.tryParse(val) ?? 1,
-                              decoration: InputDecoration(
-                                hintText: '12',
-                                filled: true,
-                                fillColor: isDark ? const Color(0xFF374151) : Colors.white,
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2)),
-                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2)),
-                                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFA855F7), width: 2)),
+                            _buildGlassField(
+                              isDark: isDark,
+                              child: TextFormField(
+                                initialValue: totalInstallments.toString(),
+                                keyboardType: TextInputType.number,
+                                style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+                                decoration: const InputDecoration(border: InputBorder.none),
+                                onChanged: (val) => setState(() => totalInstallments = int.tryParse(val) ?? 1),
                               ),
                             ),
                           ],
@@ -249,19 +222,16 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(loc.get('paid_installments'), style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                            Text('Cuotas Pagadas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w600)),
                             const SizedBox(height: 8),
-                            TextField(
-                              controller: TextEditingController(text: currentInstallment.toString())..selection = TextSelection.collapsed(offset: currentInstallment.toString().length),
-                              keyboardType: TextInputType.number,
-                              onChanged: (val) => currentInstallment = int.tryParse(val) ?? 0,
-                              decoration: InputDecoration(
-                                hintText: '0',
-                                filled: true,
-                                fillColor: isDark ? const Color(0xFF374151) : Colors.white,
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2)),
-                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2)),
-                                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFA855F7), width: 2)),
+                            _buildGlassField(
+                              isDark: isDark,
+                              child: TextFormField(
+                                initialValue: currentInstallment.toString(),
+                                keyboardType: TextInputType.number,
+                                style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+                                decoration: const InputDecoration(border: InputBorder.none),
+                                onChanged: (val) => setState(() => currentInstallment = int.tryParse(val) ?? 0),
                               ),
                             ),
                           ],
@@ -269,51 +239,56 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
 
-                  // Auto Pay toggle
+                  // Automation
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
+                      color: isAutoPay ? (isDark ? const Color(0xFF3B82F6).withOpacity(0.1) : const Color(0xFFEFF6FF)) : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: isAutoPay ? const Color(0xFF3B82F6) : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)), width: isAutoPay ? 2 : 1),
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                Icon(LucideIcons.refreshCw, color: isDark ? const Color(0xFFA855F7) : const Color(0xFF9333EA), size: 20),
-                                const SizedBox(width: 8),
-                                Text('Pago Automático', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
-                              ],
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(color: isDark ? const Color(0xFF1E293B) : Colors.white, shape: BoxShape.circle),
+                              child: Icon(LucideIcons.repeat, color: isAutoPay ? const Color(0xFF3B82F6) : Colors.grey, size: 20),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Recordatorio Automático', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 15, fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 2),
+                                  Text('Te recordaremos pagar tu cuota', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                                ],
+                              ),
                             ),
                             Switch(
                               value: isAutoPay,
-                              activeColor: const Color(0xFFA855F7),
+                              activeColor: const Color(0xFF3B82F6),
                               onChanged: (val) {
                                 setState(() {
                                   isAutoPay = val;
-                                  if (isAutoPay && recurrenceType == null) {
-                                    recurrenceType = 'monthly';
-                                  }
+                                  if (isAutoPay && recurrenceType == null) recurrenceType = 'monthly';
                                 });
                               },
                             ),
                           ],
                         ),
                         if (isAutoPay) ...[
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20),
                           RecurrenceSelectorWidget(
                             isDark: isDark,
                             recurrenceType: recurrenceType,
                             recurrenceDay: recurrenceDay,
                             recurrenceDay2: recurrenceDay2,
-                            activeColor: const Color(0xFFA855F7),
+                            activeColor: const Color(0xFF3B82F6),
                             onTypeChanged: (val) {
                               setState(() {
                                 recurrenceType = val;
@@ -328,71 +303,60 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 40),
 
                   // Submit
-                  ElevatedButton(
-                    onPressed: name.isEmpty || amountPerInstallment <= 0 ? null : () async {
-                      final uid = FirebaseAuth.instance.currentUser?.uid;
-                      if (uid == null) return;
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: name.isEmpty || amountPerInstallment <= 0 ? null : () async {
+                        final uid = FirebaseAuth.instance.currentUser?.uid;
+                        if (uid == null) return;
+                        final isEditing = widget.existingDebt != null;
 
-                      final isEditing = widget.existingDebt != null;
-
-                      final debt = DebtModel(
-                        id: isEditing ? widget.existingDebt!.id : '',
-                        userId: uid,
-                        name: name,
-                        installmentAmount: amountPerInstallment,
-                        totalInstallments: totalInstallments,
-                        paidInstallments: currentInstallment,
-                        category: selectedEmoji,
-                        isAutoPay: isAutoPay,
-                        recurrenceType: isAutoPay ? recurrenceType : null,
-                        recurrenceDay: isAutoPay ? recurrenceDay : null,
-                        recurrenceDay2: (isAutoPay && recurrenceType == 'bimonthly') ? recurrenceDay2 : null,
-                        createdAt: isEditing ? widget.existingDebt!.createdAt : DateTime.now(),
-                        lastProcessedDate: isEditing ? widget.existingDebt!.lastProcessedDate : null,
-                      );
-
-                      if (isEditing) {
-                        await ref.read(debtNotifierProvider.notifier).updateDebt(debt);
-                      } else {
-                        await ref.read(debtNotifierProvider.notifier).addDebt(debt);
-                      }
-
-                      if (context.mounted) {
-                        Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(isEditing ? 'Deuda actualizada exitosamente' : 'Deuda guardada exitosamente', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                            backgroundColor: isDark ? const Color(0xFF6D28D9) : const Color(0xFF9333EA),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          ),
+                        final debt = DebtModel(
+                          id: isEditing ? widget.existingDebt!.id : '',
+                          userId: uid,
+                          name: name,
+                          installmentAmount: amountPerInstallment,
+                          totalInstallments: totalInstallments,
+                          paidInstallments: currentInstallment,
+                          category: selectedEmoji,
+                          isAutoPay: isAutoPay,
+                          recurrenceType: isAutoPay ? recurrenceType : null,
+                          recurrenceDay: isAutoPay ? recurrenceDay : null,
+                          recurrenceDay2: (isAutoPay && recurrenceType == 'bimonthly') ? recurrenceDay2 : null,
+                          createdAt: isEditing ? widget.existingDebt!.createdAt : DateTime.now(),
+                          lastProcessedDate: isEditing ? widget.existingDebt!.lastProcessedDate : null,
                         );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Colors.transparent,
-                      foregroundColor: Colors.white,
-                      elevation: 10,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ).copyWith(
-                      backgroundColor: WidgetStateProperty.resolveWith((states) => null), 
-                    ),
-                    child: Ink(
-                      decoration: BoxDecoration(
-                        gradient: isDark 
-                            ? const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)]) 
-                            : const LinearGradient(colors: [Color(0xFFA855F7), Color(0xFF7E22CE)]),
-                        borderRadius: BorderRadius.circular(12),
+
+                        if (isEditing) {
+                          await ref.read(debtNotifierProvider.notifier).updateDebt(debt);
+                        } else {
+                          await ref.read(debtNotifierProvider.notifier).addDebt(debt);
+                        }
+
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(isEditing ? 'Deuda actualizada' : 'Deuda creada', style: const TextStyle(fontWeight: FontWeight.bold)),
+                              backgroundColor: const Color(0xFF3B82F6),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        backgroundColor: const Color(0xFF3B82F6),
+                        foregroundColor: Colors.white,
+                        elevation: 10,
+                        shadowColor: const Color(0xFF3B82F6).withOpacity(0.5),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       ),
-                      child: Container(
-                        alignment: Alignment.center,
-                        constraints: const BoxConstraints(minHeight: 50),
-                        child: Text(widget.existingDebt != null ? 'Guardar Cambios' : loc.get('add_debt'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      ),
+                      child: Text(widget.existingDebt != null ? 'Guardar Cambios' : loc.get('add_debt'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

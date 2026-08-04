@@ -150,6 +150,17 @@ class _CategoryBudgetModalState extends ConsumerState<CategoryBudgetModal> {
                 final percentage = budget > 0 ? ((spent / budget) * 100).clamp(0.0, 100.0) : 0.0;
                 final isExpanded = _expandedCategoryId == catId;
 
+                final isOverLimit = percentage >= 100.0 && budget > 0;
+                final hasBudget = budget > 0;
+                
+                final bannerColor = isOverLimit 
+                    ? (isDark ? const Color(0xFF991B1B) : const Color(0xFFFEE2E2))
+                    : (hasBudget ? catColor.withValues(alpha: isDark ? 0.2 : 0.1) : (isDark ? const Color(0xFF1F2937) : Colors.white));
+                
+                final borderColor = isOverLimit 
+                    ? (isDark ? const Color(0xFFDC2626) : const Color(0xFFF87171)) 
+                    : (hasBudget ? catColor.withValues(alpha: 0.5) : (isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)));
+
                 return GestureDetector(
                   onTap: () {
                     setState(() {
@@ -161,15 +172,15 @@ class _CategoryBudgetModalState extends ConsumerState<CategoryBudgetModal> {
                     curve: Curves.easeInOut,
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                      color: bannerColor,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                        color: isExpanded ? catColor.withValues(alpha: 0.5) : (isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
-                        width: isExpanded ? 2 : 1,
+                        color: borderColor,
+                        width: isExpanded || hasBudget ? 2 : 1,
                       ),
                       boxShadow: [
                         if (isExpanded)
-                          BoxShadow(color: catColor.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 8))
+                          BoxShadow(color: catColor.withValues(alpha: 0.2), blurRadius: 20, offset: const Offset(0, 8))
                         else
                           BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))
                       ],

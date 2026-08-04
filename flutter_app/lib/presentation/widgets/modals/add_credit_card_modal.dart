@@ -41,14 +41,22 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
   bool _isSaving = false;
 
   final List<Color> _colors = [
+    const Color(0xFF0F172A), // Obsidian Black
     const Color(0xFF1E3A8A), // Deep Blue
+    const Color(0xFF312E81), // Midnight Indigo
     const Color(0xFF4C1D95), // Purple VIP
-    const Color(0xFF047857), // Emerald Green
+    const Color(0xFF7E22CE), // Neon Purple
+    const Color(0xFFBE185D), // Magenta Rose
+    const Color(0xFFE11D48), // Ruby Red
     const Color(0xFFB91C1C), // Crimson Red
     const Color(0xFFB45309), // Amber Gold
-    const Color(0xFF0F172A), // Obsidian Black
+    const Color(0xFFD97706), // Sunset Orange
+    const Color(0xFF047857), // Emerald Green
+    const Color(0xFF065F46), // Forest Green
     const Color(0xFF0284C7), // Sky Blue
-    const Color(0xFFBE185D), // Magenta Rose
+    const Color(0xFF0F766E), // Teal Ocean
+    const Color(0xFF374151), // Titanium Silver
+    const Color(0xFF64748B), // Slate Grey
   ];
 
   final List<Map<String, dynamic>> _networks = [
@@ -679,29 +687,85 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
         const SizedBox(height: 2),
         Text(subtitle, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 10)),
         const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withValues(alpha: 0.4)),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<int>(
-              value: currentDay,
-              isExpanded: true,
-              dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-              icon: Icon(LucideIcons.chevronDown, size: 18, color: color),
-              items: List.generate(31, (i) {
-                final day = i + 1;
-                return DropdownMenuItem(
-                  value: day,
-                  child: Text('Día $day', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.w800, fontSize: 13)),
-                );
-              }),
-              onChanged: (val) {
-                if (val != null) onChanged(val);
-              },
+        InkWell(
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              backgroundColor: Colors.transparent,
+              builder: (ctx) => Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40, height: 5,
+                      margin: const EdgeInsets.only(bottom: 24),
+                      decoration: BoxDecoration(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(5)),
+                    ),
+                    Text('Selecciona el $title', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      height: 300,
+                      child: GridView.builder(
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 7,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                        ),
+                        itemCount: 31,
+                        itemBuilder: (context, index) {
+                          final day = index + 1;
+                          final isSelected = day == currentDay;
+                          return GestureDetector(
+                            onTap: () {
+                              onChanged(day);
+                              Navigator.pop(ctx);
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              decoration: BoxDecoration(
+                                color: isSelected ? color : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9)),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: isSelected ? color : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  day.toString(),
+                                  style: TextStyle(
+                                    color: isSelected ? Colors.white : (isDark ? Colors.white : Colors.black),
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withValues(alpha: 0.4)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Día $currentDay', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.w800, fontSize: 14)),
+                Icon(LucideIcons.calendarDays, size: 18, color: color),
+              ],
             ),
           ),
         ),

@@ -14,22 +14,13 @@ class QuickActionsMenu extends ConsumerWidget {
 
     final actions = [
       {
-        'id': 'savings-goal',
-        'label': loc.get('quick_actions_new_goal'),
-        'icon': LucideIcons.target,
+        'id': 'what-if',
+        'label': loc.get('what_if_title'),
+        'icon': LucideIcons.cpu,
         'gradient': isDark 
             ? const [Color(0xFF1D4ED8), Color(0xFF0E7490)]
             : const [Color(0xFF2563EB), Color(0xFF0891B2)],
-        'isPremium': false,
-      },
-      {
-        'id': 'my-savings',
-        'label': loc.get('my_savings').replaceAll(' 🎯', ''),
-        'icon': LucideIcons.piggyBank,
-        'gradient': isDark 
-            ? const [Color(0xFF0E7490), Color(0xFF0369A1)]
-            : const [Color(0xFF06B6D4), Color(0xFF0EA5E9)],
-        'isPremium': false,
+        'isPremium': true,
       },
       {
         'id': 'rewards-shop',
@@ -121,7 +112,7 @@ class QuickActionsMenu extends ConsumerWidget {
                         onTap: () => Navigator.pop(context, action['id']),
                         child: Container(
                           width: itemWidth,
-                          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
                           decoration: BoxDecoration(
                             color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.9) : Colors.white.withValues(alpha: 0.95),
                             borderRadius: BorderRadius.circular(28),
@@ -156,16 +147,18 @@ class QuickActionsMenu extends ConsumerWidget {
                                       ),
                                       child: Icon(action['icon'] as IconData, color: Colors.white, size: 28),
                                     ),
-                                    const SizedBox(height: 16),
+                                    const SizedBox(height: 12),
                                     Text(
                                       action['label'] as String,
                                       style: TextStyle(
                                         color: isDark ? Colors.white : const Color(0xFF1E293B),
-                                        fontSize: 14,
+                                        fontSize: 12,
                                         fontWeight: FontWeight.bold,
+                                        height: 1.2,
                                       ),
                                       textAlign: TextAlign.center,
                                       maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),

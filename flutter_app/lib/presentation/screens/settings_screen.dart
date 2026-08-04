@@ -22,6 +22,7 @@ import '../widgets/modals/category_budget_modal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/rewards_shop_modal.dart';
 import '../providers/transaction_provider.dart';
+import 'dashboard_screen.dart'; // Add import for showTutorialProvider
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -415,6 +416,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         Navigator.pop(context);
                       }
                       context.go('/dashboard');
+                      showTutorialTrigger.value = true;
                     }
                   },
                 ),

@@ -14,7 +14,7 @@ import 'credit_card_history_modal.dart';
 import 'add_credit_card_modal.dart';
 import '../../../core/services/recurring_transaction_service.dart';
 
-class CreditCardsModal extends ConsumerWidget {
+class CreditCardsModal extends ConsumerStatefulWidget {
   const CreditCardsModal({super.key});
 
   static Future<void> show(BuildContext context) {
@@ -22,39 +22,22 @@ class CreditCardsModal extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (_, scrollController) => _CreditCardsModalInternal(scrollController: scrollController),
-      ),
+      builder: (context) => const CreditCardsModal(),
     );
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return const SizedBox.shrink();
-  }
+  ConsumerState<CreditCardsModal> createState() => _CreditCardsModalState();
 }
 
-class _CreditCardsModalInternal extends ConsumerStatefulWidget {
-  final ScrollController scrollController;
-
-  const _CreditCardsModalInternal({required this.scrollController});
-
-  @override
-  ConsumerState<_CreditCardsModalInternal> createState() => _CreditCardsModalInternalState();
-}
-
-class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInternal> {
+class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
   late PageController _pageController;
-  int _selectedIndex = 0;
+  int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController(viewportFraction: 0.85);
-    RecurringTransactionService.evaluateCreditCardAlerts();
   }
 
   @override
@@ -63,1013 +46,555 @@ class _CreditCardsModalInternalState extends ConsumerState<_CreditCardsModalInte
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
+  void _showPaymentDialog(BuildContext context, CreditCard card, String? currencyCode, WidgetRef ref) {
+    final amountController = TextEditingController(text: card.currentBalance.toStringAsFixed(0));
+    final loc = ref.read(localizationProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
-    final creditCardsAsync = ref.watch(computedCreditCardsProvider);
-    final user = ref.watch(authProvider).user;
-    final currencyCode = user?.currency;
-    final loc = ref.watch(localizationProvider);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 40, offset: const Offset(0, -10)),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Elegant Handle
-          Container(
-            margin: const EdgeInsets.only(top: 16, bottom: 24),
-            height: 5, width: 48,
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(4),
-            ),
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 40, spreadRadius: 10),
+            ],
+            border: Border.all(color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05), width: 1),
           ),
-          
-          // Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 48, height: 48,
-                      decoration: BoxDecoration(
-                        color: (isDark ? const Color(0xFFF59E0B) : const Color(0xFFD97706)).withValues(alpha: 0.2), 
-                        borderRadius: BorderRadius.circular(16)
-                      ),
-                      child: Icon(LucideIcons.creditCard, color: isDark ? const Color(0xFFFCD34D) : const Color(0xFFD97706), size: 24),
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(loc.get('credit_cards'), style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
-                        const SizedBox(height: 2),
-                        Text(loc.get('cc_subtitle'), style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 13)),
-                      ],
-                    ),
-                  ],
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: Icon(LucideIcons.x, color: isDark ? Colors.white : Colors.black, size: 20),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                )
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Divider(),
-
-          Expanded(
-            child: creditCardsAsync.when(
-              data: (cards) {
-                return ListView(
-                  controller: widget.scrollController,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  children: [
-                    // Add Card Button
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.pop(context);
-                          AddCreditCardModal.show(context);
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: (isDark ? const Color(0xFFF59E0B) : const Color(0xFFD97706)).withValues(alpha: 0.1),
-                            border: Border.all(color: (isDark ? const Color(0xFFF59E0B) : const Color(0xFFD97706)).withValues(alpha: 0.3), width: 2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(LucideIcons.plusCircle, color: isDark ? const Color(0xFFF59E0B) : const Color(0xFFD97706), size: 22),
-                              const SizedBox(width: 12),
-                              Text(loc.get('cc_add'), style: TextStyle(color: isDark ? const Color(0xFFFCD34D) : const Color(0xFFB45309), fontWeight: FontWeight.bold, fontSize: 15)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    if (cards.isEmpty)
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 60),
-                          child: Column(
-                            children: [
-                              Icon(LucideIcons.creditCard, size: 64, color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
-                              const SizedBox(height: 16),
-                              Text(loc.get('voice_no_cards'), style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 16)),
-                            ],
-                          ),
-                        ),
-                      )
-                    else ...[
-                      // GOOGLE WALLET CAROUSEL SECTION
-                      _buildGoogleWalletCarousel(cards, isDark, currencyCode),
-                      
-                      const SizedBox(height: 16),
-
-                      // DOTS INDICATOR
-                      if (cards.length > 1)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(cards.length, (i) {
-                            final isActive = i == (_selectedIndex < cards.length ? _selectedIndex : 0);
-                            return AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              margin: const EdgeInsets.symmetric(horizontal: 4),
-                              width: isActive ? 24 : 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: isActive
-                                    ? (isDark ? const Color(0xFFF59E0B) : const Color(0xFFD97706))
-                                    : (isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.15)),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            );
-                          }),
-                        ),
-                      
-                      const SizedBox(height: 24),
-
-                      // ACTIVE CARD DETAILS & ACTIONS
-                      _buildActiveCardDetails(cards, isDark, currencyCode),
-                    ],
-                  ],
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Center(child: Text(loc.get('cc_err_load'))),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGoogleWalletCarousel(List<CreditCard> cards, bool isDark, String? currencyCode) {
-    if (cards.length == 1) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: GestureDetector(
-          onTap: () => CreditCardHistoryModal.show(context, cards[0]),
-          child: _buildCardItem(cards[0], isDark, currencyCode, isCenter: true),
-        ),
-      );
-    }
-
-    return SizedBox(
-      height: 210,
-      child: PageView.builder(
-        clipBehavior: Clip.none,
-        controller: _pageController,
-        itemCount: cards.length,
-        onPageChanged: (idx) {
-          setState(() {
-            _selectedIndex = idx;
-          });
-        },
-        itemBuilder: (context, index) {
-          return AnimatedBuilder(
-            animation: _pageController,
-            builder: (context, child) {
-              double value = 0.0;
-              if (_pageController.position.haveDimensions) {
-                value = index - (_pageController.page ?? 0);
-              } else {
-                value = (index - _selectedIndex).toDouble();
-              }
-              // Google Wallet depth effect:
-              final double scale = (1 - (value.abs() * 0.12)).clamp(0.85, 1.0);
-              final double opacity = (1 - (value.abs() * 0.35)).clamp(0.4, 1.0);
-              final double translateY = (value.abs() * 12);
-              final double rotateZ = value * 0.05; // slight tilt
-
-              return Transform.translate(
-                offset: Offset(0, translateY),
-                child: Transform.rotate(
-                  angle: rotateZ,
-                  child: Transform.scale(
-                    scale: scale,
-                    child: Opacity(
-                      opacity: opacity,
-                      child: child,
-                    ),
-                  ),
-                ),
-              );
-            },
-            child: GestureDetector(
-              onTap: () {
-                if (_selectedIndex != index) {
-                  _pageController.animateToPage(
-                    index,
-                    duration: const Duration(milliseconds: 350),
-                    curve: Curves.easeOutCubic,
-                  );
-                } else {
-                  CreditCardHistoryModal.show(context, cards[index]);
-                }
-              },
-              child: _buildCardItem(cards[index], isDark, currencyCode, isCenter: index == (_selectedIndex < cards.length ? _selectedIndex : 0)),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildActiveCardDetails(List<CreditCard> cards, bool isDark, String? currencyCode) {
-    final loc = ref.watch(localizationProvider);
-    final int safeIdx = _selectedIndex < cards.length ? _selectedIndex : 0;
-    final card = cards[safeIdx];
-    final availableBalance = card.limit - card.currentBalance;
-    final double usagePercent = card.limit > 0 ? (card.currentBalance / card.limit).clamp(0.0, 1.0) : 0.0;
-    final bool isOverdrawn = card.currentBalance >= card.limit && card.limit > 0;
-    final bool isNearLimit = usagePercent >= 0.9 && !isOverdrawn;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        child: Column(
-          key: ValueKey(card.id),
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Tap hint banner
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(LucideIcons.touchpad, size: 16, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      loc.get('cc_tap_hint'),
-                      style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 12, fontWeight: FontWeight.w600),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Visual warning tags
-            if (isOverdrawn || isNearLimit)
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header Icon
               Container(
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 16),
+                width: 64, height: 64,
                 decoration: BoxDecoration(
-                  color: (isOverdrawn ? Colors.red : Colors.orange).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: (isOverdrawn ? Colors.red : Colors.orange).withValues(alpha: 0.4), width: 1.5),
+                  gradient: const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF2563EB)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  shape: BoxShape.circle,
+                  boxShadow: [BoxShadow(color: const Color(0xFF3B82F6).withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 5))],
                 ),
-                child: Row(
-                  children: [
-                    Icon(LucideIcons.alertTriangle, size: 20, color: isOverdrawn ? Colors.red : Colors.orange),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            isOverdrawn ? loc.get('cc_overdrawn') : loc.get('cc_near_limit'),
-                            style: TextStyle(
-                              color: isOverdrawn ? Colors.red : Colors.orange,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            isOverdrawn
-                                ? loc.get('cc_overdrawn_desc')
-                                : loc.get('cc_near_limit_desc'),
-                            style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 11),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                child: const Icon(LucideIcons.wallet, color: Colors.white, size: 32),
+              ),
+              const SizedBox(height: 20),
+              
+              Text(loc.get('cc_pay_debt'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
+              const SizedBox(height: 8),
+              Text('Abonar a ${card.name}', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 15)),
+              const SizedBox(height: 32),
+              
+              // Input Field
+              TextField(
+                controller: amountController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black, 
+                  fontSize: 56, 
+                  fontWeight: FontWeight.w900, 
+                  letterSpacing: -2
+                ),
+                decoration: InputDecoration(
+                  prefixText: CurrencyFormatter.getSymbol(currencyCode) + ' ',
+                  prefixStyle: TextStyle(
+                    color: isDark ? Colors.white.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.3), 
+                    fontSize: 32, 
+                    fontWeight: FontWeight.bold
+                  ),
+                  border: InputBorder.none,
+                  hintText: '0.00',
+                  hintStyle: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.1)),
                 ),
               ),
-
-            // Action Area: Limit info and Pay button side-by-side
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              const SizedBox(height: 12),
+              Text('Saldo actual: ${CurrencyFormatter.format(card.currentBalance, currencyCode)}', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 13, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 32),
+              
+              // Actions
+              Row(
                 children: [
-                  // Limit Info (Left side)
                   Expanded(
-                    flex: 1,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                        boxShadow: [
-                          if (!isDark) BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
-                        ],
+                    child: TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(loc.get('cc_avail_limit'), style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
-                          const SizedBox(height: 6),
-                          Text(isOverdrawn ? '-\$0.00' : CurrencyFormatter.format(availableBalance, currencyCode), style: TextStyle(color: isOverdrawn ? Colors.red : (isDark ? Colors.white : Colors.black), fontWeight: FontWeight.w900, fontSize: 18)),
-                          const SizedBox(height: 4),
-                          Text(loc.get('cc_of').replaceAll('{limit}', CurrencyFormatter.format(card.limit, currencyCode)), style: TextStyle(color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8), fontSize: 11), overflow: TextOverflow.ellipsis),
-                        ],
-                      ),
+                      child: Text(loc.get('cancel'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Pay Button (Right side)
                   Expanded(
-                    flex: 1,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        _showPaymentDialog(context, ref, card, currencyCode);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark ? const Color(0xFF10B981) : const Color(0xFF059669),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        elevation: 0,
+                    flex: 2,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [BoxShadow(color: const Color(0xFF10B981).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
                       ),
-                      icon: const Icon(LucideIcons.checkCircle, size: 22),
-                      label: Text(loc.get('cc_pay_debt'), textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, height: 1.2)),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final amount = double.tryParse(amountController.text) ?? 0.0;
+                          if (amount > 0) {
+                            final tx = TransactionModel(
+                              id: DateTime.now().millisecondsSinceEpoch.toString(),
+                              isFixed: false,
+                              amount: amount,
+                              category: 'cc_payment',
+                              date: DateTime.now(),
+                              description: 'Pago de tarjeta ${card.name}',
+                              type: 'expense',
+                              userId: firebase_auth.FirebaseAuth.instance.currentUser?.email ?? 'test@test.com',
+                              creditCardId: card.id,
+                            );
+                            await ref.read(transactionNotifierProvider.notifier).addTransaction(tx);
+                            if (ctx.mounted) {
+                              Navigator.of(ctx).pop();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(
+                                    children: [
+                                      const Icon(LucideIcons.checkCircle2, color: Colors.white),
+                                      const SizedBox(width: 12),
+                                      Expanded(child: Text('Pago de ${CurrencyFormatter.format(amount, currencyCode)} registrado con éxito! 🎉', style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    ],
+                                  ),
+                                  backgroundColor: const Color(0xFF10B981),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  margin: const EdgeInsets.all(16),
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        child: const Text('Confirmar Pago', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Quick Actions Row - Ver Historial
-            InkWell(
-              onTap: () => CreditCardHistoryModal.show(context, card),
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: (isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB)).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Icon(LucideIcons.listOrdered, color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), size: 22),
-                        ),
-                        const SizedBox(width: 14),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(loc.get('cc_view_history'), style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 15)),
-                            const SizedBox(height: 2),
-                            Text(loc.get('cc_view_history_sub'), style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 12)),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Icon(LucideIcons.chevronRight, color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8), size: 20),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCardItem(CreditCard card, bool isDark, String? currencyCode, {bool isCenter = false}) {
-    final loc = ref.watch(localizationProvider);
-    final bool isOverdrawn = card.currentBalance >= card.limit && card.limit > 0;
-
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: isCenter
-                ? [
-                    BoxShadow(
-                      color: (isOverdrawn ? Colors.redAccent : card.color).withValues(alpha: 0.35),
-                      blurRadius: 24,
-                      offset: const Offset(0, 12),
-                    )
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    )
-                  ],
-          ),
-          child: AspectRatio(
-            aspectRatio: 1.586,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: isOverdrawn ? const Color(0xFF991B1B) : const Color(0xFF1E293B),
-                ),
-                child: Stack(
-                  children: [
-                    // Mesh Gradient Orbs
-                    Positioned(
-                      top: -50,
-                      right: -50,
-                      child: Container(
-                        width: 180,
-                        height: 180,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: (isOverdrawn ? Colors.redAccent : card.color).withValues(alpha: 0.5),
-                        ),
-                        child: BackdropFilter(
-                          filter: ui.ImageFilter.blur(sigmaX: 50, sigmaY: 50),
-                          child: Container(color: Colors.transparent),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: -40,
-                      left: -40,
-                      child: Container(
-                        width: 160,
-                        height: 160,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: (isOverdrawn ? Colors.orangeAccent : card.color.withValues(alpha: 0.3)),
-                        ),
-                        child: BackdropFilter(
-                          filter: ui.ImageFilter.blur(sigmaX: 40, sigmaY: 40),
-                          child: Container(color: Colors.transparent),
-                        ),
-                      ),
-                    ),
-                    // Card Info
-                    Padding(
-                      padding: const EdgeInsets.all(18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Top row: Chip and More Options
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Sleek Silver Chip
-                              Container(
-                                width: 38, height: 26,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFFE2E8F0), Color(0xFF94A3B8)],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 0.5),
-                                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 2, offset: const Offset(0, 1))],
-                                ),
-                                child: CustomPaint(
-                                  painter: _ChipPainter(),
-                                ),
-                              ),
-                              PopupMenuButton<String>(
-                                icon: const Icon(LucideIcons.moreVertical, color: Colors.white, size: 20),
-                                color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                onSelected: (value) {
-                                  if (value == 'edit') {
-                                    AddCreditCardModal.show(context, existingCard: card);
-                                  } else if (value == 'delete') {
-                                    ref.read(creditCardControllerProvider.notifier).deleteCreditCard(card.id);
-                                  }
-                                },
-                                itemBuilder: (context) => [
-                                  PopupMenuItem(
-                                    value: 'edit',
-                                    child: Row(
-                                      children: [
-                                        Icon(LucideIcons.pencil, color: isDark ? Colors.white : Colors.black, size: 16),
-                                        const SizedBox(width: 8),
-                                        Text(loc.get('cc_edit_card'), style: TextStyle(color: isDark ? Colors.white : Colors.black)),
-                                      ],
-                                    ),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 'delete',
-                                    child: Row(
-                                      children: [
-                                        const Icon(LucideIcons.trash2, color: Colors.red, size: 16),
-                                        const SizedBox(width: 8),
-                                        Text(loc.get('cc_delete_card'), style: const TextStyle(color: Colors.red)),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          
-                          // Middle: Debt amount
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(card.name.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.5), overflow: TextOverflow.ellipsis),
-                                  Icon(LucideIcons.wifi, color: Colors.white.withValues(alpha: 0.8), size: 15),
-                                ],
-                              ),
-                              const SizedBox(height: 3),
-                              Text('•••• •••• •••• ${card.id.length >= 4 ? card.id.substring(card.id.length - 4).toUpperCase() : '0000'}', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14, letterSpacing: 2.5, fontFamily: 'monospace', fontWeight: FontWeight.w600)),
-                              const SizedBox(height: 6),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(loc.get('cc_current_debt'), style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 8, letterSpacing: 1.5, fontWeight: FontWeight.w600)),
-                                  Text(loc.get('cc_limit'), style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 8, letterSpacing: 1.5, fontWeight: FontWeight.w600)),
-                                ],
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  if (card.currentBalance <= 0)
-                                    Text(loc.get('cc_up_to_date'), style: const TextStyle(color: Color(0xFF10B981), fontSize: 17, fontWeight: FontWeight.w900, letterSpacing: 1.0))
-                                  else
-                                    Text(CurrencyFormatter.format(card.currentBalance, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
-                                  Text(CurrencyFormatter.format(card.limit, currencyCode), style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 13, fontWeight: FontWeight.w500)),
-                                ],
-                              ),
-                            ],
-                          ),
-                          
-                          // Bottom row: Info
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(loc.get('cc_credit_card'), style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 1.5)),
-                                  ],
-                                ),
-                              ),
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(loc.get('cc_cut_off').replaceAll('{cut}', '${card.cutOffDay}').replaceAll('{pay}', '${card.paymentDay}'), style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 9, fontWeight: FontWeight.w500)),
-                                  const SizedBox(height: 2),
-                                  Text(card.network.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 11, fontStyle: FontStyle.italic, fontWeight: FontWeight.w900)),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Premium Border Glow
-                    IgnorePointer(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.5),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-        if (isOverdrawn)
-          Positioned(
-            top: 14,
-            right: 48,
-            child: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEF4444),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2)),
-                ],
-              ),
-              child: const Icon(LucideIcons.alertTriangle, color: Colors.white, size: 14),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Future<void> _showPaymentDialog(BuildContext context, WidgetRef ref, CreditCard card, String? currencyCode) async {
-    final TextEditingController amountController = TextEditingController();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final loc = ref.read(localizationProvider);
-    
-    // Use card color
-    Color cardColor1 = card.color;
-    Color cardColor2 = card.color.withValues(alpha: 0.7);
-    final minPayment = card.currentBalance * 0.05;
-    final halfPayment = card.currentBalance * 0.5;
-
-    int selectedChipIndex = -1;
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF111827) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-            border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 24, offset: const Offset(0, -10))
             ],
           ),
-          child: StatefulBuilder(
-            builder: (ctx, setModalState) {
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Handle Bar
-                    Center(
-                      child: Container(
-                        width: 48, height: 5,
-                        decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB), borderRadius: BorderRadius.circular(3)),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    
-                    // Title Header
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)]),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))],
-                          ),
-                          child: const Icon(LucideIcons.creditCard, color: Colors.white, size: 24),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(loc.get('cc_pay_title'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.w900)),
-                              const SizedBox(height: 4),
-                              Text(loc.get('cc_pay_sub'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Mini Card Preview
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [cardColor1, cardColor2],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(color: cardColor1.withValues(alpha: 0.4), blurRadius: 16, offset: const Offset(0, 8)),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(card.name.toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: 1.5)),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
-                                child: Text(card.network.toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Text('•••• •••• •••• ${card.id.length >= 4 ? card.id.substring(card.id.length - 4).toUpperCase() : '0000'}', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14, letterSpacing: 2)),
-                          const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(loc.get('cc_pay_current_lbl'), style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
-                                  const SizedBox(height: 4),
-                                  Text(CurrencyFormatter.format(card.currentBalance, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900)),
-                                ],
-                              ),
-                              const Icon(LucideIcons.shieldCheck, color: Colors.white, size: 28),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Quick Selection Chips
-                    Text(loc.get('cc_pay_quick_lbl'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.8)),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildQuickChip(
-                            label: loc.get('cc_pay_min'),
-                            amount: minPayment,
-                            currencyCode: currencyCode,
-                            isDark: isDark,
-                            isHighlighted: selectedChipIndex == 0,
-                            onTap: (val) {
-                              setModalState(() {
-                                selectedChipIndex = 0;
-                                amountController.text = val.toStringAsFixed(2);
-                              });
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _buildQuickChip(
-                            label: loc.get('cc_pay_half'),
-                            amount: halfPayment,
-                            currencyCode: currencyCode,
-                            isDark: isDark,
-                            isHighlighted: selectedChipIndex == 1,
-                            onTap: (val) {
-                              setModalState(() {
-                                selectedChipIndex = 1;
-                                amountController.text = val.toStringAsFixed(2);
-                              });
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _buildQuickChip(
-                            label: loc.get('cc_pay_total'),
-                            amount: card.currentBalance,
-                            currencyCode: currencyCode,
-                            isDark: isDark,
-                            isHighlighted: selectedChipIndex == 2,
-                            onTap: (val) {
-                              setModalState(() {
-                                selectedChipIndex = 2;
-                                amountController.text = val.toStringAsFixed(2);
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Input TextField
-                    TextField(
-                      controller: amountController,
-                      onChanged: (val) {
-                        if (selectedChipIndex != -1) {
-                          setModalState(() {
-                            selectedChipIndex = -1;
-                          });
-                        }
-                      },
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.w800),
-                      decoration: InputDecoration(
-                        labelText: 'Ingresa o edita el monto a pagar',
-                        labelStyle: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14),
-                        prefixIcon: Icon(LucideIcons.wallet, color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669)),
-                        filled: true,
-                        fillColor: isDark ? const Color(0xFF1F2937) : const Color(0xFFF8FAFC),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: const BorderSide(color: Color(0xFF10B981), width: 2)),
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-
-                    // Buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 1,
-                          child: TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 18)),
-                            child: Text(loc.get('modal_cancel'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontWeight: FontWeight.w700, fontSize: 16)),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          flex: 2,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              final double? amount = double.tryParse(amountController.text.trim());
-                              if (amount == null || amount <= 0) return;
-                              
-                              if (amount > card.currentBalance + 0.01) {
-                                ScaffoldMessenger.of(ctx).showSnackBar(
-                                  SnackBar(
-                                    content: Text(loc.get('cc_err_amount_excess'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                                return;
-                              }
-
-                              try {
-                                final user = firebase_auth.FirebaseAuth.instance.currentUser;
-                                if (user == null) return;
-
-                                final transaction = TransactionModel(
-                                  id: '',
-                                  userId: user.uid,
-                                  amount: amount,
-                                  type: 'cc_payment',
-                                  category: 'Pago de Tarjeta',
-                                  description: 'Abono a ${card.name}',
-                                  date: DateTime.now(),
-                                  isFixed: false,
-                                  creditCardId: card.id,
-                                );
-
-                                await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
-                                
-                                final newBalance = card.currentBalance - amount;
-                                final updatedCard = card.copyWith(currentBalance: newBalance < 0 ? 0 : newBalance);
-                                await ref.read(creditCardControllerProvider.notifier).updateCreditCard(updatedCard);
-                                
-                                if (ctx.mounted) {
-                                  Navigator.pop(ctx);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(loc.get('cc_snack_paid'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                                      backgroundColor: const Color(0xFF10B981),
-                                      behavior: SnackBarBehavior.floating,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                    ),
-                                  );
-                                }
-                              } catch (e) {
-                                if (ctx.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-                                  );
-                                }
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF10B981),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 18),
-                              elevation: 6,
-                              shadowColor: const Color(0xFF10B981).withValues(alpha: 0.4),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(LucideIcons.checkCircle2, size: 20),
-                                SizedBox(width: 8),
-                                Text('Confirmar Abono', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
         ),
       ),
     );
   }
 
-  Widget _buildQuickChip({
-    required String label,
-    required double amount,
-    required String? currencyCode,
-    required bool isDark,
-    bool isHighlighted = false,
-    required Function(double) onTap,
-  }) {
-    return InkWell(
-      onTap: () => onTap(amount),
-      borderRadius: BorderRadius.circular(16),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        decoration: BoxDecoration(
-          color: isHighlighted 
-              ? const Color(0xFF10B981).withValues(alpha: isDark ? 0.25 : 0.15)
-              : (isDark ? const Color(0xFF1F2937) : const Color(0xFFF1F5F9)),
-          border: Border.all(
-            color: isHighlighted 
-                ? const Color(0xFF10B981)
-                : (isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
-            width: isHighlighted ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: isHighlighted ? [
-            BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3))
-          ] : [],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final loc = ref.watch(localizationProvider);
+    final currencyCode = ref.watch(authProvider).user?.currency;
+    final cardsAsync = ref.watch(computedCreditCardsProvider);
+    
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.9,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      child: Column(
+        children: [
+          // Header Grabber & Add Button
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (isHighlighted) ...[
-                  const Icon(LucideIcons.checkCircle2, color: Color(0xFF10B981), size: 12),
-                  const SizedBox(width: 4),
-                ],
-                Flexible(
-                  child: Text(label, style: TextStyle(color: isHighlighted ? const Color(0xFF10B981) : (isDark ? Colors.grey[400] : Colors.grey[700]), fontSize: 11, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                const SizedBox(width: 40),
+                Container(
+                  width: 48, height: 5,
+                  decoration: BoxDecoration(color: isDark ? Colors.grey[700] : Colors.grey[300], borderRadius: BorderRadius.circular(3)),
+                ),
+                IconButton(
+                  onPressed: () => AddCreditCardModal.show(context),
+                  icon: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                    ),
+                    child: Icon(LucideIcons.plus, color: isDark ? Colors.white : Colors.black, size: 20),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 6),
-            Text(CurrencyFormatter.format(amount, currencyCode), style: TextStyle(color: isHighlighted ? const Color(0xFF10B981) : (isDark ? Colors.white : Colors.black), fontSize: 13, fontWeight: FontWeight.w900), overflow: TextOverflow.ellipsis),
-          ],
-        ),
+          ),
+          
+          Expanded(
+            child: cardsAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, s) => Center(child: Text('Error: $e', style: TextStyle(color: isDark ? Colors.white : Colors.black))),
+              data: (cards) {
+                if (cards.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(LucideIcons.creditCard, size: 64, color: isDark ? Colors.grey[600] : Colors.grey[400]),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(loc.get('cc_title'), style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                        const SizedBox(height: 8),
+                        Text(loc.get('cc_no_cards'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () => AddCreditCardModal.show(context),
+                          icon: const Icon(LucideIcons.plus),
+                          label: Text(loc.get('cc_add_card'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF3B82F6),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                // Make sure index is valid
+                if (_currentIndex >= cards.length) {
+                  _currentIndex = cards.length - 1;
+                }
+                final activeCard = cards[_currentIndex];
+                final progress = activeCard.limit > 0 ? (activeCard.currentBalance / activeCard.limit).clamp(0.0, 1.0) : 0.0;
+                final availableAmount = activeCard.limit - activeCard.currentBalance;
+
+                return Column(
+                  children: [
+                    const SizedBox(height: 16),
+                    Text('Tus Tarjetas', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: isDark ? Colors.white : Colors.black, letterSpacing: -0.5)),
+                    const SizedBox(height: 24),
+                    
+                    // Cards Showcase
+                    SizedBox(
+                      height: 240,
+                      child: PageView.builder(
+                        controller: _pageController,
+                        onPageChanged: (index) => setState(() => _currentIndex = index),
+                        itemCount: cards.length,
+                        itemBuilder: (context, index) {
+                          final card = cards[index];
+                          final isSelected = _currentIndex == index;
+                          final double scale = isSelected ? 1.0 : 0.9;
+                          final double opacity = isSelected ? 1.0 : 0.6;
+                          
+                          Color baseColor = card.color;
+                          Color accentColor = Color.lerp(card.color, Colors.white, 0.2) ?? card.color;
+                          Color darkAccent = Color.lerp(card.color, Colors.black, 0.4) ?? card.color;
+
+                          return TweenAnimationBuilder<double>(
+                            tween: Tween(begin: scale, end: scale),
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeOutBack,
+                            builder: (context, value, child) {
+                              return Transform.scale(
+                                scale: value,
+                                child: Opacity(
+                                  opacity: opacity,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      if (isSelected) {
+                                        CreditCardHistoryModal.show(context, card);
+                                      } else {
+                                        _pageController.animateToPage(index, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                                      }
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(24),
+                                        boxShadow: [
+                                          if (isSelected)
+                                            BoxShadow(color: baseColor.withOpacity(0.5), blurRadius: 25, offset: const Offset(0, 15))
+                                        ],
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft, end: Alignment.bottomRight,
+                                          colors: [accentColor, baseColor, darkAccent],
+                                          stops: const [0.0, 0.5, 1.0],
+                                        ),
+                                        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(24),
+                                        child: Stack(
+                                          children: [
+                                            // Glassmorphic Reflection (Diagonal)
+                                            Positioned(
+                                              top: -80, left: -40,
+                                              child: Transform.rotate(
+                                                angle: 0.5,
+                                                child: Container(
+                                                  width: 300, height: 100,
+                                                  decoration: BoxDecoration(
+                                                    gradient: LinearGradient(
+                                                      colors: [Colors.white.withOpacity(0.0), Colors.white.withOpacity(0.2), Colors.white.withOpacity(0.0)],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            
+                                            // Mesh gradients (blobs)
+                                            Positioned(
+                                              top: -60, right: -60,
+                                              child: Container(
+                                                width: 180, height: 180,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  gradient: RadialGradient(colors: [Colors.white.withOpacity(0.15), Colors.transparent]),
+                                                ),
+                                              ),
+                                            ),
+                                            Positioned(
+                                              bottom: -40, left: -40,
+                                              child: Container(
+                                                width: 150, height: 150,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  gradient: RadialGradient(colors: [Colors.white.withOpacity(0.12), Colors.transparent]),
+                                                ),
+                                              ),
+                                            ),
+                                            
+                                            // Network Background Watermark
+                                            Positioned(
+                                              right: -20, bottom: -20,
+                                              child: Icon(LucideIcons.creditCard, size: 140, color: Colors.white.withOpacity(0.05)),
+                                            ),
+                                            
+                                            // Content
+                                            Padding(
+                                              padding: const EdgeInsets.all(24),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      // Chip & NFC
+                                                      Row(
+                                                        children: [
+                                                          Container(
+                                                            width: 44, height: 32,
+                                                            decoration: BoxDecoration(
+                                                              gradient: const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFB8860B)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                                                              borderRadius: BorderRadius.circular(6),
+                                                              border: Border.all(color: Colors.white.withOpacity(0.4), width: 1),
+                                                            ),
+                                                            child: Center(
+                                                              child: Container(width: 28, height: 18, decoration: BoxDecoration(border: Border.all(color: Colors.black.withOpacity(0.3), width: 1), borderRadius: BorderRadius.circular(3))),
+                                                            ),
+                                                          ),
+                                                          const SizedBox(width: 12),
+                                                          Icon(LucideIcons.wifi, color: Colors.white.withOpacity(0.9), size: 24),
+                                                        ],
+                                                      ),
+                                                      
+                                                      if (isSelected)
+                                                        PopupMenuButton<String>(
+                                                          icon: Container(
+                                                            padding: const EdgeInsets.all(6),
+                                                            decoration: BoxDecoration(color: Colors.black.withOpacity(0.2), shape: BoxShape.circle),
+                                                            child: const Icon(LucideIcons.moreHorizontal, color: Colors.white, size: 20),
+                                                          ),
+                                                          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                          onSelected: (val) {
+                                                            if (val == 'edit') AddCreditCardModal.show(context, existingCard: card);
+                                                            if (val == 'delete') ref.read(creditCardControllerProvider.notifier).deleteCreditCard(card.id);
+                                                            if (val == 'history') CreditCardHistoryModal.show(context, card);
+                                                          },
+                                                          itemBuilder: (ctx) => [
+                                                            PopupMenuItem(value: 'history', child: Row(children: [Icon(LucideIcons.history, color: isDark ? Colors.white : Colors.black, size: 18), const SizedBox(width: 12), const Text('Ver Historial')])),
+                                                            PopupMenuItem(value: 'edit', child: Row(children: [Icon(LucideIcons.pencil, color: isDark ? Colors.white : Colors.black, size: 18), const SizedBox(width: 12), Text(loc.get('cc_edit_card'))])),
+                                                            const PopupMenuItem(value: 'delete', child: Row(children: [Icon(LucideIcons.trash2, color: Colors.red, size: 18), SizedBox(width: 12), Text('Eliminar', style: TextStyle(color: Colors.red))])),
+                                                          ],
+                                                        )
+                                                    ],
+                                                  ),
+                                                  
+                                                  Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        card.name.toUpperCase(), 
+                                                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 2, shadows: [Shadow(color: Colors.black45, blurRadius: 4, offset: Offset(0, 2))]),
+                                                        maxLines: 1, overflow: TextOverflow.ellipsis,
+                                                      ),
+                                                      const SizedBox(height: 6),
+                                                      Text('•••• •••• •••• ${card.id.length >= 4 ? card.id.substring(card.id.length - 4) : '0000'}', style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 18, letterSpacing: 3.5, fontFamily: 'monospace', fontWeight: FontWeight.w600)),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    
+                    const Spacer(),
+                    
+                    // Glassmorphic Panel
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(32),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20, spreadRadius: 5)
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(32),
+                        child: BackdropFilter(
+                          filter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                          child: Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                              border: Border.all(color: isDark ? Colors.white.withOpacity(0.12) : Colors.black.withOpacity(0.05), width: 1.5),
+                              borderRadius: BorderRadius.circular(32),
+                            ),
+                            child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  // Circular Progress
+                                  SizedBox(
+                                    width: 70, height: 70,
+                                    child: Stack(
+                                      children: [
+                                        Center(
+                                          child: SizedBox(
+                                            width: 70, height: 70,
+                                            child: CircularProgressIndicator(
+                                              value: progress,
+                                              strokeWidth: 6,
+                                              backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                                              color: progress > 0.8 ? const Color(0xFFEF4444) : const Color(0xFF3B82F6),
+                                              strokeCap: StrokeCap.round,
+                                            ),
+                                          ),
+                                        ),
+                                        Center(
+                                          child: Icon(progress > 0.8 ? LucideIcons.alertTriangle : LucideIcons.creditCard, 
+                                            color: progress > 0.8 ? const Color(0xFFEF4444) : (isDark ? Colors.white : Colors.black), 
+                                            size: 24),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 20),
+                                  // Amounts
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Deuda Actual', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w600)),
+                                        Text(
+                                          CurrencyFormatter.format(activeCard.currentBalance, currencyCode),
+                                          style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text('Disponible: ${CurrencyFormatter.format(availableAmount, currencyCode)}', style: const TextStyle(color: Color(0xFF10B981), fontSize: 13, fontWeight: FontWeight.w800)),
+                                        const SizedBox(height: 12),
+                                        Row(
+                                          children: [
+                                            _MiniDatePill(isDark: isDark, label: 'CORTE', value: 'Día ${activeCard.cutOffDay}'),
+                                            const SizedBox(width: 8),
+                                            _MiniDatePill(isDark: isDark, label: 'PAGO', value: 'Día ${activeCard.paymentDay}'),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              
+                              // Buttons
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF2563EB)]),
+                                        borderRadius: BorderRadius.circular(20),
+                                        boxShadow: [BoxShadow(color: const Color(0xFF3B82F6).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+                                      ),
+                                      child: ElevatedButton.icon(
+                                        onPressed: () => _showPaymentDialog(context, activeCard, currencyCode, ref),
+                                        icon: const Icon(LucideIcons.checkCircle2, size: 20),
+                                        label: const Text('Pagar Deuda', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.transparent,
+                                          shadowColor: Colors.transparent,
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(vertical: 18),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: () => CreditCardHistoryModal.show(context, activeCard),
+                                      icon: const Icon(LucideIcons.history, size: 18),
+                                      label: const Text('Historial', style: TextStyle(fontWeight: FontWeight.bold)),
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(vertical: 18),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                        side: BorderSide(color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0), width: 2),
+                                        foregroundColor: isDark ? Colors.white : Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1079,37 +604,53 @@ class _ChipPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.15)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    // Draw chip lines
+      ..color = Colors.black.withOpacity(0.15)
+      ..strokeWidth = 0.5
+      ..style = PaintingStyle.stroke;
+      
     final path = Path();
-    
-    // Left lines
     path.moveTo(0, size.height * 0.3);
     path.lineTo(size.width * 0.3, size.height * 0.3);
     path.lineTo(size.width * 0.3, 0);
-
-    path.moveTo(0, size.height * 0.7);
-    path.lineTo(size.width * 0.3, size.height * 0.7);
-    path.lineTo(size.width * 0.3, size.height);
-
-    // Right lines
+    
     path.moveTo(size.width, size.height * 0.3);
     path.lineTo(size.width * 0.7, size.height * 0.3);
     path.lineTo(size.width * 0.7, 0);
-
-    path.moveTo(size.width, size.height * 0.7);
-    path.lineTo(size.width * 0.7, size.height * 0.7);
-    path.lineTo(size.width * 0.7, size.height);
-
-    // Center rectangle
-    path.addRect(Rect.fromLTWH(size.width * 0.35, size.height * 0.25, size.width * 0.3, size.height * 0.5));
-
+    
+    path.moveTo(0, size.height * 0.7);
+    path.lineTo(size.width * 0.3, size.height * 0.7);
+    path.lineTo(size.width, size.height * 0.7);
+    
     canvas.drawPath(path, paint);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _MiniDatePill extends StatelessWidget {
+  final bool isDark;
+  final String label;
+  final String value;
+  
+  const _MiniDatePill({required this.isDark, required this.label, required this.value});
+  
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: isDark ? Colors.white.withOpacity(0.15) : Colors.black.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(label, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 9, fontWeight: FontWeight.w800)),
+          Text(value, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 12, fontWeight: FontWeight.w900)),
+        ],
+      ),
+    );
+  }
 }

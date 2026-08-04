@@ -32,6 +32,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/ai_insights_provider.dart';
 import '../widgets/common/micro_insights_widget.dart';
 
+final showTutorialTrigger = ValueNotifier<bool>(false);
+
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
@@ -42,7 +44,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTickerProviderStateMixin {
   late AnimationController _fireAnimController;
   final GlobalKey _expensesKey = GlobalKey();
-  final GlobalKey _aiChatKey = GlobalKey();
+  final GlobalKey _settingsKey = GlobalKey();
   bool _limitAlertShown = false;
   bool _fixedExpenseAlertShown = false;
   bool _insightsLoaded = false;
@@ -76,6 +78,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
           identify: "Expenses",
           keyTarget: _expensesKey,
           alignSkip: Alignment.bottomRight,
+          shape: ShapeLightFocus.Circle,
           contents: [
             TargetContent(
               align: ContentAlign.bottom,
@@ -91,33 +94,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                     const SizedBox(height: 10),
                     const Text(
                       "You can view expense analytics",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ],
-        ),
-        TargetFocus(
-          identify: "AIChat",
-          keyTarget: _aiChatKey,
-          alignSkip: Alignment.bottomRight,
-          contents: [
-            TargetContent(
-              align: ContentAlign.top,
-              builder: (context, controller) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "QUIVO Assistant",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      "Habla con nuestro asistente inteligente para registrar tus finanzas.",
                       style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
                   ],
@@ -206,7 +182,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
     final currencyCode = user?.currency;
     final unreadNotificationsCount = ref.watch(unreadNotificationsCountProvider);
     final creditCardsAsync = ref.watch(computedCreditCardsProvider);
-    final hasOverlimitCard = creditCardsAsync.value?.any((card) => card.currentBalance >= card.limit && card.limit > 0) ?? false;
+    final hasOverlimitCard = (user?.isPremium == true) ? (creditCardsAsync.value?.any((card) => card.currentBalance >= card.limit && card.limit > 0) ?? false) : false;
+
+    showTutorialTrigger.addListener(() {
+      if (showTutorialTrigger.value) {
+        showTutorialTrigger.value = false;
+        _showTutorial();
+      }
+    });
 
     if (user != null && !user.profileComplete && !_profileChecked) {
       _profileChecked = true;
@@ -775,9 +758,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
 
               return InkWell(
                 onTap: () async {
-                  final isPremium = ref.read(authProvider).user?.isPremium ?? false;
-                  if (!isPremium) {
-                    PremiumPaywallDialog.show(context, customMessage: 'Establece y personaliza tu límite de presupuesto mensual con el Plan Premium.');
+                  if (user?.isPremium != true) {
+                    PremiumPaywallDialog.show(context, customMessage: 'Establece límites de presupuesto mensual y mantén tus gastos bajo control con el Plan Premium.');
                     return;
                   }
                   final newValue = await BudgetLimitModal.show(context, initialValue: limitPercentage);
@@ -965,157 +947,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   },
                 ),
             ),
-            const SizedBox(height: 24),
 
-            // Investment Assistant
-            InkWell(
-              key: _aiChatKey,
-              onTap: () => AIChatModal.show(context),
-              borderRadius: BorderRadius.circular(24),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: paletteGradient,
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))
-                  ]
-                ),
-                child: Stack(
-                  children: [
-                  Positioned(
-                    top: 0, right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF59E0B), // amber-500
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(LucideIcons.crown, color: Colors.white, size: 12),
-                          SizedBox(width: 4),
-                          Text('PRO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        width: 56, height: 56,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Icon(LucideIcons.trendingUp, color: Colors.white, size: 28),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(loc.get('ai_assistant'), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
-                            const SizedBox(height: 4),
-                            Text(loc.get('ai_assistant_subtitle'), style: const TextStyle(color: Colors.white70, fontSize: 14)),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-            // "What If?" AI Simulator Card
-            InkWell(
-              onTap: () {
-                final isPremium = ref.read(authProvider).user?.isPremium ?? false;
-                if (!isPremium) {
-                  PremiumPaywallDialog.show(context, customMessage: 'Desbloquea el simulador inteligente "What If?" impulsado por IA con el Plan Premium.');
-                  return;
-                }
-                context.push('/what-if');
-              },
-              borderRadius: BorderRadius.circular(24),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isDark 
-                        ? const [Color(0xFF1E1B4B), Color(0xFF312E81)]
-                        : const [Color(0xFFEEF2FF), Color(0xFFE0E7FF)],
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: const Color(0xFF6366F1).withOpacity(0.3),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
-                  ]
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 56, height: 56,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1).withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Icon(LucideIcons.cpu, color: Color(0xFF6366F1), size: 28),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            loc.get('what_if_title'),
-                            style: TextStyle(
-                              color: isDark ? Colors.white : Colors.black87,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            loc.get('what_if_subtitle'),
-                            style: TextStyle(
-                              color: isDark ? Colors.grey[300] : Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (!(ref.watch(authProvider).user?.isPremium ?? false))
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(color: const Color(0xFFD97706), borderRadius: BorderRadius.circular(8)),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(LucideIcons.crown, size: 14, color: Colors.white),
-                            SizedBox(width: 4),
-                            Text('PRO', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      )
-                    else
-                      Icon(
-                        LucideIcons.chevronRight,
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
 
             // Recent Transactions (simulated)
             Row(

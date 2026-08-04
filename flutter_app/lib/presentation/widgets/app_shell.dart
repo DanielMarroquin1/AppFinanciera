@@ -4,12 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'dart:ui';
 import '../../core/theme/app_colors.dart';
+import '../../presentation/providers/auth_provider.dart';
 import '../../presentation/widgets/quick_actions_menu.dart';
 import '../../presentation/widgets/modals/ai_chat_modal.dart';
 import '../../presentation/widgets/modals/add_saving_goal_modal.dart';
 import '../../presentation/widgets/rewards_shop_modal.dart';
 import '../../presentation/widgets/modals/notifications_modal.dart';
 import '../../presentation/widgets/modals/category_budget_modal.dart';
+import '../../presentation/widgets/modals/premium_paywall_dialog.dart';
 import '../../presentation/providers/color_palette_provider.dart';
 import '../../core/utils/localization.dart';
 import '../screens/settings_screen.dart';
@@ -111,10 +113,13 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
                   
                   if (!context.mounted) break;
                   
-                  if (action == 'savings-goal') {
-                    await AddSavingGoalModal.show(context);
-                  } else if (action == 'my-savings') {
-                    context.go('/savings');
+                  if (action == 'what-if') {
+                    final isPremium = ref.read(authProvider).user?.isPremium ?? false;
+                    if (!isPremium) {
+                      PremiumPaywallDialog.show(context, customMessage: 'Desbloquea el simulador inteligente "What If?" impulsado por IA con el Plan Premium.');
+                    } else {
+                      context.push('/what-if');
+                    }
                     keepMenuOpen = false;
                   } else if (action == 'rewards-shop') {
                     await RewardsShopModal.show(context);

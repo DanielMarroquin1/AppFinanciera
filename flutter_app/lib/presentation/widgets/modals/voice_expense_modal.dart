@@ -73,6 +73,9 @@ class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal> w
           });
         },
       );
+      // Tweak TTS to sound less robotic
+      await _flutterTts.setSpeechRate(0.45);
+      await _flutterTts.setPitch(1.05);
     } catch (e) {
       // Handle init error
     }
@@ -198,6 +201,9 @@ Your task is to determine:
 3. The clean description of the transaction (short concept/name in the user's language).
 4. The payment method (if expense: "efectivo" or "tarjeta", if income: "efectivo").
 5. The creditCardId (if card matched from list).
+
+--- HANDLING NUMBERS (CRITICAL) ---
+If the user says a combination of numbers like "doce cincuenta", "quince treinta", interpret it as a decimal amount (e.g. 12.50, 15.30). DO NOT interpret "doce cincuenta" as 1250. The second number represents cents.
 
 --- DETECTING TYPE ---
 Identify if the user is spending money (expense) or receiving money (income). Use standard rules for Spanish, English, Portuguese, French, and Italian.

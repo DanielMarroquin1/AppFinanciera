@@ -74,8 +74,8 @@ class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal> w
         },
       );
       // Tweak TTS to sound less robotic
-      await _flutterTts.setSpeechRate(0.45);
-      await _flutterTts.setPitch(1.05);
+      await _flutterTts.setSpeechRate(0.55); // Slightly faster
+      await _flutterTts.setPitch(1.15); // Higher pitch for a friendlier tone
     } catch (e) {
       // Handle init error
     }
@@ -143,7 +143,8 @@ class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal> w
             });
             _silenceTimer?.cancel();
             if (_recognizedText.trim().isNotEmpty) {
-              _silenceTimer = Timer(const Duration(seconds: 3), () {
+              // Reducimos el tiempo de espera de 3 a 1.5 segundos para que sea mucho más rápida
+              _silenceTimer = Timer(const Duration(milliseconds: 1500), () {
                 if (_isListening) {
                   _speechToText.stop();
                   if (mounted) {

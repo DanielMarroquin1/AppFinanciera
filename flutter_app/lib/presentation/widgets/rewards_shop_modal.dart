@@ -248,28 +248,6 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                     ),
                     const SizedBox(width: 8),
                     IconButton(
-                      icon: const Icon(LucideIcons.rotateCcw, color: Color(0xFFFCD34D), size: 18),
-                      tooltip: 'Reiniciar canjes (Pruebas)',
-                      onPressed: () async {
-                        await ref.read(authProvider.notifier).resetUnlockedThemes();
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text('✨ Canjes de colores reiniciados y puntos restaurados.'),
-                              backgroundColor: const Color(0xFF2563EB),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                            ),
-                          );
-                        }
-                      },
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.15),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    IconButton(
                       icon: const Icon(LucideIcons.x, color: Colors.white),
                       onPressed: () => Navigator.pop(context),
                       style: IconButton.styleFrom(
@@ -371,9 +349,13 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                       children: const [
                         Icon(LucideIcons.video, color: Colors.white, size: 20),
                         SizedBox(width: 10),
-                        Text(
-                          '🎬 Ver Anuncio Recompensa (+50 Pts Gratis)',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13),
+                        Flexible(
+                          child: Text(
+                            '🎬 Ver Anuncio Recompensa (+50 Pts)',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13),
+                            maxLines: 2,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ],
                     ),

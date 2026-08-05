@@ -359,11 +359,7 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
 
                         return GestureDetector(
                           onTap: () {
-                            if (unlocked) {
-                              setState(() => selectedPaletteId = palette.id);
-                            } else {
-                              _showLockedOptionsDialog(context, palette, cost, isPremium);
-                            }
+                            setState(() => selectedPaletteId = palette.id);
                           },
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
@@ -576,42 +572,15 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                             )
                           : (!isPremium && !isUnlocked(selectedPalette))
                               ? ElevatedButton.icon(
-                                  onPressed: () async {
-                                    // 1. Mostrar el Anuncio de Video Bonificado
-                                    await AdService().showRewardedAd(
-                                      context,
-                                      isPremium,
-                                      onRewardEarned: () async {
-                                      // 2. Desbloquear y aplicar el color
-                                        await ref.read(authProvider.notifier).unlockItemWithoutCost(selectedPalette.id);
-                                        await ref.read(colorPaletteProvider.notifier).setPaletteById(selectedPalette.id);
-                                        if (context.mounted) {
-                                          Navigator.of(context).pop();
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: Row(
-                                                children: [
-                                                  const Icon(LucideIcons.playCircle, color: Colors.white, size: 20),
-                                                  const SizedBox(width: 10),
-                                                  Expanded(
-                                                    child: Text(
-                                                      '✨ Paleta "${selectedPalette.name}" DESBLOQUEADA y aplicada. ¡Gracias por ver el anuncio!',
-                                                      style: const TextStyle(fontWeight: FontWeight.bold),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              backgroundColor: selectedPalette.colors[0],
-                                              behavior: SnackBarBehavior.floating,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                              duration: const Duration(seconds: 4),
-                                            ),
-                                          );
-                                        }
-                                      },
+                                  onPressed: () {
+                                    _showLockedOptionsDialog(
+                                      context, 
+                                      selectedPalette, 
+                                      _getCostForPalette(selectedPalette.id), 
+                                      isPremium
                                     );
                                   },
-                                  icon: const Icon(LucideIcons.playCircle, color: Colors.white, size: 20),
+                                  icon: const Icon(LucideIcons.lock, color: Colors.white, size: 20),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: selectedPalette.colors[0],
                                     foregroundColor: Colors.white,
@@ -621,7 +590,7 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                   ),
                                   label: const Text(
-                                    'Desbloquear con Video 🎬',
+                                    'Desbloquear Paleta 🔒',
                                     style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14),
                                   ),
                                 )

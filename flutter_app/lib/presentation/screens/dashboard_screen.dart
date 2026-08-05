@@ -31,6 +31,7 @@ import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/ai_insights_provider.dart';
 import '../widgets/common/micro_insights_widget.dart';
+import '../../core/services/recurrence_service.dart';
 
 final showTutorialTrigger = ValueNotifier<bool>(false);
 
@@ -61,6 +62,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
       if (!_insightsLoaded && mounted) {
         _insightsLoaded = true;
         ref.read(aiInsightsProvider.notifier).loadInsightsAndForecast();
+      }
+      
+      // Process recurring transactions
+      final user = ref.read(authProvider).user;
+      if (user != null && user.email != null) {
+        RecurrenceService.processRecurrences(user.email!);
       }
     });
   }
@@ -662,10 +669,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
               final double limitPercentage = user?.monthlyLimit ?? 80.0;
               double totalExpense = 0;
               double totalIncome = 0;
+              final now = DateTime.now();
               for (var t in transactions) {
                 if (t.isFixed) continue; // Ignorar plantillas
-                if (t.type == 'expense') totalExpense += t.amount;
-                if (t.type == 'income') totalIncome += t.amount;
+                if (t.date.year == now.year && t.date.month == now.month) {
+                  if (t.type == 'expense') totalExpense += t.amount;
+                  if (t.type == 'income') totalIncome += t.amount;
+                }
               }
               
               final double calculatedLimit = (totalIncome * limitPercentage) / 100.0;

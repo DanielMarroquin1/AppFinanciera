@@ -27,7 +27,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/notification_provider.dart';
 import '../widgets/modals/notifications_modal.dart';
 import '../widgets/modals/add_saving_goal_modal.dart';
-import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import '../widgets/modals/tutorial_overlay.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/ai_insights_provider.dart';
 import '../widgets/common/micro_insights_widget.dart';
@@ -44,8 +44,9 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTickerProviderStateMixin {
   late AnimationController _fireAnimController;
-  final GlobalKey _expensesKey = GlobalKey();
-  final GlobalKey _settingsKey = GlobalKey();
+  final GlobalKey _balanceKey = GlobalKey();
+  final GlobalKey _quickActionsKey = GlobalKey();
+  final GlobalKey _streakKey = GlobalKey();
   bool _limitAlertShown = false;
   bool _fixedExpenseAlertShown = false;
   bool _insightsLoaded = false;
@@ -79,55 +80,35 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
   }
 
   void _showTutorial() {
-    TutorialCoachMark(
-      targets: [
-        TargetFocus(
-          identify: "Expenses",
-          keyTarget: _expensesKey,
-          alignSkip: Alignment.bottomRight,
-          shape: ShapeLightFocus.Circle,
-          contents: [
-            TargetContent(
-              align: ContentAlign.bottom,
-              builder: (context, controller) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Expense analytics",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      "You can view expense analytics",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ],
+    TutorialOverlay.show(
+      context,
+      [
+        TutorialStep(
+          key: _balanceKey,
+          title: "Tu Balance General",
+          description: "Aquí verás el resumen de tu dinero, restando tus gastos de tus ingresos.",
+          textAlignment: Alignment.bottomCenter,
+        ),
+        TutorialStep(
+          key: _quickActionsKey,
+          title: "Gestión Rápida",
+          description: "Agrega ingresos o registra gastos rápidamente desde estos botones.",
+          textAlignment: Alignment.topCenter,
+        ),
+        TutorialStep(
+          key: _streakKey,
+          title: "Mantén tu Racha",
+          description: "Registra tus finanzas todos los días para no perder tu racha y ganar recompensas.",
+          textAlignment: Alignment.bottomCenter,
         ),
       ],
-      colorShadow: Colors.black,
-      textSkip: "Skip",
-      paddingFocus: 10,
-      opacityShadow: 0.8,
-      onFinish: () {
+      () {
         SharedPreferences.getInstance().then((prefs) {
           prefs.setBool('has_seen_app_tutorial', true);
         });
         if (mounted) ref.read(authProvider.notifier).completeTour();
-      },
-      onSkip: () {
-        SharedPreferences.getInstance().then((prefs) {
-          prefs.setBool('has_seen_app_tutorial', true);
-        });
-        if (mounted) ref.read(authProvider.notifier).completeTour();
-        return true;
-      },
-    ).show(context: context);
+      }
+    );
   }
 
   bool _profileChecked = false;
@@ -180,7 +161,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
       }
     }
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    ref.watch(colorPaletteProvider);
+    final palette = ref.watch(colorPaletteProvider);
     final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
     
 
@@ -299,30 +280,43 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
     }
     final isStreakActive = currentStreak >= 2 || isFrozenGrace;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent, // Background handled by AppShell
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Header with Streak
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${loc.get('welcome_back')} ${user?.name ?? 'Usuario'}! 👋',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black,
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header with Streak
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => Scaffold.of(context).openDrawer(),
+                          child: CircleAvatar(
+                            radius: 18,
+                            backgroundColor: palette.colors[0].withValues(alpha: 0.2),
+                            child: Icon(LucideIcons.user, size: 20, color: palette.colors[0]),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            '${loc.get('welcome_back')} ${user?.name ?? 'Usuario'}! 👋',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                       if (isStreakActive) ...[
                         const SizedBox(height: 4),
                         Text(
@@ -338,6 +332,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 ),
                 // Streak Badge & Rewards
                 Row(
+                  key: _streakKey,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (isStreakActive) ...[
@@ -525,7 +520,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             ),
 
             // Balance Card — computed inside when() to avoid stale locals
-            transactionsAsync.when(
+            KeyedSubtree(
+              key: _balanceKey,
+              child: transactionsAsync.when(
               loading: () => Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
@@ -661,6 +658,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   ),
                 ));
               },
+            ),
             ),
             const SizedBox(height: 24),
 
@@ -824,6 +822,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             Text(loc.get('quick_actions'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
             const SizedBox(height: 12),
               Row(
+                key: _quickActionsKey,
                 children: [
                   _buildPremiumQuickAction(
                     context: context,
@@ -1141,7 +1140,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             const SizedBox(height: 80), // for bottom nav padding
           ],
         ),
-      ),
     );
   }
 

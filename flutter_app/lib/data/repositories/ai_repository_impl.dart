@@ -27,6 +27,26 @@ class AIRepositoryImpl implements AIRepository {
 
 
 
+    if (AIConfig.apiKey.isEmpty || AIConfig.apiKey == 'tu_clave_aqui') {
+      // Simulador sin API Key
+      final p = prompt.toLowerCase();
+      if (p.contains('opción 1') || p.contains('opcion 1') || p.contains('50/30/20')) {
+        yield '¡Excelente elección! La regla 50/30/20 te ayudará a balancear tus gastos. He creado la meta para ti:';
+        yield jsonEncode({
+          "___PROPOSAL___": true,
+          "name": "Plan 50/30/20",
+          "targetAmount": 2000,
+          "icon": "⚖️",
+          "description": "El 50% de tus ingresos irá a necesidades, 30% a deseos y 20% a esta meta de ahorro."
+        });
+      } else if (p.contains('plan de ahorro') || p.contains('ahorrar')) {
+        yield '¡Hola! He analizado tus datos. *(Nota: Modo simulación sin API Key)*.\n\nPara ayudarte a ahorrar, te propongo 3 opciones basadas en tus ingresos y gastos:\n\n1. **Regla 50/30/20**: Un enfoque balanceado. Destinas 20% al ahorro.\n2. **Plan Agresivo**: Ideal para metas a corto plazo. Destinas 40% al ahorro reduciendo lujos.\n3. **Plan Conservador**: Cómodo y seguro. Destinas 10% al ahorro sin afectar tu estilo de vida.\n\n¿Qué opción prefieres que apliquemos?';
+      } else {
+        yield '¡Hola! He recibido tu solicitud: "$prompt".\n\n*(Nota: La API Key de Gemini no está configurada, esto es una respuesta simulada).*';
+      }
+      return;
+    }
+
     // Definir la herramienta para proponer planes de ahorro
     final proposeSavingsPlanTool = Tool(functionDeclarations: [
       FunctionDeclaration(

@@ -8,11 +8,14 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/localization.dart';
 import 'package:intl/intl.dart';
 
-class CreditCardHistoryModal extends ConsumerWidget {
+class CreditCardHistoryModal extends ConsumerStatefulWidget {
   final CreditCard card;
   final ScrollController scrollController;
 
   const CreditCardHistoryModal({super.key, required this.card, required this.scrollController});
+
+  @override
+  ConsumerState<CreditCardHistoryModal> createState() => _CreditCardHistoryModalState();
 
   static void show(BuildContext context, CreditCard card) {
     showModalBottomSheet(
@@ -29,8 +32,147 @@ class CreditCardHistoryModal extends ConsumerWidget {
     );
   }
 
+}
+
+class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal> {
+  int _selectedMonth = DateTime.now().month;
+  int _selectedYear = DateTime.now().year;
+
+  void _showMonthPicker() {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        int tempMonth = _selectedMonth;
+        int tempYear = _selectedYear;
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Dialog(
+              backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Seleccionar Fecha', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 24),
+                    
+                    // Selector de Año
+                    Container(
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            icon: Icon(LucideIcons.chevronLeft, color: isDark ? Colors.white : Colors.black),
+                            onPressed: () => setDialogState(() => tempYear--),
+                          ),
+                          Text(tempYear.toString(), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 22, fontWeight: FontWeight.w900)),
+                          IconButton(
+                            icon: Icon(LucideIcons.chevronRight, color: isDark ? Colors.white : Colors.black),
+                            onPressed: () => setDialogState(() => tempYear++),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Selector de Mes
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      alignment: WrapAlignment.center,
+                      children: List.generate(12, (index) {
+                        final monthNum = index + 1;
+                        final isSelected = monthNum == tempMonth;
+                        String monthStr = DateFormat('MMM', 'es').format(DateTime(2000, monthNum));
+                        monthStr = monthStr[0].toUpperCase() + monthStr.substring(1);
+                        
+                        return GestureDetector(
+                          onTap: () => setDialogState(() => tempMonth = monthNum),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            width: 65,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              gradient: isSelected
+                                  ? const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)])
+                                  : null,
+                              color: isSelected ? null : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9)),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected 
+                                    ? Colors.transparent 
+                                    : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))
+                              ),
+                              boxShadow: isSelected ? [
+                                BoxShadow(color: const Color(0xFF10B981).withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 4))
+                              ] : [],
+                            ),
+                            child: Center(
+                              child: Text(
+                                monthStr,
+                                style: TextStyle(
+                                  color: isSelected ? Colors.white : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 32),
+                    
+                    // Botones de Acción
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text('Cancelar', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 16)),
+                          ),
+                        ),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                _selectedMonth = tempMonth;
+                                _selectedYear = tempYear;
+                              });
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF10B981),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              elevation: 0,
+                            ),
+                            child: const Text('Confirmar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final transactionsAsync = ref.watch(transactionsProvider);
     final loc = ref.watch(localizationProvider);
@@ -72,11 +214,11 @@ class CreditCardHistoryModal extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: card.color.withValues(alpha: 0.15),
+                        color: widget.card.color.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: card.color.withValues(alpha: 0.3)),
+                        border: Border.all(color: widget.card.color.withValues(alpha: 0.3)),
                       ),
-                      child: Icon(LucideIcons.history, color: card.color, size: 22),
+                      child: Icon(LucideIcons.history, color: widget.card.color, size: 22),
                     ),
                     const SizedBox(width: 14),
                     Column(
@@ -87,7 +229,7 @@ class CreditCardHistoryModal extends ConsumerWidget {
                           style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 20, fontWeight: FontWeight.w900),
                         ),
                         Text(
-                          card.name,
+                          widget.card.name,
                           style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.bold),
                         ),
                       ],
@@ -105,6 +247,66 @@ class CreditCardHistoryModal extends ConsumerWidget {
               ],
             ),
           ),
+          
+          // Filtros
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.chevron_left, color: isDark ? Colors.white : Colors.black),
+                  onPressed: () {
+                    setState(() {
+                      if (_selectedMonth == 1) {
+                        _selectedMonth = 12;
+                        _selectedYear--;
+                      } else {
+                        _selectedMonth--;
+                      }
+                    });
+                  },
+                ),
+                InkWell(
+                  onTap: _showMonthPicker,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][_selectedMonth - 1]} $_selectedYear', 
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(LucideIcons.calendar, size: 18, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                      ],
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.chevron_right, color: isDark ? Colors.white : Colors.black),
+                  onPressed: () {
+                    setState(() {
+                      if (_selectedMonth == 12) {
+                        _selectedMonth = 1;
+                        _selectedYear++;
+                      } else {
+                        _selectedMonth++;
+                      }
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          
           Divider(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0), height: 1),
 
           // Content
@@ -113,7 +315,12 @@ class CreditCardHistoryModal extends ConsumerWidget {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (err, _) => Center(child: Text('Error: $err', style: TextStyle(color: isDark ? Colors.white : Colors.black))),
               data: (allTransactions) {
-                final cardTransactions = allTransactions.where((t) => t.creditCardId == card.id && !t.isFixed).toList();
+                final cardTransactions = allTransactions.where((t) => 
+                  t.creditCardId == widget.card.id && 
+                  !t.isFixed &&
+                  t.date.month == _selectedMonth &&
+                  t.date.year == _selectedYear
+                ).toList();
                 cardTransactions.sort((a, b) => b.date.compareTo(a.date));
 
                 if (cardTransactions.isEmpty) {
@@ -148,7 +355,7 @@ class CreditCardHistoryModal extends ConsumerWidget {
                 }
 
                 return ListView.builder(
-                  controller: scrollController,
+                  controller: widget.scrollController,
                   padding: const EdgeInsets.all(24),
                   itemCount: cardTransactions.length,
                   itemBuilder: (context, index) {

@@ -207,6 +207,10 @@ class AIAnalysisService {
     if (localCategory != null) return localCategory;
 
     // Si la heurística no resuelve, usar IA
+    if (AIConfig.apiKey.isEmpty || AIConfig.apiKey == 'tu_clave_aqui') {
+      return 'other'; // Fallback si no hay API Key
+    }
+
     try {
       final model = _getModel();
       final prompt = '''

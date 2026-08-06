@@ -10,24 +10,31 @@ import 'package:flutter_app/presentation/providers/auth_provider.dart';
 import 'premium_paywall_dialog.dart';
 
 class AIChatModal extends ConsumerStatefulWidget {
-  const AIChatModal({super.key});
+  final String? initialMessage;
+  
+  const AIChatModal({super.key, this.initialMessage});
 
-  static Future<void> show(BuildContext context) {
-    final container = ProviderScope.containerOf(context, listen: false);
-    final isPremium = container.read(authProvider).user?.isPremium ?? false;
-    if (!isPremium) {
-      PremiumPaywallDialog.show(context, customMessage: 'Interactúa con el Asistente IA impulsado por la magia del Plan Premium.');
-      return Future.value();
+  static Future<void> show(BuildContext context, {String? initialMessage}) async {
+    try {
+      await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) {
+          return AIChatModal(initialMessage: initialMessage);
+        },
+      );
+    } catch (e, stackTrace) {
+      debugPrint('Error showing AIChatModal: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al abrir el chat: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 40),
-        child: const AIChatModal(),
-      ),
-    );
   }
 
   @override
@@ -43,6 +50,16 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
     {'icon': LucideIcons.trendingUp, 'text': 'Analiza mis gastos'},
     {'icon': LucideIcons.target, 'text': 'Tips para mis metas'},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialMessage != null && widget.initialMessage!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        handleSendMessage(widget.initialMessage!);
+      });
+    }
+  }
 
   void scrollToBottom() {
     if (_scrollController.hasClients) {
@@ -65,6 +82,37 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final chatState = ref.watch(chatProvider);
+    final isPremium = ref.watch(authProvider).user?.isPremium ?? false;
+
+    if (!isPremium) {
+      return Container(
+        height: 300,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF111827) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(LucideIcons.crown, color: Color(0xFFF59E0B), size: 48),
+              const SizedBox(height: 16),
+              const Text('Función Premium', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 32),
+                child: Text('Interactúa con el Asistente IA impulsado por la magia del Plan Premium.', textAlign: TextAlign.center),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cerrar'),
+              )
+            ],
+          ),
+        ),
+      );
+    }
 
     // Initial greeting if no messages
     final messages = chatState.messages.isEmpty 
@@ -96,24 +144,26 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 40, height: 40,
-                      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
-                      child: const Icon(LucideIcons.sparkles, color: Colors.white, size: 24),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('QUIVO', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
-                          Text('Siempre disponible para ayudarte', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12), overflow: TextOverflow.ellipsis),
-                        ],
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40, height: 40,
+                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
+                        child: const Icon(LucideIcons.sparkles, color: Colors.white, size: 24),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('QUIVO', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                            Text('Siempre disponible para ayudarte', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12), overflow: TextOverflow.ellipsis),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 IconButton(
                   icon: const Icon(LucideIcons.x, color: Colors.white),

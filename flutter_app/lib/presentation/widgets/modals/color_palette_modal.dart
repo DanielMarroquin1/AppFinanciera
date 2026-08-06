@@ -189,9 +189,11 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                           children: [
                             Icon(LucideIcons.crown, color: Colors.white, size: 16),
                             SizedBox(width: 8),
-                            Text(
-                              '⭐ MEMBRESÍA PREMIUM ACTIVA: Puedes aplicar todos los temas canjeados',
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                            Expanded(
+                              child: Text(
+                                '⭐ MEMBRESÍA PREMIUM ACTIVA: Puedes aplicar todos los temas canjeados',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                              ),
                             ),
                           ],
                         ),
@@ -594,46 +596,94 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                                     style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14),
                                   ),
                                 )
-                              : ElevatedButton(
-                                  onPressed: () async {
-                                    await ref.read(colorPaletteProvider.notifier).setPaletteById(selectedPalette.id);
-                                    if (context.mounted) {
-                                      Navigator.of(context).pop();
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Row(
-                                            children: [
-                                              const Icon(LucideIcons.palette, color: Colors.white, size: 20),
-                                              const SizedBox(width: 10),
-                                              Expanded(
-                                                child: Text(
-                                                  '✨ Paleta "${selectedPalette.name}" aplicada a toda tu aplicación.',
-                                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                              : (!isPremium)
+                                  ? ElevatedButton.icon(
+                                      onPressed: () {
+                                        AdService().showRewardedAd(
+                                          context,
+                                          false,
+                                          onRewardEarned: () async {
+                                            await ref.read(colorPaletteProvider.notifier).setPaletteById(selectedPalette.id);
+                                            if (context.mounted) {
+                                              Navigator.of(context).pop();
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Row(
+                                                    children: [
+                                                      const Icon(LucideIcons.palette, color: Colors.white, size: 20),
+                                                      const SizedBox(width: 10),
+                                                      Expanded(
+                                                        child: Text(
+                                                          '✨ Paleta "${selectedPalette.name}" aplicada a toda tu aplicación.',
+                                                          style: const TextStyle(fontWeight: FontWeight.bold),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  backgroundColor: selectedPalette.colors[0],
+                                                  behavior: SnackBarBehavior.floating,
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                                  duration: const Duration(seconds: 4),
                                                 ),
+                                              );
+                                            }
+                                          },
+                                        );
+                                      },
+                                      icon: const Icon(LucideIcons.video, color: Colors.white, size: 20),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: selectedPalette.colors[0],
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        elevation: 4,
+                                        shadowColor: selectedPalette.colors[0].withValues(alpha: 0.4),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      ),
+                                      label: const Text(
+                                        'Ver Anuncio para Equipar',
+                                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
+                                      ),
+                                    )
+                                  : ElevatedButton(
+                                      onPressed: () async {
+                                        await ref.read(colorPaletteProvider.notifier).setPaletteById(selectedPalette.id);
+                                        if (context.mounted) {
+                                          Navigator.of(context).pop();
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Row(
+                                                children: [
+                                                  const Icon(LucideIcons.palette, color: Colors.white, size: 20),
+                                                  const SizedBox(width: 10),
+                                                  Expanded(
+                                                    child: Text(
+                                                      '✨ Paleta "${selectedPalette.name}" aplicada a toda tu aplicación.',
+                                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
-                                          backgroundColor: selectedPalette.colors[0],
-                                          behavior: SnackBarBehavior.floating,
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                          duration: const Duration(seconds: 4),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: selectedPalette.colors[0],
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    elevation: 4,
-                                    shadowColor: selectedPalette.colors[0].withValues(alpha: 0.4),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                  ),
-                                  child: const Text(
-                                    'Equipar y Aplicar ✨',
-                                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
-                                  ),
-                                ),
+                                              backgroundColor: selectedPalette.colors[0],
+                                              behavior: SnackBarBehavior.floating,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                              duration: const Duration(seconds: 4),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: selectedPalette.colors[0],
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        elevation: 4,
+                                        shadowColor: selectedPalette.colors[0].withValues(alpha: 0.4),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      ),
+                                      child: const Text(
+                                        'Equipar y Aplicar ✨',
+                                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
+                                      ),
+                                    ),
                     ),
                   ],
                 ),

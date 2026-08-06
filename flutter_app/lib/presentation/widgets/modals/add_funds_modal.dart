@@ -6,7 +6,10 @@ import '../../providers/auth_provider.dart';
 import '../../providers/saving_goals_provider.dart';
 import '../../../core/services/ad_service.dart';
 import '../../../core/utils/currency_formatter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../domain/entities/saving_goal.dart';
+import '../../../domain/entities/transaction.dart' as t;
+import '../../providers/transaction_provider.dart';
 
 class AddFundsModal extends ConsumerStatefulWidget {
   final SavingGoal goal;
@@ -115,6 +118,20 @@ class _AddFundsModalState extends ConsumerState<AddFundsModal> {
                           currentAmount: widget.goal.currentAmount + amount,
                         );
                         await ref.read(savingGoalsProvider.notifier).updateGoal(updatedGoal);
+                        
+                        // Deduct from balance
+                        final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+                        final deductionTx = t.TransactionModel(
+                          id: DateTime.now().millisecondsSinceEpoch.toString(),
+                          userId: uid,
+                          amount: amount,
+                          type: 'expense',
+                          category: 'savings',
+                          description: 'Aporte a meta: ${widget.goal.name}',
+                          date: DateTime.now(),
+                          isFixed: false,
+                        );
+                        await ref.read(transactionNotifierProvider.notifier).addTransaction(deductionTx);
                         if (mounted) {
                           final isPremium = ref.read(authProvider).user?.isPremium ?? false;
                           await AdService().registerActionAndShowInterstitial(

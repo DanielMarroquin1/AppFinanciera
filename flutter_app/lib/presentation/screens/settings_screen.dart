@@ -216,7 +216,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 ],
                               ],
                             ),
-                            Text(user?.email ?? 'correo@email.com', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                            Text(
+                              user?.email ?? 'correo@email.com', 
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
                           ],
                         ),
                       )
@@ -237,6 +242,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   )
                 ],
               ),
+            ),
             ),
             const SizedBox(height: 24),
 
@@ -280,6 +286,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ],
                 ),
               ),
+            ),
             const SizedBox(height: 24),
 
             // Sections
@@ -488,6 +495,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 80),
           ],
+        ),
         ),
       ),
     );
@@ -2184,7 +2192,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 16),
           ],
         ),
-      ),
       ),
     );
   }

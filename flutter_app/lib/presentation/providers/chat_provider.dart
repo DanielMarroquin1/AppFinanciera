@@ -79,12 +79,23 @@ class ChatNotifier extends Notifier<ChatState> {
         String displayText = fullResponse;
 
         try {
-          final decoded = jsonDecode(fullResponse);
+          // Extraer solo la parte JSON si existe
+          String jsonPart = fullResponse;
+          int startIndex = fullResponse.indexOf('{');
+          int endIndex = fullResponse.lastIndexOf('}');
+          if (startIndex != -1 && endIndex != -1 && endIndex > startIndex) {
+            jsonPart = fullResponse.substring(startIndex, endIndex + 1);
+          }
+          
+          final decoded = jsonDecode(jsonPart);
           if (decoded is Map<String, dynamic>) {
             if (decoded['___PROPOSAL___'] == true) {
               isProposal = true;
               payload = decoded;
-              displayText = "He analizado tus datos y tengo una propuesta de ahorro para ti.";
+              displayText = fullResponse.substring(0, startIndex > 0 ? startIndex : fullResponse.length).trim();
+              if (displayText.isEmpty) {
+                displayText = "He analizado tus datos y tengo una propuesta de ahorro para ti.";
+              }
             } else if (decoded['___ADD_TRANSACTION___'] == true) {
               payload = decoded;
               final typeStr = decoded['type'] == 'income' ? 'ingreso' : 'gasto';

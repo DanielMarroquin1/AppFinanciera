@@ -12,12 +12,14 @@ class AddSavingGoalModal extends ConsumerStatefulWidget {
   final String? initialName;
   final double? initialTargetAmount;
   final String? initialIcon;
+  final SavingGoal? goalToEdit;
 
   const AddSavingGoalModal({
     super.key,
     this.initialName,
     this.initialTargetAmount,
     this.initialIcon,
+    this.goalToEdit,
   });
 
   static Future<void> show(
@@ -25,15 +27,17 @@ class AddSavingGoalModal extends ConsumerStatefulWidget {
     String? initialName,
     double? initialTargetAmount,
     String? initialIcon,
+    SavingGoal? goalToEdit,
   }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => AddSavingGoalModal(
-        initialName: initialName,
-        initialTargetAmount: initialTargetAmount,
-        initialIcon: initialIcon,
+        initialName: initialName ?? goalToEdit?.name,
+        initialTargetAmount: initialTargetAmount ?? goalToEdit?.targetAmount,
+        initialIcon: initialIcon ?? goalToEdit?.icon,
+        goalToEdit: goalToEdit,
       ),
     );
   }
@@ -116,8 +120,8 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Nueva Meta', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.w900)),
-                        Text('Define tu próximo objetivo', style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 14)),
+                        Text(widget.goalToEdit != null ? 'Editar Meta' : 'Nueva Meta', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.w900)),
+                        Text(widget.goalToEdit != null ? 'Modifica los detalles de tu meta' : 'Define tu próximo objetivo', style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 14)),
                       ],
                     ),
                   ),
@@ -240,21 +244,36 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
 
                           final user = ref.read(authProvider).user;
                           if (user != null) {
-                            final goal = SavingGoal(
-                              id: DateTime.now().millisecondsSinceEpoch.toString(),
-                              name: name,
-                              targetAmount: amount,
-                              currentAmount: 0.0,
-                              icon: selectedIcon,
-                              userId: user.email,
-                            );
-
-                            await ref.read(savingGoalsProvider.notifier).addGoal(goal);
-                            if (context.mounted) {
-                              Navigator.of(context).pop();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Meta de ahorro creada con éxito 🎉'), backgroundColor: Colors.green),
+                            if (widget.goalToEdit != null) {
+                              final updatedGoal = widget.goalToEdit!.copyWith(
+                                name: name,
+                                targetAmount: amount,
+                                icon: selectedIcon,
                               );
+                              await ref.read(savingGoalsProvider.notifier).updateGoal(updatedGoal);
+                              if (context.mounted) {
+                                Navigator.of(context).pop();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Meta actualizada con éxito 🎉'), backgroundColor: Colors.green),
+                                );
+                              }
+                            } else {
+                              final goal = SavingGoal(
+                                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                                name: name,
+                                targetAmount: amount,
+                                currentAmount: 0.0,
+                                icon: selectedIcon,
+                                userId: user.email,
+                              );
+
+                              await ref.read(savingGoalsProvider.notifier).addGoal(goal);
+                              if (context.mounted) {
+                                Navigator.of(context).pop();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Meta de ahorro creada con éxito 🎉'), backgroundColor: Colors.green),
+                                );
+                              }
                             }
                           }
                         },
@@ -264,7 +283,7 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                           padding: const EdgeInsets.symmetric(vertical: 20),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         ),
-                        child: const Text('Comenzar a Ahorrar', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                        child: Text(widget.goalToEdit != null ? 'Guardar Cambios' : 'Comenzar a Ahorrar', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
                     ),
                   ],

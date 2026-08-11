@@ -69,12 +69,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
       final user = ref.read(authProvider).user;
       if (user != null && user.email != null) {
         RecurrenceService.processRecurrences(user.email!);
+        LocalNotificationService.scheduleDailyTransactionReminders();
       }
     });
+
+    showTutorialTrigger.addListener(_onTutorialTriggered);
+  }
+
+  void _onTutorialTriggered() {
+    if (showTutorialTrigger.value) {
+      showTutorialTrigger.value = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (mounted) {
+          await Future.delayed(const Duration(milliseconds: 300));
+          if (mounted) _showTutorial();
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
+    showTutorialTrigger.removeListener(_onTutorialTriggered);
     _fireAnimController.dispose();
     super.dispose();
   }
@@ -172,12 +188,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
     final creditCardsAsync = ref.watch(computedCreditCardsProvider);
     final hasOverlimitCard = (user?.isPremium == true) ? (creditCardsAsync.value?.any((card) => card.currentBalance >= card.limit && card.limit > 0) ?? false) : false;
 
-    showTutorialTrigger.addListener(() {
-      if (showTutorialTrigger.value) {
-        showTutorialTrigger.value = false;
-        _showTutorial();
-      }
-    });
+    // showTutorialTrigger listener moved to initState
 
     if (user != null && !user.profileComplete && !_profileChecked) {
       _profileChecked = true;
@@ -281,7 +292,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
     final isStreakActive = currentStreak >= 2 || isFrozenGrace;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 24.0, bottom: 80.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

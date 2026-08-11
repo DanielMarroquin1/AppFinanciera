@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/entities/transaction.dart';
+import 'local_notification_service.dart';
+import '../../domain/entities/credit_card.dart';
 
 class RecurrenceService {
   static final _firestore = FirebaseFirestore.instance;
@@ -55,57 +57,107 @@ class RecurrenceService {
           
           await newTxRef.set(tx.toFirestore());
         }
+
+        // NOTIFICACION MENSUAL DE DEUDA
+        if (debt.recurrenceDay != null) {
+          await LocalNotificationService.scheduleMonthlyReminder(
+            id: debt.id.hashCode,
+            dayOfMonth: debt.recurrenceDay!,
+            title: 'Recordatorio de Deuda 🏦',
+            body: 'Hoy es el día de pago para: ${debt.name} (${debt.installmentAmount})',
+          );
+        }
       }
     } catch (e) {
       print('Error processing debts recurrences: $e');
     }
 
-    // 2. Process Fixed Incomes
+    // 2. Process Fixed Transactions (Incomes and Expenses)
     try {
-      final incomesQuery = await _firestore
+      final fixedTxQuery = await _firestore
           .collection('transactions')
           .where('userId', isEqualTo: userId)
-          .where('type', isEqualTo: 'income')
           .where('isFixed', isEqualTo: true)
           .get();
 
-      for (var doc in incomesQuery.docs) {
-        final income = TransactionModel.fromFirestore(doc);
+      for (var doc in fixedTxQuery.docs) {
+        final txTemplate = TransactionModel.fromFirestore(doc);
         
-        if (income.recurrenceType == null) continue;
+        // NOTIFICACION MENSUAL DE GASTO/INGRESO FIJO
+        if (txTemplate.recurrenceDay != null) {
+          await LocalNotificationService.scheduleMonthlyReminder(
+            id: txTemplate.id.hashCode,
+            dayOfMonth: txTemplate.recurrenceDay!,
+            title: txTemplate.type == 'income' ? 'Ingreso Fijo 💰' : 'Gasto Fijo 📉',
+            body: 'Hoy se procesa tu ${txTemplate.type == 'income' ? 'ingreso' : 'gasto'}: ${txTemplate.description} (${txTemplate.amount})',
+          );
+        }
+
+        if (txTemplate.recurrenceType == null) continue;
 
         bool shouldProcess = _checkRecurrence(
-          income.recurrenceType!,
-          income.recurrenceDay,
-          income.recurrenceDay2,
-          income.lastProcessedDate,
+          txTemplate.recurrenceType!,
+          txTemplate.recurrenceDay,
+          txTemplate.recurrenceDay2,
+          txTemplate.lastProcessedDate,
           now,
         );
 
         if (shouldProcess) {
           // Update template transaction
-          await _firestore.collection('transactions').doc(income.id).update({
+          await _firestore.collection('transactions').doc(txTemplate.id).update({
             'lastProcessedDate': Timestamp.fromDate(now),
           });
 
-          // Generate new income
+          // Generate new transaction
           final newTxRef = _firestore.collection('transactions').doc();
           final newTx = TransactionModel(
             id: newTxRef.id,
             userId: userId,
-            amount: income.amount,
-            type: 'income',
-            category: income.category,
-            description: income.description,
+            amount: txTemplate.amount,
+            type: txTemplate.type,
+            category: txTemplate.category,
+            description: txTemplate.description,
             date: now,
-            isFixed: false, // Set to false so it acts as a normal income entry for the month
+            isFixed: false, // Set to false so it acts as a normal entry for the month
           );
 
           await newTxRef.set(newTx.toFirestore());
         }
       }
     } catch (e) {
-      print('Error processing fixed incomes recurrences: $e');
+      print('Error processing fixed transactions recurrences: $e');
+    }
+
+    // 3. Process Credit Cards Notifications
+    try {
+      final cardsQuery = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('credit_cards')
+          .get();
+          
+      for (var doc in cardsQuery.docs) {
+        try {
+          final card = CreditCard.fromFirestore(doc);
+          // Notificación de corte
+          await LocalNotificationService.scheduleMonthlyReminder(
+            id: '${card.id}_corte'.hashCode,
+            dayOfMonth: card.cutOffDay,
+            title: 'Corte de Tarjeta 💳',
+            body: 'Hoy es la fecha de corte de tu ${card.name}.',
+          );
+          // Notificación de pago
+          await LocalNotificationService.scheduleMonthlyReminder(
+            id: '${card.id}_pago'.hashCode,
+            dayOfMonth: card.paymentDay,
+            title: 'Pago de Tarjeta 💳',
+            body: 'Hoy es la fecha límite de pago para tu ${card.name}. ¡Evita intereses!',
+          );
+        } catch (_) {}
+      }
+    } catch (e) {
+      print('Error processing credit card notifications: $e');
     }
   }
 

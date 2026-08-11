@@ -104,6 +104,58 @@ class LocalNotificationService {
     }
   }
 
+  /// Programa notificaciones diarias múltiples (ej. 8am, 2pm, 8pm)
+  static Future<void> scheduleDailyTransactionReminders() async {
+    if (kIsWeb) return;
+    if (!_initialized) await init();
+    try {
+      // 8 AM
+      await _scheduleDailyTime(id: 1001, hour: 8, minute: 0, title: 'Buenos días 🌅', body: '¿Ya registraste tus gastos de la mañana? ¡Mantén tu presupuesto al día!');
+      // 2 PM
+      await _scheduleDailyTime(id: 1002, hour: 14, minute: 0, title: 'Buenas tardes ☀️', body: 'Recuerda registrar cualquier gasto del almuerzo en la app.');
+      // 8 PM
+      await _scheduleDailyTime(id: 1003, hour: 20, minute: 0, title: 'Buenas noches 🌙', body: 'Antes de dormir, asegúrate de que todos tus movimientos del día estén registrados.');
+    } catch (e) {
+      debugPrint('Error programando recordatorios diarios: $e');
+    }
+  }
+
+  static Future<void> _scheduleDailyTime({required int id, required int hour, required int minute, required String title, required String body}) async {
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    if (scheduledDate.isBefore(now)) {
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    }
+    const androidDetails = AndroidNotificationDetails('finanza_high_importance_channel', 'Notificaciones Finanza', importance: Importance.max, priority: Priority.high);
+    const details = NotificationDetails(android: androidDetails, iOS: DarwinNotificationDetails());
+    await _plugin.zonedSchedule(id, title, body, scheduledDate, details, androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle, uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime, matchDateTimeComponents: DateTimeComponents.time);
+  }
+
+  /// Programa un recordatorio mensual para una fecha específica (ej. pago de tarjeta, deudas)
+  static Future<void> scheduleMonthlyReminder({required int id, required int dayOfMonth, required String title, required String body}) async {
+    if (kIsWeb) return;
+    if (!_initialized) await init();
+    try {
+      final now = tz.TZDateTime.now(tz.local);
+      // Agendar a las 9 AM de ese día
+      var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, dayOfMonth, 9, 0);
+      if (scheduledDate.isBefore(now)) {
+        // Si la fecha ya pasó este mes, pasarlo al mes siguiente
+        final nextMonth = now.month == 12 ? 1 : now.month + 1;
+        final nextYear = now.month == 12 ? now.year + 1 : now.year;
+        // Evitar días inválidos como 31 de Febrero
+        final maxDaysInNextMonth = DateTime(nextYear, nextMonth + 1, 0).day;
+        final finalDay = dayOfMonth > maxDaysInNextMonth ? maxDaysInNextMonth : dayOfMonth;
+        scheduledDate = tz.TZDateTime(tz.local, nextYear, nextMonth, finalDay, 9, 0);
+      }
+      const androidDetails = AndroidNotificationDetails('finanza_high_importance_channel', 'Notificaciones Finanza', importance: Importance.max, priority: Priority.high);
+      const details = NotificationDetails(android: androidDetails, iOS: DarwinNotificationDetails());
+      await _plugin.zonedSchedule(id, title, body, scheduledDate, details, androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle, uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime, matchDateTimeComponents: DateTimeComponents.dayOfMonthAndTime);
+    } catch (e) {
+      debugPrint('Error programando recordatorio mensual: $e');
+    }
+  }
+
   /// Programa una notificación diaria (ej. recordatorio de racha a las 8 PM)
   static Future<void> scheduleDailyReminder({
     required int id,

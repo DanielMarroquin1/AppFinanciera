@@ -146,7 +146,7 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
                               category: 'cc_payment',
                               date: DateTime.now(),
                               description: 'Pago de tarjeta ${card.name}',
-                              type: 'expense',
+                              type: 'cc_payment',
                               userId: firebase_auth.FirebaseAuth.instance.currentUser?.email ?? 'test@test.com',
                               creditCardId: card.id,
                             );

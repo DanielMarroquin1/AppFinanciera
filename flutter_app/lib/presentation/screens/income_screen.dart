@@ -10,6 +10,8 @@ import '../providers/transaction_provider.dart';
 import '../providers/debts_provider.dart';
 import '../providers/auth_provider.dart';
 import '../../core/utils/currency_formatter.dart';
+import '../widgets/modals/monthly_report_modal.dart';
+import '../widgets/modals/pdf_report_modal.dart';
 import '../../core/utils/localization.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
@@ -248,28 +250,7 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                           color: isDark ? Colors.white : Colors.black,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      InkWell(
-                        onTap: _showMonthPicker,
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                '$displayMonthStr${selectedCategory != 'Todas' ? ' • $selectedCategory' : ''}',
-                                style: TextStyle(
-                                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(LucideIcons.chevronDown, size: 16, color: isDark ? Colors.grey[400] : Colors.grey[600]),
-                            ],
-                          ),
-                        ),
-                      ),
+                      // Dropdown removed based on user request
                     ],
                   ),
                 ),
@@ -394,54 +375,54 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    InkWell(
-                      onTap: () {
-                        if (authState.user?.isPremium == true) {
-                          PremiumIncomeModal.show(context, selectedMonth, selectedYear);
-                        } else {
-                          PremiumPaywallDialog.show(context, customMessage: 'Obtén el Plan Premium para ver el detalle exclusivo de todos tus ingresos mensuales.');
-                        }
-                      },
-                      borderRadius: BorderRadius.circular(24),
+                    GestureDetector(
+                      onTap: () => MonthlyReportModal.show(context, reportType: 'income'),
                       child: Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: paletteGradient,
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: paletteGradient,
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))
+                        ]
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
+                                child: const Icon(LucideIcons.trendingUp, color: Colors.white, size: 28),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text('Ingresos de $displayMonthStr', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                                        const SizedBox(width: 6),
+                                        const Icon(LucideIcons.crown, color: Colors.amber, size: 14),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(CurrencyFormatter.format(totalIncomes, currencyCode ?? 'USD'), style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      ),
                     ),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))
-                    ]
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(LucideIcons.trendingUp, color: Colors.white, size: 32),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Ingresos de $displayMonthStr', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
-                            const SizedBox(height: 8),
-                            Text(CurrencyFormatter.format(totalIncomes, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
                     // Active Fixed Incomes Section
                 Builder(

@@ -5,11 +5,13 @@ import '../widgets/modals/add_saving_goal_modal.dart';
 import '../widgets/modals/add_funds_modal.dart';
 import '../widgets/modals/saving_guide_modal.dart';
 import '../widgets/modals/ai_chat_modal.dart';
+import '../widgets/modals/interactive_ai_plan_modal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/color_palette_provider.dart';
 import '../providers/saving_goals_provider.dart';
 import '../../core/utils/localization.dart';
 import '../../core/utils/currency_formatter.dart';
+import '../widgets/modals/monthly_report_modal.dart';
 import '../providers/auth_provider.dart';
 
 class SavingsScreen extends ConsumerStatefulWidget {
@@ -139,6 +141,27 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                                   Text(loc.get('savings_month_progress'), style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14)),
                                 ],
                               ),
+                              const SizedBox(height: 20),
+                              ElevatedButton(
+                                onPressed: () {
+                                  MonthlyReportModal.show(context);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: paletteGradient[0],
+                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  elevation: 0,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Icon(LucideIcons.barChart2, size: 18),
+                                    SizedBox(width: 8),
+                                    Text('Estadísticas PRO', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -157,11 +180,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               child: InkWell(
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Abriendo Asistente de IA...')));
-                  AIChatModal.show(
-                    context, 
-                    initialMessage: 'Analiza mis ingresos y gastos y generame un plan de ahorro funcional paso a paso.'
-                  );
+                  InteractiveAiPlanModal.show(context);
                 },
                 borderRadius: BorderRadius.circular(24),
                 child: Container(

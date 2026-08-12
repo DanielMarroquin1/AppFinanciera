@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../core/routing/app_router.dart';
 import '../providers/auth_provider.dart';
+import 'dart:ui';
+import 'dart:math' as math;
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -13,30 +14,55 @@ class OnboardingScreen extends ConsumerStatefulWidget {
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-
-  final List<Map<String, String>> _pages = [
+  
+  late final AnimationController _fadeController;
+  late final AnimationController _floatController;
+  
+  final List<Map<String, dynamic>> _pages = [
     {
       'title': 'Control Total',
       'description': 'Lleva un registro preciso de tus gastos e ingresos con un dashboard inteligente y hermoso.',
-      'image': 'assets/images/onboarding_1.png',
+      'icon': LucideIcons.pieChart,
+      'colors': [const Color(0xFF3B82F6), const Color(0xFF1D4ED8)],
+      'bgGradient': [const Color(0xFF1E3A8A).withOpacity(0.15), const Color(0xFF172554).withOpacity(0.05)],
     },
     {
-      'title': 'QUIVO',
-      'description': 'Habla con la Inteligencia Artificial para registrar gastos automáticamente usando solo tu voz.',
-      'image': 'assets/images/onboarding_2.png',
+      'title': 'Inteligencia Artificial',
+      'description': 'Analiza tu salud financiera y recibe consejos personalizados impulsados por IA.',
+      'icon': LucideIcons.sparkles,
+      'colors': [const Color(0xFF8B5CF6), const Color(0xFF6D28D9)],
+      'bgGradient': [const Color(0xFF4C1D95).withOpacity(0.15), const Color(0xFF2E1065).withOpacity(0.05)],
     },
     {
-      'title': 'Gamificación y Tarjetas',
-      'description': 'Mantén tu racha de ahorro, gana insignias y administra tus tarjetas de crédito como un profesional.',
-      'image': 'assets/images/onboarding_3.png',
+      'title': 'Reportes y Metas',
+      'description': 'Genera PDFs profesionales, ahorra para tus sueños y gestiona tus tarjetas de crédito.',
+      'icon': LucideIcons.trendingUp,
+      'colors': [const Color(0xFF10B981), const Color(0xFF047857)],
+      'bgGradient': [const Color(0xFF064E3B).withOpacity(0.15), const Color(0xFF022C22).withOpacity(0.05)],
     },
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
+    _floatController = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat(reverse: true);
+    _fadeController.forward();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _fadeController.dispose();
+    _floatController.dispose();
+    super.dispose();
+  }
+
   Future<void> _completeOnboarding() async {
-    final prefs = ref.read(sharedPreferencesProvider);
+    final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('has_seen_onboarding', true);
 
     if (mounted) {
@@ -52,156 +78,272 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final page = _pages[_currentPage];
+    final bgColors = page['bgGradient'] as List<Color>;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF111827) : Colors.white,
+      backgroundColor: isDark ? const Color(0xFF0B0F19) : const Color(0xFFF8FAFC),
       body: Stack(
         children: [
-          PageView.builder(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
-            },
-            itemCount: _pages.length,
-            itemBuilder: (context, index) {
-              final page = _pages[index];
-              return _buildPage(
-                title: page['title']!,
-                description: page['description']!,
-                imagePath: page['image']!,
-                isDark: isDark,
-              );
-            },
+          // Background Animated Gradients
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 600),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isDark 
+                    ? bgColors 
+                    : [bgColors[0].withOpacity(0.05), Colors.white],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
           ),
           
-          // Navigation controls
+          // Floating background blobs
           Positioned(
-            bottom: 40,
-            left: 24,
-            right: 24,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Indicators
-                Row(
-                  children: List.generate(
-                    _pages.length,
-                    (index) => AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      margin: const EdgeInsets.only(right: 8),
-                      height: 8,
-                      width: _currentPage == index ? 24 : 8,
-                      decoration: BoxDecoration(
-                        color: _currentPage == index
-                            ? const Color(0xFFDC2626)
-                            : Colors.grey.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
+            top: -100,
+            left: -50,
+            child: AnimatedBuilder(
+              animation: _floatController,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(0, 20 * math.sin(_floatController.value * math.pi)),
+                  child: Container(
+                    width: 300,
+                    height: 300,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: (page['colors'] as List<Color>)[0].withOpacity(isDark ? 0.2 : 0.1),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (page['colors'] as List<Color>)[0].withOpacity(isDark ? 0.3 : 0.15),
+                          blurRadius: 100,
+                          spreadRadius: 20,
+                        )
+                      ],
                     ),
+                  ),
+                );
+              },
+            ),
+          ),
+          
+          SafeArea(
+            child: Column(
+              children: [
+                // Top header (Skip button)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16, right: 24, left: 24),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      if (_currentPage < _pages.length - 1)
+                        TextButton(
+                          onPressed: _completeOnboarding,
+                          style: TextButton.styleFrom(
+                            foregroundColor: isDark ? Colors.grey[400] : Colors.grey[600],
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          ),
+                          child: const Text('Omitir', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        ),
+                    ],
                   ),
                 ),
                 
-                // Next / Start Button
-                ElevatedButton(
-                  onPressed: () {
-                    if (_currentPage == _pages.length - 1) {
-                      _completeOnboarding();
-                    } else {
-                      _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
+                // PageView for content
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    physics: const BouncingScrollPhysics(),
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentPage = index;
+                      });
+                      _fadeController.forward(from: 0.0);
+                    },
+                    itemCount: _pages.length,
+                    itemBuilder: (context, index) {
+                      return _buildPageContent(
+                        _pages[index], 
+                        isDark, 
+                        index == _currentPage
                       );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFDC2626),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 0,
+                    },
                   ),
-                  child: Row(
+                ),
+                
+                // Bottom Controls
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+                  child: Column(
                     children: [
-                      Text(
-                        _currentPage == _pages.length - 1 ? 'Comenzar' : 'Siguiente',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      // Page Indicators
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          _pages.length,
+                          (index) => AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            height: 8,
+                            width: _currentPage == index ? 32 : 8,
+                            decoration: BoxDecoration(
+                              color: _currentPage == index
+                                  ? (page['colors'] as List<Color>)[0]
+                                  : (isDark ? Colors.grey[800] : Colors.grey[300]),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ),
                       ),
-                      if (_currentPage < _pages.length - 1) ...[
-                        const SizedBox(width: 8),
-                        const Icon(LucideIcons.arrowRight, size: 18),
-                      ],
+                      
+                      const SizedBox(height: 48),
+                      
+                      // Main Action Button
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        width: double.infinity,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          gradient: LinearGradient(
+                            colors: page['colors'] as List<Color>,
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (page['colors'] as List<Color>)[0].withOpacity(0.4),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            )
+                          ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(20),
+                            onTap: () {
+                              if (_currentPage == _pages.length - 1) {
+                                _completeOnboarding();
+                              } else {
+                                _pageController.nextPage(
+                                  duration: const Duration(milliseconds: 500),
+                                  curve: Curves.easeOutCubic,
+                                );
+                              }
+                            },
+                            child: Center(
+                              child: Text(
+                                _currentPage == _pages.length - 1 ? 'Empezar ahora' : 'Siguiente',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          
-          // Skip button
-          if (_currentPage < _pages.length - 1)
-            Positioned(
-              top: 60,
-              right: 24,
-              child: TextButton(
-                onPressed: _completeOnboarding,
-                style: TextButton.styleFrom(foregroundColor: Colors.grey),
-                child: const Text('Omitir', style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
-            ),
         ],
       ),
     );
   }
 
-  Widget _buildPage({
-    required String title,
-    required String description,
-    required String imagePath,
-    required bool isDark,
-  }) {
+  Widget _buildPageContent(Map<String, dynamic> page, bool isDark, bool isActive) {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.symmetric(horizontal: 32.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            flex: 3,
-            child: Center(
-              child: Image.asset(
-                imagePath,
-                fit: BoxFit.contain,
+          // Icon Container
+          AnimatedOpacity(
+            opacity: isActive ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 400),
+            child: AnimatedSlide(
+              offset: isActive ? Offset.zero : const Offset(0, 0.2),
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeOutCubic,
+              child: AnimatedBuilder(
+                animation: _floatController,
+                builder: (context, child) {
+                  return Transform.translate(
+                    offset: Offset(0, 10 * math.sin(_floatController.value * math.pi + 1.0)),
+                    child: Container(
+                      padding: const EdgeInsets.all(40),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: (page['colors'] as List<Color>)[0].withOpacity(0.2),
+                            blurRadius: 40,
+                            offset: const Offset(0, 20),
+                          )
+                        ],
+                        border: Border.all(
+                          color: (page['colors'] as List<Color>)[0].withOpacity(0.3),
+                          width: 2,
+                        ),
+                      ),
+                      child: Icon(
+                        page['icon'] as IconData,
+                        size: 80,
+                        color: (page['colors'] as List<Color>)[0],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ),
-          Expanded(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 32),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black,
+          
+          const SizedBox(height: 60),
+          
+          // Text Content
+          AnimatedOpacity(
+            opacity: isActive ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 500),
+            curve: const Interval(0.2, 1.0),
+            child: AnimatedSlide(
+              offset: isActive ? Offset.zero : const Offset(0, 0.2),
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeOutCubic,
+              child: Column(
+                children: [
+                  Text(
+                    page['title'] as String,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      letterSpacing: -0.5,
+                      height: 1.2,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  description,
-                  style: TextStyle(
-                    fontSize: 16,
-                    height: 1.5,
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  const SizedBox(height: 20),
+                  Text(
+                    page['description'] as String,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      height: 1.6,
+                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

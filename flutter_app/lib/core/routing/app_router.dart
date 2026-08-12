@@ -20,8 +20,12 @@ class AppRouter {
   static GoRouter createRouter(bool hasSeenOnboarding) {
     return GoRouter(
       navigatorKey: rootNavigatorKey,
-      initialLocation: '/login', // Removed onboarding logic per user request
+      initialLocation: '/login',
       routes: [
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),

@@ -12,6 +12,7 @@ import '../../presentation/widgets/rewards_shop_modal.dart';
 import '../../presentation/widgets/modals/notifications_modal.dart';
 import '../../presentation/widgets/modals/category_budget_modal.dart';
 import '../../presentation/widgets/modals/premium_paywall_dialog.dart';
+import '../../presentation/widgets/modals/pdf_report_modal.dart';
 import '../../presentation/providers/color_palette_provider.dart';
 import '../../core/utils/localization.dart';
 import '../screens/settings_screen.dart';
@@ -113,6 +114,8 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
                   
                   if (!context.mounted) break;
                   
+                  keepMenuOpen = false; // Always close the menu after an action is selected
+                  
                   if (action == 'what-if') {
                     final isPremium = ref.read(authProvider).user?.isPremium ?? false;
                     if (!isPremium) {
@@ -120,7 +123,6 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
                     } else {
                       context.push('/what-if');
                     }
-                    keepMenuOpen = false;
                   } else if (action == 'rewards-shop') {
                     await RewardsShopModal.show(context);
                   } else if (action == 'ai-chat') {
@@ -129,6 +131,12 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
                     await NotificationsModal.show(context);
                   } else if (action == 'category-budget') {
                     await CategoryBudgetModal.show(context);
+                  } else if (action == 'pdf-report') {
+                    if (ref.read(authProvider).user?.isPremium == true) {
+                      await PDFReportModal.show(context);
+                    } else {
+                      await PremiumPaywallDialog.show(context, customMessage: 'Obtén Premium para generar reportes avanzados en PDF.');
+                    }
                   }
                 }
               },

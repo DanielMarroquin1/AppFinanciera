@@ -5,6 +5,8 @@ import 'package:fl_chart/fl_chart.dart';
 import '../widgets/modals/expenses_filter_modal.dart';
 import '../widgets/modals/expense_report_modal.dart';
 import '../widgets/modals/voice_expense_modal.dart'; // VoiceTransactionModal (handles both expenses & incomes)
+import '../widgets/modals/premium_paywall_dialog.dart';
+import '../widgets/modals/monthly_report_modal.dart';
 import '../widgets/modals/category_detail_modal.dart';
 import '../widgets/modals/add_debt_modal.dart';
 import '../widgets/modals/add_expense_modal.dart';
@@ -13,6 +15,8 @@ import '../providers/transaction_provider.dart';
 import '../providers/debts_provider.dart';
 import '../providers/auth_provider.dart';
 import '../../core/utils/currency_formatter.dart';
+import '../widgets/modals/monthly_report_modal.dart';
+import '../widgets/modals/pdf_report_modal.dart';
 import '../../core/utils/localization.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -210,13 +214,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                 color: isDark ? Colors.white : Colors.black,
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              '$displayMonthStr${selectedCategory != 'Todas' ? ' • $selectedCategory' : ''}',
-              style: TextStyle(
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
-              ),
-            ),
+            // Date text removed based on user request
             const SizedBox(height: 16),
 
             // Action buttons
@@ -392,49 +390,58 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Total card
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: paletteGradient,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                    GestureDetector(
+                      onTap: () => MonthlyReportModal.show(context, reportType: 'expense'),
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: paletteGradient,
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))
+                          ]
                         ),
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))
-                        ]
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('${loc.get('total_expenses_month')} $displayMonthStr', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
-                          const SizedBox(height: 8),
-                          Text(CurrencyFormatter.format(totalExpenses, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 16),
-                          Container(
-                            height: 8,
-                            width: double.infinity,
-                            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
-                            child: FractionallySizedBox(
-                              alignment: Alignment.centerLeft,
-                              widthFactor: (budgetPercentage / 100).clamp(0.0, 1.0),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: budgetPercentage > 80 ? const Color(0xFFF87171) : Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text('${loc.get('total_expenses_month')} $displayMonthStr', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                                const SizedBox(width: 6),
+                                const Icon(LucideIcons.crown, color: Colors.amber, size: 14),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(CurrencyFormatter.format(totalExpenses, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 16),
+                            Container(
+                              height: 8,
+                              width: double.infinity,
+                              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
+                              child: FractionallySizedBox(
+                                alignment: Alignment.centerLeft,
+                                widthFactor: (budgetPercentage / 100).clamp(0.0, 1.0),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: budgetPercentage > 80 ? const Color(0xFFF87171) : Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            totalIncome > 0 
-                              ? '${budgetPercentage.toStringAsFixed(0)}% ${loc.get('of_your_income')} (${CurrencyFormatter.format(totalIncome, currencyCode)})' 
-                              : loc.get('no_income_yet'),
-                            style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            Text(
+                              totalIncome > 0 
+                                ? '${budgetPercentage.toStringAsFixed(0)}% ${loc.get('of_your_income')} (${CurrencyFormatter.format(totalIncome, currencyCode)})' 
+                                : loc.get('no_income_yet'),
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),

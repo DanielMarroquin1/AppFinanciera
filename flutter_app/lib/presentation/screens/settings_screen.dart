@@ -23,6 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/rewards_shop_modal.dart';
 import '../providers/transaction_provider.dart';
 import 'dashboard_screen.dart'; // Add import for showTutorialProvider
+import '../widgets/modals/app_tutorial_modal.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -54,67 +55,71 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       backgroundColor: Colors.transparent, // Handled by AppShell
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Header
+            Text(
+              loc.get('settings_title'),
+              style: TextStyle(
+                fontSize: 34,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+            const SizedBox(height: 24),
+            
             // Missing Data Banner
             if (showBanner && user != null && !user.profileComplete)
               Container(
                 margin: const EdgeInsets.only(bottom: 24),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: paletteGradient,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFF97316), Color(0xFFEA580C)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: isDark ? const Color(0xFF9A3412) : const Color(0xFFEA580C),
-                    width: 2,
-                  ),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))
+                    BoxShadow(color: const Color(0xFFEA580C).withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))
                   ],
                 ),
                 child: Stack(
                   children: [
                     Positioned(
-                      top: 0, right: 0,
-                      child: GestureDetector(
-                        onTap: () => setState(() => showBanner = false),
-                        child: const Icon(LucideIcons.x, color: Colors.white70, size: 20),
+                      top: -5, right: -5,
+                      child: IconButton(
+                        onPressed: () => setState(() => showBanner = false),
+                        icon: const Icon(LucideIcons.x, color: Colors.white70, size: 20),
                       ),
                     ),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(LucideIcons.alertCircle, color: Colors.white, size: 24),
-                        const SizedBox(width: 12),
+                        const Icon(LucideIcons.alertCircle, color: Colors.white, size: 28),
+                        const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(loc.get('complete_profile'), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 6),
                               Text(loc.get('complete_profile_desc'), style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
-                              const SizedBox(height: 12),
-                              Row(children: [const Icon(Icons.circle, size: 6, color: Colors.white), const SizedBox(width: 8), Text(loc.get('country'), style: const TextStyle(color: Colors.white))]),
-                              const SizedBox(height: 4),
-                              Row(children: [const Icon(Icons.circle, size: 6, color: Colors.white), const SizedBox(width: 8), Text(loc.get('currency'), style: const TextStyle(color: Colors.white))]),
-                              const SizedBox(height: 4),
-                              Row(children: [const Icon(Icons.circle, size: 6, color: Colors.white), const SizedBox(width: 8), Text(loc.get('salary'), style: const TextStyle(color: Colors.white))]),
                               const SizedBox(height: 16),
                               ElevatedButton(
-                                onPressed: () {
-                                  CompleteProfileModal.show(context);
-                                },
+                                onPressed: () => CompleteProfileModal.show(context),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
-                                  foregroundColor: paletteGradient[0],
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  foregroundColor: const Color(0xFFEA580C),
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                 ),
-                                child: Text(loc.get('complete_now'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                                child: Text(loc.get('complete_now'), style: const TextStyle(fontWeight: FontWeight.w800)),
                               )
                             ],
                           ),
@@ -125,169 +130,117 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
 
-            // Header
-            Text(
-              loc.get('settings_title'),
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              loc.get('settings_subtitle'),
-              style: TextStyle(
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 24),
-
             // Profile Card
-            ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: Container(
+            GestureDetector(
+              onTap: () => EditProfileModal.show(context),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: paletteGradient,
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(28),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))
+                    BoxShadow(
+                      color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    )
                   ]
                 ),
-                child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Stack(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 72, height: 72,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: paletteGradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(color: paletteGradient[0].withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 5))
+                        ],
+                      ),
+                      child: Center(child: Text(user?.avatarEmoji ?? '👤', style: const TextStyle(fontSize: 34))),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            width: 64, height: 64,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: isDark ? 0.1 : 0.2),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Center(child: Text(user?.avatarEmoji ?? '👤', style: const TextStyle(fontSize: 32))),
+                          Text(
+                            user?.name ?? 'Usuario',
+                            style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: -0.5),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          if (isPremium)
-                            Positioned(
-                              top: -4, right: -4,
-                              child: Container(
-                                width: 24, height: 24,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF59E0B),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 2),
-                                ),
-                                child: const Icon(LucideIcons.crown, color: Colors.white, size: 12),
+                          const SizedBox(height: 4),
+                          Text(
+                            user?.email ?? 'correo@email.com', 
+                            style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (isPremium) ...[
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5)),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(LucideIcons.crown, color: Color(0xFFF59E0B), size: 12),
+                                  SizedBox(width: 6),
+                                  Text('PREMIUM', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 10, fontWeight: FontWeight.w900)),
+                                ],
                               ),
                             ),
+                          ],
                         ],
+                      ),
+                    ),
+                    Icon(LucideIcons.chevronRight, color: isDark ? Colors.grey[600] : Colors.grey[400]),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Premium Banner
+            if (!isPremium) ...[
+              GestureDetector(
+                onTap: () => PremiumModal.show(context),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(colors: paletteGradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [BoxShadow(color: paletteGradient[0].withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
+                        child: const Icon(LucideIcons.crown, color: Colors.white, size: 28),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Flexible(child: Text(user?.name ?? 'Usuario', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
-                                if (isPremium) ...[
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF59E0B),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(LucideIcons.crown, color: Colors.white, size: 10),
-                                        SizedBox(width: 4),
-                                        Text('PRO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                            Text(
-                              user?.email ?? 'correo@email.com', 
-                              style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
+                            const Text('Actualizar a Premium', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 4),
+                            Text('Desbloquea todo el potencial', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
                           ],
                         ),
-                      )
+                      ),
+                      const Icon(LucideIcons.arrowRight, color: Colors.white),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      EditProfileModal.show(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white.withValues(alpha: isDark ? 0.1 : 0.2),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: const Text('Editar Perfil'),
-                  )
-                ],
-              ),
-            ),
-            ),
-            const SizedBox(height: 24),
-
-            // Premium Banner
-            if (!isPremium)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: paletteGradient,
-                    ),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))],
-                  ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(LucideIcons.crown, color: Colors.white, size: 24),
-                        SizedBox(width: 12),
-                        Text('Actualizar a Premium', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text('Desbloquea todas las funciones: sin anuncios, reportes avanzados, sincronización en la nube y más.', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () { 
-                        PremiumModal.show(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: paletteGradient[0],
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      ),
-                      child: const Text('Ver Planes', style: TextStyle(fontWeight: FontWeight.bold)),
-                    )
-                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 32),
+            ],
 
             // Sections
             _buildSection(
@@ -296,8 +249,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               items: [
                 _buildSettingItem(isDark, icon: LucideIcons.bell, iconBg: isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF), iconColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), title: loc.get('notifications'), subtitle: loc.get('notifications_desc'), onTap: () => _showNotificationsModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.globe, iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE), iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), title: loc.get('language'), subtitle: selectedLanguage, onTap: () => _showLanguageModal(context, isDark)),
-                _buildSettingItem(isDark, icon: LucideIcons.globe, iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE), iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), title: loc.get('country'), subtitle: selectedCountry, onTap: () => _showCountryModal(context, isDark)),
-                _buildSettingItem(isDark, icon: LucideIcons.dollarSign, iconBg: isDark ? const Color(0xFF064E3B) : const Color(0xFFD1FAE5), iconColor: isDark ? const Color(0xFF34D399) : const Color(0xFF059669), title: loc.get('currency'), subtitle: selectedCurrency, onTap: () => _showCurrencyModal(context, isDark)),
+                _buildSettingItem(isDark, icon: LucideIcons.mapPin, iconBg: isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7), iconColor: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A), title: loc.get('country'), subtitle: selectedCountry, onTap: () => _showCountryModal(context, isDark)),
+                _buildSettingItem(isDark, icon: LucideIcons.dollarSign, iconBg: isDark ? const Color(0xFF78350F) : const Color(0xFFFEF3C7), iconColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), title: loc.get('currency'), subtitle: selectedCurrency, onTap: () => _showCurrencyModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.moon, iconBg: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), iconColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFF4B5563), title: loc.get('dark_theme'), subtitle: loc.get('dark_theme_desc'), hasSwitch: true),
               ],
             ),
@@ -307,7 +260,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               isDark,
               title: 'Seguridad',
               items: [
-                _buildSettingItem(isDark, icon: LucideIcons.lock, iconBg: isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7), iconColor: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A), title: 'Cambiar Contraseña', subtitle: 'Última actualización hace 3 meses', onTap: () => _showChangePasswordModal(context, isDark)),
+                _buildSettingItem(isDark, icon: LucideIcons.lock, iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE), iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), title: 'Cambiar Contraseña', subtitle: 'Última actualización hace 3 meses', onTap: () => _showChangePasswordModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.key, iconBg: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFEE2E2), iconColor: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), title: 'Autenticación de Dos Factores', subtitle: 'Protege tu cuenta', onTap: () => _showTwoFactorModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.fingerprint, iconBg: isDark ? const Color(0xFF0284C7).withValues(alpha: 0.3) : const Color(0xFFE0F2FE), iconColor: const Color(0xFF38BDF8), title: 'Huella Digital / Face ID', subtitle: 'Acceso rápido biométrico activado', onTap: () => _showBiometricTestModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.timer, iconBg: isDark ? const Color(0xFF312E81).withValues(alpha: 0.5) : const Color(0xFFE0E7FF), iconColor: const Color(0xFF818CF8), title: 'Cierre Automático (${user?.autoLockMinutes ?? 1} min)', subtitle: 'Protección de privacidad activa', onTap: () => _showTimeoutInfoModal(context, isDark)),
@@ -318,16 +271,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             // Presupuestos & Sincronización Section
             _buildSection(
               isDark,
-              title: 'Presupuestos & Sincronización',
+              title: 'Automatización & Límites',
               items: [
                 _buildSettingItem(
                   isDark,
                   icon: LucideIcons.zap,
                   iconBg: isDark ? const Color(0xFF312E81).withValues(alpha: 0.6) : const Color(0xFFE0E7FF),
                   iconColor: const Color(0xFF6366F1),
-                  title: 'Notificaciones Automáticas en Android',
-                  subtitle: 'Clasifica compras en automático',
-                  badge: !isPremium ? '🔒 VIP' : '⚡ Activo',
+                  title: 'Conexión Bancaria y Siri',
+                  subtitle: 'Clasificación de gastos automática',
+                  badge: !isPremium ? 'PRO' : 'Activo',
                   badgeColor: !isPremium ? const Color(0xFFD97706) : const Color(0xFF6366F1),
                   onTap: () {
                     if (!isPremium) {
@@ -337,8 +290,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     }
                   },
                 ),
-                _buildSettingItem(isDark, icon: LucideIcons.pieChart, iconBg: isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF), iconColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), title: 'Presupuesto por Categoría', subtitle: 'Establece límites por rubro', badge: !isPremium ? '🔒 PRO' : null, badgeColor: !isPremium ? const Color(0xFFD97706) : null, onTap: () => CategoryBudgetModal.show(context)),
-                _buildSettingItem(isDark, icon: LucideIcons.bellRing, iconBg: isDark ? const Color(0xFF78350F).withValues(alpha: 0.5) : const Color(0xFFFEF3C7), iconColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), title: 'Alertas de Presupuesto', subtitle: 'Notificaciones al acercarte al límite', badge: !isPremium ? '🔒 PRO' : null, badgeColor: !isPremium ? const Color(0xFFD97706) : null, onTap: () => _showBudgetAlertModal(context, isDark)),
+                _buildSettingItem(isDark, icon: LucideIcons.pieChart, iconBg: isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF), iconColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), title: 'Presupuesto por Categoría', subtitle: 'Establece límites por rubro', badge: !isPremium ? 'PRO' : null, badgeColor: !isPremium ? const Color(0xFFD97706) : null, onTap: () => CategoryBudgetModal.show(context)),
+                _buildSettingItem(isDark, icon: LucideIcons.bellRing, iconBg: isDark ? const Color(0xFF78350F).withValues(alpha: 0.5) : const Color(0xFFFEF3C7), iconColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), title: 'Alertas de Presupuesto', subtitle: 'Avisos al acercarte al límite', badge: !isPremium ? 'PRO' : null, badgeColor: !isPremium ? const Color(0xFFD97706) : null, onTap: () => _showBudgetAlertModal(context, isDark)),
               ],
             ),
             const SizedBox(height: 24),
@@ -348,67 +301,43 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title: 'Apariencia',
               isPro: true,
               items: [
-                _buildSettingItem(isDark, icon: LucideIcons.palette, iconBg: isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF), iconColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), title: 'Paleta de Colores', subtitle: 'Personaliza tus colores', onTap: () {
-                  ColorPaletteModal.show(context);
-                }),
-
+                _buildSettingItem(isDark, icon: LucideIcons.palette, iconBg: isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF), iconColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), title: 'Paleta de Colores', subtitle: 'Personaliza tu aplicación', onTap: () => ColorPaletteModal.show(context)),
               ],
             ),
             const SizedBox(height: 24),
 
-            if (isPremium)
+            if (isPremium) ...[
               _buildSection(
                 isDark,
                 title: 'Suscripción Premium',
                 items: [
-                  _buildSettingItem(isDark, icon: LucideIcons.crown, iconBg: Colors.transparent, iconColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), title: 'Plan Premium', subtitle: 'Próxima renovación: 24 Feb 2027', badge: 'Activo', badgeColor: const Color(0xFF10B981)),
+                  _buildSettingItem(isDark, icon: LucideIcons.crown, iconBg: const Color(0xFFFEF3C7), iconColor: const Color(0xFFD97706), title: 'Plan Premium', subtitle: 'Próxima renovación: 24 Feb 2027', badge: 'Activo', badgeColor: const Color(0xFF10B981)),
                   _buildSettingItem(
                     isDark,
                     icon: LucideIcons.zap,
                     iconBg: isDark ? const Color(0xFF312E81).withValues(alpha: 0.6) : const Color(0xFFE0E7FF),
                     iconColor: const Color(0xFF6366F1),
-                    title: 'Hub de Sincronización Automática',
-                    subtitle: 'Lector de notificaciones y atajos de voz Siri',
-                    badge: '⚡ VIP',
+                    title: 'Hub de Sincronización',
+                    subtitle: 'Configura tus conexiones bancarias',
+                    badge: 'VIP',
                     badgeColor: const Color(0xFF6366F1),
-                    onTap: () {
-                      if (!isPremium) {
-                        PremiumPaywallDialog.show(context, customMessage: 'Conecta notificaciones bancarias y atajos de voz de Siri con el Plan Premium.');
-                      } else {
-                        PremiumSyncHubModal.show(context);
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  GestureDetector(
-                    onTap: () => _showCancelSubscriptionModal(context, isDark),
-                    child: Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      decoration: BoxDecoration(
-                        color: isDark ? Colors.redAccent.withValues(alpha: 0.15) : Colors.red.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Cancelar Suscripción',
-                          style: TextStyle(
-                            color: Colors.redAccent,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
+                    onTap: () => PremiumSyncHubModal.show(context),
                   ),
                 ],
               ),
-            if (isPremium) const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              GestureDetector(
+                onTap: () => _showCancelSubscriptionModal(context, isDark),
+                child: Center(
+                  child: Text('Cancelar Suscripción', style: TextStyle(color: isDark ? Colors.redAccent : Colors.red, fontWeight: FontWeight.bold, fontSize: 15)),
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
 
             _buildSection(
               isDark,
-              title: 'Ayuda y Tutoriales',
+              title: 'Ayuda y Soporte',
               items: [
                 _buildSettingItem(
                   isDark,
@@ -416,15 +345,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   iconBg: isDark ? const Color(0xFF0284C7).withValues(alpha: 0.3) : const Color(0xFFE0F2FE),
                   iconColor: const Color(0xFF38BDF8),
                   title: 'Recorrido por la Aplicación',
-                  subtitle: 'Guía rápida de finanzas e IA para nuevos usuarios',
+                  subtitle: 'Guía rápida para nuevos usuarios',
                   onTap: () async {
                     final prefs = await SharedPreferences.getInstance();
                     await prefs.setBool('has_seen_app_tutorial', false);
                     if (context.mounted) {
-                      // Cierra el drawer si está abierto, luego redirige
-                      if (Scaffold.of(context).isDrawerOpen) {
-                        Navigator.pop(context);
-                      }
+                      if (Scaffold.of(context).isDrawerOpen) Navigator.pop(context);
                       context.go('/dashboard');
                       showTutorialTrigger.value = true;
                     }
@@ -432,35 +358,70 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
             // About
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
-                borderRadius: BorderRadius.circular(16),
-              ),
+            Center(
               child: Column(
                 children: [
-                  Text('Versión 2.5.0', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12)),
-                  const SizedBox(height: 4),
-                  Text('© 2026 Tu App de Finanzas', style: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 12)),
+                  const Icon(LucideIcons.fingerprint, size: 32, color: Color(0xFF6366F1)),
+                  const SizedBox(height: 8),
+                  Text('Versión 2.5.0', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 14, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  Text('© 2026 Tu Ecosistema Financiero', style: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 12)),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 40),
 
-            // Logout
+            // Tutorial Button
+            InkWell(
+              onTap: () async {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('has_seen_app_tutorial', false);
+                if (context.mounted) {
+                  // This will trigger the dashboard to show it if we go back, 
+                  // but let's just show it right now.
+                  AppTutorialModal.show(context);
+                }
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.3), width: 1),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(LucideIcons.sparkles, color: Color(0xFF38BDF8), size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Ver Tutorial de Bienvenida',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Logout Button
             InkWell(
               onTap: () {
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+                    backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                    title: Text('¿Cerrar sesión?', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
-                    content: Text('Tendrás que ingresar tus credenciales nuevamente.', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
+                    title: const Text('¿Cerrar sesión?', style: TextStyle(fontWeight: FontWeight.bold)),
+                    content: Text('Tendrás que ingresar tus credenciales nuevamente para acceder a tu bóveda.', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context), 
@@ -474,26 +435,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 );
               },
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.3) : const Color(0xFFFEF2F2),
-                  border: Border.all(color: isDark ? const Color(0xFF991B1B) : const Color(0xFFFECACA), width: 2),
-                  borderRadius: BorderRadius.circular(16),
+                  color: isDark ? Colors.redAccent.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: Center(
-                  child: Text(
-                    'Cerrar Sesión',
-                    style: TextStyle(
-                      color: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626),
-                      fontWeight: FontWeight.bold,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(LucideIcons.logOut, color: isDark ? Colors.redAccent : Colors.red, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Cerrar Sesión',
+                      style: TextStyle(
+                        color: isDark ? Colors.redAccent : Colors.red,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 80),
+            const SizedBox(height: 100),
           ],
         ),
         ),
@@ -509,39 +475,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(title, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
-            if (isPro) ...[
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(color: const Color(0xFFF59E0B), borderRadius: BorderRadius.circular(12)),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(LucideIcons.crown, color: Colors.white, size: 12),
-                    SizedBox(width: 4),
-                    Text('PRO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                  ],
+        Padding(
+          padding: const EdgeInsets.only(left: 12, bottom: 8),
+          child: Row(
+            children: [
+              Text(title.toUpperCase(), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
+              if (isPro) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(color: const Color(0xFFF59E0B).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(6)),
+                  child: const Text('PRO', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 9, fontWeight: FontWeight.w900)),
                 ),
-              ),
-            ]
-          ],
+              ]
+            ],
+          ),
         ),
-        const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1F2937) : Colors.white,
-            border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
-            borderRadius: BorderRadius.circular(20),
+            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+            borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: isDark
-                    ? Colors.black.withValues(alpha: 0.25)
-                    : const Color(0xFF0F172A).withValues(alpha: 0.06),
-                blurRadius: 14,
-                offset: const Offset(0, 4),
+                color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.03),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
               ),
             ],
           ),
@@ -553,7 +511,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 return Column(
                   children: [
                     child,
-                    Divider(height: 1, color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 60),
+                      child: Divider(height: 1, color: isDark ? Colors.grey[800] : Colors.grey[100]),
+                    ),
                   ],
                 );
               }
@@ -577,59 +538,62 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     Color? badgeColor,
     VoidCallback? onTap,
   }) {
-    return InkWell(
-      onTap: onTap ?? () {},
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              width: 40, height: 40,
-              decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(12)),
-              child: Icon(icon, color: iconColor, size: 20),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(title, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14)),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle, 
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            if (badge != null)
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap ?? () {},
+        borderRadius: BorderRadius.circular(24),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: badgeColor != null ? badgeColor.withValues(alpha: 0.2) : (isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7)),
-                  borderRadius: BorderRadius.circular(12),
+                width: 38, height: 38,
+                decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(10)),
+                child: Icon(icon, color: iconColor, size: 20),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle, 
+                      style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 12),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
-                child: Text(badge, style: TextStyle(color: badgeColor ?? (isDark ? const Color(0xFF86EFAC) : const Color(0xFF15803D)), fontSize: 12)),
-              )
-            else if (hasSwitch)
-              Switch(
-                value: isDark,
-                onChanged: (val) {
-                  if (title == 'Tema Oscuro') {
-                    ref.read(themeProvider.notifier).toggleTheme(context);
-                  }
-                },
-                activeThumbColor: Colors.purple,
-              )
-            else
-              Icon(LucideIcons.chevronRight, color: isDark ? Colors.grey[600] : Colors.grey[400], size: 20),
-          ],
+              ),
+              if (badge != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: badgeColor != null ? badgeColor.withValues(alpha: 0.15) : (isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(badge, style: TextStyle(color: badgeColor ?? (isDark ? const Color(0xFF86EFAC) : const Color(0xFF15803D)), fontSize: 11, fontWeight: FontWeight.bold)),
+                )
+              else if (hasSwitch)
+                Switch(
+                  value: isDark,
+                  onChanged: (val) {
+                    if (title == 'Tema Oscuro' || title == 'Dark Theme') {
+                      // We don't have loc access here, so just relying on the switch itself
+                      // or better, if the user toggles any switch we just toggle theme for now
+                      ref.read(themeProvider.notifier).toggleTheme(context);
+                    }
+                  },
+                  activeColor: Colors.white,
+                  activeTrackColor: const Color(0xFF6366F1),
+                )
+              else
+                Icon(LucideIcons.chevronRight, color: isDark ? Colors.grey[700] : Colors.grey[300], size: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -1858,7 +1822,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  'Has superado el ${alertThreshold.toInt()}% de límite mensual en base a tus ingresos actuales.',
+                                  'Has gastado el 103% de tus ingresos mensuales, superando tu límite establecido del ${alertThreshold.toInt()}%.',
                                   style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800], fontSize: 16),
                                 ),
                                 const SizedBox(height: 16),

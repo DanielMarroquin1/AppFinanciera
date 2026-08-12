@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/modals/forgot_password_modal.dart';
 import '../widgets/modals/privacy_policy_modal.dart';
 import '../../core/services/biometric_service.dart';
@@ -31,20 +32,61 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool hasSavedBiometrics = false;
   bool isBiometricSupported = false;
   bool rememberBiometric = true;
+  bool _isLoading = false;
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   final purposes = [
-    {'value': 'save', 'label': 'Aprender a ahorrar', 'emoji': '💰'},
-    {'value': 'finance', 'label': 'Saber más de finanzas', 'emoji': '📈'},
-    {'value': 'expenses', 'label': 'Aprender a llevar mis gastos', 'emoji': '📊'},
-    {'value': 'invest', 'label': 'Aprender a invertir', 'emoji': '💎'},
-    {'value': 'debts', 'label': 'Salir de deudas', 'emoji': '🎯'},
-    {'value': 'goals', 'label': 'Cumplir metas financieras', 'emoji': '🏆'},
+    {'value': 'save', 'label': 'Aprender a ahorrar', 'icon': LucideIcons.piggyBank},
+    {'value': 'finance', 'label': 'Saber más de finanzas', 'icon': LucideIcons.trendingUp},
+    {'value': 'expenses', 'label': 'Aprender a llevar mis gastos', 'icon': LucideIcons.pieChart},
+    {'value': 'invest', 'label': 'Aprender a invertir', 'icon': LucideIcons.gem},
+    {'value': 'debts', 'label': 'Salir de deudas', 'icon': LucideIcons.target},
+    {'value': 'goals', 'label': 'Cumplir metas financieras', 'icon': LucideIcons.award},
   ];
+
+  Widget _buildInputField({
+    required String hint,
+    required IconData icon,
+    required bool isDark,
+    bool isPassword = false,
+    required TextEditingController controller,
+    required ValueChanged<String> onChanged,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05)),
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: isPassword,
+        onChanged: onChanged,
+        style: TextStyle(color: isDark ? Colors.white : Colors.black),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400]),
+          prefixIcon: Icon(icon, color: const Color(0xFF6366F1), size: 20),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
     super.initState();
     _checkBiometrics();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   Future<void> _checkBiometrics() async {
@@ -59,6 +101,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         if (saved != null) {
           email = saved['email'] ?? '';
           password = saved['password'] ?? '';
+          _emailController.text = email;
+          _passwordController.text = password;
         }
       });
     }
@@ -120,8 +164,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
 
       if (!mounted) return;
-      context.go('/dashboard');
-      _showWelcomeMessage(context);
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+      if (!hasSeenOnboarding) {
+        context.go('/onboarding');
+      } else {
+        context.go('/dashboard');
+        _showWelcomeMessage(context);
+      }
     } on firebase_auth.FirebaseAuthException catch (e) {
       if (!mounted) return;
       String title = 'Error de Autenticación';
@@ -148,8 +198,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _submit() async {
-    if ((!isLogin && (!acceptedPolicies || purpose.isEmpty)) || email.isEmpty || password.isEmpty) return;
-    await _performLogin(email, password);
+    final currentEmail = _emailController.text.trim();
+    final currentPassword = _passwordController.text;
+    
+    if (!isLogin && (!acceptedPolicies || purpose.isEmpty)) {
+      _showErrorSnackBar(context, 'Faltan datos', 'Por favor selecciona un propósito y acepta las políticas.');
+      return;
+    }
+    if (currentEmail.isEmpty || currentPassword.isEmpty) {
+      _showErrorSnackBar(context, 'Faltan datos', 'Por favor ingresa tu correo y contraseña.');
+      return;
+    }
+    
+    setState(() => _isLoading = true);
+    await _performLogin(currentEmail, currentPassword);
+    if (mounted) setState(() => _isLoading = false);
   }
 
   Future<void> _handleBiometricLogin() async {
@@ -279,535 +342,274 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: isDark
-              ? const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF0F172A), Color(0xFF1E1B4B), Color(0xFF090D16)],
-                )
-              : const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFFFAF5FF), Color(0xFFEFF6FF), Color(0xFFE0E7FF)],
-                ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Logo y Header Estilo Web (Login.tsx)
-                  Container(
-                    width: 84,
-                    height: 84,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xFF9333EA), Color(0xFF2563EB)],
-                      ),
-                      borderRadius: BorderRadius.circular(28),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF9333EA).withValues(alpha: 0.35),
-                          blurRadius: 24,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    alignment: Alignment.center,
-                    child: const Text('💸', style: TextStyle(fontSize: 42)),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    isLogin ? '¡Bienvenido!' : 'Crear Cuenta',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.5,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    isLogin ? 'Inicia sesión para continuar' : 'Únete y empieza a ahorrar',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
-                      fontSize: 15,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Contenedor Principal (Glassmorphic & Clean)
-                  Container(
-                    width: double.infinity,
-                    constraints: const BoxConstraints(maxWidth: 480),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.88) : Colors.white.withValues(alpha: 0.95),
-                      borderRadius: BorderRadius.circular(32),
-                      border: Border.all(
-                        color: isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFF9333EA).withValues(alpha: 0.15),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.06),
-                          blurRadius: 40,
-                          offset: const Offset(0, 20),
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(28),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // Selector de Pestañas Iniciar Sesión / Registro
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () => setState(() => isLogin = true),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    decoration: BoxDecoration(
-                                      color: isLogin ? (isDark ? const Color(0xFF334155) : Colors.white) : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(14),
-                                      boxShadow: isLogin ? [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 8)] : [],
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Text('🔐 Ingresar', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: isLogin ? (isDark ? Colors.white : const Color(0xFF0F172A)) : Colors.grey)),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () => setState(() {
-                                    isLogin = false;
-                                    purpose = '';
-                                    acceptedPolicies = false;
-                                  }),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    decoration: BoxDecoration(
-                                      color: !isLogin ? (isDark ? const Color(0xFF334155) : Colors.white) : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(14),
-                                      boxShadow: !isLogin ? [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 8)] : [],
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Text('✨ Crear Cuenta', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: !isLogin ? (isDark ? Colors.white : const Color(0xFF0F172A)) : Colors.grey)),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Google Sign In Button (Estilo Web: Arriba y con borde elegante)
-                        InkWell(
-                          onTap: ref.watch(authProvider).isLoading
-                              ? null
-                              : () async {
-                                  try {
-                                    await ref.read(authProvider.notifier).loginWithGoogle();
-                                    if (context.mounted) {
-                                      context.go('/dashboard');
-                                      _showWelcomeMessage(context);
-                                    }
-                                  } on firebase_auth.FirebaseAuthException catch (e) {
-                                    if (!context.mounted) return;
-                                    if (e.code == 'sign-in-cancelled') return;
-                                    _showErrorSnackBar(context, 'Error', e.message ?? 'Error al iniciar sesión con Google.');
-                                  } catch (e) {
-                                    if (context.mounted) {
-                                      _showErrorSnackBar(context, 'Error', 'Error al iniciar sesión con Google.');
-                                    }
-                                  }
-                                },
-                          borderRadius: BorderRadius.circular(18),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 15),
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF0F172A) : Colors.white,
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(
-                                color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
-                                width: 1.8,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(LucideIcons.chrome, color: Color(0xFF4285F4), size: 22),
-                                const SizedBox(width: 12),
-                                Text(
-                                  'Continuar con Google',
-                                  style: TextStyle(
-                                    color: isDark ? Colors.white : const Color(0xFF0F172A),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Divider con "o"
-                        Row(
-                          children: [
-                            Expanded(child: Divider(color: isDark ? Colors.grey[700] : Colors.grey[300], thickness: 1)),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Text('o', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 13, fontWeight: FontWeight.w600)),
-                            ),
-                            Expanded(child: Divider(color: isDark ? Colors.grey[700] : Colors.grey[300], thickness: 1)),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-
-                        // OPCIÓN BIOMÉTRICA SIEMPRE DISPONIBLE EN LOGIN (Huella Digital / Face ID)
-                        if (isLogin) ...[
-                          InkWell(
-                            onTap: _handleBiometricLogin,
-                            borderRadius: BorderRadius.circular(20),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: isDark
-                                      ? [const Color(0xFF9333EA).withValues(alpha: 0.18), const Color(0xFF2563EB).withValues(alpha: 0.18)]
-                                      : [const Color(0xFFFAF5FF), const Color(0xFFEFF6FF)],
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: const Color(0xFF9333EA).withValues(alpha: isDark ? 0.45 : 0.6),
-                                  width: 1.5,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF9333EA).withValues(alpha: 0.1),
-                                    blurRadius: 15,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(colors: [Color(0xFF9333EA), Color(0xFF2563EB)]),
-                                      shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(color: const Color(0xFF9333EA).withValues(alpha: 0.4), blurRadius: 10),
-                                      ],
-                                    ),
-                                    child: const Icon(LucideIcons.fingerprint, color: Colors.white, size: 26),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              'Huella / Face ID',
-                                              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: isDark ? Colors.white : const Color(0xFF1E293B)),
-                                            ),
-                                            const SizedBox(width: 6),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                                                borderRadius: BorderRadius.circular(6),
-                                              ),
-                                              child: const Text('RÁPIDO', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFF10B981))),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 3),
-                                        Text(
-                                          hasSavedBiometrics
-                                              ? 'Toca para iniciar sesión de inmediato'
-                                              : 'Ingreso biométrico de alta seguridad',
-                                          style: TextStyle(fontSize: 12, color: isDark ? Colors.grey[300] : Colors.grey[600]),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Icon(LucideIcons.arrowRightCircle, color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), size: 24),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-
-                        // Formulario Email
-                        Text('Correo Electrónico', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, fontWeight: FontWeight.w700)),
-                        const SizedBox(height: 6),
-                        TextField(
-                          onChanged: (val) => setState(() => email = val),
-                          keyboardType: TextInputType.emailAddress,
-                          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-                          decoration: InputDecoration(
-                            hintText: 'tu@email.com',
-                            hintStyle: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 14),
-                            prefixIcon: Icon(LucideIcons.mail, color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), size: 20),
-                            filled: true,
-                            fillColor: isDark ? const Color(0xFF0F172A) : Colors.white,
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isDark ? Colors.grey[700]! : Colors.grey[300]!, width: 1.5)),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isDark ? Colors.grey[700]! : Colors.grey[300]!, width: 1.5)),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: Color(0xFF9333EA), width: 2),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Formulario Password
-                        Text('Contraseña', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, fontWeight: FontWeight.w700)),
-                        const SizedBox(height: 6),
-                        TextField(
-                          onChanged: (val) => setState(() => password = val),
-                          obscureText: !showPassword,
-                          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-                          decoration: InputDecoration(
-                            hintText: '••••••••••••',
-                            hintStyle: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 14),
-                            prefixIcon: Icon(LucideIcons.lock, color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), size: 20),
-                            suffixIcon: IconButton(
-                              icon: Icon(showPassword ? LucideIcons.eyeOff : LucideIcons.eye, color: isDark ? Colors.grey[400] : Colors.grey[500], size: 20),
-                              onPressed: () => setState(() => showPassword = !showPassword),
-                            ),
-                            filled: true,
-                            fillColor: isDark ? const Color(0xFF0F172A) : Colors.white,
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isDark ? Colors.grey[700]! : Colors.grey[300]!, width: 1.5)),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: isDark ? Colors.grey[700]! : Colors.grey[300]!, width: 1.5)),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(color: Color(0xFF9333EA), width: 2),
-                            ),
-                          ),
-                        ),
-
-                        if (isLogin) ...[
-                          const SizedBox(height: 12),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () => ForgotPasswordModal.show(context),
-                              style: TextButton.styleFrom(
-                                foregroundColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA),
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: const Text('¿Olvidaste tu contraseña?', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                            ),
-                          ),
-                        ],
-
-                        if (isBiometricSupported) ...[
-                          const SizedBox(height: 14),
-                          InkWell(
-                            onTap: () => setState(() => rememberBiometric = !rememberBiometric),
-                            borderRadius: BorderRadius.circular(12),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                children: [
-                                  AnimatedContainer(
-                                    duration: const Duration(milliseconds: 150),
-                                    width: 22, height: 22,
-                                    decoration: BoxDecoration(
-                                      color: rememberBiometric ? const Color(0xFF9333EA) : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: rememberBiometric ? const Color(0xFF9333EA) : (isDark ? Colors.grey[600]! : Colors.grey[400]!), width: 1.8),
-                                    ),
-                                    child: rememberBiometric ? const Icon(LucideIcons.check, color: Colors.white, size: 14) : null,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      'Recordar y activar acceso con Huella / Face ID',
-                                      style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, fontWeight: FontWeight.w600),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-
-                        // Purposes (Solo registro)
-                        if (!isLogin) ...[
-                          const SizedBox(height: 20),
-                          Text('¿Cuál es tu propósito para usar esta app?', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, fontWeight: FontWeight.w700)),
-                          const SizedBox(height: 10),
-                          ...purposes.map((p) {
-                            final isSelected = purpose == p['value'];
-                            return GestureDetector(
-                              onTap: () => setState(() => purpose = p['value']!),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                margin: const EdgeInsets.only(bottom: 8),
-                                padding: const EdgeInsets.all(14),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? (isDark ? const Color(0xFF9333EA).withValues(alpha: 0.25) : const Color(0xFFFAF5FF))
-                                      : (isDark ? const Color(0xFF0F172A) : Colors.white),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? const Color(0xFF9333EA)
-                                        : (isDark ? Colors.grey[800]! : Colors.grey[300]!),
-                                    width: isSelected ? 2 : 1.5,
-                                  ),
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Text(p['emoji']!, style: const TextStyle(fontSize: 22)),
-                                    const SizedBox(width: 12),
-                                    Expanded(child: Text(p['label']!, style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, fontSize: 13))),
-                                    if (isSelected)
-                                      const Icon(LucideIcons.checkCircle2, color: Color(0xFF9333EA), size: 18),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }),
-                          const SizedBox(height: 14),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                width: 22, height: 22,
-                                child: Checkbox(
-                                  value: acceptedPolicies,
-                                  onChanged: (val) => setState(() => acceptedPolicies = val ?? false),
-                                  activeColor: const Color(0xFF9333EA),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: RichText(
-                                  text: TextSpan(
-                                    style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[700], fontSize: 12),
-                                    children: [
-                                      const TextSpan(text: 'Acepto las '),
-                                      TextSpan(
-                                        text: 'Políticas de Privacidad',
-                                        style: TextStyle(color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
-                                        recognizer: TapGestureRecognizer()..onTap = () => PrivacyPolicyModal.show(context),
-                                      ),
-                                      const TextSpan(text: ' y Términos de Uso.'),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                        ],
-
-                        const SizedBox(height: 28),
-
-                        // Submit Button Estilo Web Gradient Purple/Blue
-                        Consumer(
-                          builder: (context, ref, child) {
-                            final authState = ref.watch(authProvider);
-                            final isLoading = authState.isLoading;
-                            final isDisabled = (!isLogin && (!acceptedPolicies || purpose.isEmpty)) || email.isEmpty || password.isEmpty || isLoading;
-                            
-                            return ElevatedButton(
-                              onPressed: isDisabled ? null : _submit,
-                              style: ElevatedButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                backgroundColor: Colors.transparent, 
-                                shadowColor: Colors.transparent,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                              ),
-                              child: Ink(
-                                decoration: BoxDecoration(
-                                  gradient: isDisabled
-                                    ? LinearGradient(colors: [isDark ? const Color(0xFF334155) : Colors.grey[300]!, isDark ? const Color(0xFF334155) : Colors.grey[300]!])
-                                    : const LinearGradient(colors: [Color(0xFF9333EA), Color(0xFF2563EB)]),
-                                  borderRadius: BorderRadius.circular(18),
-                                  boxShadow: isDisabled
-                                    ? []
-                                    : [
-                                        BoxShadow(color: const Color(0xFF9333EA).withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 8)),
-                                      ],
-                                ),
-                                child: Container(
-                                  alignment: Alignment.center,
-                                  constraints: const BoxConstraints(minHeight: 56),
-                                  child: isLoading
-                                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                      : Text(
-                                          isLogin ? 'Iniciar Sesión' : 'Crear Cuenta',
-                                          style: TextStyle(
-                                            color: isDisabled ? Colors.grey[500] : Colors.white, 
-                                            fontSize: 16, 
-                                            fontWeight: FontWeight.w800,
-                                            letterSpacing: 0.5,
-                                          ),
-                                        ),
-                                ),
-                              ),
-                            );
-                          }
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 28),
-
-                  // Toggle Text Link abajo
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        isLogin = !isLogin;
-                        purpose = '';
-                        acceptedPolicies = false;
-                      });
-                    },
-                    child: Text(
-                      isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión',
-                      style: TextStyle(
-                        color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
+      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+      body: Stack(
+        children: [
+          // Background Elements
+          Positioned(
+            top: -100, right: -50,
+            child: Container(
+              width: 300, height: 300, 
+              decoration: BoxDecoration(
+                shape: BoxShape.circle, 
+                color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                boxShadow: [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.15), blurRadius: 80, spreadRadius: 20)],
               ),
             ),
           ),
-        ),
+          Positioned(
+            bottom: -50, left: -50,
+            child: Container(
+              width: 250, height: 250, 
+              decoration: BoxDecoration(
+                shape: BoxShape.circle, 
+                color: const Color(0xFFEC4899).withValues(alpha: 0.1),
+                boxShadow: [BoxShadow(color: const Color(0xFFEC4899).withValues(alpha: 0.1), blurRadius: 80, spreadRadius: 20)],
+              ),
+            ),
+          ),
+
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // App Logo & Title
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.2), blurRadius: 30, offset: const Offset(0, 10))
+                          ],
+                        ),
+                        child: const Icon(LucideIcons.hexagon, size: 48, color: Color(0xFF6366F1)),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Text(
+                      isLogin ? 'Bienvenido de vuelta' : 'Crea tu Bóveda',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      isLogin ? 'Ingresa tus credenciales para continuar' : 'Comienza tu viaje hacia la libertad financiera',
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 40),
+
+                    // Inputs
+                    _buildInputField(
+                      hint: 'Correo electrónico',
+                      icon: LucideIcons.mail,
+                      isDark: isDark,
+                      controller: _emailController,
+                      onChanged: (val) => setState(() => email = val),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildInputField(
+                      hint: 'Contraseña',
+                      icon: LucideIcons.lock,
+                      isDark: isDark,
+                      isPassword: true,
+                      controller: _passwordController,
+                      onChanged: (val) => setState(() => password = val),
+                    ),
+
+                    if (isLogin) ...[
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () => ForgotPasswordModal.show(context),
+                          child: const Text('¿Olvidaste tu contraseña?', style: TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+                    ],
+                    
+                    if (!isLogin) const SizedBox(height: 24),
+
+                    // Biometric Checkbox
+                    if (isBiometricSupported) ...[
+                      InkWell(
+                        onTap: () => setState(() => rememberBiometric = !rememberBiometric),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Row(
+                            children: [
+                              Icon(
+                                rememberBiometric ? LucideIcons.checkSquare : LucideIcons.square,
+                                color: rememberBiometric ? const Color(0xFF6366F1) : Colors.grey,
+                              ),
+                              const SizedBox(width: 12),
+                              Text('Usar huella/Face ID', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+
+                    // Purposes
+                    if (!isLogin) ...[
+                      const SizedBox(height: 24),
+                      Text('Tu propósito principal:', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: purposes.map((p) {
+                          final isSelected = purpose == (p['value'] as String);
+                          return GestureDetector(
+                            onTap: () => setState(() => purpose = p['value'] as String),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: isSelected ? const Color(0xFF6366F1) : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: isSelected ? const Color(0xFF6366F1) : (isDark ? Colors.grey[800]! : Colors.grey[300]!)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(p['icon'] as IconData?, size: 16, color: isSelected ? Colors.white : (isDark ? Colors.grey[400] : Colors.grey[600])),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    p['label'] as String,
+                                    style: TextStyle(
+                                      color: isSelected ? Colors.white : (isDark ? Colors.grey[300] : Colors.grey[700]),
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: acceptedPolicies,
+                            onChanged: (val) => setState(() => acceptedPolicies = val ?? false),
+                            activeColor: const Color(0xFF6366F1),
+                          ),
+                          Expanded(
+                            child: Text(
+                              'Acepto los Términos y Condiciones y Política de Privacidad',
+                              style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12),
+                            ),
+                          )
+                        ],
+                      ),
+                    ],
+
+                    const SizedBox(height: 32),
+
+                    // Submit Button
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6366F1),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        elevation: 0,
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : Text(isLogin ? 'Ingresar' : 'Crear Cuenta', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Google Login Button
+                    OutlinedButton.icon(
+                      onPressed: _isLoading ? null : () async {
+                        setState(() => _isLoading = true);
+                        try {
+                          await ref.read(authProvider.notifier).loginWithGoogle();
+                          
+                          final user = ref.read(authProvider).user;
+                          if (user != null && user.isTwoFactorEnabled) {
+                            final verified = await _showMfaLoginVerificationDialog(context, user);
+                            if (!verified) {
+                              await ref.read(authProvider.notifier).logout();
+                              if (mounted) setState(() => _isLoading = false);
+                              return;
+                            }
+                          }
+                          
+                          if (!mounted) return;
+                          final prefs = await SharedPreferences.getInstance();
+                          final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+                          if (!hasSeenOnboarding) {
+                            context.go('/onboarding');
+                          } else {
+                            context.go('/dashboard');
+                            _showWelcomeMessage(context);
+                          }
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error con Google: ${e.toString()}'), backgroundColor: Colors.red),
+                          );
+                        } finally {
+                          if (mounted) setState(() => _isLoading = false);
+                        }
+                      },
+                      icon: Icon(LucideIcons.chrome, color: isDark ? Colors.white : Colors.black, size: 20),
+                      label: Text(
+                        'Continuar con Google',
+                        style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.1)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Toggle Mode
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          isLogin = !isLogin;
+                          purpose = '';
+                          acceptedPolicies = false;
+                        });
+                      },
+                      child: Text(
+                        isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión',
+                        style: TextStyle(
+                          color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -10,15 +10,18 @@ import '../../providers/color_palette_provider.dart';
 import 'premium_paywall_dialog.dart';
 
 class MonthlyReportModal extends ConsumerStatefulWidget {
-  const MonthlyReportModal({super.key});
+  final String reportType;
+  const MonthlyReportModal({super.key, this.reportType = 'general'});
 
-  static void show(BuildContext context) {
+  static void show(BuildContext context, {String reportType = 'general'}) {
     final container = ProviderScope.containerOf(context, listen: false);
     final isPremium = container.read(authProvider).user?.isPremium ?? false;
+    
     if (!isPremium) {
-      PremiumPaywallDialog.show(context, customMessage: 'Genera y exporta tu reporte mensual detallado en PDF con el Plan Premium.');
+      PremiumPaywallDialog.show(context, customMessage: 'Desbloquea los reportes detallados y análisis de tu balance con el Plan Premium.');
       return;
     }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -28,7 +31,7 @@ class MonthlyReportModal extends ConsumerStatefulWidget {
         initialChildSize: 0.9,
         minChildSize: 0.5,
         maxChildSize: 0.95,
-        builder: (_, controller) => MonthlyReportContent(scrollController: controller),
+        builder: (_, controller) => MonthlyReportContent(scrollController: controller, reportType: reportType),
       ),
     );
   }
@@ -46,8 +49,9 @@ class _MonthlyReportModalState extends ConsumerState<MonthlyReportModal> {
 
 class MonthlyReportContent extends ConsumerStatefulWidget {
   final ScrollController scrollController;
+  final String reportType;
 
-  const MonthlyReportContent({super.key, required this.scrollController});
+  const MonthlyReportContent({super.key, required this.scrollController, this.reportType = 'general'});
 
   @override
   ConsumerState<MonthlyReportContent> createState() => _MonthlyReportContentState();
@@ -247,25 +251,22 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
         data: (transactions) {
           double totalIncome = 0;
           double totalExpense = 0;
-          Map<String, double> categoryExpenses = {};
+          Map<String, double> categoryData = {};
 
           for (var t in transactions) {
             if (t.isFixed) continue;
             if (t.date.month == selectedMonth && t.date.year == selectedYear) {
               if (t.type == 'income') {
                 totalIncome += t.amount;
+                if (widget.reportType == 'income') {
+                  categoryData[t.category] = (categoryData[t.category] ?? 0) + t.amount;
+                }
               } else if (t.type == 'expense') {
-                // Ignore fixed templates? No, templates shouldn't be counted, only real expenses.
-                if (t.isFixed) continue; 
                 totalExpense += t.amount;
-                
-                // Exclude CC payments from category breakdown if they are just payments,
-                // but normally expenses are standard categories.
-                if (t.creditCardId == null) {
-                   categoryExpenses[t.category] = (categoryExpenses[t.category] ?? 0) + t.amount;
+                if (widget.reportType != 'income' && t.creditCardId == null) {
+                   categoryData[t.category] = (categoryData[t.category] ?? 0) + t.amount;
                 }
               } else if (t.type == 'cc_payment') {
-                // Cash out
                 totalExpense += t.amount;
               }
             }
@@ -273,7 +274,7 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
           
           final netBalance = totalIncome - totalExpense;
 
-          var sortedCategories = categoryExpenses.entries.toList()
+          var sortedCategories = categoryData.entries.toList()
             ..sort((a, b) => b.value.compareTo(a.value));
 
           return CustomScrollView(
@@ -335,54 +336,60 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Row(
                         children: [
-                          Expanded(
-                            child: _buildSummaryCard(
-                              title: 'Ingresos',
-                              amount: totalIncome,
-                              color: const Color(0xFF10B981),
-                              icon: LucideIcons.trendingUp,
-                              currencyCode: currencyCode,
+                          if (widget.reportType != 'expense') ...[
+                            Expanded(
+                              child: _buildSummaryCard(
+                                title: 'Ingresos',
+                                amount: totalIncome,
+                                color: const Color(0xFF10B981),
+                                icon: LucideIcons.trendingUp,
+                                currencyCode: currencyCode,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildSummaryCard(
-                              title: 'Gastos',
-                              amount: totalExpense,
-                              color: const Color(0xFFEF4444),
-                              icon: LucideIcons.trendingDown,
-                              currencyCode: currencyCode,
+                          ],
+                          if (widget.reportType == 'general') const SizedBox(width: 16),
+                          if (widget.reportType != 'income') ...[
+                            Expanded(
+                              child: _buildSummaryCard(
+                                title: 'Gastos',
+                                amount: totalExpense,
+                                color: const Color(0xFFEF4444),
+                                icon: LucideIcons.trendingDown,
+                                currencyCode: currencyCode,
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: paletteGradient),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [BoxShadow(color: paletteGradient[0].withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Flujo Neto', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
-                            Text(CurrencyFormatter.format(netBalance, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                          ],
+                    if (widget.reportType == 'general') ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(colors: paletteGradient),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [BoxShadow(color: paletteGradient[0].withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Flujo Neto', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                              Text(CurrencyFormatter.format(netBalance, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                     
                     const SizedBox(height: 32),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Align(
                         alignment: Alignment.centerLeft,
-                        child: Text('Gastos por Categoría', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                        child: Text(widget.reportType == 'income' ? 'Ingresos por Categoría' : 'Gastos por Categoría', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -404,7 +411,9 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       final category = sortedCategories[index];
-                      final percentage = totalExpense > 0 ? (category.value / totalExpense) : 0.0;
+                      final percentage = widget.reportType == 'income' 
+                          ? (totalIncome > 0 ? (category.value / totalIncome) : 0.0)
+                          : (totalExpense > 0 ? (category.value / totalExpense) : 0.0);
                       return _buildCategoryItem(
                         loc.translateCategory(category.key),
                         category.value,

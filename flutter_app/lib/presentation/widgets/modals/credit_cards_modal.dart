@@ -138,6 +138,10 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
                       child: ElevatedButton(
                         onPressed: () async {
                           final amount = double.tryParse(amountController.text) ?? 0.0;
+                          if (amount > card.currentBalance) {
+                            ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('No puedes abonar más del saldo adeudado.'), backgroundColor: Colors.red));
+                            return;
+                          }
                           if (amount > 0) {
                             final tx = TransactionModel(
                               id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -147,7 +151,7 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
                               date: DateTime.now(),
                               description: 'Pago de tarjeta ${card.name}',
                               type: 'cc_payment',
-                              userId: firebase_auth.FirebaseAuth.instance.currentUser?.email ?? 'test@test.com',
+                              userId: firebase_auth.FirebaseAuth.instance.currentUser?.uid ?? '',
                               creditCardId: card.id,
                             );
                             await ref.read(transactionNotifierProvider.notifier).addTransaction(tx);
@@ -300,9 +304,11 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
                           final double scale = isSelected ? 1.0 : 0.9;
                           final double opacity = isSelected ? 1.0 : 0.6;
                           
-                          Color baseColor = card.color;
-                          Color accentColor = Color.lerp(card.color, Colors.white, 0.2) ?? card.color;
-                          Color darkAccent = Color.lerp(card.color, Colors.black, 0.4) ?? card.color;
+                          final bool isOverdrawn = card.limit > 0 && card.currentBalance >= card.limit;
+                          
+                          Color baseColor = isOverdrawn ? const Color(0xFFEF4444) : card.color;
+                          Color accentColor = Color.lerp(baseColor, Colors.white, 0.2) ?? baseColor;
+                          Color darkAccent = Color.lerp(baseColor, Colors.black, 0.4) ?? baseColor;
 
                           return TweenAnimationBuilder<double>(
                             tween: Tween(begin: scale, end: scale),
@@ -383,6 +389,20 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
                                               right: -20, bottom: -20,
                                               child: Icon(LucideIcons.creditCard, size: 140, color: Colors.white.withOpacity(0.05)),
                                             ),
+                                            
+                                            // Overdrawn Sticker
+                                            if (isOverdrawn)
+                                              Positioned(
+                                                top: 20, left: -30,
+                                                child: Transform.rotate(
+                                                  angle: -0.785, // -45 degrees
+                                                  child: Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 6),
+                                                    color: Colors.redAccent.withOpacity(0.9),
+                                                    child: const Text('SOBREGIRADA', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10, letterSpacing: 2)),
+                                                  ),
+                                                ),
+                                              ),
                                             
                                             // Content
                                             Padding(
@@ -531,9 +551,19 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
                                         const SizedBox(height: 12),
                                         Row(
                                           children: [
-                                            _MiniDatePill(isDark: isDark, label: 'CORTE', value: 'Día ${activeCard.cutOffDay}'),
+                                            _MiniDatePill(
+                                              isDark: isDark, 
+                                              label: 'CORTE', 
+                                              value: 'Día ${activeCard.cutOffDay}',
+                                              status: _getDateStatus(activeCard.cutOffDay),
+                                            ),
                                             const SizedBox(width: 8),
-                                            _MiniDatePill(isDark: isDark, label: 'PAGO', value: 'Día ${activeCard.paymentDay}'),
+                                            _MiniDatePill(
+                                              isDark: isDark, 
+                                              label: 'PAGO', 
+                                              value: 'Día ${activeCard.paymentDay}',
+                                              status: _getDateStatus(activeCard.paymentDay),
+                                            ),
                                           ],
                                         ),
                                       ],
@@ -598,6 +628,14 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
       ),
     );
   }
+  
+  String _getDateStatus(int day) {
+    final now = DateTime.now();
+    final currentDay = now.day;
+    if (currentDay > day) return 'passed';
+    if (day - currentDay <= 3 && day - currentDay >= 0) return 'warning';
+    return 'normal';
+  }
 }
 
 class _ChipPainter extends CustomPainter {
@@ -632,23 +670,40 @@ class _MiniDatePill extends StatelessWidget {
   final bool isDark;
   final String label;
   final String value;
+  final String status;
   
-  const _MiniDatePill({required this.isDark, required this.label, required this.value});
+  const _MiniDatePill({required this.isDark, required this.label, required this.value, this.status = 'normal'});
   
   @override
   Widget build(BuildContext context) {
+    Color borderColor = isDark ? Colors.white.withOpacity(0.15) : Colors.black.withOpacity(0.1);
+    Color textColor = isDark ? Colors.white : Colors.black;
+    Color labelColor = isDark ? Colors.grey[400]! : Colors.grey[600]!;
+    
+    if (status == 'warning') {
+      borderColor = Colors.orange;
+      textColor = Colors.orange;
+      labelColor = Colors.orange[700]!;
+    } else if (status == 'passed') {
+      borderColor = Colors.red;
+      textColor = Colors.red;
+      labelColor = Colors.red[700]!;
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.04),
+        color: status != 'normal' 
+            ? (status == 'warning' ? Colors.orange.withOpacity(0.1) : Colors.red.withOpacity(0.1))
+            : (isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.04)),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: isDark ? Colors.white.withOpacity(0.15) : Colors.black.withOpacity(0.1)),
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(label, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 9, fontWeight: FontWeight.w800)),
-          Text(value, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 12, fontWeight: FontWeight.w900)),
+          Text(label, style: TextStyle(color: labelColor, fontSize: 9, fontWeight: FontWeight.w800)),
+          Text(value, style: TextStyle(color: textColor, fontSize: 12, fontWeight: FontWeight.w900)),
         ],
       ),
     );

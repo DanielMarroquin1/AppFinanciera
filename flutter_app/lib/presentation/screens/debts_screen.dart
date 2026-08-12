@@ -10,6 +10,7 @@ import '../providers/transaction_provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/utils/localization.dart';
 import '../widgets/modals/add_debt_modal.dart';
+import '../widgets/modals/monthly_report_modal.dart';
 import '../providers/auth_provider.dart';
 import '../../core/utils/currency_formatter.dart';
 
@@ -243,6 +244,27 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                                   ],
                                 ),
                               ],
+                            ),
+                            const SizedBox(height: 24),
+                            ElevatedButton(
+                              onPressed: () {
+                                MonthlyReportModal.show(context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: paletteGradient[0],
+                                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                elevation: 0,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Icon(LucideIcons.barChart2, size: 18),
+                                  SizedBox(width: 8),
+                                  Text('Estadísticas PRO', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ],
+                              ),
                             ),
                           ],
                         ),

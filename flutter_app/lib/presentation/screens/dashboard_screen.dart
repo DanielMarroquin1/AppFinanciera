@@ -14,6 +14,7 @@ import '../widgets/modals/edit_profile_modal.dart';
 import '../widgets/modals/daily_tip_modal.dart';
 import '../widgets/modals/complete_profile_modal.dart';
 import '../providers/color_palette_provider.dart';
+import '../widgets/modals/pdf_report_modal.dart';
 import '../providers/auth_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/credit_card_provider.dart';
@@ -27,11 +28,12 @@ import 'package:go_router/go_router.dart';
 import '../providers/notification_provider.dart';
 import '../widgets/modals/notifications_modal.dart';
 import '../widgets/modals/add_saving_goal_modal.dart';
-import '../widgets/modals/tutorial_overlay.dart';
+import '../widgets/modals/app_tutorial_modal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/ai_insights_provider.dart';
 import '../widgets/common/micro_insights_widget.dart';
 import '../../core/services/recurrence_service.dart';
+import '../../core/services/local_notification_service.dart';
 
 final showTutorialTrigger = ValueNotifier<bool>(false);
 
@@ -96,35 +98,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
   }
 
   void _showTutorial() {
-    TutorialOverlay.show(
-      context,
-      [
-        TutorialStep(
-          key: _balanceKey,
-          title: "Tu Balance General",
-          description: "Aquí verás el resumen de tu dinero, restando tus gastos de tus ingresos.",
-          textAlignment: Alignment.bottomCenter,
-        ),
-        TutorialStep(
-          key: _quickActionsKey,
-          title: "Gestión Rápida",
-          description: "Agrega ingresos o registra gastos rápidamente desde estos botones.",
-          textAlignment: Alignment.topCenter,
-        ),
-        TutorialStep(
-          key: _streakKey,
-          title: "Mantén tu Racha",
-          description: "Registra tus finanzas todos los días para no perder tu racha y ganar recompensas.",
-          textAlignment: Alignment.bottomCenter,
-        ),
-      ],
-      () {
-        SharedPreferences.getInstance().then((prefs) {
-          prefs.setBool('has_seen_app_tutorial', true);
-        });
-        if (mounted) ref.read(authProvider.notifier).completeTour();
-      }
-    );
+    AppTutorialModal.show(context).then((_) {
+      SharedPreferences.getInstance().then((prefs) {
+        prefs.setBool('has_seen_app_tutorial', true);
+      });
+      if (mounted) ref.read(authProvider.notifier).completeTour();
+    });
   }
 
   bool _profileChecked = false;
@@ -186,7 +165,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
     final currencyCode = user?.currency;
     final unreadNotificationsCount = ref.watch(unreadNotificationsCountProvider);
     final creditCardsAsync = ref.watch(computedCreditCardsProvider);
-    final hasOverlimitCard = (user?.isPremium == true) ? (creditCardsAsync.value?.any((card) => card.currentBalance >= card.limit && card.limit > 0) ?? false) : false;
+    final hasOverlimitCard = creditCardsAsync.value?.any((card) => card.currentBalance >= card.limit && card.limit > 0) ?? false;
 
     // showTutorialTrigger listener moved to initState
 
@@ -309,10 +288,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                       children: [
                         GestureDetector(
                           onTap: () => Scaffold.of(context).openDrawer(),
-                          child: CircleAvatar(
-                            radius: 18,
-                            backgroundColor: palette.colors[0].withValues(alpha: 0.2),
-                            child: Icon(LucideIcons.user, size: 20, color: palette.colors[0]),
+                          child: Container(
+                            width: 48, height: 48,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(colors: palette.colors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(color: palette.colors[0].withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))
+                              ],
+                            ),
+                            child: Center(child: Text(user?.avatarEmoji ?? '👤', style: const TextStyle(fontSize: 22))),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -664,7 +649,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                             ),
                           ),
                         ],
-                      )
+                      ),
                     ],
                   ),
                 ));
@@ -717,7 +702,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Has superado el ${limitPercentage.toInt()}% de límite mensual de tus ingresos.',
+                              'Has gastado el ${(totalIncome > 0 ? (totalExpense / totalIncome * 100) : 0).toInt()}% de tus ingresos mensuales, superando tu límite establecido del ${limitPercentage.toInt()}%.',
                               style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800], fontSize: 16),
                             ),
                             const SizedBox(height: 16),

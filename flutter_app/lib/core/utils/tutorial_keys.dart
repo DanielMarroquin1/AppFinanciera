@@ -8,4 +8,9 @@ class TutorialKeys {
   static final GlobalKey cardsKey = GlobalKey();
   static final GlobalKey savingsNavKey = GlobalKey();
   static final GlobalKey premiumKey = GlobalKey();
+  
+  // Old keys kept for compatibility
+  static final GlobalKey streakKey = GlobalKey();
+  static final GlobalKey quickActionsKey = GlobalKey();
+  static final GlobalKey aiInsightsKey = GlobalKey();
 }

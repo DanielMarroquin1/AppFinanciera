@@ -8,24 +8,23 @@ class AppTutorialCoachMark {
   static TutorialCoachMark? _tutorialCoachMark;
 
   static Widget _buildDialogBox(String title, String description, IconData icon, Color color) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
+    return Builder(
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final bgColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+        final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
+        final subtitleColor = isDark ? Colors.grey[400] : Colors.grey[600];
+
+        return Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: const Color(0xFF0F172A).withOpacity(0.85),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: color.withOpacity(0.5),
-              width: 2,
-            ),
+            color: bgColor,
+            borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.2),
-                blurRadius: 20,
-                spreadRadius: 2,
+                color: Colors.black.withOpacity(isDark ? 0.4 : 0.1),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
               )
             ],
           ),
@@ -36,56 +35,62 @@ class AppTutorialCoachMark {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: color.withOpacity(0.5), width: 1),
+                      color: color.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Icon(icon, color: color, size: 28),
+                    child: Icon(icon, color: color, size: 24),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Text(
                       title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        fontSize: 22.0,
-                        letterSpacing: 0.5,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                        fontSize: 20.0,
+                        letterSpacing: -0.5,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               Text(
                 description,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                  height: 1.5,
+                style: TextStyle(
+                  color: subtitleColor,
+                  fontSize: 15,
+                  height: 1.6,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text(
-                    "Toca en cualquier parte para continuar \u279C",
-                    style: TextStyle(
-                      color: color.withOpacity(0.8),
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      "Toca para continuar \u279C",
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
               )
             ],
           ),
-        ),
-      ),
+        );
+      }
     );
   }
 

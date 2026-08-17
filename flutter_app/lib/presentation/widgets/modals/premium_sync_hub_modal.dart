@@ -576,9 +576,9 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                                               children: [
                                                 Text('Para que Siri funcione de fondo sin abrir la app, debes crear un Atajo (Shortcut) de Apple:', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13)),
                                                 const SizedBox(height: 12),
-                                                Text('1. Abre la app "Atajos" en tu iPhone.\n2. Crea un nuevo Atajo y llámalo "Agregar a QUIVO".\n3. Agrega la acción "Preguntar por entrada" (Texto) y pon "¿Qué y cuánto fue?".\n4. Agrega la acción "Obtener contenido de URL".\n5. En la URL pon la dirección de tu servidor y añade ?uid=${user?.uid ?? "TU_UID"}&amount=100&concept=ResultadoDePasoAnterior.\n6. Cambia el método a POST.\n\nAhora solo dile a tu iPhone: "Oye Siri, Agregar a QUIVO".', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13)),
+                                                Text('1. Abre la app "Atajos" en tu iPhone.\n2. Crea un nuevo Atajo y llámalo "Agregar a QUIVO".\n3. Agrega la acción "Preguntar por entrada" (Texto) y pon "¿Qué y cuánto fue?".\n4. Agrega la acción "Obtener contenido de URL".\n5. En la URL pon la dirección de tu servidor y añade ?uid=${FirebaseAuth.instance.currentUser?.uid ?? "TU_UID"}&amount=100&concept=ResultadoDePasoAnterior.\n6. Cambia el método a POST.\n\nAhora solo dile a tu iPhone: "Oye Siri, Agregar a QUIVO".', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13)),
                                                 const SizedBox(height: 12),
-                                                Text('Tu UID Premium es:\n${user?.uid ?? "No disponible"}', style: TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.bold)),
+                                                Text('Tu UID Premium es:\n${FirebaseAuth.instance.currentUser?.uid ?? "No disponible"}', style: TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.bold)),
                                               ],
                                             ),
                                           ),

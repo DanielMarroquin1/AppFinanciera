@@ -237,26 +237,22 @@ exports.backfillAugustFixedTransactions = functions.https.onRequest(async (req, 
       const dayStr = data.date.substring(8, 10);
       const originalDay = parseInt(dayStr);
       
-      // We assume current month is August (8) and current year is 2026.
-      // Wait, let's just make the date 2026-08-XX
-      const targetDateStr = `2026-08-${originalDay.toString().padStart(2, '0')}T12:00:00.000Z`;
-      
-      // Let's generate a unique ID based on the original ID + "backfill_august"
-      const newTxId = `backfill_aug_${doc.id}`;
-      const newTxRef = db.collection('transactions').doc(newTxId);
-      
-      const newTx = {
-        ...data,
-        id: newTxId,
-        isFixed: false,
-        date: targetDateStr,
-        description: `${data.description} (Backfill Agosto)`,
-        createdAt: admin.firestore.FieldValue.serverTimestamp()
-      };
-      
-      // Because batch has a limit of 500 operations, if count reaches 490 we could commit.
-      // But assuming < 400 fixed transactions, this is fine.
-      batch.set(newTxRef, newTx);
+      if (originalDay >= 11 && originalDay <= 17) {
+        const targetDateStr = `2026-08-${originalDay.toString().padStart(2, '0')}T12:00:00.000Z`;
+        
+        const newTxId = `backfill_aug_${doc.id}`;
+        const newTxRef = db.collection('transactions').doc(newTxId);
+        
+        const newTx = {
+          ...data,
+          id: newTxId,
+          isFixed: false,
+          date: targetDateStr,
+          description: `${data.description} (Backfill Agosto)`,
+          createdAt: admin.firestore.FieldValue.serverTimestamp()
+        };
+        
+        batch.set(newTxRef, newTx);
 
       const notifRef = db.collection('notifications').doc();
       const notif = {
@@ -277,7 +273,8 @@ exports.backfillAugustFixedTransactions = functions.https.onRequest(async (req, 
       if (count % 200 === 0) {
         await batch.commit();
       }
-    }
+      } // Close if (originalDay >= 11 && originalDay <= 17)
+    } // Close for loop
 
     if (count % 200 !== 0 && count > 0) {
       await batch.commit();

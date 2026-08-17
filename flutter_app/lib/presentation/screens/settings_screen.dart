@@ -379,8 +379,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.setBool('has_seen_app_tutorial', false);
                 if (context.mounted) {
-                  showTutorialTrigger.value = true;
                   context.go('/dashboard');
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    showTutorialTrigger.value = true;
+                  });
                 }
               },
               borderRadius: BorderRadius.circular(20),

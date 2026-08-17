@@ -657,7 +657,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             const SizedBox(height: 24),
 
             // Limit Banner
-            transactionsAsync.whenData((transactions) {
+            Container(
+              key: TutorialKeys.premiumKey,
+              child: transactionsAsync.whenData((transactions) {
               final double limitPercentage = user?.monthlyLimit ?? 80.0;
               double totalExpense = 0;
               double totalIncome = 0;
@@ -759,7 +761,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
               final textColor = isOverLimit ? (isDark ? const Color(0xFFFCA5A5) : const Color(0xFFB91C1C)) : (isDark ? const Color(0xFF93C5FD) : const Color(0xFF1E3A8A));
 
               return InkWell(
-                key: TutorialKeys.premiumKey,
                 onTap: () async {
                   if (user?.isPremium != true) {
                     PremiumPaywallDialog.show(context, customMessage: 'Establece límites de presupuesto mensual y mantén tus gastos bajo control con el Plan Premium.');
@@ -811,6 +812,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 ),
               );
             }).value ?? const SizedBox(),
+            ),
             const SizedBox(height: 24),
 
             // Quick Actions inline

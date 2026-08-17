@@ -26,28 +26,27 @@ void main() async {
 
   final sharedPreferences = await SharedPreferences.getInstance();
 
-  final hasSeenOnboarding = sharedPreferences.getBool('has_seen_onboarding') ?? false;
+
 
   runApp(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
       ],
-      child: MyApp(hasSeenOnboarding: hasSeenOnboarding),
+      child: MyApp(),
     ),
   );
 }
 
 class MyApp extends ConsumerStatefulWidget {
-  final bool hasSeenOnboarding;
-  const MyApp({super.key, required this.hasSeenOnboarding});
+  const MyApp({super.key});
 
   @override
   ConsumerState<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
-  late final _router = AppRouter.createRouter(widget.hasSeenOnboarding);
+  late final _router = AppRouter.createRouter();
 
   @override
   void initState() {

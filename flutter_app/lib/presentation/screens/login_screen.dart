@@ -164,14 +164,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
 
       if (!mounted) return;
-      final prefs = await SharedPreferences.getInstance();
-      final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
-      if (!hasSeenOnboarding) {
-        context.go('/onboarding');
-      } else {
-        context.go('/dashboard');
-        _showWelcomeMessage(context);
-      }
+      context.go('/dashboard'); _showWelcomeMessage(context);
+      
     } on firebase_auth.FirebaseAuthException catch (e) {
       if (!mounted) return;
       String title = 'Error de Autenticación';
@@ -557,14 +551,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           }
                           
                           if (!mounted) return;
-                          final prefs = await SharedPreferences.getInstance();
-                          final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
-                          if (!hasSeenOnboarding) {
-                            context.go('/onboarding');
-                          } else {
-                            context.go('/dashboard');
-                            _showWelcomeMessage(context);
-                          }
+                          context.go('/dashboard'); _showWelcomeMessage(context);
+                          
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('Error con Google: ${e.toString()}'), backgroundColor: Colors.red),

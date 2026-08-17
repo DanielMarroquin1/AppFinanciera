@@ -8,7 +8,7 @@ import '../../presentation/screens/savings_screen.dart';
 import '../../presentation/screens/settings_screen.dart';
 import '../../presentation/screens/statistics_screen.dart';
 import '../../presentation/screens/debts_screen.dart';
-import '../../presentation/screens/onboarding_screen.dart';
+
 import '../../presentation/screens/what_if_screen.dart';
 import '../../presentation/widgets/app_shell.dart';
 
@@ -17,15 +17,12 @@ final _shellNavigatorKey = GlobalKey<NavigatorState>();
 class AppRouter {
   static final rootNavigatorKey = GlobalKey<NavigatorState>();
 
-  static GoRouter createRouter(bool hasSeenOnboarding) {
+  static GoRouter createRouter() {
     return GoRouter(
       navigatorKey: rootNavigatorKey,
       initialLocation: '/login',
       routes: [
-      GoRoute(
-        path: '/onboarding',
-        builder: (context, state) => const OnboardingScreen(),
-      ),
+
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),

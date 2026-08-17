@@ -255,22 +255,36 @@ class _AppTutorialModalState extends ConsumerState<AppTutorialModal> with Single
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 20),
                           decoration: BoxDecoration(
-                        onPressed: _nextPage,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _slides[_currentPage]['color'],
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          _currentPage == _slides.length - 1 ? '¡Comenzar Aventura!' : 'Siguiente',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                            gradient: LinearGradient(
+                              colors: slide['gradient'],
+                            ),
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: slide['color'].withValues(alpha: 0.4),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              _currentPage == _slides.length - 1 ? 'Comenzar' : 'Siguiente',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
-              )
-            ],
+              ],
+            ),
           ),
         ),
       ),

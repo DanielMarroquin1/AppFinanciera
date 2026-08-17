@@ -140,6 +140,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                                   const SizedBox(width: 12),
                                   Text(loc.get('savings_month_progress'), style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14)),
                                 ],
+                              ),
                             ],
                           ),
                         ),

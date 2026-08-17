@@ -759,6 +759,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
               final textColor = isOverLimit ? (isDark ? const Color(0xFFFCA5A5) : const Color(0xFFB91C1C)) : (isDark ? const Color(0xFF93C5FD) : const Color(0xFF1E3A8A));
 
               return InkWell(
+                key: TutorialKeys.premiumKey,
                 onTap: () async {
                   if (user?.isPremium != true) {
                     PremiumPaywallDialog.show(context, customMessage: 'Establece límites de presupuesto mensual y mantén tus gastos bajo control con el Plan Premium.');
@@ -819,6 +820,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 key: TutorialKeys.quickActionsKey,
                 children: [
                   _buildPremiumQuickAction(
+                    key: TutorialKeys.incomeKey,
                     context: context,
                     icon: LucideIcons.trendingUp,
                     label: loc.get('dashboard_income'),
@@ -828,6 +830,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   ),
                   const SizedBox(width: 8),
                   _buildPremiumQuickAction(
+                    key: TutorialKeys.expenseKey,
                     context: context,
                     icon: LucideIcons.trendingDown,
                     label: loc.get('dashboard_expenses'),
@@ -837,6 +840,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   ),
                   const SizedBox(width: 8),
                   _buildPremiumQuickAction(
+                    key: TutorialKeys.debtsKey,
                     context: context,
                     icon: LucideIcons.wallet,
                     label: loc.get('dashboard_debts'),
@@ -846,6 +850,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   ),
                   const SizedBox(width: 8),
                   _buildPremiumQuickAction(
+                    key: TutorialKeys.cardsKey,
                     context: context,
                     icon: LucideIcons.creditCard,
                     label: loc.get('dashboard_cards'),
@@ -1325,6 +1330,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
   }
 
   Widget _buildPremiumQuickAction({
+    Key? key,
     required BuildContext context,
     required IconData icon,
     required String label,
@@ -1334,6 +1340,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
     bool showBadge = false,
   }) {
     return Expanded(
+      key: key,
       child: Stack(
         clipBehavior: Clip.none,
         children: [

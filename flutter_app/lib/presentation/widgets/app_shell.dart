@@ -15,6 +15,7 @@ import '../../presentation/widgets/modals/premium_paywall_dialog.dart';
 import '../../presentation/widgets/modals/pdf_report_modal.dart';
 import '../../presentation/providers/color_palette_provider.dart';
 import '../../core/utils/localization.dart';
+import '../../core/utils/tutorial_keys.dart';
 import '../screens/settings_screen.dart';
 
 class AppShell extends ConsumerStatefulWidget {
@@ -192,7 +193,7 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
                 _buildNavItem(context, loc.get('home'), LucideIcons.home, currentIndex == 0, '/dashboard', palette.colors[0]),
                 _buildNavItem(context, loc.get('expenses'), LucideIcons.trendingUp, currentIndex == 1, '/expenses', palette.colors[0]),
                 const SizedBox(width: 48), // Space for FAB
-                _buildNavItem(context, loc.get('savings'), LucideIcons.piggyBank, currentIndex == 3, '/savings', palette.colors[0]),
+                _buildNavItem(context, loc.get('savings'), LucideIcons.piggyBank, currentIndex == 3, '/savings', palette.colors[0], key: TutorialKeys.savingsNavKey),
                 _buildNavItem(context, loc.get('nav_settings'), LucideIcons.settings, currentIndex == 4, '/settings', palette.colors[0]),
               ],
             ),
@@ -202,13 +203,14 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
     );
   }
 
-  Widget _buildNavItem(BuildContext context, String label, IconData icon, bool isSelected, String route, Color activeColor) {
+  Widget _buildNavItem(BuildContext context, String label, IconData icon, bool isSelected, String route, Color activeColor, {Key? key}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final color = isSelected 
         ? activeColor
         : (isDark ? Colors.grey[500] : const Color(0xFF64748B));
 
     return InkWell(
+      key: key,
       onTap: () {
         context.go(route);
       },

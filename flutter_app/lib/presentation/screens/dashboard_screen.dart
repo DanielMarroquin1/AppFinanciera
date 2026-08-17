@@ -28,7 +28,8 @@ import 'package:go_router/go_router.dart';
 import '../providers/notification_provider.dart';
 import '../widgets/modals/notifications_modal.dart';
 import '../widgets/modals/add_saving_goal_modal.dart';
-import '../widgets/modals/app_tutorial_modal.dart';
+import '../../core/utils/tutorial_keys.dart';
+import '../widgets/modals/app_tutorial_coach_mark.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/ai_insights_provider.dart';
 import '../widgets/common/micro_insights_widget.dart';
@@ -46,9 +47,6 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTickerProviderStateMixin {
   late AnimationController _fireAnimController;
-  final GlobalKey _balanceKey = GlobalKey();
-  final GlobalKey _quickActionsKey = GlobalKey();
-  final GlobalKey _streakKey = GlobalKey();
   bool _limitAlertShown = false;
   bool _fixedExpenseAlertShown = false;
   bool _insightsLoaded = false;
@@ -98,7 +96,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
   }
 
   void _showTutorial() {
-    AppTutorialModal.show(context).then((_) {
+    AppTutorialCoachMark.showTutorial(context, onFinish: () {
       SharedPreferences.getInstance().then((prefs) {
         prefs.setBool('has_seen_app_tutorial', true);
       });
@@ -328,7 +326,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                 ),
                 // Streak Badge & Rewards
                 Row(
-                  key: _streakKey,
+                  key: TutorialKeys.streakKey,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (isStreakActive) ...[
@@ -517,7 +515,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
 
             // Balance Card — computed inside when() to avoid stale locals
             KeyedSubtree(
-              key: _balanceKey,
+              key: TutorialKeys.balanceKey,
               child: transactionsAsync.when(
               loading: () => Container(
                 padding: const EdgeInsets.all(24),
@@ -818,7 +816,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             Text(loc.get('quick_actions'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
             const SizedBox(height: 12),
               Row(
-                key: _quickActionsKey,
+                key: TutorialKeys.quickActionsKey,
                 children: [
                   _buildPremiumQuickAction(
                     context: context,
@@ -861,7 +859,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
             const SizedBox(height: 24),
 
             // ── Micro-Insights de QUIVO ────────────────────────────────────
-            const MicroInsightsSection(),
+            Container(
+              key: TutorialKeys.aiInsightsKey,
+              child: const MicroInsightsSection(),
+            ),
             Builder(
               builder: (context) {
                 final insights = ref.watch(microInsightsProvider);

@@ -23,7 +23,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/rewards_shop_modal.dart';
 import '../providers/transaction_provider.dart';
 import 'dashboard_screen.dart'; // Add import for showTutorialProvider
-import '../widgets/modals/app_tutorial_modal.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -380,9 +379,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.setBool('has_seen_app_tutorial', false);
                 if (context.mounted) {
-                  // This will trigger the dashboard to show it if we go back, 
-                  // but let's just show it right now.
-                  AppTutorialModal.show(context);
+                  showTutorialTrigger.value = true;
+                  context.go('/dashboard');
                 }
               },
               borderRadius: BorderRadius.circular(20),

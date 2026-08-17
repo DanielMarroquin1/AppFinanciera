@@ -220,3 +220,73 @@ exports.processFixedTransactions = functions.pubsub.schedule('1 0 * * *').timeZo
     return null;
   }
 });
+
+exports.backfillAugustFixedTransactions = functions.https.onRequest(async (req, res) => {
+  const db = admin.firestore();
+  
+  try {
+    const snapshot = await db.collection('transactions').where('isFixed', '==', true).get();
+    const batch = db.batch();
+    let count = 0;
+
+    for (const doc of snapshot.docs) {
+      const data = doc.data();
+      if (!data.date) continue;
+
+      // Extract original day
+      const dayStr = data.date.substring(8, 10);
+      const originalDay = parseInt(dayStr);
+      
+      // We assume current month is August (8) and current year is 2026.
+      // Wait, let's just make the date 2026-08-XX
+      const targetDateStr = `2026-08-${originalDay.toString().padStart(2, '0')}T12:00:00.000Z`;
+      
+      // Let's generate a unique ID based on the original ID + "backfill_august"
+      const newTxId = `backfill_aug_${doc.id}`;
+      const newTxRef = db.collection('transactions').doc(newTxId);
+      
+      const newTx = {
+        ...data,
+        id: newTxId,
+        isFixed: false,
+        date: targetDateStr,
+        description: `${data.description} (Backfill Agosto)`,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      };
+      
+      // Because batch has a limit of 500 operations, if count reaches 490 we could commit.
+      // But assuming < 400 fixed transactions, this is fine.
+      batch.set(newTxRef, newTx);
+
+      const notifRef = db.collection('notifications').doc();
+      const notif = {
+        id: notifRef.id,
+        userId: data.userId,
+        title: data.type === 'expense' ? 'Gasto Fijo Recuperado' : 'Ingreso Fijo Recuperado',
+        body: `Se ha registrado automáticamente tu movimiento fijo de agosto: ${data.description} por $${data.amount}`,
+        date: targetDateStr,
+        isRead: false,
+        type: 'system',
+        data: JSON.stringify({ transactionId: newTxId })
+      };
+      
+      batch.set(notifRef, notif);
+      count++;
+
+      // If batch is full, commit and get a new one (safe guard)
+      if (count % 200 === 0) {
+        await batch.commit();
+      }
+    }
+
+    if (count % 200 !== 0 && count > 0) {
+      await batch.commit();
+    }
+
+    return res.status(200).send(`Backfill ejecutado exitosamente. Se procesaron ${count} movimientos fijos para agosto.`);
+
+  } catch (error) {
+    console.error("Error en backfill de agosto:", error);
+    return res.status(500).send("Ocurrió un error ejecutando el backfill.");
+  }
+});

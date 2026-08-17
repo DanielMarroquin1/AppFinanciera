@@ -9,6 +9,7 @@ class AppTutorialModal extends ConsumerStatefulWidget {
     return showDialog(
       context: context,
       barrierDismissible: false,
+      barrierColor: Colors.black.withValues(alpha: 0.8),
       builder: (context) => const AppTutorialModal(),
     );
   }
@@ -17,40 +18,65 @@ class AppTutorialModal extends ConsumerStatefulWidget {
   ConsumerState<AppTutorialModal> createState() => _AppTutorialModalState();
 }
 
-class _AppTutorialModalState extends ConsumerState<AppTutorialModal> {
+class _AppTutorialModalState extends ConsumerState<AppTutorialModal> with SingleTickerProviderStateMixin {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  late AnimationController _pulseController;
 
   final List<Map<String, dynamic>> _slides = [
     {
-      'title': 'Bienvenido a tu Libertad Financiera',
-      'description': 'Lleva un control milimétrico de tus ingresos y gastos. Nuestra interfaz rediseñada te permite registrar movimientos en segundos.',
-      'icon': LucideIcons.rocket,
-      'color': const Color(0xFF6366F1),
+      'title': 'Bienvenido a QUIVO',
+      'subtitle': 'Tu libertad financiera inicia aquí',
+      'description': 'Lleva un control milimétrico de tus finanzas. Interfaz rediseñada, reportes exclusivos y control total de tus ingresos y gastos en segundos.',
+      'icon': LucideIcons.wallet,
+      'color': const Color(0xFF3B82F6),
+      'gradient': [const Color(0xFF3B82F6), const Color(0xFF2563EB)],
     },
     {
-      'title': 'Análisis Inteligente con IA',
-      'description': 'Genera planes de ahorro personalizados. La Inteligencia Artificial analizará tus patrones de gasto y te dará pasos exactos para lograr tus metas.',
-      'icon': LucideIcons.bot,
-      'color': const Color(0xFFEC4899),
-    },
-    {
-      'title': 'Reportes Premium en PDF',
-      'description': 'Exporta análisis financieros hermosos. Comparte tus balances, ingresos y gastos de cualquier periodo de tiempo con gráficas integradas.',
-      'icon': LucideIcons.fileText,
+      'title': 'Sincronización Total',
+      'subtitle': 'Trabaja por ti en el fondo',
+      'description': 'Con el plan Premium, QUIVO lee las notificaciones de tus tarjetas para registrar tus gastos automáticamente, clasificando Débito y Crédito al instante.',
+      'icon': LucideIcons.bellRing,
       'color': const Color(0xFF10B981),
+      'gradient': [const Color(0xFF34D399), const Color(0xFF059669)],
     },
     {
-      'title': 'Gamificación y Logros',
-      'description': 'Ahorrar ya no es aburrido. Gana medallas, mantén rachas de días sin gastos innecesarios y construye riqueza divirtiéndote.',
-      'icon': LucideIcons.medal,
+      'title': 'Habla con Siri',
+      'subtitle': 'Agrega gastos con tu voz',
+      'description': 'Solo di "Oye Siri, Agregar a QUIVO". Dile cuánto gastaste y en qué, y QUIVO lo guardará en la nube sin que tengas que abrir la aplicación.',
+      'icon': LucideIcons.mic,
+      'color': const Color(0xFF8B5CF6),
+      'gradient': [const Color(0xFFA78BFA), const Color(0xFF7C3AED)],
+    },
+    {
+      'title': 'Reportes y PDF',
+      'subtitle': 'Tus números, claros',
+      'description': 'Exporta análisis financieros hermosos. Accede a vistas exclusivas de tus ingresos netos y balances mensuales detallados por categoría.',
+      'icon': LucideIcons.fileBarChart2,
       'color': const Color(0xFFF59E0B),
+      'gradient': [const Color(0xFFFBBF24), const Color(0xFFD97706)],
     },
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
   void _nextPage() {
     if (_currentPage < _slides.length - 1) {
-      _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+      _pageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.fastOutSlowIn);
     } else {
       Navigator.pop(context);
     }
@@ -58,112 +84,177 @@ class _AppTutorialModalState extends ConsumerState<AppTutorialModal> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final slide = _slides[_currentPage];
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
+    
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Center(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          height: MediaQuery.of(context).size.height * 0.75,
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : Colors.white,
-            borderRadius: BorderRadius.circular(32),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 40, offset: const Offset(0, 20)),
-            ],
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.5),
-          ),
-          child: Column(
-            children: [
-              // Cancel Button
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: IconButton(
-                    icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
-                    onPressed: () => Navigator.pop(context),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(40),
+          child: Container(
+            width: size.width * 0.9,
+            height: size.height * 0.8,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF0F172A) : Colors.white,
+            ),
+            child: Stack(
+              children: [
+                // Background Gradient Splash
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 500),
+                  top: -100,
+                  right: -100,
+                  child: Container(
+                    width: 300,
+                    height: 300,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          slide['color'].withValues(alpha: 0.3),
+                          slide['color'].withValues(alpha: 0.0)
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
-
-              // Page View
-              Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  onPageChanged: (index) => setState(() => _currentPage = index),
-                  itemCount: _slides.length,
-                  itemBuilder: (context, index) {
-                    final slide = _slides[index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                
+                Column(
+                  children: [
+                    // Top Bar (Skip)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 24, right: 24, left: 24),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(32),
-                            decoration: BoxDecoration(
-                              color: slide['color'].withValues(alpha: 0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(slide['icon'], size: 80, color: slide['color']),
+                          // Dots Indicator
+                          Row(
+                            children: List.generate(_slides.length, (index) {
+                              final isActive = _currentPage == index;
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                margin: const EdgeInsets.only(right: 6),
+                                width: isActive ? 24 : 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: isActive ? slide['color'] : Colors.grey.withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              );
+                            }),
                           ),
-                          const SizedBox(height: 48),
-                          Text(
-                            slide['title'],
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : Colors.black,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            slide['description'],
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: isDark ? Colors.grey[300] : Colors.grey[700],
-                              height: 1.5,
-                            ),
-                            textAlign: TextAlign.center,
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text('Saltar', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ),
-                    );
-                  },
-                ),
-              ),
-
-              // Bottom Section
-              Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Column(
-                  children: [
-                    // Indicators
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(_slides.length, (index) {
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          width: _currentPage == index ? 24 : 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: _currentPage == index ? _slides[_currentPage]['color'] : Colors.grey.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        );
-                      }),
                     ),
-                    const SizedBox(height: 32),
                     
-                    // Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
+                    Expanded(
+                      child: PageView.builder(
+                        controller: _pageController,
+                        physics: const BouncingScrollPhysics(),
+                        onPageChanged: (index) => setState(() => _currentPage = index),
+                        itemCount: _slides.length,
+                        itemBuilder: (context, index) {
+                          final currentSlide = _slides[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                // Animated Icon Container
+                                AnimatedBuilder(
+                                  animation: _pulseController,
+                                  builder: (context, child) {
+                                    return Transform.scale(
+                                      scale: 1.0 + (_pulseController.value * 0.05),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(40),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: LinearGradient(
+                                            colors: currentSlide['gradient'],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: currentSlide['color'].withValues(alpha: 0.4),
+                                              blurRadius: 30,
+                                              spreadRadius: 10 * _pulseController.value,
+                                            ),
+                                          ],
+                                        ),
+                                        child: Icon(
+                                          currentSlide['icon'],
+                                          size: 80,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 50),
+                                // Text Content
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: currentSlide['color'].withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    currentSlide['subtitle'].toUpperCase(),
+                                    style: TextStyle(
+                                      color: currentSlide['color'],
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 1.5,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  currentSlide['title'],
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w900,
+                                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                    height: 1.1,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  currentSlide['description'],
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                    height: 1.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    
+                    // Bottom Button
+                    Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: InkWell(
+                        onTap: _nextPage,
+                        borderRadius: BorderRadius.circular(24),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          decoration: BoxDecoration(
                         onPressed: _nextPage,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _slides[_currentPage]['color'],

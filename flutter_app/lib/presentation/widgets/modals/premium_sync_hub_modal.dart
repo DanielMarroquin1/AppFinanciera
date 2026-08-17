@@ -346,15 +346,15 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                                           children: [
                                             Icon(isCardCharge ? LucideIcons.creditCard : LucideIcons.banknote, size: 14, color: isCardCharge ? const Color(0xFF6366F1) : const Color(0xFF10B981)),
                                             const SizedBox(width: 6),
-                                            Text(isCardCharge ? 'Tarjeta de Crédito' : 'Débito / Efectivo', style: TextStyle(color: isCardCharge ? const Color(0xFF6366F1) : const Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.w800)),
+                                            Text(isCardCharge ? 'MÉTODO: TC (Crédito)' : 'MÉTODO: TD (Débito/Efectivo)', style: TextStyle(color: isCardCharge ? const Color(0xFF6366F1) : const Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.w900)),
                                           ],
                                         ),
                                       ),
-                                      Text('\$${charge.amount.toStringAsFixed(2)}', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 20, fontWeight: FontWeight.w900)),
+                                      Text('MONTO: \$${charge.amount.toStringAsFixed(2)}', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.w900)),
                                     ],
                                   ),
                                   const SizedBox(height: 10),
-                                  Text(charge.merchant, style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.w800)),
+                                  Text('LUGAR: ${charge.merchant}', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.w800)),
                                   const SizedBox(height: 4),
                                   Text('Detectado: ${charge.bankName ?? "App"} • Categoría: ${charge.category}', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
                                   const SizedBox(height: 14),
@@ -555,23 +555,42 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                'Dile a tu iPhone, iPad o Apple Watch frases como "Oye Siri, registrar gasto en Finanzas" para agregar al instante compras con tu tarjeta o en efectivo con tu voz.',
+                                'Dile a tu iPhone, iPad o Apple Watch frases como "Oye Siri, Agregar a QUIVO" para agregar al instante compras con tu tarjeta o en efectivo con tu voz.',
                                 style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[600], fontSize: 13, height: 1.4),
                               ),
                               const SizedBox(height: 14),
                               SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton.icon(
-                                  onPressed: () async {
-                                    final res = await SiriShortcutsService.registerSiriShortcuts();
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(res ? '🍏 Atajos de Siri registrados y listos. Di "Oye Siri, Registrar Gasto en Finanzas".' : 'Atajo configurado para comandos rápidos.'),
-                                          backgroundColor: const Color(0xFF3B82F6),
-                                        ),
-                                      );
-                                    }
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                          title: Text('Siri: Agregar Gasto/Ingreso a QUIVO', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+                                          content: SingleChildScrollView(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text('Para que Siri funcione de fondo sin abrir la app, debes crear un Atajo (Shortcut) de Apple:', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13)),
+                                                const SizedBox(height: 12),
+                                                Text('1. Abre la app "Atajos" en tu iPhone.\n2. Crea un nuevo Atajo y llámalo "Agregar a QUIVO".\n3. Agrega la acción "Preguntar por entrada" (Texto) y pon "¿Qué y cuánto fue?".\n4. Agrega la acción "Obtener contenido de URL".\n5. En la URL pon la dirección de tu servidor y añade ?uid=${user.uid}&amount=100&concept=ResultadoDePasoAnterior.\n6. Cambia el método a POST.\n\nAhora solo dile a tu iPhone: "Oye Siri, Agregar a QUIVO".', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13)),
+                                                const SizedBox(height: 12),
+                                                Text('Tu UID Premium es:\n${user.uid}', style: TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.bold)),
+                                              ],
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context),
+                                              child: const Text('Entendido'),
+                                            ),
+                                          ],
+                                        );
+                                      }
+                                    );
                                   },
                                   icon: const Icon(LucideIcons.plusSquare, size: 18),
                                   label: const Text('Configurar Atajo Rápido en Siri', style: TextStyle(fontWeight: FontWeight.w800)),

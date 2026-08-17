@@ -140,28 +140,6 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                                   const SizedBox(width: 12),
                                   Text(loc.get('savings_month_progress'), style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14)),
                                 ],
-                              ),
-                              const SizedBox(height: 20),
-                              ElevatedButton(
-                                onPressed: () {
-                                  MonthlyReportModal.show(context);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: paletteGradient[0],
-                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                  elevation: 0,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Icon(LucideIcons.barChart2, size: 18),
-                                    SizedBox(width: 8),
-                                    Text('Estadísticas PRO', style: TextStyle(fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
-                              ),
                             ],
                           ),
                         ),

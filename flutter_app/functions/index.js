@@ -89,3 +89,134 @@ exports.sendCustomResetEmail = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError("internal", error.message);
   }
 });
+
+exports.addTransactionViaSiri = functions.https.onRequest(async (req, res) => {
+  // CORS configuration if needed
+  res.set('Access-Control-Allow-Origin', '*');
+  if (req.method === 'OPTIONS') {
+    res.set('Access-Control-Allow-Methods', 'GET, POST');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    res.set('Access-Control-Max-Age', '3600');
+    return res.status(204).send('');
+  }
+
+  const uid = req.query.uid || req.body.uid;
+  const amountStr = req.query.amount || req.body.amount;
+  let amount = parseFloat(amountStr);
+  const concept = req.query.concept || req.body.concept || "Siri / Voz";
+  let type = req.query.type || req.body.type || "expense";
+
+  // Intentar deducir si es ingreso o gasto basado en el concepto o type
+  const lowerConcept = concept.toLowerCase();
+  if (lowerConcept.includes("ingreso") || lowerConcept.includes("ganancia") || lowerConcept.includes("pago a mi favor")) {
+      type = "income";
+  }
+
+  if (!uid || isNaN(amount) || amount <= 0) {
+    return res.status(400).send("Faltan datos o el monto es inválido. (Requiere uid y amount)");
+  }
+
+  try {
+    // 1. Verificamos que el usuario sea Premium
+    const userDoc = await admin.firestore().collection('users').doc(uid).get();
+    if (!userDoc.exists) {
+      return res.status(403).send("Usuario no encontrado.");
+    }
+    const userData = userDoc.data();
+    if (userData.plan !== 'premium' && userData.plan !== 'PRO') {
+      // Allow if we just check isPremium boolean
+      if (userData.isPremium !== true) {
+         return res.status(403).send("Esta función es exclusiva para usuarios del plan Premium.");
+      }
+    }
+
+    // 2. Agregar a Firestore
+    const newTx = {
+      id: Date.now().toString(),
+      userId: uid,
+      amount: amount,
+      description: concept,
+      category: "general",
+      type: type,
+      date: new Date().toISOString(),
+      isFixed: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await admin.firestore().collection('transactions').doc(newTx.id).set(newTx);
+    return res.status(200).send(`Transacción de ${amount} agregada a QUIVO exitosamente.`);
+  } catch (error) {
+    console.error("Siri Error:", error);
+    return res.status(500).send("Ocurrió un error en el servidor.");
+  }
+});
+
+exports.processFixedTransactions = functions.pubsub.schedule('1 0 * * *').timeZone('America/Guatemala').onRun(async (context) => {
+  const db = admin.firestore();
+  
+  try {
+    const snapshot = await db.collection('transactions').where('isFixed', '==', true).get();
+    
+    // Obtener el día actual en zona horaria de Guatemala
+    const formatter = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Guatemala', day: 'numeric' });
+    const currentDay = parseInt(formatter.format(new Date()));
+
+    const batch = db.batch();
+    let count = 0;
+
+    for (const doc of snapshot.docs) {
+      const data = doc.data();
+      if (!data.date) continue;
+
+      // Asumimos que data.date es formato ISO string: 2026-08-15T...
+      const originalDate = new Date(data.date);
+      // Extraemos el día en que se creó este gasto fijo (en UTC o local, tomamos UTC por simplicidad o getUTCDate si está guardado en UTC)
+      // Para evitar problemas de zonas, es mejor parsear la fecha como string y agarrar el día
+      const dayStr = data.date.substring(8, 10);
+      const originalDay = parseInt(dayStr);
+
+      if (currentDay === originalDay) {
+        // Generar una nueva transacción, que NO sea isFixed
+        const newTxId = Date.now().toString() + Math.floor(Math.random() * 1000).toString();
+        const newTxRef = db.collection('transactions').doc(newTxId);
+        
+        const newTx = {
+          ...data,
+          id: newTxId,
+          isFixed: false,
+          date: new Date().toISOString(),
+          description: `${data.description} (Automático)`,
+          createdAt: admin.firestore.FieldValue.serverTimestamp()
+        };
+        
+        batch.set(newTxRef, newTx);
+
+        // Generar una notificación para el usuario en su historial
+        const notifRef = db.collection('notifications').doc();
+        const notif = {
+          id: notifRef.id,
+          userId: data.userId,
+          title: data.type === 'expense' ? 'Gasto Fijo Procesado' : 'Ingreso Fijo Procesado',
+          body: `Se ha registrado automáticamente: ${data.description} por $${data.amount}`,
+          date: new Date().toISOString(),
+          isRead: false,
+          type: 'system',
+          data: JSON.stringify({ transactionId: newTxId })
+        };
+        
+        batch.set(notifRef, notif);
+        count++;
+      }
+    }
+
+    if (count > 0) {
+      await batch.commit();
+    }
+    console.log(`Job 12:01 AM ejecutado exitosamente. Se procesaron ${count} movimientos fijos.`);
+    return null;
+
+  } catch (error) {
+    console.error("Error procesando transacciones fijas:", error);
+    return null;
+  }
+});

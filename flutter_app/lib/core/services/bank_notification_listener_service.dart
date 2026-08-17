@@ -150,10 +150,30 @@ class BankNotificationListenerService {
 
     // 1. Extraer Monto
     double amount = 0.0;
-    final amountRegExp = RegExp(r'\$?\s?([0-9]{1,6}(?:[\.,][0-9]{3})*(?:[\.,][0-9]{2}))');
+    // Soporta $, Q, USD, GTQ, con o sin decimales, con comas o puntos
+    final amountRegExp = RegExp(r'(?:\$|Q|USD|GTQ)?\s?([0-9]{1,6}(?:[\.,][0-9]{3})*(?:[\.,][0-9]{2})?)', caseSensitive: false);
     final matches = amountRegExp.allMatches(combined);
     for (var m in matches) {
-      final rawNum = m.group(1)?.replaceAll(',', '') ?? '0';
+      String rawNum = m.group(1) ?? '0';
+      // Normalize format (remove thousand separators, ensure dot for decimal)
+      if (rawNum.contains(',') && rawNum.contains('.')) {
+        // has both, usually 1,000.50 or 1.000,50
+        if (rawNum.lastIndexOf(',') > rawNum.lastIndexOf('.')) {
+          // comma is decimal: 1.000,50
+          rawNum = rawNum.replaceAll('.', '').replaceAll(',', '.');
+        } else {
+          // dot is decimal: 1,000.50
+          rawNum = rawNum.replaceAll(',', '');
+        }
+      } else if (rawNum.contains(',')) {
+        // only comma, might be decimal or thousand. Let's assume decimal if it's exactly 2 digits from end
+        if (rawNum.length - rawNum.lastIndexOf(',') == 3) {
+          rawNum = rawNum.replaceAll(',', '.');
+        } else {
+          rawNum = rawNum.replaceAll(',', '');
+        }
+      }
+      
       final val = double.tryParse(rawNum);
       if (val != null && val > 0) {
         amount = val;
@@ -164,7 +184,7 @@ class BankNotificationListenerService {
 
     // 2. Extraer Comercio (después de "en ", "comercio ", "compra en ", "pago a ")
     String merchant = 'Comercio General';
-    final merchantRegExp = RegExp(r'(?:en|comercio|compra en|pago a|establecimiento)\s+([A-Za-z0-9\s&\.\-_]{3,25})', caseSensitive: false);
+    final merchantRegExp = RegExp(r'(?:en\s+|comercio\s+|compra en\s+|pago a\s+|establecimiento\s+)([*A-Za-z0-9\s&\.\-_]{3,30})', caseSensitive: false);
     final mMatch = merchantRegExp.firstMatch(combined);
     if (mMatch != null) {
       final found = mMatch.group(1)?.trim() ?? '';

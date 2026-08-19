@@ -1,8 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../presentation/providers/auth_provider.dart';
 
+class LocaleNotifier extends Notifier<String> {
+  @override
+  String build() {
+    final prefs = ref.watch(sharedPreferencesProvider);
+    return prefs.getString('app_language') ?? 'Español';
+  }
+
+  void setLanguage(String langCode) {
+    state = langCode;
+    ref.read(sharedPreferencesProvider).setString('app_language', langCode);
+  }
+}
+
+final localeProvider = NotifierProvider<LocaleNotifier, String>(LocaleNotifier.new);
+
 final localizationProvider = Provider<AppLocalizations>((ref) {
-  final langCode = ref.watch(authProvider).user?.language ?? 'es';
+  final langCode = ref.watch(localeProvider);
   return AppLocalizations(langCode);
 });
 

@@ -14,6 +14,7 @@ import '../widgets/modals/premium_modal.dart';
 import '../widgets/modals/premium_sync_hub_modal.dart';
 import '../widgets/modals/premium_paywall_dialog.dart';
 import '../widgets/modals/complete_profile_modal.dart';
+import '../widgets/modals/language_modal.dart';
 import '../../core/utils/localization.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/services/biometric_service.dart';
@@ -696,80 +697,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showLanguageModal(BuildContext context, bool isDark) {
-    final languages = [
-      {'code': 'es', 'name': 'Español', 'flag': '🇪🇸'},
-      {'code': 'en', 'name': 'English', 'flag': '🇺🇸'},
-      {'code': 'pt', 'name': 'Português', 'flag': '🇧🇷'},
-      {'code': 'fr', 'name': 'Français', 'flag': '🇫🇷'},
-      {'code': 'it', 'name': 'Italiano', 'flag': '🇮🇹'},
-    ];
-    final user = ref.watch(authProvider).user;
-    final currentLanguage = user?.language ?? 'Español';
-    final loc = ref.watch(localizationProvider);
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)))),
-            const SizedBox(height: 20),
-            Text(loc.get('select_language'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: isDark ? Colors.white : Colors.black)),
-            const SizedBox(height: 4),
-            Text(loc.get('select_language_desc'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
-            const SizedBox(height: 20),
-            Flexible(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: languages.map((lang) {
-                    final isSelected = currentLanguage == lang['name'];
-                    return InkWell(
-                      onTap: () {
-                        if (user != null) {
-                          ref.read(authProvider.notifier).updateProfile(user.copyWith(language: lang['name']));
-                        }
-                        Navigator.pop(ctx);
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? (isDark ? const Color(0xFF581C87).withValues(alpha: 0.5) : const Color(0xFFF3E8FF))
-                              : (isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB)),
-                          border: Border.all(
-                            color: isSelected
-                                ? (isDark ? const Color(0xFF9333EA) : const Color(0xFF9333EA))
-                                : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
-                            width: isSelected ? 2 : 1,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            Text(lang['flag']!, style: const TextStyle(fontSize: 24)),
-                            const SizedBox(width: 12),
-                            Expanded(child: Text(lang['name']!, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal))),
-                            if (isSelected) const Icon(LucideIcons.checkCircle2, color: Color(0xFF9333EA), size: 20),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
+    LanguageModal.show(context);
   }
 
   void _showChangePasswordModal(BuildContext context, bool isDark) {

@@ -83,6 +83,12 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  Future<bool> verifyMfaCode(String userId, String code) async {
+    // Dummy implementation for MFA code verification
+    await Future.delayed(const Duration(seconds: 1));
+    return code == '123456';
+  }
+
   Future<void> register(String email, String password, String purpose) async {
     state = state.copyWith(isLoading: true);
     try {

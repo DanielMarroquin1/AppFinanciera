@@ -6,7 +6,6 @@ import '../../providers/auth_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../../../core/services/pdf_report_service.dart';
 import '../../../core/utils/localization.dart';
-import 'dart:ui';
 
 class PDFReportModal extends ConsumerStatefulWidget {
   const PDFReportModal({super.key});
@@ -24,41 +23,23 @@ class PDFReportModal extends ConsumerStatefulWidget {
   ConsumerState<PDFReportModal> createState() => _PDFReportModalState();
 }
 
-class _PDFReportModalState extends ConsumerState<PDFReportModal> with SingleTickerProviderStateMixin {
+class _PDFReportModalState extends ConsumerState<PDFReportModal> {
   int _selectedMonth = DateTime.now().month;
   int _selectedYear = DateTime.now().year;
   bool _isGenerating = false;
   String _reportType = 'general';
+  String? _errorMessage;
 
   final List<String> _months = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ];
 
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
-    
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
-
   Future<void> _generatePdf() async {
-    setState(() => _isGenerating = true);
+    setState(() {
+      _isGenerating = true;
+      _errorMessage = null;
+    });
     
     final transactions = ref.read(transactionsProvider).value ?? [];
     final user = ref.read(authProvider).user;
@@ -70,7 +51,6 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> with SingleTick
     }
 
     try {
-      // Filter out fixed templates and by report type
       var filteredTxs = transactions.where((tx) => !tx.isFixed).toList();
       if (_reportType == 'income') {
         filteredTxs = filteredTxs.where((tx) => tx.type == 'income').toList();
@@ -80,6 +60,19 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> with SingleTick
 
       final startDate = DateTime(_selectedYear, _selectedMonth, 1);
       final endDate = DateTime(_selectedYear, _selectedMonth + 1, 0, 23, 59, 59);
+
+      final hasRecords = filteredTxs.any((tx) => 
+        tx.date.isAfter(startDate.subtract(const Duration(days: 1))) && 
+        tx.date.isBefore(endDate.add(const Duration(days: 1)))
+      );
+
+      if (!hasRecords) {
+        setState(() {
+          _errorMessage = 'No hay registros en el mes de ${_months[_selectedMonth - 1]} del $_selectedYear.';
+          _isGenerating = false;
+        });
+        return;
+      }
 
       final pdfBytes = await PdfReportService.generateFinancialReport(
         transactions: filteredTxs,
@@ -120,275 +113,423 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> with SingleTick
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).primaryColor;
-    final currentYear = DateTime.now().year;
-    final years = List.generate(5, (index) => currentYear - index);
-
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-      child: Container(
-        margin: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark 
-                ? [const Color(0xFF1E293B).withOpacity(0.95), const Color(0xFF0F172A).withOpacity(0.95)]
-                : [Colors.white.withOpacity(0.95), const Color(0xFFF8FAFC).withOpacity(0.95)],
-          ),
-          borderRadius: BorderRadius.circular(32),
-          border: Border.all(
-            color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isDark ? Colors.black.withOpacity(0.5) : primaryColor.withOpacity(0.15),
-              blurRadius: 30,
-              offset: const Offset(0, 15),
+  void _showSelectorModal<T>({
+    required String title,
+    required T currentValue,
+    required List<T> values,
+    required String Function(T) labelBuilder,
+    required ValueChanged<T> onSelected,
+    required bool isDark,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(32),
+              topRight: Radius.circular(32),
             ),
-          ],
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Handle
-            Center(
-              child: Container(
+          ),
+          padding: const EdgeInsets.fromLTRB(0, 16, 0, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
                 width: 40,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.grey[700] : Colors.grey[300],
+                  color: isDark ? Colors.grey[600] : Colors.grey[300],
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
+              const SizedBox(height: 20),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: values.length,
+                  itemBuilder: (context, index) {
+                    final item = values[index];
+                    final isSelected = item == currentValue;
+                    return InkWell(
+                      onTap: () {
+                        onSelected(item);
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        color: isSelected 
+                            ? (isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFF6366F1).withValues(alpha: 0.1))
+                            : Colors.transparent,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              labelBuilder(item),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                                color: isSelected 
+                                    ? const Color(0xFF6366F1)
+                                    : (isDark ? Colors.grey[300] : Colors.grey[800]),
+                              ),
+                            ),
+                            if (isSelected)
+                              const Icon(LucideIcons.checkCircle2, color: Color(0xFF6366F1), size: 22),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final currentYear = DateTime.now().year;
+    final years = List.generate(5, (index) => currentYear - index);
+    
+    // Softer colors for a friendly, non-tech look
+    final bgColor = isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF9FAFB);
+    final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xFF1F2937);
+    final subtitleColor = isDark ? Colors.grey[400] : Colors.grey[600];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(32),
+          topRight: Radius.circular(32),
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 36),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Handle
+          Center(
+            child: Container(
+              width: 50,
+              height: 5,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[600] : Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            const SizedBox(height: 24),
-            
-            // Modern Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
+          ),
+          const SizedBox(height: 24),
+          
+          // Friendly Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(LucideIcons.fileOutput, color: Color(0xFF6366F1), size: 26),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Exportar Reporte',
+                      'Descargar Reporte',
                       style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: textColor,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
-                      'Crea un documento financiero PDF',
+                      'Guarda tus movimientos en PDF',
                       style: TextStyle(
                         fontSize: 14,
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        color: subtitleColor,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(LucideIcons.fileText, color: primaryColor, size: 28),
-                ),
-              ],
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 32),
+          
+          // Period Selection
+          Text(
+            'Elige el periodo',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: textColor,
             ),
-            
-            const SizedBox(height: 36),
-            
-            // Period Selection - Modern Chips Style
-            Text(
-              'Periodo del Reporte',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-                color: isDark ? Colors.grey[400] : Colors.grey[500],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: _buildSelectorButton(
+                  label: _months[_selectedMonth - 1],
+                  icon: LucideIcons.calendarDays,
+                  isDark: isDark,
+                  cardColor: cardColor,
+                  onTap: () {
+                    _showSelectorModal<int>(
+                      title: 'Seleccionar Mes',
+                      currentValue: _selectedMonth,
+                      values: List.generate(12, (i) => i + 1),
+                      labelBuilder: (val) => _months[val - 1],
+                      onSelected: (val) => setState(() => _selectedMonth = val),
+                      isDark: isDark,
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: _buildSelectorButton(
+                  label: _selectedYear.toString(),
+                  icon: LucideIcons.calendar,
+                  isDark: isDark,
+                  cardColor: cardColor,
+                  onTap: () {
+                    _showSelectorModal<int>(
+                      title: 'Seleccionar Año',
+                      currentValue: _selectedYear,
+                      values: years,
+                      labelBuilder: (val) => val.toString(),
+                      onSelected: (val) => setState(() => _selectedYear = val),
+                      isDark: isDark,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 32),
+          
+          // Report Type
+          Text(
+            '¿Qué datos incluimos?',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildFriendlyCard(
+                value: 'general',
+                label: 'Balance General',
+                icon: LucideIcons.wallet,
+                baseColor: const Color(0xFF6366F1), // Indigo
+                isDark: isDark,
+                cardColor: cardColor,
+              ),
+              const SizedBox(width: 12),
+              _buildFriendlyCard(
+                value: 'income',
+                label: 'Ingresos',
+                icon: LucideIcons.arrowDownToLine,
+                baseColor: const Color(0xFF10B981), // Emerald
+                isDark: isDark,
+                cardColor: cardColor,
+              ),
+              const SizedBox(width: 12),
+              _buildFriendlyCard(
+                value: 'expense',
+                label: 'Gastos',
+                icon: LucideIcons.arrowUpFromLine,
+                baseColor: const Color(0xFFF43F5E), // Rose
+                isDark: isDark,
+                cardColor: cardColor,
+              ),
+            ],
+          ),
+          
+          if (_errorMessage != null) ...[
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(LucideIcons.alertCircle, color: Color(0xFFEF4444), size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: _buildModernDropdown<int>(
-                    value: _selectedMonth,
-                    items: List.generate(12, (i) => DropdownMenuItem(value: i + 1, child: Text(_months[i]))),
-                    onChanged: (val) => setState(() => _selectedMonth = val!),
-                    isDark: isDark,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 2,
-                  child: _buildModernDropdown<int>(
-                    value: _selectedYear,
-                    items: years.map((y) => DropdownMenuItem(value: y, child: Text(y.toString()))).toList(),
-                    onChanged: (val) => setState(() => _selectedYear = val!),
-                    isDark: isDark,
-                  ),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 36),
-            
-            // Report Type - Big Square Cards
-            Text(
-              '¿Qué quieres exportar?',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-                color: isDark ? Colors.grey[400] : Colors.grey[500],
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _buildCardSelector('general', 'General', LucideIcons.pieChart, isDark, primaryColor),
-                const SizedBox(width: 12),
-                _buildCardSelector('income', 'Ingresos', LucideIcons.trendingUp, isDark, const Color(0xFF10B981)),
-                const SizedBox(width: 12),
-                _buildCardSelector('expense', 'Gastos', LucideIcons.trendingDown, isDark, const Color(0xFFEF4444)),
-              ],
-            ),
-            
+            const SizedBox(height: 24),
+          ] else ...[
             const SizedBox(height: 40),
-            
-            // Glowing Action Button
-            AnimatedBuilder(
-              animation: _pulseAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _isGenerating ? 1.0 : _pulseAnimation.value,
-                  child: child,
-                );
-              },
-              child: ElevatedButton(
-                onPressed: _isGenerating ? null : _generatePdf,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 22),
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                  elevation: 10,
-                  shadowColor: primaryColor.withOpacity(0.6),
-                ),
-                child: _isGenerating
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(LucideIcons.download, size: 22),
-                          SizedBox(width: 12),
-                          Text(
-                            'Generar PDF',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 0.5),
-                          ),
-                        ],
+          ],
+          
+          // Friendly Action Button
+          ElevatedButton(
+            onPressed: _isGenerating ? null : _generatePdf,
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              backgroundColor: const Color(0xFF6366F1),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              elevation: 4,
+              shadowColor: const Color(0xFF6366F1).withValues(alpha: 0.3),
+            ),
+            child: _isGenerating
+                ? const SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                  )
+                : const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(LucideIcons.arrowDownCircle, size: 22),
+                      SizedBox(width: 10),
+                      Text(
+                        'Generar Archivo',
+                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
                       ),
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSelectorButton({
+    required String label,
+    required IconData icon,
+    required bool isDark,
+    required Color cardColor,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: isDark ? [] : [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: const Color(0xFF6366F1), size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF1F2937),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(height: 8),
+            Icon(LucideIcons.chevronDown, color: Colors.grey[400], size: 18),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildModernDropdown<T>({
-    required T value,
-    required List<DropdownMenuItem<T>> items,
-    required ValueChanged<T?> onChanged,
+  Widget _buildFriendlyCard({
+    required String value,
+    required String label,
+    required IconData icon,
+    required Color baseColor,
     required bool isDark,
+    required Color cardColor,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0F172A).withOpacity(0.5) : Colors.grey[100],
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
-          width: 1,
-        ),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<T>(
-          value: value,
-          isExpanded: true,
-          icon: Icon(LucideIcons.chevronDown, color: isDark ? Colors.grey[400] : Colors.grey[600], size: 20),
-          dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          style: TextStyle(
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-          items: items,
-          onChanged: onChanged,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCardSelector(String value, String label, IconData icon, bool isDark, Color accentColor) {
     final isSelected = _reportType == value;
     
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _reportType = value),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
+          duration: const Duration(milliseconds: 250),
           padding: const EdgeInsets.symmetric(vertical: 20),
           decoration: BoxDecoration(
-            color: isSelected ? accentColor : (isDark ? const Color(0xFF0F172A).withOpacity(0.5) : Colors.grey[100]),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: isSelected ? accentColor : (isDark ? Colors.grey[800]! : Colors.grey[300]!),
-              width: isSelected ? 2 : 1,
-            ),
-            boxShadow: isSelected ? [
-              BoxShadow(
-                color: accentColor.withOpacity(0.4),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
-              )
-            ] : null,
+            color: isSelected ? baseColor : cardColor,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: isSelected 
+              ? [BoxShadow(color: baseColor.withValues(alpha: 0.4), blurRadius: 12, offset: const Offset(0, 6))] 
+              : (isDark ? [] : [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))]),
           ),
           child: Column(
             children: [
-              Icon(
-                icon,
-                size: 28,
-                color: isSelected ? Colors.white : (isDark ? Colors.grey[500] : Colors.grey[400]),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.white.withValues(alpha: 0.2) : baseColor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  size: 24,
+                  color: isSelected ? Colors.white : baseColor,
+                ),
               ),
               const SizedBox(height: 12),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: isSelected ? Colors.white : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                  color: isSelected ? Colors.white : (isDark ? Colors.grey[300] : const Color(0xFF4B5563)),
                 ),
               ),
             ],

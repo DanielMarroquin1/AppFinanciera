@@ -144,7 +144,7 @@ class PdfReportService {
              }
           }
 
-          content.add(_buildModernTransactionTable(filteredTxs, currencyCode, dateformat, primaryColor, greenColor, redColor, isEn, langCode));
+          content.addAll(_buildModernTransactionTable(filteredTxs, currencyCode, dateformat, primaryColor, greenColor, redColor, isEn, langCode));
 
           return content;
         },
@@ -297,9 +297,9 @@ class PdfReportService {
     );
   }
 
-  static pw.Widget _buildModernTransactionTable(List<TransactionModel> txs, String currencyCode, DateFormat format, PdfColor primary, PdfColor green, PdfColor red, bool isEn, String langCode) {
+  static List<pw.Widget> _buildModernTransactionTable(List<TransactionModel> txs, String currencyCode, DateFormat format, PdfColor primary, PdfColor green, PdfColor red, bool isEn, String langCode) {
     if (txs.isEmpty) {
-      return pw.Center(child: _safeText(isEn ? 'No transactions registered in this period.' : 'No hay movimientos registrados en este periodo.', style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey600)));
+      return [pw.Center(child: _safeText(isEn ? 'No transactions registered in this period.' : 'No hay movimientos registrados en este periodo.', style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey600)))];
     }
 
     final tableHeaders = isEn 
@@ -318,30 +318,27 @@ class PdfReportService {
       ];
     }).toList();
 
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        _safeText(isEn ? 'TRANSACTION HISTORY' : 'HISTORIAL DE MOVIMIENTOS', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: primary)),
-        pw.SizedBox(height: 16),
-        pw.TableHelper.fromTextArray(
-          headers: tableHeaders,
-          data: tableData,
-          border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
-          headerStyle: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
-          headerDecoration: pw.BoxDecoration(color: primary),
-          cellHeight: 30,
-          cellAlignments: {
-            0: pw.Alignment.centerLeft,
-            1: pw.Alignment.centerLeft,
-            2: pw.Alignment.centerLeft,
-            3: pw.Alignment.center,
-            4: pw.Alignment.centerRight,
-          },
-          cellStyle: const pw.TextStyle(fontSize: 10),
-          oddRowDecoration: const pw.BoxDecoration(color: PdfColors.grey50),
-        ),
-      ],
-    );
+    return [
+      _safeText(isEn ? 'TRANSACTION HISTORY' : 'HISTORIAL DE MOVIMIENTOS', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: primary)),
+      pw.SizedBox(height: 16),
+      pw.TableHelper.fromTextArray(
+        headers: tableHeaders,
+        data: tableData,
+        border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
+        headerStyle: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+        headerDecoration: pw.BoxDecoration(color: primary),
+        cellHeight: 30,
+        cellAlignments: {
+          0: pw.Alignment.centerLeft,
+          1: pw.Alignment.centerLeft,
+          2: pw.Alignment.centerLeft,
+          3: pw.Alignment.center,
+          4: pw.Alignment.centerRight,
+        },
+        cellStyle: const pw.TextStyle(fontSize: 10),
+        oddRowDecoration: const pw.BoxDecoration(color: PdfColors.grey50),
+      ),
+    ];
   }
 
   static pw.Widget _buildFooter(pw.Context context, PdfColor primary, bool isEn) {

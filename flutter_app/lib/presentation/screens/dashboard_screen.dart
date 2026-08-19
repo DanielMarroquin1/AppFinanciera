@@ -96,7 +96,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
   }
 
   void _showTutorial() {
-    AppTutorialCoachMark.showTutorial(context, onFinish: () {
+    final loc = ref.read(localizationProvider);
+    AppTutorialCoachMark.showTutorial(context, loc: loc, onFinish: () {
       SharedPreferences.getInstance().then((prefs) {
         prefs.setBool('has_seen_app_tutorial', true);
       });

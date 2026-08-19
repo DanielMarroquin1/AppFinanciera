@@ -25,6 +25,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
   final TextEditingController emailController = TextEditingController();
   String selectedAvatarId = '👤';
   bool isSaving = false;
+  String? _errorMessage;
 
   String get selectedEmoji {
     switch (selectedAvatarId) {
@@ -65,19 +66,36 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
   }
 
   Future<void> _handleSave() async {
+    setState(() => _errorMessage = null);
     final user = ref.read(authProvider).user;
-    if (user == null || nameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, ingresa tu nombre')),
-      );
+    final newName = nameController.text.trim();
+    
+    if (user == null || newName.isEmpty) {
+      setState(() => _errorMessage = 'Por favor, ingresa tu nombre');
       return;
+    }
+
+    final badWords = [
+      'puto', 'puta', 'mierda', 'cabron', 'cabrón', 'pendejo', 'pendeja', 
+      'idiota', 'estupido', 'estúpido', 'imbecil', 'imbécil', 'verga', 'culo', 
+      'zorra', 'perra', 'maricon', 'maricón', 'jodido', 'chinga', 'chingar', 
+      'fuck', 'shit', 'bitch', 'asshole', 'pene', 'vagina', 'coño', 'cagon',
+      'cagón', 'cerote', 'malparido', 'ramera', 'puto', 'panocha', 'vergas'
+    ];
+    
+    final lowerName = newName.toLowerCase();
+    for (final word in badWords) {
+      if (lowerName.contains(word)) {
+        setState(() => _errorMessage = 'Por favor, usa un nombre apropiado sin palabras ofensivas.');
+        return;
+      }
     }
 
     setState(() => isSaving = true);
     
     try {
       final updatedUser = user.copyWith(
-        name: nameController.text.trim(),
+        name: newName,
         currentAvatar: selectedAvatarId,
       );
       
@@ -95,9 +113,10 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al guardar: $e'), backgroundColor: Colors.redAccent),
-        );
+        setState(() {
+          _errorMessage = 'Error al guardar: $e';
+          isSaving = false;
+        });
       }
     } finally {
       if (mounted) setState(() => isSaving = false);
@@ -230,14 +249,13 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                           child: GestureDetector(
                             onTap: _showAvatarSelector,
                             child: Container(
-                              padding: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF10B981),
                                 shape: BoxShape.circle,
-                                border: Border.all(color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC), width: 3),
-                                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 8, offset: const Offset(0, 4))],
+                                border: Border.all(color: isDark ? const Color(0xFF0F172A) : Colors.white, width: 4),
                               ),
-                              child: const Icon(LucideIcons.edit2, color: Colors.white, size: 18),
+                              child: const Icon(LucideIcons.pencil, color: Colors.white, size: 20),
                             ),
                           ),
                         ),
@@ -245,6 +263,30 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                     ),
                   ),
                   const SizedBox(height: 32),
+
+                  if (_errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(LucideIcons.alertCircle, color: Color(0xFFEF4444), size: 20),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                   
                   // Form Fields
                   _buildLabel(isDark, 'Nombre Completo'),

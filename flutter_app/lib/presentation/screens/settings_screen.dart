@@ -15,6 +15,7 @@ import '../widgets/modals/premium_sync_hub_modal.dart';
 import '../widgets/modals/premium_paywall_dialog.dart';
 import '../widgets/modals/complete_profile_modal.dart';
 import '../widgets/modals/language_modal.dart';
+import '../widgets/modals/technical_support_modal.dart';
 import '../../core/utils/localization.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/services/biometric_service.dart';
@@ -258,10 +259,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
             _buildSection(
               isDark,
-              title: 'Seguridad',
+              title: loc.get('security'),
               items: [
-                _buildSettingItem(isDark, icon: LucideIcons.lock, iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE), iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), title: 'Cambiar Contraseña', subtitle: 'Última actualización hace 3 meses', onTap: () => _showChangePasswordModal(context, isDark)),
-                _buildSettingItem(isDark, icon: LucideIcons.key, iconBg: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFEE2E2), iconColor: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), title: 'Autenticación de Dos Factores', subtitle: 'Protege tu cuenta', onTap: () => _showTwoFactorModal(context, isDark)),
+                _buildSettingItem(isDark, icon: LucideIcons.lock, iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE), iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), title: loc.get('change_password'), subtitle: 'Última actualización hace 3 meses', onTap: () => _showChangePasswordModal(context, isDark)),
+                _buildSettingItem(isDark, icon: LucideIcons.key, iconBg: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFEE2E2), iconColor: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), title: loc.get('two_factor'), subtitle: 'Protege tu cuenta', onTap: () => _showTwoFactorModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.fingerprint, iconBg: isDark ? const Color(0xFF0284C7).withValues(alpha: 0.3) : const Color(0xFFE0F2FE), iconColor: const Color(0xFF38BDF8), title: 'Huella Digital / Face ID', subtitle: 'Acceso rápido biométrico activado', onTap: () => _showBiometricTestModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.timer, iconBg: isDark ? const Color(0xFF312E81).withValues(alpha: 0.5) : const Color(0xFFE0E7FF), iconColor: const Color(0xFF818CF8), title: 'Cierre Automático (${user?.autoLockMinutes ?? 1} min)', subtitle: 'Protección de privacidad activa', onTap: () => _showTimeoutInfoModal(context, isDark)),
               ],
@@ -337,24 +338,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
             _buildSection(
               isDark,
-              title: 'Ayuda y Soporte',
+              title: loc.get('help_tutorials'),
               items: [
                 _buildSettingItem(
                   isDark,
-                  icon: LucideIcons.compass,
-                  iconBg: isDark ? const Color(0xFF0284C7).withValues(alpha: 0.3) : const Color(0xFFE0F2FE),
-                  iconColor: const Color(0xFF38BDF8),
-                  title: 'Recorrido por la Aplicación',
-                  subtitle: 'Guía rápida para nuevos usuarios',
-                  onTap: () async {
-                    final prefs = await SharedPreferences.getInstance();
-                    await prefs.setBool('has_seen_app_tutorial', false);
-                    if (context.mounted) {
-                      if (Scaffold.of(context).isDrawerOpen) Navigator.pop(context);
-                      context.go('/dashboard');
-                      showTutorialTrigger.value = true;
-                    }
-                  },
+                  icon: LucideIcons.lifeBuoy,
+                  iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE),
+                  iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB),
+                  title: loc.get('technical_support'),
+                  subtitle: loc.get('technical_support_desc'),
+                  onTap: () => TechnicalSupportModal.show(context),
                 ),
               ],
             ),
@@ -400,7 +393,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     const Icon(LucideIcons.sparkles, color: Color(0xFF38BDF8), size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      'Ver Tutorial de Bienvenida',
+                      loc.get('tutorial_btn'),
                       style: TextStyle(
                         color: isDark ? Colors.white : Colors.black87,
                         fontWeight: FontWeight.bold,

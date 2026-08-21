@@ -161,83 +161,36 @@ class RecurrenceService {
     }
   }
 
-  static bool _checkRecurrence(
+    static bool _checkRecurrence(
     String recurrenceType,
     int? day1,
     int? day2,
     DateTime? lastProcessed,
     DateTime now,
   ) {
-    if (lastProcessed != null) {
-      // Avoid processing multiple times in the same day
-      if (lastProcessed.year == now.year &&
-          lastProcessed.month == now.month &&
-          lastProcessed.day == now.day) {
-        return false;
-      }
+    if (day1 == null) return false;
+    
+    // If never processed, check if today is the day
+    if (lastProcessed == null) {
+      if (recurrenceType == 'monthly' && now.day == day1) return true;
+      if (recurrenceType == 'weekly' && now.weekday == day1) return true;
+      if (recurrenceType == 'bimonthly' && (now.day == day1 || now.day == day2)) return true;
+      return false;
     }
 
-    switch (recurrenceType) {
-      case 'monthly':
-        if (day1 == null) return false;
-        // Check if we passed the day in the current month
-        if (now.day >= day1) {
-          // Process if not processed this month
-          if (lastProcessed == null ||
-              lastProcessed.year < now.year ||
-              (lastProcessed.year == now.year && lastProcessed.month < now.month)) {
-            return true;
-          }
-        }
-        return false;
-
-      case 'bimonthly':
-        if (day1 == null || day2 == null) return false;
-        // Check day1
-        if (now.day >= day1 && now.day < day2) {
-          if (lastProcessed == null || 
-              lastProcessed.year < now.year || 
-              (lastProcessed.year == now.year && lastProcessed.month < now.month) ||
-              (lastProcessed.year == now.year && lastProcessed.month == now.month && lastProcessed.day < day1)) {
-            return true;
-          }
-        }
-        // Check day2
-        if (now.day >= day2) {
-          if (lastProcessed == null || 
-              lastProcessed.year < now.year || 
-              (lastProcessed.year == now.year && lastProcessed.month < now.month) ||
-              (lastProcessed.year == now.year && lastProcessed.month == now.month && lastProcessed.day < day2)) {
-            return true;
-          }
-        }
-        return false;
-
-      case 'weekly':
-        if (day1 == null) return false; // 1 = Mon, 7 = Sun
-        // If today is or after the target weekday
-        if (now.weekday == day1) {
-          if (lastProcessed == null || _daysBetween(lastProcessed, now) >= 6) {
-             return true;
-          }
-        } else if (now.weekday > day1) {
-           // We passed the weekday. Check if last processed was before this week's occurrence
-           final daysPassed = now.weekday - day1;
-           final lastOccurrenceDate = now.subtract(Duration(days: daysPassed));
-           if (lastProcessed == null || lastProcessed.isBefore(DateTime(lastOccurrenceDate.year, lastOccurrenceDate.month, lastOccurrenceDate.day))) {
-             return true;
-           }
-        }
-        return false;
-
-      default:
-        return false;
+    // Iterate from lastProcessed + 1 day up to now
+    DateTime current = DateTime(lastProcessed.year, lastProcessed.month, lastProcessed.day).add(const Duration(days: 1));
+    DateTime today = DateTime(now.year, now.month, now.day);
+    
+    while (!current.isAfter(today)) {
+      if (recurrenceType == 'monthly' && current.day == day1) return true;
+      if (recurrenceType == 'weekly' && current.weekday == day1) return true;
+      if (recurrenceType == 'bimonthly' && (current.day == day1 || current.day == day2)) return true;
+      current = current.add(const Duration(days: 1));
     }
+
+    return false;
   }
 
-  static int _daysBetween(DateTime from, DateTime to) {
-    from = DateTime(from.year, from.month, from.day);
-    to = DateTime(to.year, to.month, to.day);
-    return (to.difference(from).inHours / 24).round();
-  }
+
 }

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/utils/localization.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../providers/auth_provider.dart';
 import 'premium_paywall_dialog.dart';
 
-class BudgetLimitModal extends StatefulWidget {
+class BudgetLimitModal extends ConsumerStatefulWidget {
   final double initialValue;
 
   const BudgetLimitModal({
@@ -26,10 +27,10 @@ class BudgetLimitModal extends StatefulWidget {
   }
 
   @override
-  State<BudgetLimitModal> createState() => _BudgetLimitModalState();
+  ConsumerState<BudgetLimitModal> createState() => _BudgetLimitModalState();
 }
 
-class _BudgetLimitModalState extends State<BudgetLimitModal> {
+class _BudgetLimitModalState extends ConsumerState<BudgetLimitModal> {
   double _currentValue = 80;
 
   @override
@@ -43,6 +44,7 @@ class _BudgetLimitModalState extends State<BudgetLimitModal> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final loc = ref.read(localizationProvider);
 
     return Dialog(
       shape: RoundedRectangleBorder(
@@ -91,7 +93,7 @@ class _BudgetLimitModalState extends State<BudgetLimitModal> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Alerta de Presupuesto',
+                        loc.get('budget_alert_title'),
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -99,7 +101,7 @@ class _BudgetLimitModalState extends State<BudgetLimitModal> {
                         ),
                       ),
                       Text(
-                        'Ajustar límite',
+                        loc.get('adjust_limit'),
                         style: TextStyle(
                           color: isDark ? Colors.grey[400] : Colors.grey[600],
                           fontSize: 14,
@@ -113,7 +115,7 @@ class _BudgetLimitModalState extends State<BudgetLimitModal> {
             const SizedBox(height: 24),
             
             Text(
-              'Establece tu presupuesto máximo para este mes.',
+              loc.get('set_max_budget'),
               style: TextStyle(
                 color: isDark ? Colors.grey[300] : Colors.grey[700],
                 fontSize: 14,
@@ -167,7 +169,7 @@ class _BudgetLimitModalState extends State<BudgetLimitModal> {
                         ),
                       ),
                       Text(
-                        'DEL INGRESO',
+                        loc.get('of_income'),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -245,7 +247,7 @@ class _BudgetLimitModalState extends State<BudgetLimitModal> {
                       ),
                     ),
                     child: Text(
-                      'Cancelar',
+                      loc.get('cancel'),
                       style: TextStyle(
                         color: isDark ? Colors.grey[400] : Colors.grey[600],
                         fontWeight: FontWeight.w600,
@@ -268,8 +270,8 @@ class _BudgetLimitModalState extends State<BudgetLimitModal> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      'Guardar',
+                    child: Text(
+                      loc.get('save'),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),

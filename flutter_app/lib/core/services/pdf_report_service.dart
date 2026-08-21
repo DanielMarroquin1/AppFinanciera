@@ -128,18 +128,18 @@ class PdfReportService {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(40),
-        header: (context) => _buildModernHeader(userName, startDate, endDate, dateformat, primaryColor, accentColor, reportType, isEn),
-        footer: (context) => _buildFooter(context, primaryColor, isEn),
+        header: (context) => _buildModernHeader(userName, startDate, endDate, dateformat, primaryColor, accentColor, reportType, isEn, loc),
+        footer: (context) => _buildFooter(context, primaryColor, isEn, loc),
         build: (pw.Context context) {
           List<pw.Widget> content = [];
           
           content.add(pw.SizedBox(height: 30));
-          content.add(_buildModernSummaryCards(totalIncome, totalExpense, balance, currencyCode, greenColor, redColor, primaryColor, isEn));
+          content.add(_buildModernSummaryCards(totalIncome, totalExpense, balance, currencyCode, greenColor, redColor, primaryColor, isEn, loc));
           content.add(pw.SizedBox(height: 40));
 
           if (reportType == 'expense' || reportType == 'general') {
              if (totalExpense > 0) {
-               content.add(_buildCategoryBreakdown(expensesByCategory, currencyCode, totalExpense, primaryColor, accentColor, isEn));
+               content.add(_buildCategoryBreakdown(expensesByCategory, currencyCode, totalExpense, primaryColor, accentColor, isEn, loc));
                content.add(pw.SizedBox(height: 40));
              }
           }
@@ -154,7 +154,7 @@ class PdfReportService {
     return pdf.save();
   }
 
-  static pw.Widget _buildModernHeader(String userName, DateTime startDate, DateTime endDate, DateFormat format, PdfColor primary, PdfColor accent, String reportType, bool isEn) {
+  static pw.Widget _buildModernHeader(String userName, DateTime startDate, DateTime endDate, DateFormat format, PdfColor primary, PdfColor accent, String reportType, bool isEn, AppLocalizations loc) {
     String typeLabel = isEn ? 'General Financial' : 'Financiero General';
     if (reportType == 'income') typeLabel = isEn ? 'Income' : 'de Ingresos';
     if (reportType == 'expense') typeLabel = isEn ? 'Expense' : 'de Gastos';
@@ -188,7 +188,7 @@ class PdfReportService {
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  _safeText('QUIVO', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: primary)),
+                  _safeText("QUIVO", style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: primary)),
                   pw.SizedBox(height: 4),
                   _safeText(isEn ? 'REPORT: ${typeLabel.toUpperCase()}' : 'REPORTE ${typeLabel.toUpperCase()}', style: pw.TextStyle(fontSize: 14, color: PdfColors.grey700, fontWeight: pw.FontWeight.bold)),
                   pw.SizedBox(height: 2),
@@ -210,7 +210,7 @@ class PdfReportService {
     );
   }
 
-  static pw.Widget _buildModernSummaryCards(double income, double expense, double balance, String currencyCode, PdfColor green, PdfColor red, PdfColor primary, bool isEn) {
+  static pw.Widget _buildModernSummaryCards(double income, double expense, double balance, String currencyCode, PdfColor green, PdfColor red, PdfColor primary, bool isEn, AppLocalizations loc) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
@@ -241,7 +241,7 @@ class PdfReportService {
     );
   }
 
-  static pw.Widget _buildCategoryBreakdown(Map<String, double> expensesByCategory, String currencyCode, double totalExpense, PdfColor primary, PdfColor accent, bool isEn) {
+  static pw.Widget _buildCategoryBreakdown(Map<String, double> expensesByCategory, String currencyCode, double totalExpense, PdfColor primary, PdfColor accent, bool isEn, AppLocalizations loc) {
     // Ordenar de mayor a menor gasto
     final sortedEntries = expensesByCategory.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
@@ -341,7 +341,7 @@ class PdfReportService {
     ];
   }
 
-  static pw.Widget _buildFooter(pw.Context context, PdfColor primary, bool isEn) {
+  static pw.Widget _buildFooter(pw.Context context, PdfColor primary, bool isEn, AppLocalizations loc) {
     return pw.Container(
       margin: const pw.EdgeInsets.only(top: 20),
       child: pw.Row(

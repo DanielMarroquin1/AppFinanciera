@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../widgets/rewards_shop_modal.dart';
@@ -45,7 +46,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
   ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTickerProviderStateMixin {
+class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late AnimationController _fireAnimController;
   bool _limitAlertShown = false;
   bool _fixedExpenseAlertShown = false;
@@ -54,6 +55,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _fireAnimController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
@@ -68,7 +70,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
       // Process recurring transactions
       final user = ref.read(authProvider).user;
       if (user != null && user.email != null) {
-        RecurrenceService.processRecurrences(user.email!);
+        final authUid = FirebaseAuth.instance.currentUser?.uid;
+        if (authUid != null) RecurrenceService.processRecurrences(authUid);
         LocalNotificationService.scheduleDailyTransactionReminders();
       }
     });
@@ -89,9 +92,23 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
   }
 
   @override
+  
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final user = ref.read(authProvider).user;
+      if (user != null) {
+        final authUid = FirebaseAuth.instance.currentUser?.uid;
+        if (authUid != null) RecurrenceService.processRecurrences(authUid);
+      }
+    }
+  }
+
+  @override
   void dispose() {
     showTutorialTrigger.removeListener(_onTutorialTriggered);
     _fireAnimController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 

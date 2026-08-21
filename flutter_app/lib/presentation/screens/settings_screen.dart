@@ -931,7 +931,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             padding: EdgeInsets.only(
               left: 24, right: 24, top: 24,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              bottom: 24,
             ),
             child: SingleChildScrollView(
               child: Column(
@@ -1264,16 +1264,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             final isEnabled = snapshot.data ?? false;
             final user = ref.read(authProvider).user;
 
-            return Container(
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.5),
-              ),
-              padding: EdgeInsets.only(
-                left: 24, right: 24, top: 24,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-              ),
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: return Padding(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+              child: Container(
+                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.5),
+                ),
+                padding: const EdgeInsets.only(
+                  left: 24, right: 24, top: 24, bottom: 24,
+                ),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -1412,7 +1416,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ],
                 ),
               ),
-            );
+            )));
           },
         ),
       ),

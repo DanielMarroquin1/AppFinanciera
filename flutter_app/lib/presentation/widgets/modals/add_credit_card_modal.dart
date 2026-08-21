@@ -328,8 +328,13 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
     final user = ref.watch(authProvider).user;
     final currencyCode = user?.currency ?? 'USD';
 
-    return Container(
-      decoration: BoxDecoration(
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9),
+        decoration: BoxDecoration(
         color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         boxShadow: [
@@ -630,7 +635,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildSectionTitle(String title, IconData icon, bool isDark) {

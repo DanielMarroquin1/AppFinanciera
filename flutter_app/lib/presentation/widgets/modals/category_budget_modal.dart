@@ -173,7 +173,9 @@ class _CategoryBudgetModalState extends ConsumerState<CategoryBudgetModal> {
       return !tempBudgets.containsKey(id) || tempBudgets[id]! <= 0;
     }).toList();
 
-    return BackdropFilter(
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
       child: Container(
         height: MediaQuery.of(context).size.height * 0.9,
@@ -489,6 +491,6 @@ class _CategoryBudgetModalState extends ConsumerState<CategoryBudgetModal> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

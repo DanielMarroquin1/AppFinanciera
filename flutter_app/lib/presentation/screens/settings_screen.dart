@@ -1266,7 +1266,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: return Padding(
+      child: Padding(
               padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
               child: Container(
                 constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),

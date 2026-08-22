@@ -175,7 +175,7 @@ class _CategoryBudgetModalState extends ConsumerState<CategoryBudgetModal> {
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: return BackdropFilter(
+      child: BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
       child: Container(
         height: MediaQuery.of(context).size.height * 0.9,

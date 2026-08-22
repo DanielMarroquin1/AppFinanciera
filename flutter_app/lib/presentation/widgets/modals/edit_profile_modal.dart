@@ -323,7 +323,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
           ),
         ],
       ),
-    )));
+    ));
   }
 
   Widget _buildLabel(bool isDark, String text) {

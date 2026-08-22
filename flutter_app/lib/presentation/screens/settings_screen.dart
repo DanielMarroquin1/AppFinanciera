@@ -1264,9 +1264,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             final isEnabled = snapshot.data ?? false;
             final user = ref.read(authProvider).user;
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: Padding(
+            return Padding(
               padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
               child: Container(
                 constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),

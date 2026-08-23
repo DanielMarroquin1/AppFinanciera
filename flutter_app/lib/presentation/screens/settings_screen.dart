@@ -264,7 +264,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _buildSettingItem(isDark, icon: LucideIcons.lock, iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE), iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), title: loc.get('change_password'), subtitle: 'Última actualización hace 3 meses', onTap: () => _showChangePasswordModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.key, iconBg: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFEE2E2), iconColor: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), title: loc.get('two_factor'), subtitle: 'Protege tu cuenta', onTap: () => _showTwoFactorModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.fingerprint, iconBg: isDark ? const Color(0xFF0284C7).withValues(alpha: 0.3) : const Color(0xFFE0F2FE), iconColor: const Color(0xFF38BDF8), title: 'Huella Digital / Face ID', subtitle: 'Acceso rápido biométrico activado', onTap: () => _showBiometricTestModal(context, isDark)),
-                const SizedBox(height: 12),
                 _buildSettingItem(isDark, icon: LucideIcons.mic, iconBg: isDark ? const Color(0xFF8B5CF6).withValues(alpha: 0.3) : const Color(0xFFF3E8FF), iconColor: const Color(0xFF8B5CF6), title: 'Voz de la IA', subtitle: 'Personaliza cómo te habla QUIVO', onTap: () => _showAIVoiceModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.timer, iconBg: isDark ? const Color(0xFF312E81).withValues(alpha: 0.5) : const Color(0xFFE0E7FF), iconColor: const Color(0xFF818CF8), title: 'Cierre Automático (${user?.autoLockMinutes ?? 1} min)', subtitle: 'Protección de privacidad activa', onTap: () => _showTimeoutInfoModal(context, isDark)),
               ],
@@ -1427,11 +1426,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _showAIVoiceModal(BuildContext context, bool isDark) async {
     final prefs = await SharedPreferences.getInstance();
     String currentVoice = prefs.getString('ai_voice_preset') ?? 'amigable';
+    final loc = ref.read(localizationProvider);
+    final flutterTts = FlutterTts();
 
     if (!context.mounted) return;
 
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setModalState) {
@@ -1442,7 +1444,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ];
 
           return Container(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.only(
+              left: 24, 
+              right: 24, 
+              top: 24, 
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24
+            ),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
@@ -1463,6 +1470,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onTap: () async {
                       setModalState(() => currentVoice = v['id'] as String);
                       await prefs.setString('ai_voice_preset', v['id'] as String);
+                      
+                      // Speak the sentence
+                      if (v['id'] == 'amigable') {
+                        await flutterTts.setSpeechRate(0.55);
+                        await flutterTts.setPitch(1.15);
+                      } else if (v['id'] == 'profesional') {
+                        await flutterTts.setSpeechRate(0.5);
+                        await flutterTts.setPitch(0.85);
+                      } else {
+                        await flutterTts.setSpeechRate(0.5);
+                        await flutterTts.setPitch(1.0);
+                      }
+                      
+                      // Speak greeting according to language
+                      String greeting = 'Hola, Soy Sami, tu asistente financiero';
+                      String lang = loc.intlLocale;
+                      if (lang == 'en') greeting = 'Hello, I am Sami, your financial assistant';
+                      if (lang == 'fr') greeting = 'Bonjour, je suis Sami, votre assistant financier';
+                      if (lang == 'it') greeting = 'Ciao, sono Sami, il tuo assistente finanziario';
+                      if (lang == 'pt') greeting = 'Olá, eu sou Sami, seu assistente financeiro';
+                      
+                      await flutterTts.setLanguage(lang);
+                      await flutterTts.speak(greeting);
+                      
                       if (context.mounted) Navigator.pop(ctx);
                     },
                     child: AnimatedContainer(
@@ -1503,7 +1534,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-void _showTimeoutInfoModal(BuildContext context, bool isDark) {
+
+  void _showTimeoutInfoModal(BuildContext context, bool isDark) {
     final loc = ref.read(localizationProvider);
     final user = ref.read(authProvider).user;
     int currentMinutes = user?.autoLockMinutes ?? 1;
@@ -2194,4 +2226,3 @@ void _showTimeoutInfoModal(BuildContext context, bool isDark) {
       ),
     );
   }
-}

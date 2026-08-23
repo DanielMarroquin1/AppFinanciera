@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 import 'package:shared_preferences/shared_preferences.dart';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -67,6 +68,31 @@ const List<FinancialTip> kFinancialTips = [
   FinancialTip(id: 48, categoria: 'ahorro',   titulo: 'Biblioteca',               consejo: 'Antes de comprar un libro, mira si está en una biblioteca o si alguien te lo puede prestar.'),
   FinancialTip(id: 49, categoria: 'personal', titulo: 'Mantén la Calma',          consejo: 'Las inversiones a largo plazo requieren paciencia. No tomes decisiones financieras por pánico.'),
   FinancialTip(id: 50, categoria: 'ahorro',   titulo: 'Mentalidad de Abundancia', consejo: '¡Ahorrar no es limitarse, es liberarse de preocupaciones futuras! ¡Sigue adelante!'),
+  FinancialTip(id: 51, categoria: 'personal', titulo: 'Paga tus deudas', consejo: 'Prioriza las deudas con mayor tasa de interés para liberar tu flujo de caja mensual.'),
+  FinancialTip(id: 52, categoria: 'parejas',  titulo: 'Ahorro Conjunto', consejo: 'Establezcan una meta mutua y aporten proporcionalmente según sus ingresos.'),
+  FinancialTip(id: 53, categoria: 'ahorro',   titulo: 'Menos Suscripciones', consejo: 'Revisa tus suscripciones mensuales; cancela las que no has usado en el último mes.'),
+  FinancialTip(id: 54, categoria: 'personal', titulo: 'Fondo de Emergencia', consejo: 'El objetivo es tener de 3 a 6 meses de gastos fijos ahorrados solo para imprevistos.'),
+  FinancialTip(id: 55, categoria: 'parejas',  titulo: 'Comunicación', consejo: 'La honestidad financiera en pareja previene sorpresas y fortalece la confianza mutua.'),
+  FinancialTip(id: 56, categoria: 'ahorro',   titulo: 'Regla del 50/30/20', consejo: '50% necesidades, 30% deseos, 20% ahorro e inversión. Una guía básica y efectiva.'),
+  FinancialTip(id: 57, categoria: 'personal', titulo: 'Automatiza', consejo: 'Automatiza tus transferencias a ahorros para no tener que decidir hacerlo cada mes.'),
+  FinancialTip(id: 58, categoria: 'parejas',  titulo: 'Planifica Viajes', consejo: 'Un viaje en pareja planeado con anticipación evita endeudarse con tarjetas de crédito.'),
+  FinancialTip(id: 59, categoria: 'ahorro',   titulo: 'Evita compras impulsivas', consejo: 'Espera 24 horas antes de comprar algo no esencial. Muchas veces la urgencia desaparece.'),
+  FinancialTip(id: 60, categoria: 'personal', titulo: 'Diversifica', consejo: 'No pongas todos los huevos en una sola canasta. Busca diferentes fuentes de ingresos.'),
+  FinancialTip(id: 61, categoria: 'parejas',  titulo: 'Asignaciones Mensuales', consejo: 'Ambos deberían tener dinero libre para gastar sin rendir cuentas al otro.'),
+  FinancialTip(id: 62, categoria: 'ahorro',   titulo: 'Marcas Blancas', consejo: 'El supermercado tiene marcas propias que son de igual calidad y mucho más económicas.'),
+  FinancialTip(id: 63, categoria: 'personal', titulo: 'Invierte en ti', consejo: 'Tu mejor activo eres tú. Invierte en cursos y educación para aumentar tus ingresos.'),
+  FinancialTip(id: 64, categoria: 'parejas',  titulo: 'Reunión Financiera', consejo: 'Tengan una cena mensual para revisar números, metas y felicitaciones por los logros.'),
+  FinancialTip(id: 65, categoria: 'ahorro',   titulo: 'Ahorra en Energía', consejo: 'Usa focos LED y apaga equipos electrónicos que no uses; notarás la diferencia en tu recibo.'),
+  FinancialTip(id: 66, categoria: 'personal', titulo: 'Ignora las Apariencias', consejo: 'No te endeudes para impresionar a personas que no importan con dinero que no tienes.'),
+  FinancialTip(id: 67, categoria: 'parejas',  titulo: 'Visión Compartida', consejo: 'Hagan un tablero de visión financiero; ver juntos el futuro motiva el ahorro del presente.'),
+  FinancialTip(id: 68, categoria: 'ahorro',   titulo: 'Lista de Compras', consejo: 'Nunca vayas al súper con hambre ni sin una lista; terminarás comprando de más.'),
+  FinancialTip(id: 69, categoria: 'personal', titulo: 'Paga de Contado', consejo: 'Evita los pagos a cuotas para bienes de consumo que pierden valor rápidamente.'),
+  FinancialTip(id: 70, categoria: 'parejas',  titulo: 'Dividir Gastos', consejo: 'Si ganan diferente, dividan los gastos de forma porcentual, no en partes iguales.'),
+  FinancialTip(id: 71, categoria: 'ahorro',   titulo: 'Negocia Servicios', consejo: 'Llama a tus proveedores de internet o seguro y pide descuentos o mejoras en tu plan.'),
+  FinancialTip(id: 72, categoria: 'personal', titulo: 'Descuentos', consejo: 'Usa cupones o aplicaciones de cashback para recuperar un porcentaje de tus gastos diarios.'),
+  FinancialTip(id: 73, categoria: 'parejas',  titulo: 'Prioridad de Pagos', consejo: 'Si tienen deudas compartidas, ataquen primero la que tiene la tasa de interés más alta.'),
+  FinancialTip(id: 74, categoria: 'ahorro',   titulo: 'Ropa Inteligente', consejo: 'Compra ropa básica y de calidad; dura más tiempo y nunca pasa de moda.'),
+  FinancialTip(id: 75, categoria: 'personal', titulo: 'Visualiza el Retiro', consejo: 'Entre más joven empieces a aportar para tu jubilación, menor será el esfuerzo mensual.'),
 ];
 
 // ─── Category metadata ───────────────────────────────────────────────────────
@@ -121,22 +147,17 @@ const _kLastTipIdKey   = 'daily_tip_last_id';
 
 // ─── Static helper ────────────────────────────────────────────────────────────
 class DailyTipModal {
-  /// Shows the modal only once per calendar day. Call from dashboard's
+  static bool _hasShownThisSession = false;
+
+  /// Shows the modal only once per session. Call from dashboard's
   /// [initState] / [build] post-frame callback.
   static Future<void> showIfNeeded(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    final today = _todayString();
-    final lastShown = prefs.getString(_kLastTipDateKey) ?? '';
+    if (_hasShownThisSession) return;
+    _hasShownThisSession = true;
 
-    if (lastShown == today) return; // Already shown today
-
-    // Pick a tip: cycle through all 50 by day-of-year
-    final dayOfYear = DateTime.now().difference(DateTime(DateTime.now().year)).inDays;
-    final tip = kFinancialTips[dayOfYear % kFinancialTips.length];
-
-    // Save state
-    await prefs.setString(_kLastTipDateKey, today);
-    await prefs.setInt(_kLastTipIdKey, tip.id);
+    // Pick a random tip
+    final random = math.Random();
+    final tip = kFinancialTips[random.nextInt(kFinancialTips.length)];
 
     if (!context.mounted) return;
     _show(context, tip);
@@ -144,14 +165,9 @@ class DailyTipModal {
 
   /// Force-show for testing / manual trigger.
   static void show(BuildContext context) {
-    final dayOfYear = DateTime.now().difference(DateTime(DateTime.now().year)).inDays;
-    final tip = kFinancialTips[dayOfYear % kFinancialTips.length];
+    final random = math.Random();
+    final tip = kFinancialTips[random.nextInt(kFinancialTips.length)];
     _show(context, tip);
-  }
-
-  static String _todayString() {
-    final now = DateTime.now();
-    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
 
   static void _show(BuildContext context, FinancialTip tip) {

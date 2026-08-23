@@ -125,186 +125,188 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9),
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.92),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 40, offset: const Offset(0, -10))],
       ),
-      padding: const EdgeInsets.all(24),
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(color: isDark ? Colors.grey[700] : Colors.grey[300], borderRadius: BorderRadius.circular(2)),
-              ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+              border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))),
             ),
-            const SizedBox(height: 24),
-            Row(
+            child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
+                    color: const Color(0xFF3B82F6).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(LucideIcons.lifeBuoy, color: Color(0xFF3B82F6), size: 24),
+                  child: const Icon(LucideIcons.lifeBuoy, color: Color(0xFF3B82F6), size: 28),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Soporte Técnico', style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 22, fontWeight: FontWeight.bold)),
-                      Text('Envíanos tu consulta o error', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                      Text('Soporte Técnico', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                      const SizedBox(height: 2),
+                      Text('Estamos aquí para ayudarte', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
                     ],
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            
-            Text('Correo Electrónico', style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 14)),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-              decoration: InputDecoration(
-                hintText: 'tu@correo.com',
-                prefixIcon: Icon(LucideIcons.mail, color: isDark ? Colors.grey[500] : Colors.grey[400]),
-                filled: true,
-                fillColor: isDark ? const Color(0xFF0F172A) : Colors.grey[50],
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            Text('Asunto / Título del Ticket', style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 14)),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _subjectController,
-              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-              decoration: InputDecoration(
-                hintText: 'Ej. Error al guardar presupuesto',
-                prefixIcon: Icon(LucideIcons.tag, color: isDark ? Colors.grey[500] : Colors.grey[400]),
-                filled: true,
-                fillColor: isDark ? const Color(0xFF0F172A) : Colors.grey[50],
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            Text('Descripción del Problema', style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 14)),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _descriptionController,
-              maxLines: 4,
-              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-              decoration: InputDecoration(
-                hintText: 'Describe detalladamente el error o tu consulta...',
-                filled: true,
-                fillColor: isDark ? const Color(0xFF0F172A) : Colors.grey[50],
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-              ),
-            ),
-            const SizedBox(height: 20),
-            
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Imágenes (Max 2)', style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 14)),
-                TextButton.icon(
-                  onPressed: _attachImage,
-                  icon: const Icon(LucideIcons.imagePlus, size: 18),
-                  label: const Text('Adjuntar'),
-                  style: TextButton.styleFrom(foregroundColor: const Color(0xFF3B82F6)),
-                )
-              ],
-            ),
-            
-            if (_attachedImages.isNotEmpty)
-              Container(
-                margin: const EdgeInsets.only(top: 8),
-                height: 80,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _attachedImages.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      width: 80,
-                      margin: const EdgeInsets.only(right: 12),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF0F172A) : Colors.grey[100],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
-                      ),
-                      child: Stack(
-                        children: [
-                          const Center(child: Icon(LucideIcons.image, color: Colors.grey)),
-                          Positioned(
-                            top: 4, right: 4,
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() => _attachedImages.removeAt(index));
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(2),
-                                decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                                child: const Icon(LucideIcons.x, color: Colors.white, size: 12),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    );
-                  },
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                  style: IconButton.styleFrom(backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
                 ),
+              ],
+            ),
+          ),
+          
+          // Form Content
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.only(
+                left: 24, right: 24, top: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
               ),
-              
-            const SizedBox(height: 24),
-            
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
-              ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(LucideIcons.alertTriangle, color: Color(0xFFD97706), size: 20),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text(
-                      'Políticas de Soporte: Si no contesta una consulta después de 24h se cerrará su ticket automáticamente.',
-                      style: TextStyle(color: Color(0xFFD97706), fontSize: 12, fontWeight: FontWeight.w600),
+                  _buildInputLabel(isDark, 'Correo de contacto'),
+                  const SizedBox(height: 8),
+                  _buildTextField(isDark, controller: _emailController, hintText: 'tu@correo.com', prefixIcon: LucideIcons.mail, keyboardType: TextInputType.emailAddress),
+                  
+                  const SizedBox(height: 20),
+                  _buildInputLabel(isDark, 'Asunto del ticket'),
+                  const SizedBox(height: 8),
+                  _buildTextField(isDark, controller: _subjectController, hintText: 'Ej. Error en presupuesto', prefixIcon: LucideIcons.tag),
+                  
+                  const SizedBox(height: 20),
+                  _buildInputLabel(isDark, 'Descripción del problema'),
+                  const SizedBox(height: 8),
+                  _buildTextField(isDark, controller: _descriptionController, hintText: 'Describe el error o tu consulta con detalle...', prefixIcon: LucideIcons.messageSquare, maxLines: 5),
+                  
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Imágenes (Max 2)', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
+                      TextButton.icon(
+                        onPressed: _attachImage,
+                        icon: const Icon(LucideIcons.imagePlus, size: 18),
+                        label: const Text('Adjuntar', style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: TextButton.styleFrom(foregroundColor: const Color(0xFF3B82F6)),
+                      ),
+                    ],
+                  ),
+                  if (_attachedImages.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: _attachedImages.map((img) => Container(
+                        margin: const EdgeInsets.only(right: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: isDark ? const Color(0xFF475569) : const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(LucideIcons.image, size: 16, color: Color(0xFF3B82F6)),
+                            const SizedBox(width: 8),
+                            Text(img, style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                      )).toList(),
+                    ),
+                  ],
+                  
+                  const SizedBox(height: 32),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(LucideIcons.alertCircle, color: Color(0xFFF59E0B), size: 24),
+                        const SizedBox(width: 16),
+                        Expanded(child: Text('Políticas de Soporte: Si no respondes tras 24h, cerraremos el ticket.', style: TextStyle(color: isDark ? const Color(0xFFFDE68A) : const Color(0xFFD97706), fontSize: 13))),
+                      ],
                     ),
                   ),
+                  const SizedBox(height: 32),
+                  
+                  // Submit Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF3B82F6),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        elevation: 0,
+                      ),
+                      child: _isSubmitting 
+                          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : const Text('Enviar Ticket', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
-            
-            const SizedBox(height: 32),
-            
-            ElevatedButton(
-              onPressed: _isSubmitting ? null : _submit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-              child: _isSubmitting 
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text('Enviar Ticket', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            ),
-            const SizedBox(height: 16),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputLabel(bool isDark, String label) {
+    return Text(
+      label,
+      style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14, fontWeight: FontWeight.w600),
+    );
+  }
+
+  Widget _buildTextField(
+    bool isDark, {
+    required TextEditingController controller,
+    required String hintText,
+    required IconData prefixIcon,
+    int maxLines = 1,
+    TextInputType? keyboardType,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+      ),
+      child: TextField(
+        controller: controller,
+        maxLines: maxLines,
+        keyboardType: keyboardType,
+        style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 15),
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400]),
+          prefixIcon: maxLines == 1 ? Icon(prefixIcon, color: isDark ? Colors.grey[500] : Colors.grey[400], size: 20) : null,
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: maxLines > 1 ? 16 : 14),
         ),
       ),
     );

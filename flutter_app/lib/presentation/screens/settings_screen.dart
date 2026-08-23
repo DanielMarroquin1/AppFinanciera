@@ -1472,27 +1472,63 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       setModalState(() => currentVoice = v['id'] as String);
                       await prefs.setString('ai_voice_preset', v['id'] as String);
                       
-                      // Speak the sentence
-                      if (v['id'] == 'amigable') {
-                        await flutterTts.setSpeechRate(0.55);
-                        await flutterTts.setPitch(1.15);
-                      } else if (v['id'] == 'profesional') {
-                        await flutterTts.setSpeechRate(0.5);
-                        await flutterTts.setPitch(0.85);
-                      } else {
-                        await flutterTts.setSpeechRate(0.5);
-                        await flutterTts.setPitch(1.0);
+                      // Setup Language and get OS voices
+                      String lang = loc.intlLocale;
+                      await flutterTts.setLanguage(lang);
+                      
+                      try {
+                        final availableVoices = await flutterTts.getVoices;
+                        List<Map<dynamic, dynamic>> localeVoices = [];
+                        if (availableVoices != null) {
+                          for (var voice in availableVoices) {
+                            if (voice["locale"] != null && voice["locale"].toString().startsWith(lang)) {
+                              localeVoices.add(voice);
+                            }
+                          }
+                        }
+                        
+                        if (v['id'] == 'amigable') {
+                          if(localeVoices.isNotEmpty) await flutterTts.setVoice({"name": localeVoices[0]["name"], "locale": localeVoices[0]["locale"]});
+                          await flutterTts.setSpeechRate(0.65);
+                          await flutterTts.setPitch(1.8);
+                        } else if (v['id'] == 'profesional') {
+                          if(localeVoices.length > 1) {
+                            await flutterTts.setVoice({"name": localeVoices[1]["name"], "locale": localeVoices[1]["locale"]});
+                          } else if (localeVoices.isNotEmpty) {
+                            await flutterTts.setVoice({"name": localeVoices[0]["name"], "locale": localeVoices[0]["locale"]});
+                          }
+                          await flutterTts.setSpeechRate(0.4);
+                          await flutterTts.setPitch(0.4);
+                        } else {
+                          if(localeVoices.length > 2) {
+                            await flutterTts.setVoice({"name": localeVoices[2]["name"], "locale": localeVoices[2]["locale"]});
+                          } else if (localeVoices.isNotEmpty) {
+                            await flutterTts.setVoice({"name": localeVoices[0]["name"], "locale": localeVoices[0]["locale"]});
+                          }
+                          await flutterTts.setSpeechRate(0.5);
+                          await flutterTts.setPitch(1.0);
+                        }
+                      } catch (e) {
+                         // Fallback to extreme pitch if voice setting fails
+                         if (v['id'] == 'amigable') {
+                            await flutterTts.setSpeechRate(0.65);
+                            await flutterTts.setPitch(1.8);
+                         } else if (v['id'] == 'profesional') {
+                            await flutterTts.setSpeechRate(0.4);
+                            await flutterTts.setPitch(0.4);
+                         } else {
+                            await flutterTts.setSpeechRate(0.5);
+                            await flutterTts.setPitch(1.0);
+                         }
                       }
                       
                       // Speak greeting according to language
                       String greeting = 'Hola, Soy Sami, tu asistente financiero';
-                      String lang = loc.intlLocale;
                       if (lang == 'en') greeting = 'Hello, I am Sami, your financial assistant';
                       if (lang == 'fr') greeting = 'Bonjour, je suis Sami, votre assistant financier';
                       if (lang == 'it') greeting = 'Ciao, sono Sami, il tuo assistente finanziario';
                       if (lang == 'pt') greeting = 'Olá, eu sou Sami, seu assistente financeiro';
-                      
-                      await flutterTts.setLanguage(lang);
+
                       await flutterTts.speak(greeting);
                       
                       if (context.mounted) Navigator.pop(ctx);

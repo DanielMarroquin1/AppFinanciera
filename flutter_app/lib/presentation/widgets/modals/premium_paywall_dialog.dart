@@ -18,75 +18,86 @@ class PremiumPaywallDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return AlertDialog(
-      backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      title: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(LucideIcons.crown, color: Colors.white, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            'Función Premium',
-            style: TextStyle(
-              color: isDark ? Colors.white : Colors.black,
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
-          ),
-        ],
-      ),
-      content: Text(
-        customMessage ?? 'Desbloquea el Plan Premium para acceder a esta y todas las funciones exclusivas de la aplicación.',
-        style: TextStyle(
-          color: isDark ? Colors.grey[300] : Colors.grey[700],
-          fontSize: 15,
-          height: 1.4,
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: Container(
+        padding: const EdgeInsets.all(28),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.3), width: 1.5),
+          boxShadow: [
+            BoxShadow(color: const Color(0xFFF59E0B).withOpacity(0.15), blurRadius: 40, spreadRadius: -10)
+          ]
         ),
-      ),
-      actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
-      actions: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Cerrar',
-                style: TextStyle(
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                  fontWeight: FontWeight.bold,
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withOpacity(0.15),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.5), width: 2),
                 ),
+                child: const Icon(LucideIcons.crown, color: Color(0xFFF59E0B), size: 36),
               ),
             ),
-            const SizedBox(width: 12),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Cerrar este dialog
-                PremiumModal.show(context); // Mostrar el modal de planes
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF59E0B), // amber-500
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                elevation: 4,
-                shadowColor: const Color(0xFFF59E0B).withValues(alpha: 0.5),
-              ),
-              child: const Text(
-                'HAZTE PREMIUM',
-                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14),
-              ),
+            const SizedBox(height: 20),
+            Text(
+              'QUIVO Premium',
+              style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              customMessage ?? 'Desbloquea QUIVO Premium para acceder a esta y todas las funciones exclusivas.',
+              style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 15, height: 1.4),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      side: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                    ),
+                    child: Text('Cerrar', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      PremiumModal.show(context);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFEA580C)]),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [BoxShadow(color: const Color(0xFFF59E0B).withOpacity(0.4), blurRadius: 16, offset: const Offset(0, 6))],
+                      ),
+                      child: const Center(
+                        child: Text('HAZTE PREMIUM', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
-      ],
+      ),
     );
   }
 }

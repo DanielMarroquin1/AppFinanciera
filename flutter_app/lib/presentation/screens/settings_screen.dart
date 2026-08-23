@@ -264,6 +264,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _buildSettingItem(isDark, icon: LucideIcons.lock, iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE), iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), title: loc.get('change_password'), subtitle: 'Última actualización hace 3 meses', onTap: () => _showChangePasswordModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.key, iconBg: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFEE2E2), iconColor: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), title: loc.get('two_factor'), subtitle: 'Protege tu cuenta', onTap: () => _showTwoFactorModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.fingerprint, iconBg: isDark ? const Color(0xFF0284C7).withValues(alpha: 0.3) : const Color(0xFFE0F2FE), iconColor: const Color(0xFF38BDF8), title: 'Huella Digital / Face ID', subtitle: 'Acceso rápido biométrico activado', onTap: () => _showBiometricTestModal(context, isDark)),
+                const SizedBox(height: 12),
+                _buildSettingItem(isDark, icon: LucideIcons.mic, iconBg: isDark ? const Color(0xFF8B5CF6).withValues(alpha: 0.3) : const Color(0xFFF3E8FF), iconColor: const Color(0xFF8B5CF6), title: 'Voz de la IA', subtitle: 'Personaliza cómo te habla QUIVO', onTap: () => _showAIVoiceModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.timer, iconBg: isDark ? const Color(0xFF312E81).withValues(alpha: 0.5) : const Color(0xFFE0E7FF), iconColor: const Color(0xFF818CF8), title: 'Cierre Automático (${user?.autoLockMinutes ?? 1} min)', subtitle: 'Protección de privacidad activa', onTap: () => _showTimeoutInfoModal(context, isDark)),
               ],
             ),
@@ -1898,84 +1900,86 @@ void _showTimeoutInfoModal(BuildContext context, bool isDark) {
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
-        elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
         child: Container(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1F2937) : Colors.white,
+            color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.5), width: 2),
+            border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.3), width: 1.5),
             boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 24, offset: const Offset(0, 12)
-              )
+              BoxShadow(color: const Color(0xFFEF4444).withOpacity(0.15), blurRadius: 40, spreadRadius: -10)
             ]
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444).withOpacity(0.15),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.5), width: 2),
+                  ),
+                  child: const Icon(LucideIcons.alertTriangle, color: Color(0xFFEF4444), size: 36),
                 ),
-                child: const Icon(LucideIcons.alertTriangle, size: 48, color: Color(0xFFEF4444)),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               Text(
-                '¿Cancelar Premium?',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+                '¿Cancelar QUIVO Premium?',
+                style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
-                'Si cancelas ahora, perderás acceso inmediato a todos los beneficios VIP y tus datos avanzados no se sincronizarán.',
+                'Si cancelas, perderás el acceso VIP y estas funciones:',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14),
+                style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14, height: 1.4),
               ),
               const SizedBox(height: 24),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
-                  borderRadius: BorderRadius.circular(16),
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
                 ),
                 child: Column(
                   children: [
-                    _buildCancelFeature(isDark, '🎨', 'Todas las Paletas VIP'),
-                    _buildCancelFeature(isDark, '📊', 'Reportes PDF e IA'),
-                    _buildCancelFeature(isDark, '🤖', 'Gasto por Voz (Siri / Mic)'),
+                    _buildCancelFeature(isDark, '👑', 'Personalización total y VIP'),
+                    _buildCancelFeature(isDark, '📈', 'Reportes IA avanzados'),
+                    _buildCancelFeature(isDark, '🎙️', 'Registro rápido por Voz (Siri)'),
                   ],
                 ),
               ),
               const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF59E0B),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              GestureDetector(
+                onTap: () => Navigator.pop(ctx),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFEA580C)]),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [BoxShadow(color: const Color(0xFFF59E0B).withOpacity(0.4), blurRadius: 16, offset: const Offset(0, 6))],
                   ),
-                  child: const Text('MANTENER PREMIUM', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                  child: const Center(
+                    child: Text('MANTENER PREMIUM', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                  ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               TextButton(
-                onPressed: () async {
+                onPressed: () {
+                  ref.read(authProvider.notifier).cancelSubscription();
                   Navigator.pop(ctx);
-                  await ref.read(authProvider.notifier).cancelSubscription();
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Suscripción cancelada correctamente.')),
-                    );
-                  }
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Suscripción cancelada. Funciones básicas activas.')),
+                  );
                 },
-                child: const Text('Sí, cancelar suscripción', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold)),
-              ),
+                child: Text('Sí, cancelar suscripción', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontWeight: FontWeight.bold)),
+              )
             ],
           ),
         ),
@@ -2031,30 +2035,29 @@ void _showTimeoutInfoModal(BuildContext context, bool isDark) {
         child: Container(
           constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFFFFFFF),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, -5))],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 12),
-              Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(4)))),
+              Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)))),
               Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(loc.get('select_country'), style: TextStyle(fontWeight: FontWeight.w900, fontSize: 24, color: isDark ? Colors.white : Colors.black, letterSpacing: -0.5)),
+                    Text(loc.get('select_country'), style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22, color: isDark ? Colors.white : Colors.black, letterSpacing: -0.5)),
                     const SizedBox(height: 4),
-                    Text(loc.get('select_country_desc'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 15)),
+                    Text(loc.get('select_country_desc'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
                   ],
                 ),
               ),
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
+                  padding: const EdgeInsets.only(bottom: 24),
                   physics: const BouncingScrollPhysics(),
                   itemCount: regions.keys.length,
                   itemBuilder: (context, index) {
@@ -2065,12 +2068,12 @@ void _showTimeoutInfoModal(BuildContext context, bool isDark) {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(top: 8, bottom: 16, left: 8),
-                          child: Text(regionName.toUpperCase(), style: TextStyle(color: isDark ? const Color(0xFF8B5CF6) : const Color(0xFF6D28D9), fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                          child: Text(regionName.toUpperCase(), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
                         ),
                         ...countries.map((country) {
                           final isSelected = currentCountry == country['name'];
-                          return GestureDetector(
+                          return InkWell(
                             onTap: () {
                               if (user != null) {
                                 ref.read(authProvider.notifier).updateProfile(
@@ -2079,37 +2082,25 @@ void _showTimeoutInfoModal(BuildContext context, bool isDark) {
                               }
                               Navigator.pop(ctx);
                             },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? (isDark ? const Color(0xFF8B5CF6).withOpacity(0.15) : const Color(0xFFEDE9FE))
-                                    : (isDark ? const Color(0xFF1E293B) : Colors.white),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? const Color(0xFF8B5CF6)
-                                      : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                                  width: isSelected ? 2 : 1,
-                                ),
-                                boxShadow: isSelected ? [BoxShadow(color: const Color(0xFF8B5CF6).withOpacity(0.2), blurRadius: 12, offset: const Offset(0, 4))] : [],
-                              ),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                               child: Row(
                                 children: [
-                                  Text(country['flag']!, style: const TextStyle(fontSize: 28)),
+                                  Text(country['flag']!, style: const TextStyle(fontSize: 22)),
                                   const SizedBox(width: 16),
                                   Expanded(
-                                    child: Text(country['name']!, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: isSelected ? FontWeight.bold : FontWeight.w500)),
+                                    child: Text(country['name']!, style: TextStyle(color: isDark ? (isSelected ? Colors.white : Colors.grey[300]) : (isSelected ? Colors.black : Colors.grey[800]), fontSize: 16, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
                                   ),
                                   if (isSelected) 
-                                    const Icon(LucideIcons.checkCircle2, color: Color(0xFF8B5CF6), size: 22),
+                                    const Icon(LucideIcons.check, color: Color(0xFF8B5CF6), size: 20),
                                 ],
                               ),
                             ),
                           );
                         }).toList(),
+                        const SizedBox(height: 8),
+                        if (index < regions.keys.length - 1)
+                          Divider(color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9), height: 1, indent: 24, endIndent: 24),
                         const SizedBox(height: 8),
                       ],
                     );

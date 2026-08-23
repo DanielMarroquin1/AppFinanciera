@@ -129,7 +129,7 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with SingleTickerPr
                               ),
                             ),
                             const SizedBox(height: 12),
-                            Text('Studio VIP', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                            Text('QUIVO Premium', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
                             Text('Eleva tu experiencia financiera', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 15)),
                           ],
                         ),

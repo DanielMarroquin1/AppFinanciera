@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -73,9 +74,20 @@ class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal> w
           });
         },
       );
-      // Tweak TTS to sound less robotic
-      await _flutterTts.setSpeechRate(0.55); // Slightly faster
-      await _flutterTts.setPitch(1.15); // Higher pitch for a friendlier tone
+      
+      final prefs = await SharedPreferences.getInstance();
+      String voicePreset = prefs.getString('ai_voice_preset') ?? 'amigable';
+      
+      if (voicePreset == 'amigable') {
+        await _flutterTts.setSpeechRate(0.55);
+        await _flutterTts.setPitch(1.15);
+      } else if (voicePreset == 'profesional') {
+        await _flutterTts.setSpeechRate(0.5);
+        await _flutterTts.setPitch(0.85);
+      } else {
+        await _flutterTts.setSpeechRate(0.5);
+        await _flutterTts.setPitch(1.0);
+      }
     } catch (e) {
       // Handle init error
     }
@@ -767,510 +779,171 @@ $cardsInfo
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final user = ref.watch(authProvider).user;
-    final loc = ref.watch(localizationProvider);
-    final cards = ref.watch(creditCardsProvider).value ?? [];
-
-    final isPremium = user?.isPremium ?? false;
-
-    if (!isPremium) {
-      return Dialog(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        child: Container(
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1F2937) : Colors.white,
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5), width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 24, offset: const Offset(0, 12)
-              )
-            ]
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(LucideIcons.crown, size: 64, color: Color(0xFFF59E0B)),
-              const SizedBox(height: 24),
-              Text(
-                'Función VIP',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'El asistente de voz inteligente es exclusivo para usuarios del Plan Premium.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 15),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    PremiumModal.show(context);
-                  },
-                  icon: const Icon(LucideIcons.crown, color: Colors.white, size: 20),
-                  label: const Text('Actualizar a Premium', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD97706),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Cerrar', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
-              )
-            ],
-          ),
-        ),
-      );
-    }
-
-    final isIncome = _parsedType == 'income';
-    final accentColor = isIncome ? const Color(0xFF10B981) : const Color(0xFF4F46E5);
-    final accentColorLight = isIncome ? const Color(0xFF34D399) : const Color(0xFF6366F1);
-
+    
     return Dialog(
       backgroundColor: Colors.transparent,
-      elevation: 0,
-      child: Container(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutExpo,
+        width: double.infinity,
         padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1F2937) : Colors.white,
-          borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB), width: 1),
+          color: isDark ? const Color(0xFF0F172A).withValues(alpha: 0.95) : Colors.white.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(40),
+          border: Border.all(color: _isListening ? const Color(0xFF8B5CF6).withValues(alpha: 0.5) : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)), width: 2),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 24, offset: const Offset(0, 12)
+              color: _isListening ? const Color(0xFF8B5CF6).withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.2),
+              blurRadius: _isListening ? 40 : 20,
+              spreadRadius: _isListening ? 10 : 0,
             )
           ]
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (_errorMessage.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                child: Text(_errorMessage, style: const TextStyle(color: Colors.red, fontSize: 14)),
-              ),
-              
-            if (_waitingForPaymentMethod) ...[
-              const Icon(LucideIcons.volume2, size: 48, color: Colors.blue),
-              const SizedBox(height: 16),
-              Text(
-                loc.get('voice_paying_card_or_cash'),
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                loc.get('voice_answer_mic'),
-                textAlign: TextAlign.center,
-                style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14),
-              ),
-              if (_recognizedText.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Text('"${_recognizedText}"', style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.blue)),
-              ],
-            ] else if (!_isProcessing && !_isDone && !_showPreview) ...[
-              Text(
-                _isListening ? loc.get('voice_listening') : loc.get('voice_tap_to_speak'),
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                loc.get('voice_help_text'),
-                textAlign: TextAlign.center,
-                style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w500, height: 1.5),
-              ),
-              if (_recognizedText.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Text('"${_recognizedText}"', style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.blue)),
-              ],
-              const SizedBox(height: 32),
-              GestureDetector(
-                onTap: _toggleListening,
-                child: AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, child) {
-                    return Container(
-                      width: 100, height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: _isListening 
-                            ? (isDark ? const Color(0xFF4F46E5).withOpacity(0.5 + (_controller.value * 0.5)) : const Color(0xFF6366F1).withOpacity(0.5 + (_controller.value * 0.5)))
-                            : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                        boxShadow: _isListening ? [
-                          BoxShadow(
-                            color: const Color(0xFF4F46E5).withOpacity(0.4 * _controller.value),
-                            blurRadius: 30 * _controller.value,
-                            spreadRadius: 10 * _controller.value,
-                          )
-                        ] : [],
-                      ),
-                      child: Center(
-                        child: Icon(
-                          _isListening ? LucideIcons.mic : LucideIcons.micOff,
-                          size: 40,
-                          color: _isListening ? Colors.white : (isDark ? Colors.grey[400] : Colors.grey[600]),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ] else if (_isProcessing) ...[
-              const CircularProgressIndicator(color: Color(0xFF4F46E5)),
-              const SizedBox(height: 24),
-              Text(loc.get('voice_analyzing'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16)),
-            ] else if (_showPreview) ...[
-              // Type indicator badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: isIncome 
-                      ? const Color(0xFF10B981).withOpacity(0.15)
-                      : const Color(0xFFEF4444).withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isIncome 
-                        ? const Color(0xFF10B981).withOpacity(0.3)
-                        : const Color(0xFFEF4444).withOpacity(0.3),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      isIncome ? LucideIcons.trendingUp : LucideIcons.trendingDown,
-                      size: 16,
-                      color: isIncome ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      isIncome ? loc.get('voice_ingreso').toUpperCase() : loc.get('voice_gasto').toUpperCase(),
-                      style: TextStyle(
-                        color: isIncome ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                isIncome ? loc.get('voice_confirm_income') : loc.get('voice_confirm_expense'), 
-                style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              // Toggle type buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _parsedType = 'expense';
-                          _parsedCategory = _fallbackClassifyExpenseCategory(_recognizedText);
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        decoration: BoxDecoration(
-                          color: !isIncome
-                              ? const Color(0xFFEF4444).withOpacity(0.15)
-                              : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                          borderRadius: BorderRadius.circular(10),
-                          border: !isIncome ? Border.all(color: const Color(0xFFEF4444).withOpacity(0.4)) : null,
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          '📉 ${loc.get('voice_gasto')}',
-                          style: TextStyle(
-                            color: !isIncome ? const Color(0xFFEF4444) : (isDark ? Colors.grey[400] : Colors.grey[600]),
-                            fontWeight: !isIncome ? FontWeight.bold : FontWeight.w500,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _parsedType = 'income';
-                          _parsedCategory = _fallbackClassifyIncomeCategory(_recognizedText);
-                          _parsedPaymentMethod = 'efectivo';
-                          _selectedCreditCardId = null;
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isIncome
-                              ? const Color(0xFF10B981).withOpacity(0.15)
-                              : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                          borderRadius: BorderRadius.circular(10),
-                          border: isIncome ? Border.all(color: const Color(0xFF10B981).withOpacity(0.4)) : null,
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          '📈 ${loc.get('voice_ingreso')}',
-                          style: TextStyle(
-                            color: isIncome ? const Color(0xFF10B981) : (isDark ? Colors.grey[400] : Colors.grey[600]),
-                            fontWeight: isIncome ? FontWeight.bold : FontWeight.w500,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Text(loc.getCategoryEmoji(_parsedCategory), style: const TextStyle(fontSize: 28)),
-                            const SizedBox(width: 10),
-                            Text(loc.translateCategory(_parsedCategory), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.w600)),
-                          ],
-                        ),
-                        Text(
-                          '${isIncome ? '+' : '-'}${CurrencyFormatter.format(_parsedAmount, user?.currency)}',
-                          style: TextStyle(
-                            color: isIncome ? const Color(0xFF10B981) : const Color(0xFFEF4444), 
-                            fontSize: 20, 
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (_parsedDescription.isNotEmpty && _parsedDescription != _recognizedText) ...[
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(_parsedDescription, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              // Only show payment method for expenses
-              if (!isIncome) ...[
-                const SizedBox(height: 20),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(loc.get('voice_payment_method'), style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14, fontWeight: FontWeight.w600)),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _parsedPaymentMethod = 'efectivo'),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: _parsedPaymentMethod == 'efectivo'
-                                ? (isDark ? const Color(0xFF4F46E5) : const Color(0xFF6366F1))
-                                : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(loc.get('voice_cash'), style: TextStyle(color: _parsedPaymentMethod == 'efectivo' ? Colors.white : (isDark ? Colors.white : Colors.black), fontWeight: FontWeight.w600)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _parsedPaymentMethod = 'tarjeta';
-                            if (_selectedCreditCardId == null && cards.isNotEmpty) {
-                              _selectedCreditCardId = cards.first.id;
-                            }
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: _parsedPaymentMethod == 'tarjeta'
-                                ? (isDark ? const Color(0xFF4F46E5) : const Color(0xFF6366F1))
-                                : (isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(loc.get('voice_card'), style: TextStyle(color: _parsedPaymentMethod == 'tarjeta' ? Colors.white : (isDark ? Colors.white : Colors.black), fontWeight: FontWeight.w600)),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                if (_parsedPaymentMethod == 'tarjeta' && cards.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(loc.get('voice_select_card'), style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14, fontWeight: FontWeight.w600)),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: cards.any((c) => c.id == _selectedCreditCardId) ? _selectedCreditCardId : cards.first.id,
-                        isExpanded: true,
-                        dropdownColor: isDark ? const Color(0xFF1F2937) : Colors.white,
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
-                        items: cards.map((c) {
-                          return DropdownMenuItem<String>(
-                            value: c.id,
-                            child: Text('${c.name} (${c.network})'),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) setState(() => _selectedCreditCardId = val);
-                        },
-                      ),
-                    ),
-                  ),
-                ] else if (_parsedPaymentMethod == 'tarjeta' && cards.isEmpty) ...[
-                  const SizedBox(height: 12),
-                  Text(loc.get('voice_no_cards'), style: TextStyle(color: Colors.amber[700], fontSize: 12)),
-                ],
-              ],
-              const SizedBox(height: 28),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        setState(() {
-                          _showPreview = false;
-                          _recognizedText = '';
-                          _parsedAmount = 0.0;
-                          _parsedType = 'expense';
-                        });
-                        _toggleListening();
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        side: BorderSide(color: isDark ? Colors.grey[600]! : Colors.grey[400]!),
-                      ),
-                      child: Text(loc.get('voice_try_again'), style: TextStyle(color: isDark ? Colors.white : Colors.black)),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 2,
-                    child: ElevatedButton.icon(
-                      onPressed: _saveTransaction,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      icon: const Icon(LucideIcons.check, size: 20),
-                      label: Text(loc.get('voice_save'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    ),
-                  ),
-                ],
-              ),
-            ] else if (_isDone) ...[
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: isIncome 
-                      ? (isDark ? const Color(0xFF14532D).withOpacity(0.3) : const Color(0xFFDCFCE7))
-                      : (isDark ? const Color(0xFF14532D).withOpacity(0.3) : const Color(0xFFDCFCE7)),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  LucideIcons.check, 
-                  size: 48, 
-                  color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                isIncome ? loc.get('voice_success_income') : loc.get('voice_success_expense'), 
-                style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              // Type badge in success view
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: isIncome 
-                      ? const Color(0xFF10B981).withOpacity(0.15)
-                      : const Color(0xFFEF4444).withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  isIncome ? '📈 ${loc.get('voice_ingreso')}' : '📉 ${loc.get('voice_gasto')}',
-                  style: TextStyle(
-                    color: isIncome ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-              Text(
-                '$_parsedDescription (${isIncome ? '+' : '-'}${CurrencyFormatter.format(_parsedAmount, user?.currency)})', 
-                style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 16), 
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isDark ? accentColor : accentColorLight,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                child: Text(loc.get('voice_accept')),
-              )
+            if (_showPreview) ...[
+              _buildPreviewView(isDark),
+            ] else ...[
+              _buildListeningView(isDark),
             ]
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildListeningView(bool isDark) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const SizedBox(width: 32),
+            Text(_isListening ? 'Escuchando...' : 'IA de Voz', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
+            IconButton(
+              icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+              onPressed: () => Navigator.pop(context),
+            )
+          ],
+        ),
+        const SizedBox(height: 32),
+        GestureDetector(
+          onTap: _toggleListening,
+          child: ScaleTransition(
+            scale: _isListening ? _controller : const AlwaysStoppedAnimation(1.0),
+            child: Container(
+              width: 120, height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: _isListening 
+                      ? [const Color(0xFF8B5CF6), const Color(0xFF6D28D9)]
+                      : [isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0), isDark ? const Color(0xFF1E293B) : const Color(0xFFCBD5E1)],
+                  begin: Alignment.topLeft, end: Alignment.bottomRight,
+                ),
+                boxShadow: _isListening ? [BoxShadow(color: const Color(0xFF8B5CF6).withValues(alpha: 0.5), blurRadius: 30, spreadRadius: 10)] : [],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (_isProcessing) const CircularProgressIndicator(color: Colors.white),
+                  Icon(_isListening ? LucideIcons.mic : LucideIcons.micOff, color: _isListening ? Colors.white : (isDark ? Colors.grey[400] : Colors.grey[600]), size: 48),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 40),
+        Text(
+          _recognizedText.isEmpty ? 'Toca para hablar y dime tu gasto...' : '"$_recognizedText"',
+          style: TextStyle(color: _recognizedText.isEmpty ? (isDark ? Colors.grey[500] : Colors.grey[500]) : (isDark ? Colors.white : Colors.black), fontSize: 18, fontStyle: _recognizedText.isEmpty ? FontStyle.normal : FontStyle.italic),
+          textAlign: TextAlign.center,
+        ),
+        if (_errorMessage.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Text(_errorMessage, style: const TextStyle(color: Colors.redAccent, fontSize: 14), textAlign: TextAlign.center),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildPreviewView(bool isDark) {
+    // Reusing the rest from old file if possible, or simplifying it for the new minimalist look
+    // We will just do a simplified elegant summary
+    final bool isExpense = _parsedType == 'expense';
+    final Color typeColor = isExpense ? const Color(0xFFEF4444) : const Color(0xFF10B981);
+    
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Resumen', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+            if (_waitingForPaymentMethod) 
+              Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: const Color(0xFFF59E0B).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)), child: const Text('Falta tarjeta', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 12, fontWeight: FontWeight.bold)))
+          ],
+        ),
+        const SizedBox(height: 24),
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: typeColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: typeColor.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            children: [
+              Text(isExpense ? 'Gasto Detectado' : 'Ingreso Detectado', style: TextStyle(color: typeColor, fontSize: 14, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Text(CurrencyFormatter.format(_parsedAmount, ref.read(authProvider).user?.currency ?? 'USD'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 40, fontWeight: FontWeight.w900, height: 1)),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(color: isDark ? const Color(0xFF1E293B) : Colors.white, borderRadius: BorderRadius.circular(12)),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(isExpense ? LucideIcons.shoppingBag : LucideIcons.wallet, size: 16, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                    const SizedBox(width: 8),
+                    Text(_parsedCategory.toUpperCase(), style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(_parsedDescription, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 16), textAlign: TextAlign.center),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        if (_waitingForPaymentMethod) ...[
+          const Text('Escuchando método de pago...', style: TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+        ],
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () {
+                  _flutterTts.stop();
+                  setState(() { _showPreview = false; _recognizedText = ''; _waitingForPaymentMethod = false; });
+                },
+                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), side: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))),
+                child: Text('Reintentar', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: _waitingForPaymentMethod ? null : _saveTransaction,
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF8B5CF6), padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 0),
+                child: const Text('Confirmar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        )
+      ],
     );
   }
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'dart:ui';
 import '../../providers/auth_provider.dart';
-import 'premium_sync_hub_modal.dart';
 
 class PremiumModal extends ConsumerStatefulWidget {
   const PremiumModal({super.key});
@@ -20,365 +20,270 @@ class PremiumModal extends ConsumerStatefulWidget {
   ConsumerState<PremiumModal> createState() => _PremiumModalState();
 }
 
-class _PremiumModalState extends ConsumerState<PremiumModal> {
-  String selectedPlan = 'annual';
+class _PremiumModalState extends ConsumerState<PremiumModal> with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _scaleAnim;
 
   final features = [
-    {'icon': LucideIcons.bellRing, 'text': 'Lector de notificaciones (Android) y Atajos de Siri (iOS)'},
-    {'icon': LucideIcons.sliders, 'text': 'Límite de presupuesto mensual y por categoría'},
-    {'icon': LucideIcons.palette, 'text': 'Apariencia y paletas de colores VIP'},
-    {'icon': LucideIcons.sparkles, 'text': 'Asistente IA, Simulador "What If" y Botón IA de Ahorros'},
-    {'icon': LucideIcons.mic, 'text': 'Registro inteligente de gastos por VOZ'},
-    {'icon': LucideIcons.filter, 'text': 'Filtros avanzados en reportes de gastos'},
-    {'icon': LucideIcons.fileSpreadsheet, 'text': 'Reporte mensual detallado del balance general'},
-    {'icon': LucideIcons.zap, 'text': 'Experiencia sin límites publicitarios'},
+    {'icon': LucideIcons.bellRing, 'text': 'Notificaciones inteligentes y Atajos Siri'},
+    {'icon': LucideIcons.sliders, 'text': 'Límites de presupuesto avanzados'},
+    {'icon': LucideIcons.palette, 'text': 'Personalización total y colores VIP'},
+    {'icon': LucideIcons.bot, 'text': 'Asistente IA completo e interactivo'},
+    {'icon': LucideIcons.mic, 'text': 'Registro ultra-rápido por VOZ'},
+    {'icon': LucideIcons.fileSpreadsheet, 'text': 'Reportes exportables detallados'},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
+    _scaleAnim = Tween<double>(begin: 0.98, end: 1.02).animate(CurvedAnimation(parent: _animController, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isPremium = ref.watch(authProvider).user?.isPremium ?? false;
 
-    return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1F2937) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            decoration: BoxDecoration(
-              gradient: isDark
-                  ? const LinearGradient(colors: [Color(0xFFD97706), Color(0xFFC2410C)]) // amber-600 to orange-700
-                  : const LinearGradient(colors: [Color(0xFFFBBF24), Color(0xFFF97316)]), // amber-400 to orange-500
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            child: Stack(
-              children: [
-                Align(
-                  alignment: Alignment.topRight,
-                  child: IconButton(
-                    icon: const Icon(LucideIcons.x, color: Colors.white),
-                    onPressed: () => Navigator.of(context).pop(),
+    return GestureDetector(
+      onVerticalDragEnd: (details) {
+        if (details.primaryVelocity! > 300) Navigator.pop(context);
+      },
+      child: Container(
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.92),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          boxShadow: [
+            BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.2), blurRadius: 40, spreadRadius: -10)
+          ]
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          child: Column(
+            children: [
+              // Header
+              Container(
+                height: 220,
+                decoration: BoxDecoration(
+                  image: const DecorationImage(
+                    image: NetworkImage('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop'),
+                    fit: BoxFit.cover,
                   ),
                 ),
-                Column(
+                child: Stack(
                   children: [
                     Container(
-                      width: 64, height: 64,
-                      margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(16),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            const Color(0xFFF59E0B).withValues(alpha: 0.8),
+                            (isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC)).withValues(alpha: 0.95),
+                            isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                          ],
+                        )
                       ),
-                      child: const Icon(LucideIcons.crown, color: Colors.white, size: 40),
                     ),
-                    const Text('Hazte Premium', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Text('Desbloquea todo el potencial de tu app financiera', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14), textAlign: TextAlign.center),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Content
-          Flexible(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Plan Selection Modern Redesign
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 24),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => setState(() => selectedPlan = 'monthly'),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
-                              decoration: BoxDecoration(
-                                gradient: selectedPlan == 'monthly'
-                                    ? (isDark
-                                        ? const LinearGradient(colors: [Color(0xFF334155), Color(0xFF1E293B)])
-                                        : const LinearGradient(colors: [Color(0xFFFEF3C7), Color(0xFFFDE68A)]))
-                                    : null,
-                                color: selectedPlan != 'monthly'
-                                    ? (isDark ? const Color(0xFF111827) : Colors.white)
-                                    : null,
-                                border: Border.all(
-                                  color: selectedPlan == 'monthly'
-                                      ? (isDark ? const Color(0xFFF59E0B) : const Color(0xFFD97706))
-                                      : (isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
-                                  width: selectedPlan == 'monthly' ? 2 : 1.5,
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: selectedPlan == 'monthly'
-                                    ? [BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.15), blurRadius: 10, offset: const Offset(0, 4))]
-                                    : [],
-                              ),
-                              child: Column(
-                                children: [
-                                  Text('Plan Mensual', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.bold)),
-                                  const SizedBox(height: 8),
-                                  Text('\$1.99', style: TextStyle(color: selectedPlan == 'monthly' ? (isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706)) : (isDark ? Colors.white : Colors.black), fontSize: 28, fontWeight: FontWeight.w900)),
-                                  const SizedBox(height: 4),
-                                  Text('Facturado mes a mes', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 11)),
-                                ],
-                              ),
-                            ),
-                          ),
+                    Positioned(
+                      top: 16, left: 0, right: 0,
+                      child: Center(
+                        child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.5), borderRadius: BorderRadius.circular(2))),
+                      ),
+                    ),
+                    Positioned(
+                      top: 16, right: 16,
+                      child: IconButton(
+                        icon: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.3), shape: BoxShape.circle),
+                          child: const Icon(LucideIcons.x, color: Colors.white, size: 20),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => setState(() => selectedPlan = 'annual'),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
-                              decoration: BoxDecoration(
-                                gradient: selectedPlan == 'annual'
-                                    ? (isDark
-                                        ? const LinearGradient(colors: [Color(0xFF451A03), Color(0xFF78350F)])
-                                        : const LinearGradient(colors: [Color(0xFFFef08a), Color(0xFFFDE047)]))
-                                    : null,
-                                color: selectedPlan != 'annual'
-                                    ? (isDark ? const Color(0xFF111827) : Colors.white)
-                                    : null,
-                                border: Border.all(
-                                  color: selectedPlan == 'annual'
-                                      ? (isDark ? const Color(0xFFF59E0B) : const Color(0xFFD97706))
-                                      : (isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
-                                  width: selectedPlan == 'annual' ? 2 : 1.5,
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: selectedPlan == 'annual'
-                                    ? [BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.25), blurRadius: 12, offset: const Offset(0, 4))]
-                                    : [],
-                              ),
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  Positioned(
-                                    top: -30, right: -12, left: -12,
-                                    child: Center(
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          gradient: const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]),
-                                          borderRadius: BorderRadius.circular(12),
-                                          boxShadow: [BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2))],
-                                        ),
-                                        child: const Text('AHORRA \$3.89', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
-                                      ),
-                                    ),
-                                  ),
-                                  Column(
-                                    children: [
-                                      Text('Plan Anual', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.bold)),
-                                      const SizedBox(height: 8),
-                                      Text('\$19.99', style: TextStyle(color: selectedPlan == 'annual' ? (isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706)) : (isDark ? Colors.white : Colors.black), fontSize: 28, fontWeight: FontWeight.w900)),
-                                      const SizedBox(height: 4),
-                                      Text('Facturado anualmente', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 11)),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                        onPressed: () => Navigator.pop(context),
+                      ),
                     ),
-                  ),
-
-                  // Features list updated
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1F2937) : const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Beneficios Exclusivos:', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w800)),
-                        const SizedBox(height: 16),
-                        ...features.map((f) => Padding(
-                          padding: const EdgeInsets.only(bottom: 14),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 36, height: 36,
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF374151) : Colors.white,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
-                                ),
-                                child: Icon(f['icon'] as IconData, color: const Color(0xFFF59E0B), size: 18),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(child: Text(f['text'] as String, style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800], fontSize: 13.5, fontWeight: FontWeight.w600))),
-                            ],
-                          ),
-                        )),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Summary Redesign
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    decoration: BoxDecoration(
-                      gradient: isDark ? const LinearGradient(colors: [Color(0xFF111827), Color(0xFF1F2937)]) : const LinearGradient(colors: [Color(0xFFF1F5F9), Color(0xFFF8FAFC)]),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 20),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(selectedPlan == 'monthly' ? 'Total hoy (Mensual)' : 'Total hoy (Anual)', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14, fontWeight: FontWeight.bold)),
-                            Text(selectedPlan == 'monthly' ? '\$1.99' : '\$19.99', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.w900)),
+                            ScaleTransition(
+                              scale: _scaleAnim,
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5), width: 2),
+                                ),
+                                child: const Icon(LucideIcons.crown, color: Color(0xFFF59E0B), size: 40),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text('Studio VIP', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                            Text('Eleva tu experiencia financiera', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 15)),
                           ],
                         ),
-                        if (selectedPlan == 'annual') ...[
-                          const SizedBox(height: 6),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Equivalente mensual', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12)),
-                              Text('\$1.66 / mes', style: TextStyle(color: const Color(0xFF10B981), fontSize: 13, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                        ]
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Buttons
-                  if (!isPremium) ...[
-                    Builder(
-                      builder: (context) {
-                        return TweenAnimationBuilder<double>(
-                          tween: Tween<double>(begin: 1.0, end: 1.02),
-                          duration: const Duration(seconds: 1),
-                          curve: Curves.easeInOut,
-                          builder: (context, scale, child) {
-                            return Transform.scale(
-                              scale: scale,
-                              child: child,
-                            );
-                          },
-                          onEnd: () {
-                            // Este setState o rediseño forzaría el re-render infinito para latir,
-                            // pero como no tenemos un AnimationController aquí, lo dejaremos como 
-                            // un pequeño pop y un brillo. Usaremos solo un botón super vibrante.
-                          },
-                          child: GestureDetector(
-                            onTap: () async {
-                              await ref.read(authProvider.notifier).upgradeToPremium();
-                              if (context.mounted) {
-                                Navigator.of(context).pop();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('👑 ¡Felicidades! Has actualizado al Plan Premium. Disfruta de todas las funciones exclusivas.'),
-                                    backgroundColor: Color(0xFFD97706),
-                                  ),
-                                );
-                              }
-                            },
-                            child: Container(
-                              alignment: Alignment.center,
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              decoration: BoxDecoration(
-                                gradient: isDark 
-                                    ? const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFEA580C)]) 
-                                    : const LinearGradient(colors: [Color(0xFFFBBF24), Color(0xFFF97316)]),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.6), blurRadius: 16, offset: const Offset(0, 6)),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(LucideIcons.crown, color: Colors.white, size: 24),
-                                  const SizedBox(width: 10),
-                                  const Text(
-                                    'Suscribirme al Plan Premium', 
-                                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-                    ),
-                    const SizedBox(height: 12),
-                  ] else ...[
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withValues(alpha: 0.15),
-                        border: Border.all(color: Colors.green, width: 1.5),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(LucideIcons.checkCircle2, color: Colors.green, size: 22),
-                          SizedBox(width: 8),
-                          Text('Ya tienes el Plan Premium Activo 👑', style: TextStyle(color: Colors.green, fontSize: 15, fontWeight: FontWeight.bold)),
-                        ],
                       ),
                     ),
-                    const SizedBox(height: 12),
                   ],
+                ),
+              ),
 
+              // Content
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  child: Column(
+                    children: [
+                      // Plan Unique Card
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          gradient: isDark 
+                              ? const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF1E293B), Color(0xFF0F172A)])
+                              : const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFFFFFFFF), Color(0xFFF1F5F9)]),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5), width: 1.5),
+                          boxShadow: [
+                            BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 10)),
+                          ]
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(color: const Color(0xFFF59E0B).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
+                                  child: const Text('PLAN ÚNICO', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text('\$1.99', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 36, fontWeight: FontWeight.w900, height: 1)),
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 4, left: 4),
+                                      child: Text('/ mes', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[600], fontSize: 14, fontWeight: FontWeight.w600)),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            Icon(LucideIcons.sparkles, color: const Color(0xFFF59E0B).withValues(alpha: 0.5), size: 48),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 32),
 
-                  // Test cancel / subscription management
-                  TextButton.icon(
-                    onPressed: () async {
-                      if (isPremium) {
-                        await ref.read(authProvider.notifier).cancelSubscription();
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Suscripción Premium cancelada correctamente para pruebas.'),
-                              backgroundColor: Colors.redAccent,
+                      // Features Grid
+                      GridView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 1.3,
+                        ),
+                        itemCount: features.length,
+                        itemBuilder: (context, index) {
+                          final f = features[index];
+                          return Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.5) : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(f['icon'] as IconData, color: const Color(0xFFF59E0B), size: 24),
+                                const Spacer(),
+                                Text(f['text'] as String, style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800], fontSize: 12, fontWeight: FontWeight.w600, height: 1.2)),
+                              ],
                             ),
                           );
-                        }
-                      } else {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    icon: Icon(isPremium ? LucideIcons.xCircle : LucideIcons.arrowLeft, color: isPremium ? Colors.redAccent : (isDark ? Colors.grey[400] : Colors.grey[600]), size: 16),
-                    label: Text(
-                      isPremium ? 'Cancelar Suscripción (Para Probar)' : 'Volver atrás',
-                      style: TextStyle(color: isPremium ? Colors.redAccent : (isDark ? Colors.grey[400] : Colors.grey[600]), fontSize: 13),
-                    ),
+                        },
+                      ),
+                      const SizedBox(height: 32),
+
+                      // CTA
+                      if (!isPremium)
+                        GestureDetector(
+                          onTap: () async {
+                            await ref.read(authProvider.notifier).upgradeToPremium();
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('¡Felicidades! Eres VIP 👑'), backgroundColor: Color(0xFFD97706)));
+                            }
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFEA580C)]),
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 8))],
+                            ),
+                            child: const Center(
+                              child: Text('Desbloquear Todo', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                            ),
+                          ),
+                        )
+                      else
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withValues(alpha: 0.1),
+                            border: Border.all(color: Colors.green.withValues(alpha: 0.5), width: 2),
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(LucideIcons.checkCircle2, color: Colors.green),
+                              SizedBox(width: 8),
+                              Text('VIP Activado', style: TextStyle(color: Colors.green, fontSize: 16, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                      
+                      if (isPremium) ...[
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () async {
+                            await ref.read(authProvider.notifier).cancelSubscription();
+                            if (context.mounted) Navigator.pop(context);
+                          },
+                          child: const Text('Cancelar Suscripción', style: TextStyle(color: Colors.redAccent)),
+                        )
+                      ],
+                      const SizedBox(height: 32),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text('Cancela cuando quieras. Sin compromisos.', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12), textAlign: TextAlign.center),
-                ],
+                ),
               ),
-            ),
-          )
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

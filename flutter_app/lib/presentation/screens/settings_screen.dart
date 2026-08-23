@@ -1459,8 +1459,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   final isSelected = currentVoice == v['id'];
                   return GestureDetector(
                     onTap: () async {
-                      setModalState(() => currentVoice = v['id']!);
-                      await prefs.setString('ai_voice_preset', v['id']!);
+                      setModalState(() => currentVoice = v['id'] as String);
+                      await prefs.setString('ai_voice_preset', v['id'] as String);
                       if (context.mounted) Navigator.pop(ctx);
                     },
                     child: AnimatedContainer(

@@ -80,10 +80,10 @@ class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal> w
       
       if (voicePreset == 'amigable') {
         await _flutterTts.setSpeechRate(0.55);
-        await _flutterTts.setPitch(1.15);
+        await _flutterTts.setPitch(1.1);
       } else if (voicePreset == 'profesional') {
         await _flutterTts.setSpeechRate(0.5);
-        await _flutterTts.setPitch(0.85);
+        await _flutterTts.setPitch(0.9);
       } else {
         await _flutterTts.setSpeechRate(0.5);
         await _flutterTts.setPitch(1.0);

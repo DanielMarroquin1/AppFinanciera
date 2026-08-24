@@ -1489,16 +1489,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         
                         if (v['id'] == 'amigable') {
                           if(localeVoices.isNotEmpty) await flutterTts.setVoice({"name": localeVoices[0]["name"], "locale": localeVoices[0]["locale"]});
-                          await flutterTts.setSpeechRate(0.65);
-                          await flutterTts.setPitch(1.8);
+                          await flutterTts.setSpeechRate(0.55);
+                          await flutterTts.setPitch(1.15);
                         } else if (v['id'] == 'profesional') {
                           if(localeVoices.length > 1) {
                             await flutterTts.setVoice({"name": localeVoices[1]["name"], "locale": localeVoices[1]["locale"]});
                           } else if (localeVoices.isNotEmpty) {
                             await flutterTts.setVoice({"name": localeVoices[0]["name"], "locale": localeVoices[0]["locale"]});
                           }
-                          await flutterTts.setSpeechRate(0.4);
-                          await flutterTts.setPitch(0.4);
+                          await flutterTts.setSpeechRate(0.5);
+                          await flutterTts.setPitch(0.85);
                         } else {
                           if(localeVoices.length > 2) {
                             await flutterTts.setVoice({"name": localeVoices[2]["name"], "locale": localeVoices[2]["locale"]});
@@ -1511,11 +1511,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       } catch (e) {
                          // Fallback to extreme pitch if voice setting fails
                          if (v['id'] == 'amigable') {
-                            await flutterTts.setSpeechRate(0.65);
-                            await flutterTts.setPitch(1.8);
+                            await flutterTts.setSpeechRate(0.55);
+                            await flutterTts.setPitch(1.15);
                          } else if (v['id'] == 'profesional') {
-                            await flutterTts.setSpeechRate(0.4);
-                            await flutterTts.setPitch(0.4);
+                            await flutterTts.setSpeechRate(0.5);
+                            await flutterTts.setPitch(0.85);
                          } else {
                             await flutterTts.setSpeechRate(0.5);
                             await flutterTts.setPitch(1.0);
@@ -2197,7 +2197,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.grey[100],
                                       shape: BoxShape.circle,
                                     ),
-                                    child: Center(child: Text(country['flag']!, style: const TextStyle(fontSize: 24))),
+                                    child: Center(child: Text(country['flag'], style: const TextStyle(fontSize: 24))),
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(

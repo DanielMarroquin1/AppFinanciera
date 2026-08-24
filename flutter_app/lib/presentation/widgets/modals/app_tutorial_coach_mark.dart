@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/utils/tutorial_keys.dart';
@@ -11,46 +12,26 @@ class AppTutorialCoachMark {
     return Builder(
       builder: (context) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
-        final bgColor = isDark ? const Color(0xFF131C2D) : Colors.white;
-        final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
-        final subtitleColor = isDark ? Colors.grey[400] : Colors.grey[600];
-
+        
         return Container(
           decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: color.withOpacity(0.3),
-              width: 1.5,
-            ),
+            color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.95) : Colors.white.withValues(alpha: 0.95),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.25),
                 blurRadius: 20,
-                spreadRadius: -5,
-                offset: const Offset(0, 8),
-              )
+                offset: const Offset(0, 10),
+              ),
             ],
           ),
-          child: Stack(
-            children: [
-              Positioned(
-                left: 0,
-                top: 0,
-                bottom: 0,
-                child: Container(
-                  width: 4,
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      bottomLeft: Radius.circular(16),
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,53 +39,48 @@ class AppTutorialCoachMark {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: color.withOpacity(0.15),
-                            shape: BoxShape.circle,
+                            color: color.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(14),
                           ),
-                          child: Icon(icon, color: color, size: 20),
+                          child: Icon(icon, color: color, size: 22),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 14),
                         Expanded(
                           child: Text(
                             title,
                             style: TextStyle(
-                              fontWeight: FontWeight.w800,
-                              color: textColor,
-                              fontSize: 18.0,
-                              letterSpacing: -0.3,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
+                              color: isDark ? Colors.white : const Color(0xFF0F172A),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     Text(
                       description,
                       style: TextStyle(
-                        color: subtitleColor,
-                        fontSize: 14,
+                        fontSize: 15,
                         height: 1.5,
-                        fontWeight: FontWeight.w500,
+                        color: isDark ? Colors.grey[300] : const Color(0xFF475569),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
                     Align(
                       alignment: Alignment.centerRight,
                       child: GestureDetector(
                         onTap: () => controller.next(),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                           decoration: BoxDecoration(
-                            color: color,
-                            borderRadius: BorderRadius.circular(30),
+                            gradient: LinearGradient(colors: [color, color.withValues(alpha: 0.8)]),
+                            borderRadius: BorderRadius.circular(14),
                             boxShadow: [
-                              BoxShadow(
-                                color: color.withOpacity(0.4),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              )
+                              BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4)),
                             ],
                           ),
                           child: Row(
@@ -112,23 +88,19 @@ class AppTutorialCoachMark {
                             children: [
                               Text(
                                 loc.get('next') ?? (loc.langCode.startsWith('en') ? 'Next' : 'Siguiente'),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14),
                               ),
                               const SizedBox(width: 6),
-                              const Icon(LucideIcons.arrowRight, color: Colors.white, size: 14),
+                              const Icon(LucideIcons.arrowRight, color: Colors.white, size: 16),
                             ],
                           ),
                         ),
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
         );
       }

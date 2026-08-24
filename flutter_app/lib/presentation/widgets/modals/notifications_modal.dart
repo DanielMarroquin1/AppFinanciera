@@ -205,7 +205,9 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
           Expanded(
             child: notificationsAsync.when(
               data: (notifications) {
+                final now = DateTime.now();
                 final filtered = notifications.where((n) {
+                  if (n.createdAt.month != now.month || n.createdAt.year != now.year) return false;
                   final rawTitleLower = n.title.toLowerCase();
                   final rawBodyLower = n.body.toLowerCase();
                   final locTitleLower = _localizeTitle(n.title, loc).toLowerCase();

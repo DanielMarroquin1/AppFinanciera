@@ -1006,7 +1006,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                     ),
                   );
                 }
-                final sorted = transactions.where((t) => !t.isFixed).toList()..sort((a, b) => b.date.compareTo(a.date));
+                final now = DateTime.now();
+                final sorted = transactions.where((t) => !t.isFixed && t.date.month == now.month && t.date.year == now.year).toList()..sort((a, b) => b.date.compareTo(a.date));
                 final recent = sorted.take(3).toList();
                 return Column(
                   children: recent.map((t) {

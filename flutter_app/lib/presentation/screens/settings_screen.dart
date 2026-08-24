@@ -2197,7 +2197,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.grey[100],
                                       shape: BoxShape.circle,
                                     ),
-                                    child: Center(child: Text(country['flag'], style: const TextStyle(fontSize: 24))),
+                                    child: Center(child: Text(country['flag']!, style: const TextStyle(fontSize: 24))),
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(

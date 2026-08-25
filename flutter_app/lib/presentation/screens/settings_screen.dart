@@ -351,62 +351,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   subtitle: loc.get('technical_support_desc'),
                   onTap: () => TechnicalSupportModal.show(context),
                 ),
+                _buildSettingItem(
+                  isDark,
+                  icon: LucideIcons.sparkles,
+                  iconBg: isDark ? const Color(0xFF0F766E) : const Color(0xFFCCFBF1),
+                  iconColor: isDark ? const Color(0xFF2DD4BF) : const Color(0xFF0F766E),
+                  title: loc.get('tutorial_btn'),
+                  subtitle: loc.langCode.startsWith('en') ? 'Learn how to use the app' : 'Aprende a usar la app',
+                  onTap: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setBool('has_seen_app_tutorial', false);
+                    if (context.mounted) {
+                      context.go('/dashboard');
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        showTutorialTrigger.value = true;
+                      });
+                    }
+                  },
+                ),
               ],
             ),
             const SizedBox(height: 32),
-
-            // About
-            Center(
-              child: Column(
-                children: [
-                  const Icon(LucideIcons.fingerprint, size: 32, color: Color(0xFF6366F1)),
-                  const SizedBox(height: 8),
-                  Text('Versión 2.5.0', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 14, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 2),
-                  Text('© 2026 Tu Ecosistema Financiero', style: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 12)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 40),
-
-            // Tutorial Button
-            InkWell(
-              onTap: () async {
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setBool('has_seen_app_tutorial', false);
-                if (context.mounted) {
-                  context.go('/dashboard');
-                  Future.delayed(const Duration(milliseconds: 500), () {
-                    showTutorialTrigger.value = true;
-                  });
-                }
-              },
-              borderRadius: BorderRadius.circular(20),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFF38BDF8).withOpacity(0.3), width: 1),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(LucideIcons.sparkles, color: Color(0xFF38BDF8), size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      loc.get('tutorial_btn'),
-                      style: TextStyle(
-                        color: isDark ? Colors.white : Colors.black87,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
 
             // Logout Button
             InkWell(

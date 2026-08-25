@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/animated_3d_avatar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -302,32 +303,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                   children: [
                     Row(
                       children: [
-                        GestureDetector(
+                        Animated3DAvatar(
+                          emoji: user?.avatarEmoji ?? '👤',
+                          size: 52,
+                          isDark: isDark,
                           onTap: () => Scaffold.of(context).openDrawer(),
-                          child: Container(
-                            width: 52, height: 52,
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 8),
-                                )
-                              ],
-                            ),
-                            child: Center(
-                              child: Text(
-                                user?.avatarEmoji ?? '👤', 
-                                style: const TextStyle(fontSize: 26)
-                              )
-                            ),
-                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(

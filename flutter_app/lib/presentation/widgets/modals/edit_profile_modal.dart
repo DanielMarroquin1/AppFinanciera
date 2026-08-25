@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../animated_3d_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../providers/auth_provider.dart';
@@ -222,26 +223,10 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
-                              width: 2,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
-                              )
-                            ],
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(selectedEmoji, style: const TextStyle(fontSize: 64)),
+                        Animated3DAvatar(
+                          emoji: selectedEmoji,
+                          size: 120,
+                          isDark: isDark,
                         ),
                         Positioned(
                           bottom: 0,

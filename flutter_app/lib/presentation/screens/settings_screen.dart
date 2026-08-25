@@ -657,7 +657,139 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showLanguageModal(BuildContext context, bool isDark) {
-    LanguageModal.show(context);
+    final loc = ref.watch(localizationProvider);
+    final currentLang = loc.langCode;
+    
+    final languages = [
+      {'code': 'es', 'name': 'Español', 'flag': '🇪🇸'},
+      {'code': 'en', 'name': 'English', 'flag': '🇺🇸'},
+      {'code': 'pt', 'name': 'Português', 'flag': '🇧🇷'},
+      {'code': 'fr', 'name': 'Français', 'flag': '🇫🇷'},
+      {'code': 'it', 'name': 'Italiano', 'flag': '🇮🇹'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(context).size.height * 0.75,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: isDark ? Colors.grey[700] : Colors.grey[300], borderRadius: BorderRadius.circular(4)))),
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                    ),
+                    child: const Text('🗣️', style: TextStyle(fontSize: 28)),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(loc.get('language'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                        const SizedBox(height: 4),
+                        Text('Elige el idioma de la aplicación', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.only(left: 24, right: 24, bottom: MediaQuery.of(context).padding.bottom + 24),
+                physics: const BouncingScrollPhysics(),
+                itemCount: languages.length,
+                itemBuilder: (context, index) {
+                  final lang = languages[index];
+                  final isSelected = currentLang.startsWith(lang['code']!);
+                  
+                  return GestureDetector(
+                    onTap: () {
+                      ref.read(localizationProvider.notifier).setLanguage(lang['code']!);
+                      Navigator.pop(ctx);
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: isSelected
+                            ? LinearGradient(
+                                colors: isDark 
+                                  ? [const Color(0xFF6366F1).withValues(alpha: 0.2), const Color(0xFF4F46E5).withValues(alpha: 0.1)]
+                                  : [const Color(0xFFE0E7FF), const Color(0xFFC7D2FE)],
+                              )
+                            : null,
+                        color: isSelected ? null : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected 
+                              ? const Color(0xFF6366F1) 
+                              : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)), 
+                          width: isSelected ? 2.5 : 1
+                        ),
+                        boxShadow: isSelected ? [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.25), blurRadius: 15, offset: const Offset(0, 5))] : [],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 48, height: 48,
+                            decoration: BoxDecoration(
+                              color: isSelected ? Colors.white.withValues(alpha: isDark ? 0.1 : 0.5) : (isDark ? Colors.black.withValues(alpha: 0.2) : Colors.grey[100]),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(child: Text(lang['flag']!, style: const TextStyle(fontSize: 28))),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              lang['name']!, 
+                              style: TextStyle(
+                                color: isDark ? Colors.white : (isSelected ? const Color(0xFF312E81) : Colors.black), 
+                                fontSize: 17, 
+                                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                                letterSpacing: -0.3,
+                              )
+                            ),
+                          ),
+                          if (isSelected) 
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)]),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(LucideIcons.check, color: Colors.white, size: 16),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showChangePasswordModal(BuildContext context, bool isDark) {
@@ -1442,19 +1574,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       await flutterTts.setLanguage(lang);
                       
                       try {
-                        await flutterTts.setSpeechRate(0.5);
-                        await flutterTts.setPitch(1.0);
-                        
-                        if (lang.startsWith('es')) {
-                          if (v['id'] == 'amigable') {
-                            await flutterTts.setLanguage("es-MX");
-                          } else if (v['id'] == 'profesional') {
-                            await flutterTts.setLanguage("es-ES");
-                          } else {
-                            await flutterTts.setLanguage("es-US");
-                          }
+                        await flutterTts.setSpeechRate(1.0);
+                        await flutterTts.setLanguage(lang.startsWith('es') ? "es-US" : lang);
+                        if (v['id'] == 'amigable') {
+                          await flutterTts.setPitch(1.2);
+                        } else if (v['id'] == 'profesional') {
+                          await flutterTts.setPitch(0.7);
                         } else {
-                          await flutterTts.setLanguage(lang);
+                          await flutterTts.setPitch(1.0);
                         }
                       } catch (e) {
                         debugPrint("Error setting TTS voice: $e");
@@ -2009,15 +2136,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   void _showCountryModal(BuildContext context, bool isDark) {
     final Map<String, List<Map<String, String>>> regions = {
-      'Norteamérica': [
+      'Norte': [
         {'code': 'US', 'name': 'Estados Unidos', 'flag': '🇺🇸', 'currencyName': 'Dólares (USD)'},
         {'code': 'MX', 'name': 'México', 'flag': '🇲🇽', 'currencyName': 'Pesos Mexicanos (MXN)'},
       ],
-      'Centroamérica': [
+      'Centro': [
         {'code': 'GT', 'name': 'Guatemala', 'flag': '🇬🇹', 'currencyName': 'Quetzales (GTQ)'},
         {'code': 'CR', 'name': 'Costa Rica', 'flag': '🇨🇷', 'currencyName': 'Colones (CRC)'},
+        {'code': 'SV', 'name': 'El Salvador', 'flag': '🇸🇻', 'currencyName': 'Dólares (USD)'},
+        {'code': 'HN', 'name': 'Honduras', 'flag': '🇭🇳', 'currencyName': 'Lempiras (HNL)'},
+        {'code': 'NI', 'name': 'Nicaragua', 'flag': '🇳🇮', 'currencyName': 'Córdobas (NIO)'},
+        {'code': 'PA', 'name': 'Panamá', 'flag': '🇵🇦', 'currencyName': 'Balboas/Dólares (PAB/USD)'},
+        {'code': 'BZ', 'name': 'Belice', 'flag': '🇧🇿', 'currencyName': 'Dólares Beliceños (BZD)'},
       ],
-      'Suramérica': [
+      'Sur': [
         {'code': 'CO', 'name': 'Colombia', 'flag': '🇨🇴', 'currencyName': 'Pesos Colombianos (COP)'},
         {'code': 'CL', 'name': 'Chile', 'flag': '🇨🇱', 'currencyName': 'Pesos Chilenos (CLP)'},
         {'code': 'PE', 'name': 'Perú', 'flag': '🇵🇪', 'currencyName': 'Soles (PEN)'},
@@ -2031,6 +2163,195 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     final user = ref.watch(authProvider).user;
     final currentCountry = user?.country ?? 'No seleccionado';
+    final loc = ref.watch(localizationProvider);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => DefaultTabController(
+        length: regions.keys.length,
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.9,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: isDark ? Colors.grey[700] : Colors.grey[300], borderRadius: BorderRadius.circular(4)))),
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                      ),
+                      child: const Text('🌎', style: TextStyle(fontSize: 28)),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(loc.get('select_country'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                          const SizedBox(height: 4),
+                          Text(loc.get('select_country_desc'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              // TABS 
+              TabBar(
+                isScrollable: true,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                indicatorColor: const Color(0xFF10B981),
+                indicatorWeight: 3,
+                labelColor: const Color(0xFF10B981),
+                unselectedLabelColor: isDark ? Colors.grey[500] : Colors.grey[400],
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                tabs: regions.keys.map((r) => Tab(text: r.toUpperCase())).toList(),
+              ),
+              const SizedBox(height: 16),
+
+              Expanded(
+                child: TabBarView(
+                  children: regions.keys.map((regionName) {
+                    final countries = regions[regionName]!;
+                    return ListView.builder(
+                      padding: EdgeInsets.only(left: 24, right: 24, bottom: MediaQuery.of(context).padding.bottom + 24),
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: countries.length,
+                      itemBuilder: (context, index) {
+                        final country = countries[index];
+                        final isSelected = currentCountry == country['name'];
+                        
+                        return GestureDetector(
+                          onTap: () {
+                            if (user != null) {
+                              ref.read(authProvider.notifier).updateProfile(
+                                user.copyWith(country: country['name'], currency: country['currencyName'])
+                              );
+                            }
+                            Navigator.pop(ctx);
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOutCubic,
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              gradient: isSelected
+                                  ? LinearGradient(
+                                      colors: isDark 
+                                        ? [const Color(0xFF10B981).withValues(alpha: 0.2), const Color(0xFF059669).withValues(alpha: 0.1)]
+                                        : [const Color(0xFFD1FAE5), const Color(0xFFA7F3D0)],
+                                    )
+                                  : null,
+                              color: isSelected 
+                                  ? null
+                                  : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isSelected 
+                                    ? const Color(0xFF10B981) 
+                                    : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)), 
+                                width: isSelected ? 2.5 : 1
+                              ),
+                              boxShadow: isSelected ? [
+                                BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.25), blurRadius: 15, offset: const Offset(0, 5))
+                              ] : [],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 48, height: 48,
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? Colors.white.withValues(alpha: isDark ? 0.1 : 0.5) : (isDark ? Colors.black.withValues(alpha: 0.2) : Colors.grey[100]),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(child: Text(country['flag']!, style: const TextStyle(fontSize: 28))),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        country['name']!, 
+                                        style: TextStyle(
+                                          color: isDark ? Colors.white : (isSelected ? const Color(0xFF064E3B) : Colors.black), 
+                                          fontSize: 17, 
+                                          fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                                          letterSpacing: -0.3,
+                                        )
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        country['currencyName']!, 
+                                        style: TextStyle(
+                                          color: isDark ? (isSelected ? const Color(0xFF6EE7B7) : Colors.grey[400]) : (isSelected ? const Color(0xFF059669) : Colors.grey[500]), 
+                                          fontSize: 13,
+                                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                        )
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (isSelected) 
+                                  Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: const BoxDecoration(
+                                      gradient: LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(LucideIcons.check, color: Colors.white, size: 16),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showCurrencyModal(BuildContext context, bool isDark) {
+    final currencies = [
+      {'code': 'USD', 'name': 'Dólares (USD)', 'flag': '🇺🇸', 'symbol': '\$'},
+      {'code': 'EUR', 'name': 'Euros (EUR)', 'flag': '🇪🇺', 'symbol': '€'},
+      {'code': 'GTQ', 'name': 'Quetzales (GTQ)', 'flag': '🇬🇹', 'symbol': 'Q'},
+      {'code': 'CRC', 'name': 'Colones (CRC)', 'flag': '🇨🇷', 'symbol': '₡'},
+      {'code': 'HNL', 'name': 'Lempiras (HNL)', 'flag': '🇭🇳', 'symbol': 'L'},
+      {'code': 'NIO', 'name': 'Córdobas (NIO)', 'flag': '🇳🇮', 'symbol': 'C\$'},
+      {'code': 'PAB', 'name': 'Balboas (PAB)', 'flag': '🇵🇦', 'symbol': 'B/.'},
+      {'code': 'BZD', 'name': 'Dólares Beliceños (BZD)', 'flag': '🇧🇿', 'symbol': '\$'},
+      {'code': 'MXN', 'name': 'Pesos Mexicanos (MXN)', 'flag': '🇲🇽', 'symbol': '\$'},
+      {'code': 'GBP', 'name': 'Libras (GBP)', 'flag': '🇬🇧', 'symbol': '£'},
+      {'code': 'ARS', 'name': 'Pesos Argentinos (ARS)', 'flag': '🇦🇷', 'symbol': '\$'},
+      {'code': 'COP', 'name': 'Pesos Colombianos (COP)', 'flag': '🇨🇴', 'symbol': '\$'},
+      {'code': 'CLP', 'name': 'Pesos Chilenos (CLP)', 'flag': '🇨🇱', 'symbol': '\$'},
+      {'code': 'PEN', 'name': 'Soles (PEN)', 'flag': '🇵🇪', 'symbol': 'S/'},
+    ];
+    final user = ref.watch(authProvider).user;
+    final currentCurrency = user?.currency ?? 'Dólares (USD)';
     final loc = ref.watch(localizationProvider);
 
     showModalBottomSheet(
@@ -2055,19 +2376,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]),
+                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
                       borderRadius: BorderRadius.circular(16),
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
                     ),
-                    child: const Icon(LucideIcons.globe, color: Colors.white, size: 24),
+                    child: const Text('💰', style: TextStyle(fontSize: 28)),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(loc.get('select_country'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                        Text(loc.get('select_currency'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
                         const SizedBox(height: 4),
-                        Text(loc.get('select_country_desc'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
+                        Text('Elige la moneda de la aplicación', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
                       ],
                     ),
                   ),
@@ -2079,103 +2401,88 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: ListView.builder(
                 padding: EdgeInsets.only(left: 24, right: 24, bottom: MediaQuery.of(context).padding.bottom + 24),
                 physics: const BouncingScrollPhysics(),
-                itemCount: regions.keys.length,
+                itemCount: currencies.length,
                 itemBuilder: (context, index) {
-                  final regionName = regions.keys.elementAt(index);
-                  final countries = regions[regionName]!;
+                  final currency = currencies[index];
+                  final isSelected = currentCurrency.contains(currency['name']!) || currentCurrency.contains(currency['code']!);
                   
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(LucideIcons.map, size: 16, color: Color(0xFF10B981)),
-                            const SizedBox(width: 8),
-                            Text(regionName.toUpperCase(), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
-                          ],
+                  return GestureDetector(
+                    onTap: () {
+                      if (user != null) {
+                        ref.read(authProvider.notifier).updateProfile(user.copyWith(currency: currency['name']));
+                      }
+                      Navigator.pop(ctx);
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: isSelected
+                            ? LinearGradient(
+                                colors: isDark 
+                                  ? [const Color(0xFFF59E0B).withValues(alpha: 0.2), const Color(0xFFD97706).withValues(alpha: 0.1)]
+                                  : [const Color(0xFFFEF3C7), const Color(0xFFFDE68A)],
+                              )
+                            : null,
+                        color: isSelected ? null : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected 
+                              ? const Color(0xFFF59E0B) 
+                              : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)), 
+                          width: isSelected ? 2.5 : 1
                         ),
-                        const SizedBox(height: 12),
-                        ...countries.map((country) {
-                          final isSelected = currentCountry == country['name'];
-                          return GestureDetector(
-                            onTap: () {
-                              if (user != null) {
-                                ref.read(authProvider.notifier).updateProfile(
-                                  user.copyWith(country: country['name'], currency: country['currencyName'])
-                                );
-                              }
-                              Navigator.pop(ctx);
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: isSelected 
-                                    ? (isDark ? const Color(0xFF10B981).withValues(alpha: 0.15) : const Color(0xFFD1FAE5))
-                                    : (isDark ? const Color(0xFF1E293B) : Colors.white),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: isSelected 
-                                      ? const Color(0xFF10B981) 
-                                      : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)), 
-                                  width: isSelected ? 2 : 1
-                                ),
-                                boxShadow: isSelected ? [
-                                  BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.2), blurRadius: 12, offset: const Offset(0, 4))
-                                ] : [],
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 40, height: 40,
-                                    decoration: BoxDecoration(
-                                      color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.grey[100],
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Center(child: Text(country['flag']!, style: const TextStyle(fontSize: 24))),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          country['name']!, 
-                                          style: TextStyle(
-                                            color: isDark ? Colors.white : Colors.black, 
-                                            fontSize: 16, 
-                                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600
-                                          )
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          country['currencyName']!, 
-                                          style: TextStyle(
-                                            color: isDark ? Colors.grey[400] : Colors.grey[500], 
-                                            fontSize: 13,
-                                          )
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  if (isSelected) 
-                                    Container(
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFF10B981),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(LucideIcons.check, color: Colors.white, size: 14),
-                                    ),
-                                ],
-                              ),
+                        boxShadow: isSelected ? [BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.25), blurRadius: 15, offset: const Offset(0, 5))] : [],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 48, height: 48,
+                            decoration: BoxDecoration(
+                              color: isSelected ? Colors.white.withValues(alpha: isDark ? 0.1 : 0.5) : (isDark ? Colors.black.withValues(alpha: 0.2) : Colors.grey[100]),
+                              shape: BoxShape.circle,
                             ),
-                          );
-                        }).toList(),
-                      ],
+                            child: Center(child: Text(currency['flag']!, style: const TextStyle(fontSize: 28))),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  currency['code']!, 
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : (isSelected ? const Color(0xFF78350F) : Colors.black), 
+                                    fontSize: 17, 
+                                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                                    letterSpacing: -0.3,
+                                  )
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  currency['name']!, 
+                                  style: TextStyle(
+                                    color: isDark ? (isSelected ? const Color(0xFFFCD34D) : Colors.grey[400]) : (isSelected ? const Color(0xFFB45309) : Colors.grey[500]), 
+                                    fontSize: 13,
+                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                  )
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (isSelected) 
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(LucideIcons.check, color: Colors.white, size: 16),
+                            ),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -2187,84 +2494,4 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  void _showCurrencyModal(BuildContext context, bool isDark) {
-    final currencies = [
-      {'code': 'USD', 'name': 'Dólares (USD)', 'flag': '🇺🇸', 'symbol': '\$'},
-      {'code': 'EUR', 'name': 'Euros (EUR)', 'flag': '🇪🇺', 'symbol': '€'},
-      {'code': 'GTQ', 'name': 'Quetzales (GTQ)', 'flag': '🇬🇹', 'symbol': 'Q'},
-      {'code': 'MXN', 'name': 'Pesos Mexicanos (MXN)', 'flag': '🇲🇽', 'symbol': '\$'},
-      {'code': 'GBP', 'name': 'Libras (GBP)', 'flag': '🇬🇧', 'symbol': '£'},
-      {'code': 'ARS', 'name': 'Pesos Argentinos (ARS)', 'flag': '🇦🇷', 'symbol': '\$'},
-      {'code': 'COP', 'name': 'Pesos Colombianos (COP)', 'flag': '🇨🇴', 'symbol': '\$'},
-      {'code': 'CLP', 'name': 'Pesos Chilenos (CLP)', 'flag': '🇨🇱', 'symbol': '\$'},
-      {'code': 'PEN', 'name': 'Soles (PEN)', 'flag': '🇵🇪', 'symbol': 'S/'},
-    ];
-    final user = ref.watch(authProvider).user;
-    final currentCurrency = user?.currency ?? 'Dólares (USD)';
-    final loc = ref.watch(localizationProvider);
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)))),
-            const SizedBox(height: 20),
-            Text(loc.get('select_currency'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: isDark ? Colors.white : Colors.black)),
-            const SizedBox(height: 4),
-            Text(loc.get('select_currency_desc'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
-            const SizedBox(height: 20),
-            Flexible(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: currencies.map((curr) {
-                    final isSelected = currentCurrency == curr['name'] || currentCurrency == curr['code'];
-                    return InkWell(
-                      onTap: () {
-                        if (user != null) {
-                          ref.read(authProvider.notifier).updateProfile(user.copyWith(currency: curr['name']));
-                        }
-                        Navigator.pop(ctx);
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.5) : const Color(0xFFD1FAE5))
-                              : (isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB)),
-                          border: Border.all(
-                            color: isSelected
-                                ? (isDark ? const Color(0xFF10B981) : const Color(0xFF10B981))
-                                : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
-                            width: isSelected ? 2 : 1,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            Text(curr['flag']!, style: const TextStyle(fontSize: 24)),
-                            const SizedBox(width: 12),
-                            Expanded(child: Text(curr['name']!, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal))),
-                            if (isSelected) const Icon(LucideIcons.checkCircle2, color: Color(0xFF10B981), size: 20),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
-  }
 }

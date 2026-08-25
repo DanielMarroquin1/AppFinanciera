@@ -722,7 +722,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   
                   return GestureDetector(
                     onTap: () {
-                      ref.read(localizationProvider.notifier).setLanguage(lang['code']!);
+                      ref.read(localeProvider.notifier).setLanguage(lang['code']!);
                       Navigator.pop(ctx);
                     },
                     child: AnimatedContainer(

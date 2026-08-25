@@ -370,7 +370,6 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                         ),
                       ),
                       ),
-
                       const SizedBox(height: 24),
                       Text(
                         'SELECCIONA TU PALETA VISUAL (${presetPalettes.length} OPCIONES)',

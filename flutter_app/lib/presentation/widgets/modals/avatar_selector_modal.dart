@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'rewards_shop_modal.dart';
 
 class AvatarSelectorModal extends StatefulWidget {
   final String currentAvatarId;
@@ -135,10 +136,33 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
                       return GestureDetector(
                         onTap: () {
                           if (isLocked) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('🔒 Avatar bloqueado. Canjéalo en la Tienda de Recompensas.'),
-                                behavior: SnackBarBehavior.floating,
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+                                title: Text('🔒 Avatar Premium', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
+                                content: Text('Para utilizar este avatar debes desbloquearlo en la Tienda de Recompensas.', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700])),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx), 
+                                    child: Text('Cancelar', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600]))
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(ctx);
+                                      Navigator.pop(context);
+                                      Future.delayed(const Duration(milliseconds: 100), () {
+                                        RewardsShopModal.show(context);
+                                      });
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF10B981),
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                    child: const Text('Ir a la Tienda 🛒', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  )
+                                ]
                               )
                             );
                           } else {

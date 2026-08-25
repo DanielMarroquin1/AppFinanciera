@@ -78,15 +78,16 @@ class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal> w
       final prefs = await SharedPreferences.getInstance();
       String voicePreset = prefs.getString('ai_voice_preset') ?? 'amigable';
       
-      if (voicePreset == 'amigable') {
-        await _flutterTts.setSpeechRate(0.55);
-        await _flutterTts.setPitch(1.1);
-      } else if (voicePreset == 'profesional') {
-        await _flutterTts.setSpeechRate(0.5);
-        await _flutterTts.setPitch(0.9);
-      } else {
-        await _flutterTts.setSpeechRate(0.5);
-        await _flutterTts.setPitch(1.0);
+      await _flutterTts.setSpeechRate(0.5);
+      await _flutterTts.setPitch(1.0);
+      if (_ttsLocale.startsWith('es')) {
+        if (voicePreset == 'amigable') {
+          await _flutterTts.setLanguage("es-MX");
+        } else if (voicePreset == 'profesional') {
+          await _flutterTts.setLanguage("es-ES");
+        } else {
+          await _flutterTts.setLanguage("es-US");
+        }
       }
     } catch (e) {
       // Handle init error

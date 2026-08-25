@@ -330,12 +330,42 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                       ],
                     ),
                       if (isStreakActive) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          loc.get('on_track'),
-                          style: TextStyle(
-                            color: isDark ? Colors.orange[400] : Colors.orange[800],
-                            fontWeight: FontWeight.w600,
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: isDark 
+                                ? [const Color(0xFFF59E0B).withValues(alpha: 0.2), const Color(0xFFEA580C).withValues(alpha: 0.1)]
+                                : [const Color(0xFFFEF3C7), const Color(0xFFFFEDD5)],
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isDark ? const Color(0xFFF59E0B).withValues(alpha: 0.3) : const Color(0xFFFCD34D),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              )
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(LucideIcons.flame, color: Color(0xFFF59E0B), size: 18),
+                              const SizedBox(width: 8),
+                              Text(
+                                loc.get('on_track').replaceAll(' 🔥', '').toUpperCase(),
+                                style: TextStyle(
+                                  color: isDark ? const Color(0xFFFCD34D) : const Color(0xFFB45309),
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 13,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],

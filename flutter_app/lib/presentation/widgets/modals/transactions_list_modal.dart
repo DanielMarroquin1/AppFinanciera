@@ -30,10 +30,29 @@ class TransactionsListModal extends ConsumerWidget {
   }
 }
 
-class TransactionsListModalInternal extends ConsumerWidget {
+class TransactionsListModalInternal extends ConsumerStatefulWidget {
   final ScrollController scrollController;
 
   const TransactionsListModalInternal({super.key, required this.scrollController});
+
+  @override
+  ConsumerState<TransactionsListModalInternal> createState() => _TransactionsListModalInternalState();
+}
+
+class _TransactionsListModalInternalState extends ConsumerState<TransactionsListModalInternal> {
+  late DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = DateTime.now();
+  }
+
+  void _changeMonth(int offset) {
+    setState(() {
+      _selectedDate = DateTime(_selectedDate.year, _selectedDate.month + offset, 1);
+    });
+  }
 
   String _getCategoryEmoji(String category) {
     if (category.runes.isNotEmpty && category.runes.first > 127) return category;
@@ -47,12 +66,15 @@ class TransactionsListModalInternal extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final transactionsAsync = ref.watch(transactionsProvider);
     final user = ref.watch(authProvider).user;
     final currencyCode = user?.currency;
     final loc = ref.watch(localizationProvider);
+    
+    final monthName = DateFormat('MMMM', loc.langCode).format(_selectedDate);
+    final capitalizedMonth = monthName[0].toUpperCase() + monthName.substring(1);
 
     return Container(
       decoration: BoxDecoration(
@@ -84,7 +106,35 @@ class TransactionsListModalInternal extends ConsumerWidget {
               ],
             ),
           ),
-          const Divider(),
+          
+          // Month/Year Selector
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: Icon(LucideIcons.chevronLeft, color: isDark ? Colors.grey[400] : Colors.grey[700]),
+                  onPressed: () => _changeMonth(-1),
+                  style: IconButton.styleFrom(backgroundColor: isDark ? const Color(0xFF374151) : Colors.grey[200]),
+                ),
+                Text(
+                  '$capitalizedMonth ${_selectedDate.year}',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(LucideIcons.chevronRight, color: isDark ? Colors.grey[400] : Colors.grey[700]),
+                  onPressed: () => _changeMonth(1),
+                  style: IconButton.styleFrom(backgroundColor: isDark ? const Color(0xFF374151) : Colors.grey[200]),
+                ),
+              ],
+            ),
+          ),
+          Divider(color: isDark ? const Color(0xFF374151) : Colors.grey[300]),
 
           Expanded(
             child: transactionsAsync.when(
@@ -93,10 +143,10 @@ class TransactionsListModalInternal extends ConsumerWidget {
                   return Center(child: Text(loc.get('no_transactions_registered'), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400])));
                 }
                 
-                final sorted = transactions.where((t) => !t.isFixed).toList()..sort((a, b) => b.date.compareTo(a.date));
+                final sorted = transactions.where((t) => !t.isFixed && t.date.month == _selectedDate.month && t.date.year == _selectedDate.year).toList()..sort((a, b) => b.date.compareTo(a.date));
 
                 return ListView.builder(
-                  controller: scrollController,
+                  controller: widget.scrollController,
                   padding: const EdgeInsets.all(24),
                   itemCount: sorted.length,
                   itemBuilder: (context, index) {

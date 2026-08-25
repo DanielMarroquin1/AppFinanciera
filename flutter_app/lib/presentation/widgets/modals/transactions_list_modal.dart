@@ -73,7 +73,7 @@ class _TransactionsListModalInternalState extends ConsumerState<TransactionsList
     final currencyCode = user?.currency;
     final loc = ref.watch(localizationProvider);
     
-    final monthName = DateFormat('MMMM', loc.langCode).format(_selectedDate);
+    final monthName = DateFormat('MMMM', loc.intlLocale).format(_selectedDate);
     final capitalizedMonth = monthName[0].toUpperCase() + monthName.substring(1);
 
     return Container(

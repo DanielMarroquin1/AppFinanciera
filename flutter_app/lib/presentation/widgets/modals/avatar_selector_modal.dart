@@ -138,31 +138,106 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
                           if (isLocked) {
                             showDialog(
                               context: context,
-                              builder: (ctx) => AlertDialog(
-                                backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
-                                title: Text('🔒 Avatar Premium', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
-                                content: Text('Para utilizar este avatar debes desbloquearlo en la Tienda de Recompensas.', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700])),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(ctx), 
-                                    child: Text('Cancelar', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600]))
+                              builder: (ctx) => Dialog(
+                                backgroundColor: Colors.transparent,
+                                child: Container(
+                                  padding: const EdgeInsets.all(24),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                    borderRadius: BorderRadius.circular(28),
+                                    border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.2),
+                                        blurRadius: 40,
+                                        offset: const Offset(0, 10),
+                                      )
+                                    ],
                                   ),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.pop(ctx);
-                                      Navigator.pop(context);
-                                      Future.delayed(const Duration(milliseconds: 100), () {
-                                        RewardsShopModal.show(context);
-                                      });
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF10B981),
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    ),
-                                    child: const Text('Ir a la Tienda 🛒', style: TextStyle(fontWeight: FontWeight.bold)),
-                                  )
-                                ]
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // Icon
+                                      Container(
+                                        width: 80, height: 80,
+                                        decoration: BoxDecoration(
+                                          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0), width: 2),
+                                        ),
+                                        child: Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            Text(emoji, style: const TextStyle(fontSize: 40)),
+                                            Positioned(
+                                              bottom: -2, right: -2,
+                                              child: Container(
+                                                padding: const EdgeInsets.all(4),
+                                                decoration: const BoxDecoration(color: Color(0xFFF59E0B), shape: BoxShape.circle),
+                                                child: const Icon(LucideIcons.lock, size: 14, color: Colors.white),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Text(
+                                        'Avatar Premium',
+                                        style: TextStyle(
+                                          color: isDark ? Colors.white : Colors.black,
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        'Para lucir este increíble avatar en tu perfil, primero debes desbloquearlo en la Tienda de Recompensas.',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                          fontSize: 14,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 28),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: TextButton(
+                                              onPressed: () => Navigator.pop(ctx),
+                                              style: TextButton.styleFrom(
+                                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                              ),
+                                              child: Text('Cancelar', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontWeight: FontWeight.bold)),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            flex: 2,
+                                            child: ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.pop(ctx);
+                                                Navigator.pop(context);
+                                                Future.delayed(const Duration(milliseconds: 100), () {
+                                                  RewardsShopModal.show(context);
+                                                });
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                                backgroundColor: const Color(0xFFF59E0B),
+                                                foregroundColor: Colors.white,
+                                                elevation: 0,
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                              ),
+                                              child: const Text('Ir a la Tienda 🛒', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               )
                             );
                           } else {

@@ -216,30 +216,28 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                         style: TextStyle(
                           color: selectedPalette.colors[0],
                           fontSize: 11,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w800,
                           letterSpacing: 1.1,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       Container(
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                          borderRadius: BorderRadius.circular(28),
-                          border: Border.all(
-                            color: selectedPalette.colors[0].withValues(alpha: 0.4),
-                            width: 1.5,
+                          gradient: LinearGradient(
+                            colors: [
+                              selectedPalette.colors[0],
+                              selectedPalette.colors[1],
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
+                          borderRadius: BorderRadius.circular(22),
                           boxShadow: [
                             BoxShadow(
-                              color: selectedPalette.colors[0].withValues(alpha: 0.15),
-                              blurRadius: 24,
-                              offset: const Offset(0, 10),
-                            ),
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                              color: selectedPalette.colors[0].withValues(alpha: 0.35),
+                              blurRadius: 16,
+                              offset: const Offset(0, 6),
                             ),
                           ],
                         ),
@@ -251,124 +249,95 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                               children: [
                                 Row(
                                   children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: selectedPalette.colors[0].withValues(alpha: 0.1),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Text(selectedPalette.icon, style: const TextStyle(fontSize: 20)),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          selectedPalette.name,
-                                          style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
-                                        ),
-                                        Text(
-                                          'Tarjeta Principal',
-                                          style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 11),
-                                        ),
-                                      ],
+                                    Text(selectedPalette.icon, style: const TextStyle(fontSize: 20)),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      selectedPalette.name,
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                                     ),
                                   ],
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(colors: [selectedPalette.colors[0], selectedPalette.colors[1]]),
+                                    color: Colors.white.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
-                                  child: const Text('ESTILO ACTIVO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900)),
+                                  child: const Text('ESTILO ACTIVO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800)),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 16),
                             Text(
                               'Balance Total Estimado',
-                              style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 13, fontWeight: FontWeight.w600),
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12),
                             ),
-                            const SizedBox(height: 6),
-                            Text(
+                            const SizedBox(height: 4),
+                            const Text(
                               '\$14,850.00 USD',
-                              style: TextStyle(
-                                color: isDark ? Colors.white : Colors.black, 
-                                fontSize: 32, 
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: -1.0,
-                              ),
+                              style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900),
                             ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 16),
                             Row(
                               children: [
                                 Expanded(
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    padding: const EdgeInsets.symmetric(vertical: 10),
                                     decoration: BoxDecoration(
-                                      gradient: LinearGradient(colors: [selectedPalette.colors[0], selectedPalette.colors[1]]),
-                                      borderRadius: BorderRadius.circular(16),
-                                      boxShadow: [BoxShadow(color: selectedPalette.colors[0].withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
-                                    ),
-                                    child: const Center(
-                                      child: Text(
-                                        '+ Agregar Ingreso',
-                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
-                                    decoration: BoxDecoration(
-                                      color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: isDark ? const Color(0xFF475569) : const Color(0xFFE2E8F0)),
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Center(
                                       child: Text(
+                                        '+ Agregar Ingreso',
+                                        style: TextStyle(color: selectedPalette.colors[0], fontWeight: FontWeight.bold, fontSize: 12),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.25),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
                                         '- Registrar Gasto',
-                                        style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 13),
+                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
                                       ),
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 24),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            const SizedBox(height: 16),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Presupuesto por categoría', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w600)),
-                                Text('75%', style: TextStyle(color: selectedPalette.colors[0], fontWeight: FontWeight.bold, fontSize: 13)),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Stack(
-                              children: [
-                                Container(
-                                  height: 8,
-                                  decoration: BoxDecoration(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(4)),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('Presupuesto por categoría', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 11)),
+                                    const Text('75%', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+                                  ],
                                 ),
-                                FractionallySizedBox(
-                                  widthFactor: 0.75,
-                                  child: Container(
-                                    height: 8,
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(colors: [selectedPalette.colors[0], selectedPalette.colors[1]]),
-                                      borderRadius: BorderRadius.circular(4),
-                                      boxShadow: [BoxShadow(color: selectedPalette.colors[0].withValues(alpha: 0.4), blurRadius: 6, offset: const Offset(0, 2))],
-                                    ),
+                                const SizedBox(height: 6),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: LinearProgressIndicator(
+                                    value: 0.75,
+                                    minHeight: 6,
+                                    backgroundColor: Colors.white.withValues(alpha: 0.2),
+                                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                                   ),
                                 ),
                               ],
                             ),
                           ],
                         ),
-                      ),
                       ),
 
                       const SizedBox(height: 24),
@@ -541,22 +510,13 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                                             style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800),
                                           ),
                                         ),
-                                        GestureDetector(
-                                          onTap: () {
-                                            Navigator.of(context).pop();
-                                            Future.delayed(const Duration(milliseconds: 100), () {
-                                              RewardsShopModal.show(context);
-                                            });
-                                          },
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                            decoration: BoxDecoration(
-                                              gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
-                                              borderRadius: BorderRadius.circular(8),
-                                              boxShadow: [BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.4), blurRadius: 6, offset: const Offset(0, 2))],
-                                            ),
-                                            child: const Text('Ir a Tienda 🛒', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900)),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
+                                            borderRadius: BorderRadius.circular(6),
                                           ),
+                                          child: const Text('Ir a Tienda 🛒', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900)),
                                         ),
                                       ],
                                     ),

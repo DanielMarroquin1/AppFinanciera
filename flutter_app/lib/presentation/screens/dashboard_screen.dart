@@ -305,15 +305,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                         GestureDetector(
                           onTap: () => Scaffold.of(context).openDrawer(),
                           child: Container(
-                            width: 48, height: 48,
+                            width: 52, height: 52,
                             decoration: BoxDecoration(
-                              gradient: LinearGradient(colors: palette.colors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
                               shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                                width: 2,
+                              ),
                               boxShadow: [
-                                BoxShadow(color: palette.colors[0].withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                )
                               ],
                             ),
-                            child: Center(child: Text(user?.avatarEmoji ?? '👤', style: const TextStyle(fontSize: 22))),
+                            child: Center(
+                              child: Text(
+                                user?.avatarEmoji ?? '👤', 
+                                style: const TextStyle(fontSize: 26)
+                              )
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),

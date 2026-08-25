@@ -49,7 +49,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final isPremium = user?.isPremium ?? false;
     
     final loc = ref.watch(localizationProvider);
-    final selectedLanguage = user?.language ?? 'Español';
+    String selectedLanguage = 'Español';
+    if (loc.langCode.startsWith('en')) selectedLanguage = 'English';
+    else if (loc.langCode.startsWith('pt')) selectedLanguage = 'Português';
+    else if (loc.langCode.startsWith('fr')) selectedLanguage = 'Français';
+    else if (loc.langCode.startsWith('it')) selectedLanguage = 'Italiano';
     final selectedCountry = user?.country ?? 'No seleccionado';
     final selectedCurrency = user?.currency ?? 'Dólares (USD)';
 
@@ -420,6 +424,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 48),
+            
+            // Version Footer
+            Center(
+              child: Column(
+                children: [
+                  const Icon(LucideIcons.fingerprint, size: 28, color: Color(0xFF6366F1)),
+                  const SizedBox(height: 8),
+                  Text('Versión 1.1 de QUIVO', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 13, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  Text('© 2026 Tu Ecosistema Financiero', style: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 11)),
+                ],
+              ),
+            ),
             const SizedBox(height: 100),
           ],
         ),
@@ -658,7 +676,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   void _showLanguageModal(BuildContext context, bool isDark) {
     final loc = ref.watch(localizationProvider);
-    final currentLang = loc.langCode;
+    final currentLang = loc.langCode; final user = ref.watch(authProvider).user;
     
     final languages = [
       {'code': 'es', 'name': 'Español', 'flag': '🇪🇸'},
@@ -722,7 +740,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   
                   return GestureDetector(
                     onTap: () {
-                      ref.read(localeProvider.notifier).setLanguage(lang['code']!);
+                      ref.read(localeProvider.notifier).setLanguage(lang['code']!); if (user != null) { ref.read(authProvider.notifier).updateProfile(user.copyWith(language: lang['name'])); }
                       Navigator.pop(ctx);
                     },
                     child: AnimatedContainer(

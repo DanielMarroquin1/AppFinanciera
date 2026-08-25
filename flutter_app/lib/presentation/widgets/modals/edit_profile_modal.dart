@@ -226,24 +226,22 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                           width: 120,
                           height: 120,
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: isDark 
-                                  ? [const Color(0xFF8B5CF6), const Color(0xFF3B82F6)]
-                                  : [const Color(0xFFC4B5FD), const Color(0xFF93C5FD)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
+                            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
                             shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                              width: 4,
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 15,
+                                offset: const Offset(0, 5),
                               )
                             ],
                           ),
                           alignment: Alignment.center,
-                          child: Text(selectedEmoji, style: const TextStyle(fontSize: 60)),
+                          child: Text(selectedEmoji, style: const TextStyle(fontSize: 64)),
                         ),
                         Positioned(
                           bottom: 0,

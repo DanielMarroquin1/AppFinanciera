@@ -307,17 +307,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                           child: Container(
                             width: 52, height: 52,
                             decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                              color: isDark ? const Color(0xFF1E293B) : Colors.white,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                                width: 2,
+                                color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+                                width: 1.5,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.05),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
+                                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 8),
                                 )
                               ],
                             ),

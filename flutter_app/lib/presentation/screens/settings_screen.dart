@@ -158,10 +158,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     Container(
                       width: 72, height: 72,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: paletteGradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
                         shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+                          width: 1.5,
+                        ),
                         boxShadow: [
-                          BoxShadow(color: paletteGradient[0].withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 5))
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                            blurRadius: 16,
+                            offset: const Offset(0, 8),
+                          )
                         ],
                       ),
                       child: Center(child: Text(user?.avatarEmoji ?? '👤', style: const TextStyle(fontSize: 34))),

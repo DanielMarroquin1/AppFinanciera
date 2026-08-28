@@ -1,3 +1,4 @@
+import '../../../core/helpers/tts_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -75,18 +76,7 @@ class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal> w
         },
       );
       
-      final prefs = await SharedPreferences.getInstance();
-      String voicePreset = prefs.getString('ai_voice_preset') ?? 'amigable';
-      
-      await _flutterTts.setSpeechRate(1.0);
-      await _flutterTts.setLanguage(_ttsLocale.startsWith('es') ? 'es-US' : _ttsLocale);
-      if (voicePreset == 'amigable') {
-        await _flutterTts.setPitch(1.2);
-      } else if (voicePreset == 'profesional') {
-        await _flutterTts.setPitch(0.7);
-      } else {
-        await _flutterTts.setPitch(1.0);
-      }
+      await TtsHelper.configureTts(_flutterTts, _ttsLocale);
     } catch (e) {
       // Handle init error
     }
@@ -185,7 +175,19 @@ class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal> w
     if (_isProcessing || _showPreview || _isDone) return; // Fix duplication
     if (_recognizedText.isEmpty) return;
 
+    // Reset previous parses
+    _parsedAmount = 0.0;
+    _parsedCategory = 'other';
+    _parsedPaymentMethod = 'efectivo';
+    _parsedType = 'expense';
+    _parsedDescription = '';
+    _selectedCreditCardId = null;
+
     setState(() => _isProcessing = true);
+    
+    // Normalize "con" and "punto" to handle decimals in Spanish (e.g. 50 con 50 -> 50.50)
+    String normalizedText = _recognizedText.replaceAll(RegExp(r'(\d+)\s+(?:con|punto|coma|with|point|dot|com|ponto|virgula|virgule|avec)\s+(\d+)'), r'$1.$2');
+    _recognizedText = normalizedText;
 
     final loc = ref.read(localizationProvider);
     final cards = ref.read(creditCardsProvider).value ?? [];
@@ -356,11 +358,15 @@ $cardsInfo
       if (_parsedAmount == 0.0) {
         final textLower = _recognizedText.toLowerCase();
         final wordToNum = {
-          'un': 1, 'uno': 1, 'una': 1, 'dos': 2, 'tres': 3, 'cuatro': 4, 'cinco': 5,
-          'seis': 6, 'siete': 7, 'ocho': 8, 'nueve': 9, 'diez': 10, 'veinte': 20,
-          'treinta': 30, 'cuarenta': 40, 'cincuenta': 50, 'sesenta': 60,
-          'setenta': 70, 'ochenta': 80, 'noventa': 90, 'cien': 100,
-          'ciento': 100, 'doscientos': 200, 'quinientos': 500, 'mil': 1000
+          'un': 1, 'uno': 1, 'una': 1, 'dos': 2, 'tres': 3, 'cuatro': 4, 'cinco': 5, 'seis': 6, 'siete': 7, 'ocho': 8, 'nueve': 9, 'diez': 10,
+          'veinte': 20, 'treinta': 30, 'cuarenta': 40, 'cincuenta': 50, 'sesenta': 60, 'setenta': 70, 'ochenta': 80, 'noventa': 90, 'cien': 100, 'ciento': 100,
+          'doscientos': 200, 'quinientos': 500, 'mil': 1000,
+          'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+          'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50, 'sixty': 60, 'seventy': 70, 'eighty': 80, 'ninety': 90,
+          'hundred': 100, 'thousand': 1000,
+          'um': 1, 'uma': 1, 'dois': 2, 'duas': 2, 'três': 3, 'tres': 3, 'quatro': 4, 'cinco': 5, 'seis': 6, 'sete': 7, 'oito': 8, 'nove': 9, 'dez': 10,
+          'vinte': 20, 'trinta': 30, 'quarenta': 40, 'cinquenta': 50, 'sessenta': 60, 'setenta': 70, 'oitenta': 80, 'noventa': 90, 'cem': 100, 'cento': 100,
+          'mil': 1000
         };
         for (var entry in wordToNum.entries) {
           if (RegExp(r'\b' + entry.key + r'\b').hasMatch(textLower)) {

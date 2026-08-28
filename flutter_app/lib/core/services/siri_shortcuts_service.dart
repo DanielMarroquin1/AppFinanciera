@@ -1,9 +1,10 @@
+import '../helpers/tts_helper.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../presentation/widgets/modals/voice_expense_modal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/auth_provider.dart';
+import '../../presentation/providers/auth_provider.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 class SiriShortcutsService {
@@ -35,7 +36,7 @@ class SiriShortcutsService {
         
         if (!user.isPremium) {
           final tts = FlutterTts();
-          await tts.setLanguage('es-US');
+          await TtsHelper.configureTts(tts, 'es');
           await tts.speak('Para registrar gastos con Siri, necesitas ser usuario Premium en QUIVO.');
           return;
         }

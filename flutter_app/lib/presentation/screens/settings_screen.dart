@@ -1559,6 +1559,306 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               left: 24, 
               right: 24, 
               top: 24, 
+              bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? MediaQuery.of(context).viewInsets.bottom + 24 : MediaQuery.of(context).padding.bottom + 24
+            ),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(4)))),
+                const SizedBox(height: 24),
+                Text('Voz de IA', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                const SizedBox(height: 8),
+                Text('Personaliza cómo te habla QUIVO. Las voces nativas pueden variar según tu dispositivo.', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                const SizedBox(height: 24),
+                ...voices.map((v) {
+                  final isSelected = currentVoice == v['id'];
+                  return GestureDetector(
+                    onTap: () async {
+                      setModalState(() => currentVoice = v['id'] as String);
+                      
+                      // Setup Language and get OS voices
+                      String lang = loc.intlLocale;
+                      await flutterTts.setLanguage(lang);
+                      
+                      try {
+                        
+                        await flutterTts.setSpeechRate(kIsWeb ? 1.0 : 0.5); // Web defaults to 1.0, Mobile defaults to 0.5 for normal speed
+                        await flutterTts.setLanguage(lang.startsWith('es') ? "es-US" : lang);
+                        if (v['id'] == 'amigable') {
+                          await flutterTts.setPitch(1.2);
+                        } else if (v['id'] == 'profesional') {
+                          await flutterTts.setPitch(0.7);
+                        } else {
+                          await flutterTts.setPitch(1.0);
+                        }
+                      } catch (e) {
+                        debugPrint("Error setting TTS voice: $e");
+                      }
+                      
+                      // Speak greeting according to language
+                      String greeting = 'Hola, Soy Sami, tu asistente financiero';
+                      if (lang == 'en') greeting = 'Hello, I am Sami, your financial assistant';
+                      if (lang == 'fr') greeting = 'Bonjour, je suis Sami, votre assistant financier';
+                      if (lang == 'it') greeting = 'Ciao, sono Sami, il tuo assistente finanziario';
+                      if (lang == 'pt') greeting = 'Olá, eu sou Sami, seu assistente financeiro';
+
+                      await flutterTts.speak(greeting);
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isSelected ? (isDark ? const Color(0xFF8B5CF6).withValues(alpha: 0.15) : const Color(0xFFEDE9FE)) : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: isSelected ? const Color(0xFF8B5CF6) : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)), width: isSelected ? 2 : 1),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(v['icon'] as IconData, color: isSelected ? const Color(0xFF8B5CF6) : (isDark ? Colors.grey[400] : Colors.grey[600]), size: 28),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(v['name'] as String, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 4),
+                                Text(v['desc'] as String, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                              ],
+                            ),
+                          ),
+                          if (isSelected) const Icon(LucideIcons.checkCircle2, color: Color(0xFF8B5CF6)),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () async {
+                    await prefs.setString('ai_voice_preset', currentVoice);
+                    if (context.mounted) Navigator.pop(ctx);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: const Color(0xFF8B5CF6),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  child: const Text('Guardar y Aplicar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showBiometricTestModal(BuildContext context, bool isDark) {
+    final loc = ref.read(localizationProvider);
+    final passwordCtrl = TextEditingController();
+    bool showPassword = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) => FutureBuilder<bool>(
+          future: BiometricService.isBiometricEnabled(),
+          builder: (context, snapshot) {
+            final isEnabled = snapshot.data ?? false;
+            final user = ref.read(authProvider).user;
+
+            return Padding(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+              child: Container(
+                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.5),
+                ),
+                padding: const EdgeInsets.only(
+                  left: 24, right: 24, top: 24, bottom: 24,
+                ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)))),
+                    const SizedBox(height: 20),
+                    Container(
+                      width: 80, height: 80,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [Color(0xFF0284C7), Color(0xFF38BDF8)]),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [BoxShadow(color: const Color(0xFF38BDF8).withValues(alpha: 0.4), blurRadius: 16)],
+                      ),
+                      child: const Center(child: Icon(LucideIcons.fingerprint, color: Colors.white, size: 44)),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(loc.get('biometrics_modal_title'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                    const SizedBox(height: 8),
+                    Text(
+                      loc.get('biometrics_modal_desc'),
+                      style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: isEnabled ? const Color(0xFF10B981) : Colors.grey[400]!),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(isEnabled ? LucideIcons.shieldCheck : LucideIcons.shieldOff, color: isEnabled ? const Color(0xFF10B981) : Colors.grey[500], size: 28),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(isEnabled ? loc.get('biometrics_status_enabled') : loc.get('biometrics_status_disabled'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : Colors.black87)),
+                                const SizedBox(height: 2),
+                                Text(isEnabled ? 'Activado para inicio rápido' : 'Inactivo actualmente', style: TextStyle(color: isEnabled ? const Color(0xFF10B981) : Colors.grey[500], fontSize: 12, fontWeight: FontWeight.w600)),
+                              ],
+                            ),
+                          ),
+                          Switch(
+                            value: isEnabled,
+                            activeColor: const Color(0xFF0284C7),
+                            onChanged: (val) async {
+                              if (!val) {
+                                await BiometricService.setBiometricEnabled(false);
+                                setState(() {});
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.get('biometrics_status_disabled')), backgroundColor: Colors.grey[700]));
+                                }
+                              } else {
+                                if (passwordCtrl.text.trim().isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.get('biometrics_confirm_password_hint')), backgroundColor: Colors.amber[800]));
+                                  return;
+                                }
+                                final authSuccess = await BiometricService.authenticate(reason: loc.get('biometrics_modal_title'));
+                                if (authSuccess && user?.email != null) {
+                                  await BiometricService.setBiometricEnabled(true, user!.email!, passwordCtrl.text.trim());
+                                  setState(() {});
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.get('biometrics_status_enabled')), backgroundColor: const Color(0xFF16A34A)));
+                                  }
+                                }
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    if (!isEnabled) ...[
+                      _buildPasswordField(isDark, passwordCtrl, loc.get('biometrics_confirm_password_hint'), LucideIcons.lock, showPassword, () => setState(() => showPassword = !showPassword)),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            if (passwordCtrl.text.trim().isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.get('biometrics_confirm_password_hint')), backgroundColor: Colors.amber[800]));
+                              return;
+                            }
+                            final success = await BiometricService.authenticate(reason: loc.get('biometrics_modal_title'));
+                            if (success && user?.email != null) {
+                              await BiometricService.setBiometricEnabled(true, user!.email!, passwordCtrl.text.trim());
+                              setState(() {});
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.get('biometrics_status_enabled')), backgroundColor: const Color(0xFF16A34A)));
+                              }
+                            }
+                          },
+                          icon: const Icon(LucideIcons.fingerprint, size: 20),
+                          label: Text(loc.get('biometrics_toggle_enable'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0284C7),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            elevation: 0,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final success = await BiometricService.authenticate(reason: loc.get('biometrics_modal_title'));
+                          if (context.mounted && success) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Row(children: [const Icon(LucideIcons.checkCircle, color: Colors.white), const SizedBox(width: 12), Expanded(child: Text(loc.get('biometrics_test_success')))]),
+                                backgroundColor: const Color(0xFF0284C7),
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
+                            );
+                          }
+                        },
+                        icon: const Icon(LucideIcons.fingerprint, size: 20),
+                        label: Text(loc.get('biometrics_test_btn'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+                          side: BorderSide(color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ));
+          },
+        ),
+      ),
+    );
+  }
+
+  
+  void _showAIVoiceModal(BuildContext context, bool isDark) async {
+    final prefs = await SharedPreferences.getInstance();
+    String currentVoice = prefs.getString('ai_voice_preset') ?? 'amigable';
+    final loc = ref.read(localizationProvider);
+    final flutterTts = FlutterTts();
+
+    if (!context.mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final voices = [
+            {'id': 'amigable', 'name': 'Femenina Amigable (QUIVO)', 'icon': LucideIcons.sparkles, 'desc': 'Un tono más agudo, rápido y empático.'},
+            {'id': 'profesional', 'name': 'Masculina Profesional', 'icon': LucideIcons.briefcase, 'desc': 'Un tono grave, pausado y ejecutivo.'},
+            {'id': 'neutra', 'name': 'Voz Neutra Estándar', 'icon': LucideIcons.bot, 'desc': 'El tono por defecto del sistema sin ajustes.'}
+          ];
+
+          return Container(
+            padding: EdgeInsets.only(
+              left: 24, 
+              right: 24, 
+              top: 24, 
               bottom: MediaQuery.of(context).viewInsets.bottom + 24
             ),
             decoration: BoxDecoration(

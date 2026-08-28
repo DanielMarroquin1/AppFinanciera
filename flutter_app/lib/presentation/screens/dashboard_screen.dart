@@ -1,3 +1,4 @@
+import '../../core/services/siri_shortcuts_service.dart';
 import 'package:flutter/material.dart';
 import '../widgets/animated_3d_avatar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -130,6 +131,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SiriShortcutsService.initialize(context, ref);
+    });
+
     final authState = ref.watch(authProvider);
     final user = authState.user;
 
@@ -195,25 +200,30 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
       });
     }
 
-    if (user != null && !_tipChecked) {
-      _tipChecked = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        if (context.mounted) {
-          await Future.delayed(const Duration(milliseconds: 600));
-          if (context.mounted) {
-            DailyTipModal.showIfNeeded(context);
-          }
-        }
-      });
-    }
-
-    if (user != null && !_tutorialChecked) {
+    if (user != null && user.profileComplete && !_tutorialChecked) {
       _tutorialChecked = true;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         final prefs = await SharedPreferences.getInstance();
         final hasSeen = prefs.getBool('has_seen_app_tutorial') ?? false;
         if (!hasSeen && !user.hasCompletedTour && context.mounted) {
           _showTutorial();
+        }
+      });
+    }
+
+    // Only show daily tip if profile is complete AND tutorial was already seen
+    if (user != null && user.profileComplete && !_tipChecked) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final prefs = await SharedPreferences.getInstance();
+        final hasSeenTut = prefs.getBool('has_seen_app_tutorial') ?? false;
+        if (hasSeenTut || user.hasCompletedTour) {
+           _tipChecked = true;
+           if (context.mounted) {
+             await Future.delayed(const Duration(milliseconds: 600));
+             if (context.mounted) {
+               DailyTipModal.showIfNeeded(context);
+             }
+           }
         }
       });
     }
@@ -295,79 +305,50 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
           // Header with Streak
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        Animated3DAvatar(
-                          emoji: user?.avatarEmoji ?? '👤',
-                          size: 52,
-                          isDark: isDark,
-                          onTap: () => Scaffold.of(context).openDrawer(),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            '${loc.get('welcome_back')} ${user?.name ?? 'Usuario'}! 👋',
+                    Animated3DAvatar(
+                      emoji: user?.avatarEmoji ?? '👤',
+                      size: 52,
+                      isDark: isDark,
+                      onTap: () => Scaffold.of(context).openDrawer(),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            loc.get('welcome_back'),
                             style: TextStyle(
-                              fontSize: 28,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: isDark ? Colors.grey[400] : Colors.grey[600],
+                            ),
+                          ),
+                          Text(
+                            '${user?.name ?? 'Usuario'}! 👋',
+                            style: TextStyle(
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: isDark ? Colors.white : Colors.black,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                      if (isStreakActive) ...[
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: isDark 
-                                ? [const Color(0xFFF59E0B).withValues(alpha: 0.2), const Color(0xFFEA580C).withValues(alpha: 0.1)]
-                                : [const Color(0xFFFEF3C7), const Color(0xFFFFEDD5)],
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: isDark ? const Color(0xFFF59E0B).withValues(alpha: 0.3) : const Color(0xFFFCD34D),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              )
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(LucideIcons.flame, color: Color(0xFFF59E0B), size: 18),
-                              const SizedBox(width: 8),
-                              Text(
-                                loc.get('on_track').replaceAll(' 🔥', '').toUpperCase(),
-                                style: TextStyle(
-                                  color: isDark ? const Color(0xFFFCD34D) : const Color(0xFFB45309),
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 13,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
+                  ],
                 ),
-                // Streak Badge & Rewards
-                Row(
-                  key: TutorialKeys.streakKey,
+              ),
+              const SizedBox(width: 8),
+              // Streak Badge & Rewards
+              Row(
+                key: TutorialKeys.streakKey,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (isStreakActive) ...[

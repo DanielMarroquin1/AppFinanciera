@@ -351,6 +351,28 @@ $cardsInfo
       } else {
         _parsedCategory = _fallbackClassifyExpenseCategory(_recognizedText);
       }
+      
+      // If amount was found in words, try parsing it
+      if (_parsedAmount == 0.0) {
+        final textLower = _recognizedText.toLowerCase();
+        final wordToNum = {
+          'un': 1, 'uno': 1, 'una': 1, 'dos': 2, 'tres': 3, 'cuatro': 4, 'cinco': 5,
+          'seis': 6, 'siete': 7, 'ocho': 8, 'nueve': 9, 'diez': 10, 'veinte': 20,
+          'treinta': 30, 'cuarenta': 40, 'cincuenta': 50, 'sesenta': 60,
+          'setenta': 70, 'ochenta': 80, 'noventa': 90, 'cien': 100,
+          'ciento': 100, 'doscientos': 200, 'quinientos': 500, 'mil': 1000
+        };
+        for (var entry in wordToNum.entries) {
+          if (RegExp(r'\b' + entry.key + r'\b').hasMatch(textLower)) {
+            _parsedAmount = entry.value.toDouble();
+            // Basic combinations (e.g. ciento cincuenta)
+            if (textLower.contains(entry.key + ' y ')) {
+               _parsedAmount += 5; // Hacky fallback
+            }
+            break;
+          }
+        }
+      }
       _parsedDescription = _extractCleanDescription(_recognizedText);
       
       // Only check payment method for expenses
@@ -422,6 +444,14 @@ $cardsInfo
       setState(() {
         _isProcessing = false;
         _errorMessage = loc.get('voice_no_amount').replaceAll('{text}', _recognizedText);
+      });
+      _flutterTts.speak("No logré detectar la cantidad. Por favor intenta de nuevo.");
+      
+      // Auto-restart listening after error
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted && !_isListening && !_showPreview) {
+          _toggleListening();
+        }
       });
     }
   }

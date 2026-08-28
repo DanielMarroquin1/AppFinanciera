@@ -184,7 +184,7 @@ class BankNotificationListenerService {
 
     // 2. Extraer Comercio (después de "en ", "comercio ", "compra en ", "pago a ")
     String merchant = 'Comercio General';
-    final merchantRegExp = RegExp(r'(?:en\s+|comercio\s+|compra en\s+|pago a\s+|establecimiento\s+)([*A-Za-z0-9\s&\.\-_]{3,30})', caseSensitive: false);
+    final merchantRegExp = RegExp(r'(?:en\s+|comercio\s+|compra en\s+|pago a\s+|establecimiento\s+|transferencia a\s+|enviado a\s+|retiro en\s+|cajero\s+)([*A-Za-z0-9\s&\.\-_]{3,30})', caseSensitive: false);
     final mMatch = merchantRegExp.firstMatch(combined);
     if (mMatch != null) {
       final found = mMatch.group(1)?.trim() ?? '';

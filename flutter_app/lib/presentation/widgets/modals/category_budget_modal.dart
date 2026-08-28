@@ -426,7 +426,7 @@ class _CategoryBudgetModalState extends ConsumerState<CategoryBudgetModal> {
             
             // FAB & Guardar Button
             Positioned(
-              bottom: 32,
+              bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? MediaQuery.of(context).viewInsets.bottom + 16 : MediaQuery.of(context).padding.bottom + 24,
               left: 24,
               right: 24,
               child: Row(

@@ -569,7 +569,7 @@ $cardsInfo
     await _flutterTts.setLanguage(_ttsLocale);
     await _flutterTts.speak(loc.get('voice_ask_payment_method'));
     
-    await Future.delayed(const Duration(seconds: 4));
+    
     
     final available = await _speechToText.initialize();
     if (available && mounted) {

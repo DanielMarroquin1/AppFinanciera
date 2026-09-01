@@ -1,8 +1,17 @@
 class AIConfig {
-  // API Key se pasa por variable de entorno al compilar:
-  // flutter run --dart-define=GEMINI_API_KEY=tu_clave_aqui
+  // Original env key
   static const String _envKey = String.fromEnvironment('GEMINI_API_KEY');
-  static String get apiKey => _envKey.trim();
+  
+  // Dynamic key that can be loaded from SharedPreferences
+  static String? dynamicApiKey;
+  
+  static String get apiKey {
+    if (dynamicApiKey != null && dynamicApiKey!.trim().isNotEmpty) {
+      return dynamicApiKey!.trim();
+    }
+    return _envKey.trim();
+  }
+  
   static const String modelName = 'gemini-2.5-flash';
   static const String assistantName = 'QUIVO';
 

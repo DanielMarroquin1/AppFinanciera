@@ -36,76 +36,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
-  void _showAIKeyModal(BuildContext context, bool isDark) {
-    final TextEditingController _keyController = TextEditingController(text: AIConfig.dynamicApiKey ?? '');
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(4)))),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Icon(LucideIcons.brain, color: const Color(0xFF06B6D4), size: 28),
-                  const SizedBox(width: 12),
-                  Text('Motor de Inteligencia Artificial', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text('Ingresa tu API Key gratuita de Google Gemini para habilitar el procesamiento de lenguaje natural avanzado. Sin esta llave, QUIVO usará un sistema básico de reconocimiento.', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
-              const SizedBox(height: 24),
-              TextField(
-                controller: _keyController,
-                obscureText: true,
-                style: TextStyle(color: isDark ? Colors.white : Colors.black),
-                decoration: InputDecoration(
-                  labelText: 'Gemini API Key',
-                  labelStyle: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600]),
-                  filled: true,
-                  fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF06B6D4), width: 2)),
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  final val = _keyController.text.trim();
-                  await prefs.setString('gemini_api_key', val);
-                  AIConfig.dynamicApiKey = val;
-                  if (ctx.mounted) {
-                    Navigator.pop(ctx);
-                    setState(() {});
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Configuración de IA guardada. ¡Gemini activado!'), backgroundColor: Color(0xFF06B6D4)));
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: const Color(0xFF06B6D4),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                child: const Text('Conectar IA', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
@@ -338,7 +268,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _buildSettingItem(isDark, icon: LucideIcons.key, iconBg: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFEE2E2), iconColor: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), title: loc.get('two_factor'), subtitle: 'Protege tu cuenta', onTap: () => _showTwoFactorModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.fingerprint, iconBg: isDark ? const Color(0xFF0284C7).withValues(alpha: 0.3) : const Color(0xFFE0F2FE), iconColor: const Color(0xFF38BDF8), title: 'Huella Digital / Face ID', subtitle: 'Acceso rápido biométrico activado', onTap: () => _showBiometricTestModal(context, isDark)),
                 _buildSettingItem(isDark, icon: LucideIcons.mic, iconBg: isDark ? const Color(0xFF8B5CF6).withValues(alpha: 0.3) : const Color(0xFFF3E8FF), iconColor: const Color(0xFF8B5CF6), title: 'Voz de la IA', subtitle: 'Personaliza cómo te habla QUIVO', onTap: () => _showAIVoiceModal(context, isDark)),
-                _buildSettingItem(isDark, icon: LucideIcons.brain, iconBg: isDark ? const Color(0xFF164E63).withValues(alpha: 0.3) : const Color(0xFFCFFAFE), iconColor: const Color(0xFF06B6D4), title: 'Motor de IA (Gemini)', subtitle: (AIConfig.dynamicApiKey != null && AIConfig.dynamicApiKey!.isNotEmpty) ? 'Conectado a Gemini AI' : 'Modo Básico (Conecta tu API Key)', onTap: () => _showAIKeyModal(context, isDark)),
+                
                 _buildSettingItem(isDark, icon: LucideIcons.timer, iconBg: isDark ? const Color(0xFF312E81).withValues(alpha: 0.5) : const Color(0xFFE0E7FF), iconColor: const Color(0xFF818CF8), title: 'Cierre Automático (${user?.autoLockMinutes ?? 1} min)', subtitle: 'Protección de privacidad activa', onTap: () => _showTimeoutInfoModal(context, isDark)),
               ],
             ),
@@ -2664,4 +2594,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     );
   }
+
+
 }

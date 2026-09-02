@@ -569,6 +569,9 @@ $cardsInfo
     await _flutterTts.setLanguage(_ttsLocale);
     await _flutterTts.speak(loc.get('voice_ask_payment_method'));
     
+    // Give the OS audio focus time to switch from speaker to microphone
+    await Future.delayed(const Duration(milliseconds: 800));
+    
     
     
     final available = await _speechToText.initialize();

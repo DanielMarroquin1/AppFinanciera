@@ -88,7 +88,11 @@ class AuthRepositoryImpl implements AuthRepository {
         if (user.categoryBudgets != null) 'categoryBudgets': user.categoryBudgets,
         'autoLockMinutes': user.autoLockMinutes,
       };
-      await _firestore.collection('users').doc(firebaseUser.uid).set(map, SetOptions(merge: true));
+      try {
+        await _firestore.collection('users').doc(firebaseUser.uid).update(map);
+      } catch (e) {
+        await _firestore.collection('users').doc(firebaseUser.uid).set(map);
+      }
     }
   }
 

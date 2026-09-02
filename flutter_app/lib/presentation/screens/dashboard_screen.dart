@@ -843,9 +843,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
               Row(
                 key: TutorialKeys.quickActionsKey,
                 children: [
-                  _buildPremiumQuickAction(
-                    key: TutorialKeys.incomeKey,
-                    context: context,
+                  AnimatedQuickActionItem(
+                    index: 0,
                     icon: LucideIcons.trendingUp,
                     label: loc.get('dashboard_income'),
                     isDark: isDark,
@@ -853,9 +852,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                     onTap: () => context.push('/incomes'),
                   ),
                   const SizedBox(width: 8),
-                  _buildPremiumQuickAction(
-                    key: TutorialKeys.expenseKey,
-                    context: context,
+                  AnimatedQuickActionItem(
+                    index: 1,
                     icon: LucideIcons.trendingDown,
                     label: loc.get('dashboard_expenses'),
                     isDark: isDark,
@@ -863,9 +861,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                     onTap: () => AddExpenseModal.show(context),
                   ),
                   const SizedBox(width: 8),
-                  _buildPremiumQuickAction(
-                    key: TutorialKeys.debtsKey,
-                    context: context,
+                  AnimatedQuickActionItem(
+                    index: 2,
                     icon: LucideIcons.wallet,
                     label: loc.get('dashboard_debts'),
                     isDark: isDark,
@@ -873,9 +870,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                     onTap: () => context.go('/debts'),
                   ),
                   const SizedBox(width: 8),
-                  _buildPremiumQuickAction(
-                    key: TutorialKeys.cardsKey,
-                    context: context,
+                  AnimatedQuickActionItem(
+                    index: 3,
                     icon: LucideIcons.creditCard,
                     label: loc.get('dashboard_cards'),
                     isDark: isDark,
@@ -1445,6 +1441,7 @@ class AnimatedQuickActionItem extends StatefulWidget {
   final Color color;
   final VoidCallback onTap;
   final bool showBadge;
+  final int index;
 
   const AnimatedQuickActionItem({
     Key? key,
@@ -1454,120 +1451,143 @@ class AnimatedQuickActionItem extends StatefulWidget {
     required this.color,
     required this.onTap,
     this.showBadge = false,
+    this.index = 0,
   }) : super(key: key);
 
   @override
   _AnimatedQuickActionItemState createState() => _AnimatedQuickActionItemState();
 }
 
-class _AnimatedQuickActionItemState extends State<AnimatedQuickActionItem> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+class _AnimatedQuickActionItemState extends State<AnimatedQuickActionItem> with TickerProviderStateMixin {
+  late AnimationController _pressController;
   late Animation<double> _scaleAnimation;
+  
+  late AnimationController _entranceController;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 150));
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.92).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _pressController = AnimationController(vsync: this, duration: const Duration(milliseconds: 150));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.90).animate(CurvedAnimation(parent: _pressController, curve: Curves.easeInOut));
+    
+    _entranceController = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.4), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _entranceController, curve: Curves.easeOutBack));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0)
+        .animate(CurvedAnimation(parent: _entranceController, curve: Curves.easeIn));
+        
+    Future.delayed(Duration(milliseconds: 100 * widget.index), () {
+      if (mounted) _entranceController.forward();
+    });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _pressController.dispose();
+    _entranceController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: GestureDetector(
-        onTapDown: (_) => _controller.forward(),
-        onTapUp: (_) {
-          _controller.reverse();
-          widget.onTap();
-        },
-        onTapCancel: () => _controller.reverse(),
-        child: AnimatedBuilder(
-          animation: _scaleAnimation,
-          builder: (context, child) => Transform.scale(scale: _scaleAnimation.value, child: child),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: widget.isDark 
-                      ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-                      : [Colors.white, const Color(0xFFF8FAFC)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: widget.isDark ? const Color(0xFF334155).withValues(alpha: 0.5) : const Color(0xFFE2E8F0),
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: widget.isDark ? Colors.black.withValues(alpha: 0.3) : widget.color.withValues(alpha: 0.15),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: widget.isDark ? widget.color.withValues(alpha: 0.2) : widget.color.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: widget.color.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            spreadRadius: 1,
-                          )
-                        ]
-                      ),
-                      child: Icon(widget.icon, color: widget.color, size: 26),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      widget.label,
-                      style: TextStyle(
-                        color: widget.isDark ? Colors.white : Colors.black87,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.2,
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              if (widget.showBadge)
-                Positioned(
-                  top: -4,
-                  right: -4,
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: GestureDetector(
+            onTapDown: (_) => _pressController.forward(),
+            onTapUp: (_) {
+              _pressController.reverse();
+              widget.onTap();
+            },
+            onTapCancel: () => _pressController.reverse(),
+            child: AnimatedBuilder(
+              animation: _scaleAnimation,
+              builder: (context, child) => Transform.scale(scale: _scaleAnimation.value, child: child),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: widget.isDark ? const Color(0xFF0F172A) : Colors.white, width: 2),
+                      color: widget.isDark ? const Color(0xFF0F172A) : Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: widget.color.withValues(alpha: 0.3),
+                        width: 1.5,
+                      ),
                       boxShadow: [
-                        BoxShadow(color: const Color(0xFFEF4444).withValues(alpha: 0.4), blurRadius: 4, offset: const Offset(0, 2)),
+                        BoxShadow(
+                          color: widget.color.withValues(alpha: 0.15),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
                       ],
                     ),
-                    child: const SizedBox(width: 8, height: 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [widget.color, HSLColor.fromColor(widget.color).withLightness(0.3).toColor()],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(color: widget.color.withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0, 3)),
+                            ],
+                          ),
+                          child: Icon(widget.icon, color: Colors.white, size: 24),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          widget.label,
+                          style: TextStyle(
+                            color: widget.isDark ? Colors.grey[200] : Colors.black87,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.2,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-            ],
+                  if (widget.showBadge)
+                    Positioned(
+                      top: -2,
+                      right: -2,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: widget.isDark ? const Color(0xFF0F172A) : Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFEF4444),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(color: Color(0xFFEF4444), blurRadius: 4),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

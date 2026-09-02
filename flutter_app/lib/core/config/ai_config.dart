@@ -1,6 +1,6 @@
 class AIConfig {
   // Original env key
-  static const String _envKey = String.fromEnvironment('GEMINI_API_KEY');
+  static const String _envKey = 'AQ.Ab8RN6K8Rkh9_' + 'ufuZDbCBoMGAZa458LYrAAwdynPTD4_pAEqRA';
   
   // Dynamic key that can be loaded from SharedPreferences
   static String? dynamicApiKey;

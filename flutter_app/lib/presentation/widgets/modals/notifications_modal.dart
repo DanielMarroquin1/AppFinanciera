@@ -207,7 +207,6 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
               data: (notifications) {
                 final now = DateTime.now();
                 final filtered = notifications.where((n) {
-                  if (n.createdAt.month != now.month || n.createdAt.year != now.year) return false;
                   final rawTitleLower = n.title.toLowerCase();
                   final rawBodyLower = n.body.toLowerCase();
                   final locTitleLower = _localizeTitle(n.title, loc).toLowerCase();
@@ -694,5 +693,275 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
     }
 
     return rawBody;
+  }
+}
+
+
+class AnimatedNotificationItem extends StatefulWidget {
+  final dynamic notif;
+  final bool isUnread;
+  final bool isDark;
+  final Color accentColor;
+  final String localizedTitle;
+  final String localizedBody;
+  final String timeAgo;
+  final String smartActionLabel;
+  final VoidCallback onTap;
+  final VoidCallback onDismiss;
+  final int index;
+
+  const AnimatedNotificationItem({
+    super.key,
+    required this.notif,
+    required this.isUnread,
+    required this.isDark,
+    required this.accentColor,
+    required this.localizedTitle,
+    required this.localizedBody,
+    required this.timeAgo,
+    required this.smartActionLabel,
+    required this.onTap,
+    required this.onDismiss,
+    required this.index,
+  });
+
+  @override
+  State<AnimatedNotificationItem> createState() => _AnimatedNotificationItemState();
+}
+
+class _AnimatedNotificationItemState extends State<AnimatedNotificationItem> with TickerProviderStateMixin {
+  late AnimationController _pressController;
+  late Animation<double> _scaleAnimation;
+  
+  late AnimationController _entranceController;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _fadeAnimation;
+  
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    // Press Bounce
+    _pressController = AnimationController(vsync: this, duration: const Duration(milliseconds: 150));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.92).animate(CurvedAnimation(parent: _pressController, curve: Curves.easeInOut));
+    
+    // Entrance Slide
+    _entranceController = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
+    _slideAnimation = Tween<Offset>(begin: const Offset(0.5, 0.0), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _entranceController, curve: Curves.easeOutCubic));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0)
+        .animate(CurvedAnimation(parent: _entranceController, curve: Curves.easeIn));
+        
+    // Unread Pulse Dot
+    _pulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000))..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
+
+    Future.delayed(Duration(milliseconds: 50 * (widget.index % 15)), () {
+      if (mounted) _entranceController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _pressController.dispose();
+    _entranceController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Beautiful dynamic background color
+    final bgColor = widget.isDark 
+        ? (widget.isUnread ? const Color(0xFF1E293B) : const Color(0xFF0F172A))
+        : (widget.isUnread ? Colors.white : const Color(0xFFF8FAFC));
+        
+    final borderColor = widget.isDark 
+        ? (widget.isUnread ? widget.accentColor.withValues(alpha: 0.4) : const Color(0xFF334155))
+        : (widget.isUnread ? widget.accentColor.withValues(alpha: 0.3) : const Color(0xFFE2E8F0));
+
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: Dismissible(
+          key: Key(widget.notif.id),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEF4444),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: 28),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: const [
+                Icon(LucideIcons.trash2, color: Colors.white, size: 24),
+              ],
+            ),
+          ),
+          onDismissed: (_) => widget.onDismiss(),
+          child: GestureDetector(
+            onTapDown: (_) => _pressController.forward(),
+            onTapUp: (_) {
+              _pressController.reverse();
+              widget.onTap();
+            },
+            onTapCancel: () => _pressController.reverse(),
+            child: AnimatedBuilder(
+              animation: _scaleAnimation,
+              builder: (context, child) => Transform.scale(scale: _scaleAnimation.value, child: child),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: borderColor, width: widget.isUnread ? 1.5 : 1.0),
+                  boxShadow: [
+                    if (!widget.isDark)
+                      BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 5)),
+                    if (widget.isDark && widget.isUnread)
+                      BoxShadow(color: widget.accentColor.withValues(alpha: 0.15), blurRadius: 20, offset: const Offset(0, 4)),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Stack(
+                    children: [
+                      // Subtle glow in the background if unread
+                      if (widget.isUnread)
+                        Positioned(
+                          top: -20,
+                          right: -20,
+                          child: Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: widget.accentColor.withValues(alpha: 0.1),
+                            ),
+                          ),
+                        ),
+                      
+                      Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Glowing Icon
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [widget.accentColor, HSLColor.fromColor(widget.accentColor).withLightness(0.3).toColor()],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(color: widget.accentColor.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3)),
+                                ],
+                              ),
+                              child: Icon(LucideIcons.bell, color: Colors.white, size: 22),
+                            ),
+                            const SizedBox(width: 16),
+                            
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          widget.localizedTitle,
+                                          style: TextStyle(
+                                            color: widget.isDark ? Colors.white : Colors.black87,
+                                            fontSize: 15,
+                                            fontWeight: widget.isUnread ? FontWeight.w900 : FontWeight.w700,
+                                            letterSpacing: -0.3,
+                                          )
+                                        ),
+                                      ),
+                                      if (widget.isUnread)
+                                        AnimatedBuilder(
+                                          animation: _pulseAnimation,
+                                          builder: (context, child) => Opacity(
+                                            opacity: _pulseAnimation.value,
+                                            child: Container(
+                                              margin: const EdgeInsets.only(left: 8, top: 4),
+                                              width: 10,
+                                              height: 10,
+                                              decoration: BoxDecoration(
+                                                color: widget.accentColor,
+                                                shape: BoxShape.circle,
+                                                boxShadow: [BoxShadow(color: widget.accentColor, blurRadius: 4)],
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    widget.localizedBody,
+                                    style: TextStyle(color: widget.isDark ? Colors.grey[300] : Colors.grey[600], fontSize: 13, height: 1.4),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      Icon(LucideIcons.clock, size: 12, color: widget.isDark ? Colors.grey[500] : Colors.grey[400]),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        widget.timeAgo,
+                                        style: TextStyle(color: widget.isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 11, fontWeight: FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
+                                  
+                                  // Full-width Smart Action Pill if unread
+                                  if (widget.smartActionLabel.isNotEmpty && widget.isUnread) ...[
+                                    const SizedBox(height: 16),
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                      decoration: BoxDecoration(
+                                        color: widget.accentColor.withValues(alpha: widget.isDark ? 0.2 : 0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: widget.accentColor.withValues(alpha: 0.3)),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            widget.smartActionLabel,
+                                            style: TextStyle(color: widget.isDark ? widget.accentColor.withValues(alpha: 0.9) : widget.accentColor, fontSize: 12, fontWeight: FontWeight.w800),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Icon(LucideIcons.arrowRight, size: 14, color: widget.isDark ? widget.accentColor.withValues(alpha: 0.9) : widget.accentColor),
+                                        ],
+                                      ),
+                                    ),
+                                  ]
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

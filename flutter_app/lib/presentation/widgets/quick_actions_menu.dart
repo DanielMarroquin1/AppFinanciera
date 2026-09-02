@@ -1,16 +1,40 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/utils/localization.dart';
-import 'dart:ui';
 
-class QuickActionsMenu extends ConsumerWidget {
+class QuickActionsMenu extends ConsumerStatefulWidget {
   const QuickActionsMenu({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  ConsumerState<QuickActionsMenu> createState() => _QuickActionsMenuState();
+}
+
+class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu> with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
+    _scaleAnimation = CurvedAnimation(parent: _animController, curve: Curves.easeOutBack);
+    _fadeAnimation = CurvedAnimation(parent: _animController, curve: Curves.easeIn);
+    _animController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final loc = ref.watch(localizationProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final actions = [
       {
@@ -73,17 +97,18 @@ class QuickActionsMenu extends ConsumerWidget {
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          // Fondo oscuro difuminado (opcional, el BackdropFilter principal ya hace parte del trabajo)
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                color: (isDark ? Colors.black : Colors.blueGrey[900])?.withValues(alpha: 0.2),
+          // Background Blur
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                child: Container(color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.65)),
               ),
             ),
           ),
           
-          // Contenido principal alineado al fondo inferior
           Align(
             alignment: Alignment.bottomCenter,
             child: Padding(
@@ -91,155 +116,202 @@ class QuickActionsMenu extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(30),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-                        ),
-                        child: Text(
-                          loc.get('quick_actions').toUpperCase(),
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1.5, fontSize: 13),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Grid de Acciones 2x3
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    alignment: WrapAlignment.center,
-                    children: actions.map((action) {
-                      final itemWidth = (MediaQuery.of(context).size.width - 48 - 16) / 2;
-                      return GestureDetector(
-                        onTap: () => Navigator.pop(context, action['id']),
-                        child: Container(
-                          width: itemWidth,
-                          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.9) : Colors.white.withValues(alpha: 0.95),
-                            borderRadius: BorderRadius.circular(28),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.5),
-                            boxShadow: [
-                              BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 20, offset: const Offset(0, 10))
-                            ],
-                          ),
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(16),
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: action['gradient'] as List<Color>,
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: (action['gradient'] as List<Color>)[0].withValues(alpha: 0.4),
-                                            blurRadius: 12,
-                                            offset: const Offset(0, 4),
-                                          )
-                                        ],
-                                      ),
-                                      child: Icon(action['icon'] as IconData, color: Colors.white, size: 28),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      action['label'] as String,
-                                      style: TextStyle(
-                                        color: isDark ? Colors.white : const Color(0xFF1E293B),
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        height: 1.2,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (action['isPremium'] == true)
-                                Positioned(
-                                  top: -12,
-                                  right: -4,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF59E0B),
-                                      borderRadius: BorderRadius.circular(12),
-                                      boxShadow: [BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.4), blurRadius: 4)],
-                                    ),
-                                    child: const Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(LucideIcons.crown, color: Colors.white, size: 12),
-                                        SizedBox(width: 4),
-                                        Text('PRO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  
-                  const SizedBox(height: 32),
-                  
-                  // Botón flotante para cerrar simulando el FAB
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF334155) : Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
-                          )
-                        ],
-                      ),
-                      child: Center(
-                        child: AnimatedBuilder(
-                          animation: ModalRoute.of(context)?.animation ?? const AlwaysStoppedAnimation(1.0),
-                          builder: (context, child) {
-                            final val = ModalRoute.of(context)?.animation?.value ?? 1.0;
-                            final angle = (val * (45 + 180)) * 3.1415927 / 180; // gira 180 + queda en 45 (X)
-                            return Transform.rotate(
-                              angle: angle,
-                              child: Icon(LucideIcons.plus, color: isDark ? Colors.white : Colors.black, size: 32),
-                            );
-                          },
-                        ),
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      loc.get('quick_actions').toUpperCase(),
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2,
+                        fontSize: 13,
                       ),
                     ),
                   ),
                   const SizedBox(height: 24),
+                  
+                  // Animated Grid
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 16,
+                    alignment: WrapAlignment.center,
+                    children: List.generate(actions.length, (index) {
+                      final action = actions[index];
+                      return ScaleTransition(
+                        scale: CurvedAnimation(
+                          parent: _animController,
+                          curve: Interval(index * 0.1, 1.0, curve: Curves.easeOutBack),
+                        ),
+                        child: AnimatedPremiumHoverItem(
+                          onTap: () async {
+                            await _animController.reverse();
+                            if (mounted) Navigator.pop(context, action['id']);
+                          },
+                          action: action,
+                          isDark: isDark,
+                        ),
+                      );
+                    }),
+                  ),
+                  
+                  const SizedBox(height: 40),
+                  
+                  // Close FAB
+                  ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: GestureDetector(
+                      onTap: () async {
+                        await _animController.reverse();
+                        if (mounted) Navigator.pop(context);
+                      },
+                      child: Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF0F172A) : Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            )
+                          ],
+                          border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0), width: 1.5),
+                        ),
+                        child: Transform.rotate(
+                          angle: 45 * 3.1415927 / 180,
+                          child: Icon(LucideIcons.plus, color: isDark ? Colors.white : Colors.black87, size: 32),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                 ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class AnimatedPremiumHoverItem extends StatefulWidget {
+  final Map<String, dynamic> action;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const AnimatedPremiumHoverItem({super.key, required this.action, required this.isDark, required this.onTap});
+
+  @override
+  State<AnimatedPremiumHoverItem> createState() => _AnimatedPremiumHoverItemState();
+}
+
+class _AnimatedPremiumHoverItemState extends State<AnimatedPremiumHoverItem> with SingleTickerProviderStateMixin {
+  late AnimationController _bounceController;
+
+  @override
+  void initState() {
+    super.initState();
+    _bounceController = AnimationController(vsync: this, duration: const Duration(milliseconds: 150));
+  }
+  @override
+  void dispose() {
+    _bounceController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 2 columns
+    final itemWidth = (MediaQuery.of(context).size.width - 48 - 16) / 2;
+    final color = (widget.action['gradient'] as List<Color>)[0];
+
+    return GestureDetector(
+      onTapDown: (_) => _bounceController.forward(),
+      onTapUp: (_) {
+        _bounceController.reverse();
+        widget.onTap();
+      },
+      onTapCancel: () => _bounceController.reverse(),
+      child: AnimatedBuilder(
+        animation: _bounceController,
+        builder: (context, child) {
+          final scale = 1.0 - (_bounceController.value * 0.08);
+          return Transform.scale(scale: scale, child: child);
+        },
+        child: Container(
+          width: itemWidth,
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
+          decoration: BoxDecoration(
+            color: widget.isDark ? const Color(0xFF0F172A) : Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: color.withValues(alpha: 0.3),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.15),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [color, HSLColor.fromColor(color).withLightness(0.3).toColor()],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0, 3)),
+                      ],
+                    ),
+                    child: Icon(widget.action['icon'] as IconData, color: Colors.white, size: 28),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    widget.action['label'] as String,
+                    style: TextStyle(
+                      color: widget.isDark ? Colors.grey[200] : Colors.black87,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.2,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+              if (widget.action['isPremium'] == true)
+                Positioned(
+                  top: -8,
+                  right: -4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.4), blurRadius: 4)],
+                    ),
+                    child: const Text('PRO', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900)),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

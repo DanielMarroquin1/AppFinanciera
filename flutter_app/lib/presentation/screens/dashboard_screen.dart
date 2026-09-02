@@ -1437,3 +1437,140 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
     );
   }
 }
+
+class AnimatedQuickActionItem extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final bool isDark;
+  final Color color;
+  final VoidCallback onTap;
+  final bool showBadge;
+
+  const AnimatedQuickActionItem({
+    Key? key,
+    required this.icon,
+    required this.label,
+    required this.isDark,
+    required this.color,
+    required this.onTap,
+    this.showBadge = false,
+  }) : super(key: key);
+
+  @override
+  _AnimatedQuickActionItemState createState() => _AnimatedQuickActionItemState();
+}
+
+class _AnimatedQuickActionItemState extends State<AnimatedQuickActionItem> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 150));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.92).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTapDown: (_) => _controller.forward(),
+        onTapUp: (_) {
+          _controller.reverse();
+          widget.onTap();
+        },
+        onTapCancel: () => _controller.reverse(),
+        child: AnimatedBuilder(
+          animation: _scaleAnimation,
+          builder: (context, child) => Transform.scale(scale: _scaleAnimation.value, child: child),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: widget.isDark 
+                      ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                      : [Colors.white, const Color(0xFFF8FAFC)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: widget.isDark ? const Color(0xFF334155).withValues(alpha: 0.5) : const Color(0xFFE2E8F0),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: widget.isDark ? Colors.black.withValues(alpha: 0.3) : widget.color.withValues(alpha: 0.15),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: widget.isDark ? widget.color.withValues(alpha: 0.2) : widget.color.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: widget.color.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                          )
+                        ]
+                      ),
+                      child: Icon(widget.icon, color: widget.color, size: 26),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      widget.label,
+                      style: TextStyle(
+                        color: widget.isDark ? Colors.white : Colors.black87,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.2,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              if (widget.showBadge)
+                Positioned(
+                  top: -4,
+                  right: -4,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: widget.isDark ? const Color(0xFF0F172A) : Colors.white, width: 2),
+                      boxShadow: [
+                        BoxShadow(color: const Color(0xFFEF4444).withValues(alpha: 0.4), blurRadius: 4, offset: const Offset(0, 2)),
+                      ],
+                    ),
+                    child: const SizedBox(width: 8, height: 8),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

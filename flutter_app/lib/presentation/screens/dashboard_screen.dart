@@ -629,7 +629,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Text(CurrencyFormatter.format(totalBalance, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold)),
+                      FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(CurrencyFormatter.format(totalBalance, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold))),
                       const SizedBox(height: 16),
                       Row(
                         children: [
@@ -645,7 +645,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                                 children: [
                                   Text(loc.get('income'), style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
                                   const SizedBox(height: 4),
-                                  Text(CurrencyFormatter.format(displayTotalIncome, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
+                                  FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(CurrencyFormatter.format(displayTotalIncome, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600))),
                                 ],
                               ),
                             ),
@@ -663,7 +663,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                                 children: [
                                   Text(loc.get('expenses'), style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
                                   const SizedBox(height: 4),
-                                  Text(CurrencyFormatter.format(totalExpense, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
+                                  FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(CurrencyFormatter.format(totalExpense, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600))),
                                 ],
                               ),
                             ),

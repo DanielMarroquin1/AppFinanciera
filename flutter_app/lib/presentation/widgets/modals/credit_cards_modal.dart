@@ -352,7 +352,28 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
                         ),
                       ),
                       
-                      const SizedBox(height: 32),
+                      if (cards.length > 1)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 16, bottom: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(cards.length, (index) {
+                              final isSelected = _currentIndex == index;
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                width: isSelected ? 24 : 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: isSelected ? cards[index].color : (isDark ? Colors.grey[800] : Colors.grey[300]),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              );
+                            }),
+                          ),
+                        ),
+                      
+                      const SizedBox(height: 16),
                       
                       // Dynamic Stats Panel for Active Card
                       Expanded(

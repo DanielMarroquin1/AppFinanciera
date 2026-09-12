@@ -62,8 +62,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
   final List<Map<String, dynamic>> _networks = [
     {'name': 'Visa', 'icon': '💎', 'label': 'VISA'},
     {'name': 'Mastercard', 'icon': '🔴', 'label': 'MASTERCARD'},
-    {'name': 'American Express', 'icon': '🛡️', 'label': 'AMEX'},
-    {'name': 'Discover', 'icon': '🌟', 'label': 'DISCOVER'},
+    {'name': 'Otro', 'icon': '💳', 'label': 'OTRO'},
   ];
 
   @override
@@ -79,7 +78,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
       _network = card.network;
       _selectedColor = card.color;
     } else {
-      _nameController.text = 'Mi Tarjeta VIP';
+      _nameController.text = '';
       _limitController.text = '5000';
       _balanceController.text = '0';
     }
@@ -110,7 +109,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
 
     final card = CreditCard(
       id: widget.existingCard?.id ?? '',
-      name: _nameController.text.trim(),
+      name: _nameController.text.trim().isEmpty ? 'MI TARJETA' : _nameController.text.trim(),
       limit: limit,
       currentBalance: balance,
       cutOffDay: _cutOffDay,
@@ -149,7 +148,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
 
   Widget _buildLiveCardPreview(String currencyCode) {
     final limitVal = double.tryParse(_limitController.text) ?? 0.0;
-    final nameVal = _nameController.text.trim().isEmpty ? 'MI TARJETA VIP' : _nameController.text.trim().toUpperCase();
+    final nameVal = _nameController.text.trim().isEmpty ? 'MI TARJETA' : _nameController.text.trim().toUpperCase();
 
     return Container(
       width: double.infinity,
@@ -258,7 +257,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '•••• •••• •••• VIP',
+                      '•••• •••• •••• 1234',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.7),
                         fontSize: 14,
@@ -380,7 +379,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                           style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 20, fontWeight: FontWeight.w900),
                         ),
                         Text(
-                          widget.existingCard != null ? 'Modifica los parámetros e imagen' : 'Diseña tu tarjeta inteligente VIP',
+                          widget.existingCard != null ? 'Modifica los parámetros e imagen' : 'Diseña tu tarjeta inteligente',
                           style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12),
                         ),
                       ],
@@ -415,7 +414,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                   controller: _nameController,
                   style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
                   onChanged: (_) => setState(() {}),
-                  decoration: _inputDecoration('Nombre (ej. NuBank Oro, Amex Platinum)', LucideIcons.creditCard, isDark),
+                  decoration: _inputDecoration('Ej. Tarjeta de Juan, Mi tarjeta de compras', LucideIcons.creditCard, isDark),
                 ),
                 const SizedBox(height: 24),
 
@@ -619,7 +618,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                               const Icon(LucideIcons.sparkles, color: Colors.white, size: 20),
                               const SizedBox(width: 10),
                               Text(
-                                widget.existingCard != null ? 'GUARDAR CAMBIOS EN TARJETA' : 'CREAR TARJETA STUDIO VIP',
+                                widget.existingCard != null ? 'GUARDAR CAMBIOS EN TARJETA' : 'CREAR TARJETA STUDIO',
                                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.8),
                               ),
                             ],

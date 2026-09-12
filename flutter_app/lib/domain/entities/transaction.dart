@@ -92,11 +92,11 @@ class TransactionModel {
       'description': description,
       'date': Timestamp.fromDate(date),
       'isFixed': isFixed,
-      if (recurrenceType != null) 'recurrenceType': recurrenceType,
-      if (recurrenceDay != null) 'recurrenceDay': recurrenceDay,
-      if (recurrenceDay2 != null) 'recurrenceDay2': recurrenceDay2,
+      'recurrenceType': recurrenceType,
+      'recurrenceDay': recurrenceDay,
+      'recurrenceDay2': recurrenceDay2,
       'creditCardId': creditCardId,
-      if (lastProcessedDate != null) 'lastProcessedDate': Timestamp.fromDate(lastProcessedDate!),
+      'lastProcessedDate': lastProcessedDate != null ? Timestamp.fromDate(lastProcessedDate!) : null,
     };
   }
 

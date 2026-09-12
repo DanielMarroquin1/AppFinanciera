@@ -440,35 +440,76 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
                                         child: GestureDetector(
                                           onTap: () { HapticFeedback.heavyImpact(); _showPaymentDialog(context, activeCard, currencyCode, ref); },
                                           child: Container(
-                                            padding: const EdgeInsets.symmetric(vertical: 20),
+                                            padding: const EdgeInsets.symmetric(vertical: 16),
                                             decoration: BoxDecoration(
                                               color: activeCard.color,
-                                              borderRadius: BorderRadius.circular(24),
-                                              boxShadow: [BoxShadow(color: activeCard.color.withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 10))],
+                                              borderRadius: BorderRadius.circular(20),
+                                              boxShadow: [BoxShadow(color: activeCard.color.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 5))],
                                             ),
                                             child: const Center(
-                                              child: Text('Pagar Deuda', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                              child: Text('Pagar Deuda', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
                                             ),
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        flex: 1,
-                                        child: GestureDetector(
-                                          onTap: () { HapticFeedback.selectionClick(); CreditCardHistoryModal.show(context, activeCard); },
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(vertical: 20),
-                                            decoration: BoxDecoration(
-                                              color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                                              borderRadius: BorderRadius.circular(24),
-                                              border: Border.all(color: isDark ? Colors.transparent : Colors.grey[200]!),
-                                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 10))],
-                                            ),
-                                            child: Center(
-                                              child: Icon(LucideIcons.history, color: isDark ? Colors.white : Colors.black),
-                                            ),
+                                      const SizedBox(width: 12),
+                                      GestureDetector(
+                                        onTap: () { HapticFeedback.selectionClick(); CreditCardHistoryModal.show(context, activeCard); },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                            borderRadius: BorderRadius.circular(20),
+                                            border: Border.all(color: isDark ? Colors.transparent : Colors.grey[200]!),
+                                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
                                           ),
+                                          child: Icon(LucideIcons.history, color: isDark ? Colors.white : Colors.black, size: 22),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      GestureDetector(
+                                        onTap: () { HapticFeedback.selectionClick(); AddCreditCardModal.show(context, existingCard: activeCard); },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                            borderRadius: BorderRadius.circular(20),
+                                            border: Border.all(color: isDark ? Colors.transparent : Colors.grey[200]!),
+                                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                                          ),
+                                          child: Icon(LucideIcons.edit2, color: const Color(0xFF3B82F6), size: 22),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      GestureDetector(
+                                        onTap: () {
+                                          HapticFeedback.heavyImpact();
+                                          showDialog(context: context, builder: (ctx) => AlertDialog(
+                                            backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                            title: const Text('Eliminar Tarjeta'),
+                                            content: const Text('¿Estás seguro de que deseas eliminar esta tarjeta de crédito de tu billetera?'),
+                                            actions: [
+                                              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar', style: TextStyle(color: Colors.grey))),
+                                              TextButton(
+                                                onPressed: () {
+                                                  ref.read(creditCardControllerProvider.notifier).deleteCreditCard(activeCard.id);
+                                                  Navigator.pop(ctx);
+                                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tarjeta eliminada'), backgroundColor: Colors.red));
+                                                },
+                                                child: const Text('Eliminar', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                              ),
+                                            ],
+                                          ));
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                            borderRadius: BorderRadius.circular(20),
+                                            border: Border.all(color: isDark ? Colors.transparent : Colors.grey[200]!),
+                                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                                          ),
+                                          child: const Icon(LucideIcons.trash2, color: Colors.red, size: 22),
                                         ),
                                       ),
                                     ],

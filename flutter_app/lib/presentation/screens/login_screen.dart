@@ -285,7 +285,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400]),
-          prefixIcon: Icon(icon, color: const Color(0xFF6366F1), size: 20),
+          prefixIcon: Icon(icon, color: const Color(0xFF3B82F6), size: 20),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         ),
@@ -334,14 +334,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
 
       final user = ref.read(authProvider).user;
-      if (user != null && user.isTwoFactorEnabled) {
-        final verified = await _showMfaLoginVerificationDialog(context, user);
-        if (!verified) {
-          await ref.read(authProvider.notifier).logout();
-          if (mounted) setState(() => _isLoading = false);
-          return;
-        }
-      }
 
       if (rememberBiometric && isBiometricSupported) {
         await BiometricService.setBiometricEnabled(true, loginEmail, loginPassword);
@@ -397,93 +389,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  Future<bool> _showMfaLoginVerificationDialog(BuildContext context, user) async {
-    final codeController = TextEditingController();
-    bool verified = false;
-
-    // Simulate sending email by showing a SnackBar
-    final simulatedCode = '123456';
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(LucideIcons.mail, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(child: Text('📧 Simulación de correo enviado:\nTu código de verificación de QUIVO es: $simulatedCode')),
-          ],
-        ),
-        backgroundColor: const Color(0xFF6366F1),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 8),
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
-    );
-    
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(LucideIcons.shieldCheck, color: Color(0xFF6366F1)),
-            SizedBox(width: 12),
-            Text('Verificación', style: TextStyle(fontSize: 18)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Ingresa el código de 6 dígitos que fue enviado a tu correo.', style: TextStyle(fontSize: 14)),
-            const SizedBox(height: 16),
-            TextField(
-              controller: codeController,
-              keyboardType: TextInputType.number,
-              maxLength: 6,
-              decoration: const InputDecoration(
-                hintText: '000000',
-                border: OutlineInputBorder(),
-                counterText: '',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              try {
-                final isValid = await ref.read(authProvider.notifier).verifyMfaCode(user.email, codeController.text);
-                if (isValid) {
-                  verified = true;
-                  if (context.mounted) Navigator.pop(context);
-                } else {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Código inválido'), backgroundColor: Colors.red),
-                    );
-                  }
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6366F1)),
-            child: const Text('Verificar', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-    return verified;
-  }
 
   void _showErrorSnackBar(BuildContext context, String title, String message) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -537,7 +442,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: isLogin ? (isDark ? const Color(0xFF6366F1) : Colors.white) : Colors.transparent,
+                  color: isLogin ? (isDark ? const Color(0xFF3B82F6) : Colors.white) : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: isLogin && !isDark ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))] : [],
                 ),
@@ -560,7 +465,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: !isLogin ? (isDark ? const Color(0xFF6366F1) : Colors.white) : Colors.transparent,
+                  color: !isLogin ? (isDark ? const Color(0xFF3B82F6) : Colors.white) : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: !isLogin && !isDark ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))] : [],
                 ),
@@ -596,8 +501,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               width: 400, height: 400, 
               decoration: BoxDecoration(
                 shape: BoxShape.circle, 
-                color: const Color(0xFF6366F1).withValues(alpha: 0.08),
-                boxShadow: [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.05), blurRadius: 100)],
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                boxShadow: [BoxShadow(color: const Color(0xFF3B82F6).withValues(alpha: 0.10), blurRadius: 100)],
               ),
             ),
           ),
@@ -607,8 +512,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               width: 500, height: 500, 
               decoration: BoxDecoration(
                 shape: BoxShape.circle, 
-                color: const Color(0xFF10B981).withValues(alpha: 0.08),
-                boxShadow: [BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.05), blurRadius: 100)],
+                color: const Color(0xFF8B5CF6).withValues(alpha: 0.15),
+                boxShadow: [BoxShadow(color: const Color(0xFF8B5CF6).withValues(alpha: 0.10), blurRadius: 100)],
               ),
             ),
           ),
@@ -633,7 +538,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 10))
                           ],
                         ),
-                        child: const Icon(LucideIcons.piggyBank, size: 56, color: Color(0xFF6366F1)),
+                        child: const Icon(LucideIcons.piggyBank, size: 56, color: Color(0xFF3B82F6)),
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -685,7 +590,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: TextButton(
                           onPressed: () => ForgotPasswordModal.show(context),
                           style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFF6366F1),
+                            foregroundColor: const Color(0xFF3B82F6),
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
                           ),
                           child: Text(_t('forgot_pass'), style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -710,10 +615,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               duration: const Duration(milliseconds: 200),
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               decoration: BoxDecoration(
-                                color: isSelected ? const Color(0xFF6366F1) : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                                color: isSelected ? const Color(0xFF3B82F6) : (isDark ? const Color(0xFF1E293B) : Colors.white),
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: isSelected ? const Color(0xFF6366F1) : (isDark ? Colors.transparent : Colors.grey[200]!)),
-                                boxShadow: isSelected ? [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
+                                border: Border.all(color: isSelected ? const Color(0xFF3B82F6) : (isDark ? Colors.transparent : Colors.grey[200]!)),
+                                boxShadow: isSelected ? [BoxShadow(color: const Color(0xFF3B82F6).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -743,7 +648,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             child: Checkbox(
                               value: acceptedPolicies,
                               onChanged: (val) => setState(() => acceptedPolicies = val ?? false),
-                              activeColor: const Color(0xFF6366F1),
+                              activeColor: const Color(0xFF3B82F6),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                             ),
                           ),
@@ -756,13 +661,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   TextSpan(text: _t('read_accept')),
                                   TextSpan(
                                     text: _t('terms'),
-                                    style: const TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                                    style: const TextStyle(color: Color(0xFF3B82F6), fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
                                     recognizer: TapGestureRecognizer()..onTap = () => TermsConditionsModal.show(context),
                                   ),
                                   TextSpan(text: _t('and')),
                                   TextSpan(
                                     text: _t('privacy'),
-                                    style: const TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                                    style: const TextStyle(color: Color(0xFF3B82F6), fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
                                     recognizer: TapGestureRecognizer()..onTap = () => PrivacyPolicyModal.show(context),
                                   ),
                                 ],
@@ -776,65 +681,66 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 32),
 
                     // Submit Button
-                    ElevatedButton(
+                    _AnimatedScaleButton(
                       onPressed: _isLoading ? null : _submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6366F1),
-                        foregroundColor: Colors.white,
+                      child: Container(
+                        width: double.infinity,
                         padding: const EdgeInsets.symmetric(vertical: 20),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        elevation: 4,
-                        shadowColor: const Color(0xFF6366F1).withValues(alpha: 0.4),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(color: const Color(0xFF3B82F6).withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 5)),
+                          ],
+                        ),
+                        child: Center(
+                          child: _isLoading
+                              ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
+                              : Text(isLogin ? _t('btn_login') : _t('btn_register'), style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                        ),
                       ),
-                      child: _isLoading
-                          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
-                          : Text(isLogin ? _t('btn_login') : _t('btn_register'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                     ),
                     const SizedBox(height: 16),
 
                     // Google Login Button
-                    OutlinedButton.icon(
+                    _AnimatedScaleButton(
                       onPressed: _isLoading ? null : () async {
                         setState(() => _isLoading = true);
                         try {
                           await ref.read(authProvider.notifier).loginWithGoogle();
-                          
                           final user = ref.read(authProvider).user;
-                          if (user != null && user.isTwoFactorEnabled) {
-                            final verified = await _showMfaLoginVerificationDialog(context, user);
-                            if (!verified) {
-                              await ref.read(authProvider.notifier).logout();
-                              if (mounted) setState(() => _isLoading = false);
-                              return;
-                            }
-                          }
-                          
                           if (!mounted) return;
                           _showWelcomeMessage(context);
                           context.go('/dashboard');
-                          
                         } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error con Google: ${e.toString()}'), backgroundColor: Colors.red),
-                          );
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error con Google: ${e.toString()}'), backgroundColor: Colors.red));
                         } finally {
                           if (mounted) setState(() => _isLoading = false);
                         }
                       },
-                      icon: Image.network(
-                        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/120px-Google_%22G%22_logo.svg.png',
-                        height: 22,
-                        errorBuilder: (context, error, stackTrace) => const Icon(LucideIcons.chrome, color: Colors.blue),
-                      ),
-                      label: Text(
-                        _t('google_login'),
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
-                      style: OutlinedButton.styleFrom(
+                      child: Container(
+                        width: double.infinity,
                         padding: const EdgeInsets.symmetric(vertical: 18),
-                        side: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)),
+                          boxShadow: [
+                            if (!isDark) BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))
+                          ]
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.network('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/120px-Google_%22G%22_logo.svg.png', height: 22, errorBuilder: (_, __, ___) => const Icon(LucideIcons.chrome, color: Colors.blue)),
+                            const SizedBox(width: 12),
+                            Text(_t('google_login'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w700)),
+                          ],
+                        ),
                       ),
                     ),
 
@@ -883,12 +789,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     color: isDark ? const Color(0xFF1E293B) : Colors.white,
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
-                    border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.2)),
+                    border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.2)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(LucideIcons.globe, color: const Color(0xFF6366F1), size: 20),
+                      Icon(LucideIcons.globe, color: const Color(0xFF3B82F6), size: 20),
                       const SizedBox(width: 6),
                       Text(
                         ref.watch(localizationProvider).intlLocale.toUpperCase(),
@@ -901,6 +807,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+
+class _AnimatedScaleButton extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onPressed;
+  const _AnimatedScaleButton({required this.child, this.onPressed});
+
+  @override
+  State<_AnimatedScaleButton> createState() => _AnimatedScaleButtonState();
+}
+
+class _AnimatedScaleButtonState extends State<_AnimatedScaleButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: widget.onPressed != null ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onPressed,
+        onTapDown: widget.onPressed != null ? (_) => setState(() => _isPressed = true) : null,
+        onTapUp: widget.onPressed != null ? (_) => setState(() => _isPressed = false) : null,
+        onTapCancel: widget.onPressed != null ? () => setState(() => _isPressed = false) : null,
+        child: AnimatedScale(
+          scale: _isPressed ? 0.95 : 1.0,
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeInOut,
+          child: widget.child,
+        ),
       ),
     );
   }

@@ -103,7 +103,8 @@ class RecurrenceSelectorWidget extends StatelessWidget {
   }) {
     final isSelected = recurrenceType == type;
     return GestureDetector(
-      onTap: () => onTypeChanged(type),
+              behavior: HitTestBehavior.opaque,
+              onTap: () => onTypeChanged(type),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
@@ -219,6 +220,7 @@ class RecurrenceSelectorWidget extends StatelessWidget {
             final day = index + 1;
             final isSelected = day == recurrenceDay;
             return GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: () => onDayChanged(day),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
@@ -378,7 +380,8 @@ class RecurrenceSelectorWidget extends StatelessWidget {
               final day = minDay + index;
               final isSelected = day == selectedDay;
               return GestureDetector(
-                onTap: () => onChanged(day),
+              behavior: HitTestBehavior.opaque,
+              onTap: () => onChanged(day),
                 child: Container(
                   width: 32,
                   height: 32,
@@ -456,6 +459,7 @@ class RecurrenceSelectorWidget extends StatelessWidget {
             final day = index + 1;
             final isSelected = day == recurrenceDay;
             return GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: () => onDayChanged(day),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),

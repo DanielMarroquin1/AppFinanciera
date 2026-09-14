@@ -430,7 +430,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 children: [
                   const Icon(LucideIcons.fingerprint, size: 28, color: Color(0xFF6366F1)),
                   const SizedBox(height: 8),
-                  Text('Versión 1.1 de QUIVO', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 13, fontWeight: FontWeight.w600)),
+                  Text('Versión 1.2 de QUIVO', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 13, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 2),
                   Text('© 2026 Tu Ecosistema Financiero', style: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 11)),
                 ],

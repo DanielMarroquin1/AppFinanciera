@@ -231,7 +231,7 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with SingleTickerPr
                             await ref.read(authProvider.notifier).upgradeToPremium();
                             if (context.mounted) {
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('¡Felicidades! Eres VIP 👑'), backgroundColor: Color(0xFFD97706)));
+                              ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('¡Felicidades! Eres VIP 👑'), backgroundColor: Color(0xFFD97706)));
                             }
                           },
                           child: Container(

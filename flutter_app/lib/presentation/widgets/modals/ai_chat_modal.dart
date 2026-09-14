@@ -27,8 +27,8 @@ class AIChatModal extends ConsumerStatefulWidget {
     } catch (e, stackTrace) {
       debugPrint('Error showing AIChatModal: $e');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+          SnackBar(dismissDirection: DismissDirection.horizontal, 
             content: Text('Error al abrir el chat: $e'),
             backgroundColor: Colors.red,
           ),

@@ -319,8 +319,8 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                       onRewardEarned: () async {
                         await ref.read(authProvider.notifier).addPoints(50);
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                            SnackBar(dismissDirection: DismissDirection.horizontal, 
                               content: const Text('🎉 ¡Ganaste +50 Puntos de Tienda por ver el anuncio!'),
                               backgroundColor: const Color(0xFF10B981),
                               behavior: SnackBarBehavior.floating,
@@ -562,8 +562,8 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                 if (isEquipped) return;
                                 if (isUnlocked) {
                                   if (category['id'] == 'avatars') {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
+                                    ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                                      SnackBar(dismissDirection: DismissDirection.horizontal, 
                                         content: Text(loc.get('shop_snack_avatar_unlocked')),
                                         backgroundColor: const Color(0xFF6366F1),
                                         behavior: SnackBarBehavior.floating,
@@ -571,8 +571,8 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                     );
                                   } else if (category['id'] == 'themes') {
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
+                                      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                                        SnackBar(dismissDirection: DismissDirection.horizontal, 
                                           content: Text('✨ Paleta "${item['name']}" ya desbloqueada. Ve a Ajustes > Paleta de Colores para aplicarla.'),
                                           backgroundColor: const Color(0xFF6366F1),
                                           behavior: SnackBarBehavior.floating,
@@ -593,8 +593,8 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                     );
                                   } else {
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
+                                      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                                        SnackBar(dismissDirection: DismissDirection.horizontal, 
                                           content: Text(loc.get('shop_snack_style_active').replaceAll('{name}', item['name'] as String)),
                                           backgroundColor: const Color(0xFF6366F1),
                                           behavior: SnackBarBehavior.floating,
@@ -609,8 +609,8 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                   final success = await ref.read(authProvider.notifier).purchaseItem(item['cost'] as int, itemId);
                                   if (success && context.mounted) {
                                     if (category['id'] == 'avatars') {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
+                                      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                                        SnackBar(dismissDirection: DismissDirection.horizontal, 
                                           content: Text(loc.get('shop_snack_avatar_success')),
                                           backgroundColor: const Color(0xFF10B981),
                                           behavior: SnackBarBehavior.floating,
@@ -618,8 +618,8 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                       );
                                     } else if (category['id'] == 'themes') {
                                       if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
+                                        ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                                          SnackBar(dismissDirection: DismissDirection.horizontal, 
                                             content: Row(
                                               children: [
                                                 const Icon(LucideIcons.sparkles, color: Colors.white, size: 18),
@@ -645,8 +645,8 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                         loc,
                                       );
                                     } else {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
+                                      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                                        SnackBar(dismissDirection: DismissDirection.horizontal, 
                                           content: Text(loc.get('shop_snack_redeem_success').replaceAll('{name}', item['name'] as String)),
                                           backgroundColor: const Color(0xFF10B981),
                                           behavior: SnackBarBehavior.floating,
@@ -656,8 +656,8 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                   }
                                 } else {
                                   final missing = (item['cost'] as int) - userPoints;
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
+                                  ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                                    SnackBar(dismissDirection: DismissDirection.horizontal, 
                                       content: Text(loc.get('shop_snack_missing_pts').replaceAll('{missing}', '$missing')),
                                       backgroundColor: const Color(0xFFEF4444),
                                       behavior: SnackBarBehavior.floating,

@@ -242,8 +242,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
               
               if (updatedUser.lastActiveDate != todayStr) {
                 // Warning! They haven't done an action today
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
+                ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                  SnackBar(dismissDirection: DismissDirection.horizontal, 
                     content: Row(
                       children: [
                         const Text('🔥', style: TextStyle(fontSize: 20)),
@@ -1202,7 +1202,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
   String _getCategoryEmoji(String category) {
     const map = {
       'food': '🍔', 'transport': '🚗', 'shopping': '🛍️', 'bills': '📱',
-      'entertainment': '🎮', 'health': '💊', 'education': '📚', 'home': '🏠',
+      'entertainment': '🎮', 'health': '💊', 'education': '📚', 'home': '🏠', 'pets': '🐾',
       'salary': '💼', 'freelance': '💻', 'bonus': '🎁', 'investment': '📈',
       'sale': '🏷️', 'gift': '🎉', 'other': '💸',
     };

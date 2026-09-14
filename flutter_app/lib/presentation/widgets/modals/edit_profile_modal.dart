@@ -104,8 +104,8 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
       
       if (mounted) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+          const SnackBar(dismissDirection: DismissDirection.horizontal, 
             content: Text('¡Perfil actualizado con éxito!'),
             backgroundColor: Color(0xFF10B981),
             behavior: SnackBarBehavior.floating,

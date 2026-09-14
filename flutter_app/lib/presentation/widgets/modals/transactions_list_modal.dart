@@ -58,7 +58,7 @@ class _TransactionsListModalInternalState extends ConsumerState<TransactionsList
     if (category.runes.isNotEmpty && category.runes.first > 127) return category;
     const map = {
       'food': '🍔', 'transport': '🚗', 'shopping': '🛍️', 'bills': '📱',
-      'entertainment': '🎮', 'health': '💊', 'education': '📚', 'home': '🏠',
+      'entertainment': '🎮', 'health': '💊', 'education': '📚', 'home': '🏠', 'pets': '🐾',
       'salary': '💼', 'freelance': '💻', 'bonus': '🎁', 'investment': '📈',
       'sale': '🏷️', 'gift': '🎉', 'other': '💸', 'debt': '💳'
     };

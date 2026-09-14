@@ -116,7 +116,7 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
                     HapticFeedback.heavyImpact();
                     final amount = double.tryParse(amountController.text) ?? 0.0;
                     if (amount > card.currentBalance) {
-                      ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('No puedes abonar más del saldo adeudado.')));
+                      ScaffoldMessenger.of(ctx).showSnackBar(dismissDirection: DismissDirection.horizontal, const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('No puedes abonar más del saldo adeudado.')));
                       return;
                     }
                     if (amount > 0) {
@@ -129,7 +129,7 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
                       await ref.read(transactionNotifierProvider.notifier).addTransaction(tx);
                       if (ctx.mounted) {
                         Navigator.of(ctx).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Pago de ${CurrencyFormatter.format(amount, currencyCode)} registrado con éxito! 🎉')));
+                        ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Pago de ${CurrencyFormatter.format(amount, currencyCode)} registrado con éxito! 🎉')));
                       }
                     }
                   },
@@ -515,7 +515,7 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
                                                 onPressed: () {
                                                   ref.read(creditCardControllerProvider.notifier).deleteCreditCard(activeCard.id);
                                                   Navigator.pop(ctx);
-                                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tarjeta eliminada'), backgroundColor: Colors.red));
+                                                  ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Tarjeta eliminada'), backgroundColor: Colors.red));
                                                 },
                                                 child: const Text('Eliminar', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                                               ),

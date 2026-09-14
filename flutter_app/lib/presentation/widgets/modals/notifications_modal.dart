@@ -51,7 +51,7 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
     if (category.runes.isNotEmpty && category.runes.first > 127) return category;
     const map = {
       'food': '🍔', 'transport': '🚗', 'shopping': '🛍️', 'bills': '📱',
-      'entertainment': '🎮', 'health': '💊', 'education': '📚', 'home': '🏠',
+      'entertainment': '🎮', 'health': '💊', 'education': '📚', 'home': '🏠', 'pets': '🐾',
       'other': '💸', 'debt': '💳', 'salary': '💼', 'freelance': '💻',
       'bonus': '🎁', 'investment': '📈', 'sale': '🏷️', 'gift': '🎉',
       'streak': '🔥', 'alert': '⚠️', 'credit_card': '💳', 'ai': '🤖'

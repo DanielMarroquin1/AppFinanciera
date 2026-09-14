@@ -129,6 +129,16 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
       ]
     },
     {
+      'main': 'Mascotas', 'emoji': '🐾',
+      'subs': [
+        {'value': 'pets', 'label': 'General', 'emoji': '🐾'},
+        {'value': 'pets_food', 'label': 'Comida', 'emoji': '🥩'},
+        {'value': 'pets_vet', 'label': 'Veterinario', 'emoji': '🩺'},
+        {'value': 'pets_toys', 'label': 'Juguetes', 'emoji': '🦴'},
+        {'value': 'pets_grooming', 'label': 'Peluquería', 'emoji': '✂️'},
+      ]
+    },
+    {
       'main': 'Hogar', 'emoji': '🏠',
       'subs': [
         {'value': 'home', 'label': 'General', 'emoji': '🏠'},
@@ -913,8 +923,8 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                             onAdClosed: () {
                               if (mounted) {
                                 Navigator.of(context).pop();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
+                                ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                                  SnackBar(dismissDirection: DismissDirection.horizontal, 
                                     content: Text(widget.existingTransaction != null ? 'Gasto actualizado' : loc.get('expense_added'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                                     backgroundColor: isDark ? const Color(0xFF991B1B) : const Color(0xFFDC2626),
                                     behavior: SnackBarBehavior.floating,
@@ -956,8 +966,8 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                                 ),
                               );
                             } else if (alert.status == BudgetAlertStatus.nearLimit) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
+                              ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                                SnackBar(dismissDirection: DismissDirection.horizontal, 
                                   content: Text(
                                     '⚠️ ¡Cuidado! Has consumido el ${alert.percentage.toStringAsFixed(0)}% del presupuesto mensual para "${alert.categoryName}" '
                                     '($sym${alert.totalSpent.toStringAsFixed(0)} / $sym${alert.budgetLimit.toStringAsFixed(0)})',

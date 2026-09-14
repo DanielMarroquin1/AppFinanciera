@@ -49,8 +49,8 @@ class _SessionTimeoutManagerState extends ConsumerState<SessionTimeoutManager> {
     if (context != null && context.mounted) {
       GoRouter.of(context).go('/login');
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+        SnackBar(dismissDirection: DismissDirection.horizontal, 
           content: Row(
             children: [
               const Icon(LucideIcons.shieldAlert, color: Colors.amberAccent, size: 26),

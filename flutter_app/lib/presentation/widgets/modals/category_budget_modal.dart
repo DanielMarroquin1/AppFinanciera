@@ -42,6 +42,7 @@ class _CategoryBudgetModalState extends ConsumerState<CategoryBudgetModal> {
     {'id': 'home', 'name': 'Hogar', 'emoji': '🏠', 'color': const Color(0xFF6366F1)},
     {'id': 'entertainment', 'name': 'Entretenimiento', 'emoji': '🎮', 'color': const Color(0xFFD946EF)},
     {'id': 'health', 'name': 'Salud', 'emoji': '💊', 'color': const Color(0xFF10B981)},
+    {'id': 'pets', 'name': 'Mascotas', 'emoji': '🐾', 'color': const Color(0xFFEAB308)},
     {'id': 'shopping', 'name': 'Compras', 'emoji': '🛍️', 'color': const Color(0xFFF59E0B)},
     {'id': 'education', 'name': 'Educación', 'emoji': '🎓', 'color': const Color(0xFF8B5CF6)},
     {'id': 'other', 'name': 'Otros', 'emoji': '📦', 'color': const Color(0xFF6B7280)},
@@ -459,8 +460,8 @@ class _CategoryBudgetModalState extends ConsumerState<CategoryBudgetModal> {
                           await ref.read(authProvider.notifier).updateProfile(updated);
                           if (!context.mounted) return;
                           Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                            SnackBar(dismissDirection: DismissDirection.horizontal, 
                               content: Text(loc.get('budget_saved_snack')), 
                               backgroundColor: const Color(0xFF8B5CF6),
                               behavior: SnackBarBehavior.floating,

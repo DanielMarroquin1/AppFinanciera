@@ -144,8 +144,8 @@ class _AddFundsModalState extends ConsumerState<AddFundsModal> {
                         }
                       } catch (e) {
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error al guardar: $e'), backgroundColor: Colors.red),
+                          ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                            SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Error al guardar: $e'), backgroundColor: Colors.red),
                           );
                         }
                       } finally {

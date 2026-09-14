@@ -32,8 +32,8 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
 
   void _registerPayment(DebtModel debt) {
     if (_isDebtCompleted(debt)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+        SnackBar(dismissDirection: DismissDirection.horizontal, 
           content: const Text('¡Esta deuda ya está completamente pagada! 🎊'),
           backgroundColor: const Color(0xFF10B981),
           behavior: SnackBarBehavior.floating,
@@ -112,8 +112,8 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                           }
                           
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
+                            ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                              SnackBar(dismissDirection: DismissDirection.horizontal, 
                                 content: Text('¡Cuota #${newDebt.paidInstallments} de ${newDebt.name} registrada como gasto! 🎉'),
                                 backgroundColor: const Color(0xFF10B981),
                                 behavior: SnackBarBehavior.floating,

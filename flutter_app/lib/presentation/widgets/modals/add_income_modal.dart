@@ -666,8 +666,8 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
 
                         if (context.mounted) {
                           Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                            SnackBar(dismissDirection: DismissDirection.horizontal, 
                               content: Text(isEditing ? 'Ingreso actualizado exitosamente' : 'Ingreso agregado exitosamente', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                               backgroundColor: isDark ? const Color(0xFF065F46) : const Color(0xFF10B981),
                               behavior: SnackBarBehavior.floating,

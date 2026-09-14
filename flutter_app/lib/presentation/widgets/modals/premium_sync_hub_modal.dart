@@ -65,8 +65,8 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
       await BankNotificationListenerService.addPendingCharge(simulated);
       await _loadData();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+          const SnackBar(dismissDirection: DismissDirection.horizontal, 
             content: Text('📲 Simulacro recibido: Cargo de \$450 en Walmart con Tarjeta de Crédito. Elige a cuál TC asignarlo arriba 👆'),
             backgroundColor: Color(0xFF6366F1),
           ),
@@ -85,8 +85,8 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
       await BankNotificationListenerService.addPendingCharge(simulated);
       await _loadData();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+          const SnackBar(dismissDirection: DismissDirection.horizontal, 
             content: Text('📲 Simulacro recibido: Cargo Débito de \$185.50 en Oxxo. Listo para agregar a Efectivo 👆'),
             backgroundColor: Color(0xFF10B981),
           ),
@@ -117,8 +117,8 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
       await _loadData();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+          SnackBar(dismissDirection: DismissDirection.horizontal, 
             content: Text('💳 ¡Listo! \$${charge.amount.toStringAsFixed(2)} asignado a tu tarjeta "${card.name}" (${charge.merchant})'),
             backgroundColor: const Color(0xFF16A34A),
           ),
@@ -150,8 +150,8 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
       await _loadData();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+          SnackBar(dismissDirection: DismissDirection.horizontal, 
             content: Text('💵 ¡Gasto registrado en Efectivo/Débito! \$${charge.amount.toStringAsFixed(2)} (${charge.merchant})'),
             backgroundColor: const Color(0xFF16A34A),
           ),

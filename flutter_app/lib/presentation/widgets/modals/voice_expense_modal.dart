@@ -797,8 +797,8 @@ $cardsInfo
             ),
           );
         } else if (alert.status == BudgetAlertStatus.nearLimit) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+            SnackBar(dismissDirection: DismissDirection.horizontal, 
               content: Text(
                 '⚠️ ¡Cuidado! Has consumido el ${alert.percentage.toStringAsFixed(0)}% del presupuesto mensual para "${alert.categoryName}" '
                 '($sym${alert.totalSpent.toStringAsFixed(0)} / $sym${alert.budgetLimit.toStringAsFixed(0)})',

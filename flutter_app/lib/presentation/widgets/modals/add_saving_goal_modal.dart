@@ -236,8 +236,8 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                           final name = _nameController.text.trim();
                           final amount = double.tryParse(_amountController.text) ?? 0.0;
                           if (name.isEmpty || amount <= 0) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Por favor, ingresa un nombre y un monto válido.')),
+                            ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                              const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Por favor, ingresa un nombre y un monto válido.')),
                             );
                             return;
                           }
@@ -253,8 +253,8 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                               await ref.read(savingGoalsProvider.notifier).updateGoal(updatedGoal);
                               if (context.mounted) {
                                 Navigator.of(context).pop();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Meta actualizada con éxito 🎉'), backgroundColor: Colors.green),
+                                ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                                  const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Meta actualizada con éxito 🎉'), backgroundColor: Colors.green),
                                 );
                               }
                             } else {
@@ -270,8 +270,8 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                               await ref.read(savingGoalsProvider.notifier).addGoal(goal);
                               if (context.mounted) {
                                 Navigator.of(context).pop();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Meta de ahorro creada con éxito 🎉'), backgroundColor: Colors.green),
+                                ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                                  const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Meta de ahorro creada con éxito 🎉'), backgroundColor: Colors.green),
                                 );
                               }
                             }

@@ -29,8 +29,8 @@ class _ForgotPasswordModalState extends ConsumerState<ForgotPasswordModal> {
       if (!mounted) return;
       
       // Mostrar mensaje emergente de éxito
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+        const SnackBar(dismissDirection: DismissDirection.horizontal, 
           content: Text('Se ha enviado el enlace de recuperación exitosamente.'),
           backgroundColor: Colors.green,
         ),
@@ -42,16 +42,16 @@ class _ForgotPasswordModalState extends ConsumerState<ForgotPasswordModal> {
       }
     } on firebase_auth.FirebaseAuthException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+        SnackBar(dismissDirection: DismissDirection.horizontal, 
           content: Text(e.message ?? 'Ocurrió un error al enviar el correo.'),
           backgroundColor: Colors.redAccent,
         ),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+        const SnackBar(dismissDirection: DismissDirection.horizontal, 
           content: Text('No se pudo conectar con el servidor.'),
           backgroundColor: Colors.redAccent,
         ),

@@ -90,7 +90,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
     if (category.runes.isNotEmpty && category.runes.first > 127) return category;
     const map = {
       'food': '🍔', 'transport': '🚗', 'shopping': '🛍️', 'bills': '📱',
-      'entertainment': '🎮', 'health': '💊', 'education': '📚', 'home': '🏠',
+      'entertainment': '🎮', 'health': '💊', 'education': '📚', 'home': '🏠', 'pets': '🐾',
       'other': '💸',
     };
     return map[category] ?? '💰';
@@ -1139,8 +1139,8 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                             
                                             if (context.mounted) {
                                               Navigator.of(context).pop();
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(
+                                              ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                                                SnackBar(dismissDirection: DismissDirection.horizontal, 
                                                   content: const Text('Cuota pagada y registrada como gasto 🎉', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                                                   backgroundColor: isDark ? const Color(0xFF065F46) : const Color(0xFF10B981),
                                                   behavior: SnackBarBehavior.floating,

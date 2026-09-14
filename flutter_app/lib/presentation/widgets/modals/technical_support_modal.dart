@@ -58,29 +58,29 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
     final description = _descriptionController.text.trim();
 
     if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('El correo electrónico es obligatorio.'), backgroundColor: Colors.red),
+      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+        const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('El correo electrónico es obligatorio.'), backgroundColor: Colors.red),
       );
       return;
     }
 
     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, ingresa un correo válido.'), backgroundColor: Colors.red),
+      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+        const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Por favor, ingresa un correo válido.'), backgroundColor: Colors.red),
       );
       return;
     }
     
     if (subject.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, ingresa un asunto o título.'), backgroundColor: Colors.red),
+      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+        const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Por favor, ingresa un asunto o título.'), backgroundColor: Colors.red),
       );
       return;
     }
 
     if (description.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, describe el error o consulta.'), backgroundColor: Colors.red),
+      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+        const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Por favor, describe el error o consulta.'), backgroundColor: Colors.red),
       );
       return;
     }
@@ -109,8 +109,8 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
 
   void _attachImage() {
     if (_attachedImages.length >= 2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Solo puedes adjuntar un máximo de 2 imágenes.')),
+      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+        const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Solo puedes adjuntar un máximo de 2 imágenes.')),
       );
       return;
     }

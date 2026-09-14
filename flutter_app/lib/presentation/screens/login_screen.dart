@@ -295,8 +295,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _showWelcomeMessage(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+      SnackBar(dismissDirection: DismissDirection.horizontal, 
         content: Row(
           children: [
             const Text('👋', style: TextStyle(fontSize: 28)),
@@ -347,24 +347,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _showErrorSnackBar(context, _t('err_cred'), _t('err_cred_desc'));
+        _showErrorSnackBar(dismissDirection: DismissDirection.horizontal, context, _t('err_cred'), _t('err_cred_desc'));
       }
     }
   }
 
   Future<void> _submit() async {
     if (email.isEmpty || password.isEmpty) {
-      _showErrorSnackBar(context, _t('err_missing'), _t('err_missing_desc'));
+      _showErrorSnackBar(dismissDirection: DismissDirection.horizontal, context, _t('err_missing'), _t('err_missing_desc'));
       return;
     }
 
     if (!isLogin && !acceptedPolicies) {
-      _showErrorSnackBar(context, _t('err_policies'), _t('err_policies_desc'));
+      _showErrorSnackBar(dismissDirection: DismissDirection.horizontal, context, _t('err_policies'), _t('err_policies_desc'));
       return;
     }
     
     if (!isLogin && purpose.isEmpty) {
-      _showErrorSnackBar(context, _t('err_purpose'), _t('err_purpose_desc'));
+      _showErrorSnackBar(dismissDirection: DismissDirection.horizontal, context, _t('err_purpose'), _t('err_purpose_desc'));
       return;
     }
 
@@ -383,17 +383,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         if (mounted) setState(() => _isLoading = false);
       } else {
         if (mounted) {
-          _showErrorSnackBar(context, _t('err_cred'), _t('err_cred_desc'));
+          _showErrorSnackBar(dismissDirection: DismissDirection.horizontal, context, _t('err_cred'), _t('err_cred_desc'));
         }
       }
     }
   }
 
 
-  void _showErrorSnackBar(BuildContext context, String title, String message) {
+  void _showErrorSnackBar(dismissDirection: DismissDirection.horizontal, BuildContext context, String title, String message) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+      SnackBar(dismissDirection: DismissDirection.horizontal, 
         content: Row(
           children: [
             const Icon(LucideIcons.shieldAlert, color: Colors.white, size: 28),
@@ -717,7 +717,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           _showWelcomeMessage(context);
                           context.go('/dashboard');
                         } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error con Google: ${e.toString()}'), backgroundColor: Colors.red));
+                          ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Error con Google: ${e.toString()}'), backgroundColor: Colors.red));
                         } finally {
                           if (mounted) setState(() => _isLoading = false);
                         }

@@ -878,15 +878,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       final confirmPassword = confirmPwdCtrl.text.trim();
 
                       if (currentPassword.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(loc.get('pwd_complete_all') ?? 'Completa todos los campos'), backgroundColor: Colors.red),
+                        ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                          SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('pwd_complete_all') ?? 'Completa todos los campos'), backgroundColor: Colors.red),
                         );
                         return;
                       }
 
                       if (newPassword != confirmPassword) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(loc.get('pwd_mismatch') ?? 'Las contraseñas no coinciden'), backgroundColor: Colors.red),
+                        ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                          SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('pwd_mismatch') ?? 'Las contraseñas no coinciden'), backgroundColor: Colors.red),
                         );
                         return;
                       }
@@ -905,8 +905,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           if (ctx.mounted) {
                             Navigator.pop(ctx);
                     setState(() {});
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
+                            ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                              SnackBar(dismissDirection: DismissDirection.horizontal, 
                                 content: Row(children: [const Icon(LucideIcons.checkCircle, color: Colors.white), const SizedBox(width: 12), Text(loc.get('pwd_success') ?? 'Contraseña cambiada con éxito')]),
                                 backgroundColor: const Color(0xFF16A34A),
                                 behavior: SnackBarBehavior.floating,
@@ -917,8 +917,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         }
                       } catch (e) {
                         if (ctx.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Error al cambiar contraseña: Verifica tu contraseña actual.'), backgroundColor: Colors.red),
+                          ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                            const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Error al cambiar contraseña: Verifica tu contraseña actual.'), backgroundColor: Colors.red),
                           );
                         }
                       } finally {
@@ -948,14 +948,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           if (ctx.mounted) {
                             Navigator.pop(ctx);
                     setState(() {});
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(loc.get('reset_link_sent')), backgroundColor: const Color(0xFF0284C7)),
+                            ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                              SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('reset_link_sent')), backgroundColor: const Color(0xFF0284C7)),
                             );
                           }
                         } catch (e) {
                           if (ctx.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                            ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                              SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Error: $e'), backgroundColor: Colors.red),
                             );
                           }
                         }
@@ -1089,11 +1089,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 await BiometricService.setBiometricEnabled(false);
                                 setState(() {});
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.get('biometrics_status_disabled')), backgroundColor: Colors.grey[700]));
+                                  ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('biometrics_status_disabled')), backgroundColor: Colors.grey[700]));
                                 }
                               } else {
                                 if (passwordCtrl.text.trim().isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.get('biometrics_confirm_password_hint')), backgroundColor: Colors.amber[800]));
+                                  ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('biometrics_confirm_password_hint')), backgroundColor: Colors.amber[800]));
                                   return;
                                 }
                                 final authSuccess = await BiometricService.authenticate(reason: loc.get('biometrics_modal_title'));
@@ -1101,7 +1101,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   await BiometricService.setBiometricEnabled(true, user!.email!, passwordCtrl.text.trim());
                                   setState(() {});
                                   if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.get('biometrics_status_enabled')), backgroundColor: const Color(0xFF16A34A)));
+                                    ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('biometrics_status_enabled')), backgroundColor: const Color(0xFF16A34A)));
                                   }
                                 }
                               }
@@ -1119,7 +1119,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         child: ElevatedButton.icon(
                           onPressed: () async {
                             if (passwordCtrl.text.trim().isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.get('biometrics_confirm_password_hint')), backgroundColor: Colors.amber[800]));
+                              ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('biometrics_confirm_password_hint')), backgroundColor: Colors.amber[800]));
                               return;
                             }
                             final success = await BiometricService.authenticate(reason: loc.get('biometrics_modal_title'));
@@ -1127,7 +1127,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               await BiometricService.setBiometricEnabled(true, user!.email!, passwordCtrl.text.trim());
                               setState(() {});
                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(loc.get('biometrics_status_enabled')), backgroundColor: const Color(0xFF16A34A)));
+                                ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('biometrics_status_enabled')), backgroundColor: const Color(0xFF16A34A)));
                               }
                             }
                           },
@@ -1150,8 +1150,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         onPressed: () async {
                           final success = await BiometricService.authenticate(reason: loc.get('biometrics_modal_title'));
                           if (context.mounted && success) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
+                            ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                              SnackBar(dismissDirection: DismissDirection.horizontal, 
                                 content: Row(children: [const Icon(LucideIcons.checkCircle, color: Colors.white), const SizedBox(width: 12), Expanded(child: Text(loc.get('biometrics_test_success')))]),
                                 backgroundColor: const Color(0xFF0284C7),
                                 behavior: SnackBarBehavior.floating,
@@ -1393,8 +1393,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onPressed: () {
                       Navigator.pop(ctx);
                     setState(() {});
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                        SnackBar(dismissDirection: DismissDirection.horizontal, 
                           content: Row(children: [const Icon(LucideIcons.checkCircle, color: Colors.white), const SizedBox(width: 12), Text('${loc.get('auto_lock_updated_snack')} $currentMinutes min')]),
                           backgroundColor: const Color(0xFF6366F1),
                           behavior: SnackBarBehavior.floating,
@@ -1569,8 +1569,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ref.read(authProvider.notifier).updateMonthlyLimit(alertThreshold);
                       Navigator.pop(ctx);
                     setState(() {});
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                        SnackBar(dismissDirection: DismissDirection.horizontal, 
                           content: Text('Alerta de presupuesto general guardada y sincronizada (${alertThreshold.toStringAsFixed(0)}%)', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                           backgroundColor: isDark ? const Color(0xFF10B981) : const Color(0xFF059669),
                           behavior: SnackBarBehavior.floating,
@@ -1644,8 +1644,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         if (!context.mounted) return;
                         Navigator.pop(ctx);
                     setState(() {});
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Límite y alertas actualizados a $sym${alertThreshold.toStringAsFixed(0)}'), backgroundColor: Colors.green),
+                        ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                          SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Límite y alertas actualizados a $sym${alertThreshold.toStringAsFixed(0)}'), backgroundColor: Colors.green),
                         );
                       }
                     },
@@ -1748,8 +1748,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ref.read(authProvider.notifier).cancelSubscription();
                   Navigator.pop(ctx);
                     setState(() {});
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Suscripción cancelada. Funciones básicas activas.')),
+                  ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+                    const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Suscripción cancelada. Funciones básicas activas.')),
                   );
                 },
                 child: Text('Sí, cancelar suscripción', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontWeight: FontWeight.bold)),
@@ -2189,7 +2189,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   if (ctx.mounted) {
                     Navigator.pop(ctx);
                     setState(() {});
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Configuración de IA guardada. ¡Gemini activado!'), backgroundColor: Color(0xFF06B6D4)));
+                    ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Configuración de IA guardada. ¡Gemini activado!'), backgroundColor: Color(0xFF06B6D4)));
                   }
                 },
                 style: ElevatedButton.styleFrom(

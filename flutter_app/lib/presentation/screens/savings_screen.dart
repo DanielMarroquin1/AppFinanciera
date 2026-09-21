@@ -489,7 +489,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
           ? null
           : FloatingActionButton(
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Abriendo Chat...')));
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Abriendo Chat...')));
                 AIChatModal.show(context);
               },
               backgroundColor: Colors.transparent,

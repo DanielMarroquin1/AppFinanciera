@@ -94,7 +94,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
 
   Future<void> _save() async {
     if (_nameController.text.trim().isEmpty || _limitController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Por favor ingresa un nombre y un límite para la tarjeta.'), backgroundColor: Colors.red),
       );
       return;
@@ -127,9 +127,8 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
       }
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
-          SnackBar(dismissDirection: DismissDirection.horizontal, 
-            content: Text(widget.existingCard != null ? '¡Tarjeta actualizada con éxito! 💳✨' : '¡Nueva tarjeta configurada con éxito! 🚀💳'),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(widget.existingCard != null ? '¡Tarjeta actualizada con éxito! 💳✨' : '¡Nueva tarjeta configurada con éxito! 🚀💳'),
             backgroundColor: const Color(0xFF10B981),
             behavior: SnackBarBehavior.floating,
           ),
@@ -137,7 +136,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Error al guardar: $e'), backgroundColor: Colors.red),
         );
       }

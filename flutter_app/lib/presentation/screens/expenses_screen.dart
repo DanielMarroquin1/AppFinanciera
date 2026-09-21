@@ -1139,9 +1139,8 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                             
                                             if (context.mounted) {
                                               Navigator.of(context).pop();
-                                              ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
-                                                SnackBar(dismissDirection: DismissDirection.horizontal, 
-                                                  content: const Text('Cuota pagada y registrada como gasto 🎉', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(dismissDirection: DismissDirection.horizontal, content: const Text('Cuota pagada y registrada como gasto 🎉', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                                                   backgroundColor: isDark ? const Color(0xFF065F46) : const Color(0xFF10B981),
                                                   behavior: SnackBarBehavior.floating,
                                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

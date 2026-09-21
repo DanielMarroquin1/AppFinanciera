@@ -22,9 +22,8 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() => isExporting = false);
-        ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
-          SnackBar(dismissDirection: DismissDirection.horizontal, 
-            content: const Row(
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(dismissDirection: DismissDirection.horizontal, content: const Row(
               children: [
                 Icon(LucideIcons.checkCircle, color: Colors.white),
                 SizedBox(width: 12),

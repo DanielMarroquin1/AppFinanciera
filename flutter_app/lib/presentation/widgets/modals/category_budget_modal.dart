@@ -460,9 +460,8 @@ class _CategoryBudgetModalState extends ConsumerState<CategoryBudgetModal> {
                           await ref.read(authProvider.notifier).updateProfile(updated);
                           if (!context.mounted) return;
                           Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
-                            SnackBar(dismissDirection: DismissDirection.horizontal, 
-                              content: Text(loc.get('budget_saved_snack')), 
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('budget_saved_snack')), 
                               backgroundColor: const Color(0xFF8B5CF6),
                               behavior: SnackBarBehavior.floating,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

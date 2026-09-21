@@ -242,9 +242,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
               
               if (updatedUser.lastActiveDate != todayStr) {
                 // Warning! They haven't done an action today
-                ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
-                  SnackBar(dismissDirection: DismissDirection.horizontal, 
-                    content: Row(
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(dismissDirection: DismissDirection.horizontal, content: Row(
                       children: [
                         const Text('🔥', style: TextStyle(fontSize: 20)),
                         const SizedBox(width: 12),

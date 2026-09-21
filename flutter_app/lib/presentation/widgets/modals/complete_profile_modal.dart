@@ -100,9 +100,8 @@ class _CompleteProfileModalState extends ConsumerState<CompleteProfileModal> {
 
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
-          SnackBar(dismissDirection: DismissDirection.horizontal, 
-            content: const Text('¡Perfil completado con éxito!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(dismissDirection: DismissDirection.horizontal, content: const Text('¡Perfil completado con éxito!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             backgroundColor: Colors.green[600],
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -111,9 +110,8 @@ class _CompleteProfileModalState extends ConsumerState<CompleteProfileModal> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
-          SnackBar(dismissDirection: DismissDirection.horizontal, 
-            content: Text('Error: $e', style: const TextStyle(color: Colors.white)),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Error: $e', style: const TextStyle(color: Colors.white)),
             backgroundColor: Colors.red[600],
           ),
         );

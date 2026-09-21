@@ -28,7 +28,7 @@ class AiPlanResultScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(LucideIcons.save),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Plan guardado exitosamente.')));
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Plan guardado exitosamente.')));
               Navigator.pop(context);
             },
           )

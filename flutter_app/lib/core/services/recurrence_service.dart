@@ -6,8 +6,12 @@ import '../../domain/entities/credit_card.dart';
 
 class RecurrenceService {
   static final _firestore = FirebaseFirestore.instance;
+  static bool _isProcessing = false;
+  static bool _hasProcessedThisSession = false;
 
   static Future<void> processRecurrences(String userId) async {
+    if (_isProcessing || _hasProcessedThisSession) return;
+    _isProcessing = true;
     final now = DateTime.now();
 
     // 1. Process Debts
@@ -159,6 +163,9 @@ class RecurrenceService {
     } catch (e) {
       print('Error processing credit card notifications: $e');
     }
+    
+    _isProcessing = false;
+    _hasProcessedThisSession = true;
   }
 
     static bool _checkRecurrence(

@@ -644,9 +644,8 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                                             await ref.read(colorPaletteProvider.notifier).setPaletteById(selectedPalette.id);
                                             if (context.mounted) {
                                               Navigator.of(context).pop();
-                                              ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
-                                                SnackBar(dismissDirection: DismissDirection.horizontal, 
-                                                  content: Row(
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(dismissDirection: DismissDirection.horizontal, content: Row(
                                                     children: [
                                                       const Icon(LucideIcons.palette, color: Colors.white, size: 20),
                                                       const SizedBox(width: 10),
@@ -687,9 +686,8 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                                         await ref.read(colorPaletteProvider.notifier).setPaletteById(selectedPalette.id);
                                         if (context.mounted) {
                                           Navigator.of(context).pop();
-                                          ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
-                                            SnackBar(dismissDirection: DismissDirection.horizontal, 
-                                              content: Row(
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(dismissDirection: DismissDirection.horizontal, content: Row(
                                                 children: [
                                                   const Icon(LucideIcons.palette, color: Colors.white, size: 20),
                                                   const SizedBox(width: 10),
@@ -771,9 +769,8 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                     false,
                     onRewardEarned: () {
                       setState(() => selectedPaletteId = palette.id);
-                      ScaffoldMessenger.of(context).showSnackBar(dismissDirection: DismissDirection.horizontal, 
-                        SnackBar(dismissDirection: DismissDirection.horizontal, 
-                          content: const Text('Si ya no quieres ver anuncios, ¡hazte PREMIUM! 👑'),
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(dismissDirection: DismissDirection.horizontal, content: const Text('Si ya no quieres ver anuncios, ¡hazte PREMIUM! 👑'),
                           backgroundColor: const Color(0xFF7E22CE),
                           action: SnackBarAction(
                             label: 'Ver Planes',

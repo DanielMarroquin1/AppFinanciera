@@ -275,7 +275,8 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
                                   ),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(28),
-                                    child: Stack(
+                                    clipBehavior: Clip.antiAlias,
+                              child: Stack(
                                       children: [
                                         // Modern Glass Blobs
                                         Positioned(
@@ -324,7 +325,7 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
                                                   Row(
                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [
-                                                      Text(card.name.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                                                      Text(card.name.toUpperCase(), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 2)),
                                                       // Master/Visa generic indicator
                                                       Row(
                                                         children: [

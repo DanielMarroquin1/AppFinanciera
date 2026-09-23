@@ -197,7 +197,7 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen> with SingleTickerPr
                 child: ElevatedButton.icon(
                   onPressed: () => PremiumModal.show(context),
                   icon: const Icon(LucideIcons.crown, color: Colors.white),
-                  label: const Text('Actualizar a Premium VIP', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  label: const Text('Actualizar a Premium', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFD97706),
                     minimumSize: const Size.fromHeight(52),

@@ -172,7 +172,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
         ],
         border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.5),
       ),
-      child: Stack(
+      clipBehavior: Clip.antiAlias, child: Stack(
         children: [
           // Background decorative watermark
           Positioned(

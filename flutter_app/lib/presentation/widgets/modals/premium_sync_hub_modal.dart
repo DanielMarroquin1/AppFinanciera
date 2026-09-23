@@ -269,7 +269,7 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                       PremiumModal.show(context);
                     },
                     icon: const Icon(LucideIcons.sparkles, size: 18),
-                    label: const Text('Desbloquear Sincronización VIP', style: TextStyle(fontWeight: FontWeight.bold)),
+                    label: const Text('Desbloquear Sincronización Premium', style: TextStyle(fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFD97706),
                       foregroundColor: Colors.white,

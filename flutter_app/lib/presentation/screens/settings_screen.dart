@@ -324,7 +324,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     iconColor: const Color(0xFF6366F1),
                     title: 'Hub de Sincronización',
                     subtitle: 'Configura tus conexiones bancarias',
-                    badge: 'VIP',
+                    badge: 'Premium',
                     badgeColor: const Color(0xFF6366F1),
                     onTap: () => PremiumSyncHubModal.show(context),
                   ),
@@ -1703,7 +1703,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Si cancelas, perderás el acceso VIP y estas funciones:',
+                'Si cancelas, perderás el acceso Premium y estas funciones:',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14, height: 1.4),
               ),
@@ -1717,7 +1717,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 child: Column(
                   children: [
-                    _buildCancelFeature(isDark, '👑', 'Personalización total y VIP'),
+                    _buildCancelFeature(isDark, '👑', 'Personalización total y Premium'),
                     _buildCancelFeature(isDark, '📈', 'Reportes IA avanzados'),
                     _buildCancelFeature(isDark, '🎙️', 'Registro rápido por Voz (Siri)'),
                   ],

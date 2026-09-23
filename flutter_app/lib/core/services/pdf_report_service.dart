@@ -27,15 +27,19 @@ class PdfReportService {
   }
 
   static String _translateCategory(String cat, String langCode) {
-    if (langCode.startsWith('en')) {
+    // Basic translations for common keys
+    final isEn = langCode.startsWith('en');
+    final isPt = langCode.startsWith('pt');
+    final isFr = langCode.startsWith('fr');
+    final isIt = langCode.startsWith('it');
+    
+    if (isEn) {
       switch (cat) {
         case 'salary': return 'Salary';
         case 'freelance': return 'Freelance';
-        case 'investment': return 'Investment';
-        case 'dividends': return 'Dividends';
-        case 'sale': return 'Sale';
+        case 'sale': return 'Sales';
         case 'groceries': return 'Groceries';
-        case 'food': return 'Food & Dining';
+        case 'food': return 'Food';
         case 'transport': return 'Transport';
         case 'entertainment': return 'Entertainment';
         case 'health': return 'Health';
@@ -46,12 +50,62 @@ class PdfReportService {
         case 'debt': return 'Debt Payment';
         default: return cat;
       }
+    } else if (isPt) {
+      switch (cat) {
+        case 'salary': return 'Salário';
+        case 'freelance': return 'Autônomo';
+        case 'sale': return 'Vendas';
+        case 'groceries': return 'Supermercado';
+        case 'food': return 'Comida';
+        case 'transport': return 'Transporte';
+        case 'entertainment': return 'Entretenimento';
+        case 'health': return 'Saúde';
+        case 'shopping': return 'Compras';
+        case 'services': return 'Serviços';
+        case 'utilities': return 'Contas (Água/Luz)';
+        case 'education': return 'Educação';
+        case 'debt': return 'Pagamento de Dívida';
+        default: return cat;
+      }
+    } else if (isFr) {
+      switch (cat) {
+        case 'salary': return 'Salaire';
+        case 'freelance': return 'Indépendant';
+        case 'sale': return 'Ventes';
+        case 'groceries': return 'Épicerie';
+        case 'food': return 'Nourriture';
+        case 'transport': return 'Transports';
+        case 'entertainment': return 'Divertissement';
+        case 'health': return 'Santé';
+        case 'shopping': return 'Achats';
+        case 'services': return 'Services';
+        case 'utilities': return 'Factures';
+        case 'education': return 'Éducation';
+        case 'debt': return 'Paiement de dette';
+        default: return cat;
+      }
+    } else if (isIt) {
+      switch (cat) {
+        case 'salary': return 'Stipendio';
+        case 'freelance': return 'Libero Professionista';
+        case 'sale': return 'Vendite';
+        case 'groceries': return 'Spesa';
+        case 'food': return 'Cibo';
+        case 'transport': return 'Trasporti';
+        case 'entertainment': return 'Intrattenimento';
+        case 'health': return 'Salute';
+        case 'shopping': return 'Shopping';
+        case 'services': return 'Servizi';
+        case 'utilities': return 'Utenze';
+        case 'education': return 'Istruzione';
+        case 'debt': return 'Pagamento Debito';
+        default: return cat;
+      }
     } else {
+      // Spanish default
       switch (cat) {
         case 'salary': return 'Salario';
         case 'freelance': return 'Freelance';
-        case 'investment': return 'Inversiones';
-        case 'dividends': return 'Dividendos';
         case 'sale': return 'Ventas';
         case 'groceries': return 'Supermercado';
         case 'food': return 'Comida';
@@ -155,9 +209,9 @@ class PdfReportService {
   }
 
   static pw.Widget _buildModernHeader(String userName, DateTime startDate, DateTime endDate, DateFormat format, PdfColor primary, PdfColor accent, String reportType, bool isEn, AppLocalizations loc) {
-    String typeLabel = isEn ? 'General Financial' : 'Financiero General';
-    if (reportType == 'income') typeLabel = isEn ? 'Income' : 'de Ingresos';
-    if (reportType == 'expense') typeLabel = isEn ? 'Expense' : 'de Gastos';
+    String typeLabel = loc.get('pdf_report_general') ?? 'Reporte Financiero';
+    if (reportType == 'income') typeLabel = loc.get('pdf_report_income') ?? 'Reporte de Ingresos';
+    if (reportType == 'expense') typeLabel = loc.get('pdf_report_expense') ?? 'Reporte de Gastos';
 
     return pw.Container(
       margin: const pw.EdgeInsets.only(bottom: 20),
@@ -214,8 +268,8 @@ class PdfReportService {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
-        _buildModernCard(isEn ? 'TOTAL INCOME' : 'INGRESOS TOTALES', income, green, currencyCode),
-        _buildModernCard(isEn ? 'TOTAL EXPENSES' : 'GASTOS TOTALES', expense, red, currencyCode),
+        _buildModernCard(loc.get('pdf_total_income') ?? 'INGRESOS', income, green, currencyCode),
+        _buildModernCard(loc.get('pdf_total_expenses') ?? 'GASTOS', expense, red, currencyCode),
         _buildModernCard(isEn ? 'NET BALANCE' : 'BALANCE NETO', balance, balance >= 0 ? primary : red, currencyCode),
       ],
     );
@@ -313,7 +367,7 @@ class PdfReportService {
         format.format(tx.date),
         _cleanText(tx.description.isEmpty ? (isEn ? 'No description' : 'Sin descripción') : tx.description),
         _translateCategory(tx.category, langCode),
-        isIncome ? (isEn ? 'Income' : 'Ingreso') : (isEn ? 'Expense' : 'Gasto'),
+        isIncome ? (loc.get('pdf_income_type') ?? 'Ingreso') : (loc.get('pdf_expense_type') ?? 'Gasto'),
         isIncome ? '+$formattedAmount' : '-$formattedAmount',
       ];
     }).toList();

@@ -331,13 +331,14 @@ class _CashFlowForecastCardState extends ConsumerState<CashFlowForecastCard> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final forecast = ref.watch(cashFlowForecastProvider);
+    final isPremium = ref.watch(authProvider).user?.isPremium ?? false;
 
     if (forecast == null) return const SizedBox.shrink();
 
     final sym = widget.currencySymbol;
     final riskColors = _riskColors(forecast.riskLevel, isDark);
 
-    return AnimatedContainer(
+    Widget cardContent = AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       decoration: BoxDecoration(

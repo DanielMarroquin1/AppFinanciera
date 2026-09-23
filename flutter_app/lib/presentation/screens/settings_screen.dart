@@ -1,3 +1,4 @@
+import '../widgets/modals/cancel_premium_dialog.dart';
 import '../../core/config/ai_config.dart';
 import '../../core/helpers/tts_helper.dart';
 import 'package:flutter/material.dart';
@@ -332,7 +333,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 16),
               GestureDetector(
-                onTap: () => _showCancelSubscriptionModal(context, isDark),
+                onTap: () => CancelPremiumDialog.show(context),
                 child: Center(
                   child: Text('Cancelar Suscripción', style: TextStyle(color: isDark ? Colors.redAccent : Colors.red, fontWeight: FontWeight.bold, fontSize: 15)),
                 ),
@@ -1671,99 +1672,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  void _showCancelSubscriptionModal(BuildContext context, bool isDark) {
-    showDialog(
-      context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-        child: Container(
-          padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.3), width: 1.5),
-            boxShadow: [
-              BoxShadow(color: const Color(0xFFEF4444).withOpacity(0.15), blurRadius: 40, spreadRadius: -10)
-            ]
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444).withOpacity(0.15),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.5), width: 2),
-                  ),
-                  child: const Icon(LucideIcons.alertTriangle, color: Color(0xFFEF4444), size: 36),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                '¿Cancelar QUIVO Premium?',
-                style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Si cancelas, perderás el acceso Premium y estas funciones:',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14, height: 1.4),
-              ),
-              const SizedBox(height: 24),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                ),
-                child: Column(
-                  children: [
-                    _buildCancelFeature(isDark, '👑', 'Personalización total y Premium'),
-                    _buildCancelFeature(isDark, '📈', 'Reportes IA avanzados'),
-                    _buildCancelFeature(isDark, '🎙️', 'Registro rápido por Voz (Siri)'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
-              GestureDetector(
-                onTap: () => Navigator.pop(ctx),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFEA580C)]),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [BoxShadow(color: const Color(0xFFF59E0B).withOpacity(0.4), blurRadius: 16, offset: const Offset(0, 6))],
-                  ),
-                  child: const Center(
-                    child: Text('MANTENER PREMIUM', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () {
-                  ref.read(authProvider.notifier).cancelSubscription();
-                  Navigator.pop(ctx);
-                    setState(() {});
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Suscripción cancelada. Funciones básicas activas.')),
-                  );
-                },
-                child: Text('Sí, cancelar suscripción', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontWeight: FontWeight.bold)),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
+  
   Widget _buildCancelFeature(bool isDark, String emoji, String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),

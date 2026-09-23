@@ -19,6 +19,47 @@ class AIAnalysisService {
     return _model!;
   }
 
+  static Future<Transaction?> analyzeVoiceTransaction(String text, String userId) async {
+    if (AIConfig.apiKey.isEmpty) return null;
+    
+    final prompt = '''
+Analyze this voice command for an expense or income: "$text"
+User ID: $userId
+
+Output STRICT JSON:
+{
+  "type": "expense" | "income",
+  "amount": decimal number,
+  "category": "standard_category_key_in_english",
+  "description": "clean name of concept/store without verbs or numbers or currency symbols",
+  "paymentMethod": "cash"
+}
+''';
+
+    try {
+      final model = _getModel();
+      final response = await model.generateContent([Content.text(prompt)]).timeout(const Duration(seconds: 10));
+      final respText = response.text?.trim() ?? '{}';
+      final cleaned = respText.replaceAll(RegExp(r'```json|```'), '').trim();
+      final map = jsonDecode(cleaned);
+      
+      if (map['amount'] == null) return null;
+      
+      return Transaction(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        amount: double.parse(map['amount'].toString()),
+        type: map['type'] == 'income' ? TransactionType.income : TransactionType.expense,
+        category: map['category'] ?? 'other',
+        description: map['description'] ?? 'Transacción por Voz',
+        date: DateTime.now(),
+        paymentMethod: map['paymentMethod'] ?? 'cash',
+      );
+    } catch (e) {
+      print('Error parsing Siri voice intent: $e');
+      return null;
+    }
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   // 1. DETECCIÓN INTELIGENTE DE ANOMALÍAS
   // ─────────────────────────────────────────────────────────────────────────

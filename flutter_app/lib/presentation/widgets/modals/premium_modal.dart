@@ -51,7 +51,7 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with SingleTickerPr
       {'icon': LucideIcons.lineChart, 'title': 'Estadísticas\nDetalladas', 'desc': 'Análisis profundo'},
       {'icon': LucideIcons.bot, 'title': 'Asistente IA\nPro', 'desc': 'Consejos 24/7'},
       {'icon': LucideIcons.palette, 'title': 'Personalización\nTotal', 'desc': 'Temas exclusivos'},
-      {'icon': LucideIcons.cloud, 'title': 'Sincronización\nPremium', 'desc': 'Respaldo seguro'},
+      {'icon': LucideIcons.sparkles, 'title': 'Proyección\ncon IA', 'desc': 'Predicciones a fin de mes'},
     ];
 
     return BackdropFilter(

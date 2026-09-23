@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import '../../providers/auth_provider.dart';
 
 class CancelPremiumDialog extends ConsumerStatefulWidget {
@@ -11,22 +11,16 @@ class CancelPremiumDialog extends ConsumerStatefulWidget {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      barrierLabel: 'Dismiss',
-      barrierColor: Colors.black.withValues(alpha: 0.6),
+      barrierLabel: 'CancelPremium',
+      barrierColor: Colors.black.withOpacity(0.8),
       transitionDuration: const Duration(milliseconds: 400),
-      pageBuilder: (context, animation, secondaryAnimation) => const CancelPremiumDialog(),
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
+      pageBuilder: (context, anim1, anim2) => const CancelPremiumDialog(),
+      transitionBuilder: (context, anim1, anim2, child) {
         return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 5 * animation.value, sigmaY: 5 * animation.value),
+          filter: ImageFilter.blur(sigmaX: 10 * anim1.value, sigmaY: 10 * anim1.value),
           child: SlideTransition(
-            position: Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
-            child: FadeTransition(
-              opacity: animation,
-              child: ScaleTransition(
-                scale: Tween<double>(begin: 0.9, end: 1.0).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
-                child: child,
-              ),
-            ),
+            position: Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
+            child: FadeTransition(opacity: anim1, child: child),
           ),
         );
       },
@@ -37,144 +31,192 @@ class CancelPremiumDialog extends ConsumerStatefulWidget {
   ConsumerState<CancelPremiumDialog> createState() => _CancelPremiumDialogState();
 }
 
-class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with SingleTickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late Animation<double> _scaleAnimation;
+class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with TickerProviderStateMixin {
+  late AnimationController _shakeCtrl;
+  late AnimationController _glowCtrl;
+  double _cancelProgress = 0.0;
 
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat(reverse: true);
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
+    _shakeCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 800))..repeat(reverse: true);
+    _glowCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))..repeat(reverse: true);
   }
 
   @override
   void dispose() {
-    _pulseController.dispose();
+    _shakeCtrl.dispose();
+    _glowCtrl.dispose();
     super.dispose();
   }
 
-  Widget _buildFeatureRow(bool isDark, IconData icon, String text, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.15), shape: BoxShape.circle),
-            child: Icon(icon, color: color, size: 16),
-          ),
-          const SizedBox(width: 12),
-          Expanded(child: Text(text, style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800], fontSize: 14, fontWeight: FontWeight.w500))),
-        ],
-      ),
-    );
+  void _onCancelComplete() async {
+    await ref.read(authProvider.notifier).cancelSubscription();
+    if (mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Suscripción cancelada exitosamente.'), backgroundColor: Colors.redAccent),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+    final width = MediaQuery.of(context).size.width;
+
     return Center(
       child: Material(
         color: Colors.transparent,
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 24),
-          padding: const EdgeInsets.all(28),
+          width: width * 0.9,
+          constraints: const BoxConstraints(maxWidth: 400),
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF0F172A) : Colors.white,
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4), width: 1.5),
+            borderRadius: BorderRadius.circular(40),
             boxShadow: [
-              BoxShadow(color: const Color(0xFFEF4444).withValues(alpha: 0.15), blurRadius: 40, offset: const Offset(0, 10)),
-              BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 20, offset: const Offset(0, 10)),
-            ]
+              BoxShadow(
+                color: const Color(0xFFEF4444).withOpacity(0.2),
+                blurRadius: 50,
+                spreadRadius: -10,
+              ),
+            ],
+            border: Border.all(color: const Color(0xFF1E293B), width: 1),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Stack(
             children: [
-              // Animated Alert Icon
-              Center(
-                child: ScaleTransition(
-                  scale: _scaleAnimation,
+              // Background pattern
+              Positioned(
+                top: -50,
+                right: -50,
+                child: RotationTransition(
+                  turns: Tween(begin: 0.0, end: 1.0).animate(_glowCtrl),
                   child: Container(
-                    padding: const EdgeInsets.all(20),
+                    width: 200,
+                    height: 200,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.5), width: 2),
-                      boxShadow: [BoxShadow(color: const Color(0xFFEF4444).withValues(alpha: 0.2), blurRadius: 20)],
+                      gradient: RadialGradient(
+                        colors: [
+                          const Color(0xFFEF4444).withOpacity(0.15),
+                          Colors.transparent,
+                        ],
+                      ),
                     ),
-                    child: const Icon(LucideIcons.alertTriangle, color: Color(0xFFEF4444), size: 40),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-              
-              Text(
-                '¿Cancelar QUIVO Premium?',
-                style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Si cancelas, perderás el acceso inmediato a estas herramientas exclusivas:',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, height: 1.4),
-              ),
-              const SizedBox(height: 24),
-              
-              // Features Lost Box
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildFeatureRow(isDark, LucideIcons.palette, 'Personalización total y Temas Premium', const Color(0xFFF59E0B)),
-                    _buildFeatureRow(isDark, LucideIcons.lineChart, 'Reportes de IA avanzados y Proyecciones', const Color(0xFF3B82F6)),
-                    _buildFeatureRow(isDark, LucideIcons.mic, 'Registro ultrarrápido por voz con Siri', const Color(0xFF10B981)),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
-              
-              // Keep Premium Button
-              _AnimatedCTAButton(
-                text: 'MANTENER PREMIUM',
-                gradient: const LinearGradient(colors: [Color(0xFFF97316), Color(0xFFEA580C)]),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              // Cancel Button
-              GestureDetector(
-                onTap: () async {
-                  await ref.read(authProvider.notifier).cancelSubscription();
-                  if (context.mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Suscripción cancelada'), backgroundColor: Colors.redAccent),
-                    );
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  color: Colors.transparent,
-                  child: Center(
-                    child: Text(
-                      'Sí, cancelar suscripción',
-                      style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14, fontWeight: FontWeight.bold),
+                    // Icon Header
+                    AnimatedBuilder(
+                      animation: _shakeCtrl,
+                      builder: (context, child) {
+                        return Transform.rotate(
+                          angle: (_shakeCtrl.value - 0.5) * 0.1,
+                          child: child,
+                        );
+                      },
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFFEF4444).withOpacity(0.1),
+                              border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.3), width: 2),
+                            ),
+                          ),
+                          const Icon(LucideIcons.heartCrack, color: Color(0xFFEF4444), size: 40),
+                        ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 24),
+                    
+                    Text(
+                      '¡No te vayas!',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? Colors.white : Colors.black,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Perderás tus súper poderes financieros al instante. Mira lo que dejas atrás:',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Feature List
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B).withOpacity(0.5) : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildLostFeature(LucideIcons.bot, 'IA Financiera y Proyecciones', isDark),
+                          const Divider(height: 16, color: Colors.transparent),
+                          _buildLostFeature(LucideIcons.mic, 'Registro Mágico por Voz (Siri)', isDark),
+                          const Divider(height: 16, color: Colors.transparent),
+                          _buildLostFeature(LucideIcons.sparkles, 'Temas y Customización PRO', isDark),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Keep Premium Button (Big & Bouncy)
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: AnimatedBuilder(
+                        animation: _glowCtrl,
+                        builder: (context, child) {
+                          return Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+                              ),
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF3B82F6).withOpacity(0.3 + (_glowCtrl.value * 0.2)),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 8),
+                                )
+                              ],
+                            ),
+                            child: const Center(
+                              child: Text(
+                                'QUIERO SEGUIR SIENDO PRO',
+                                style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1.0),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Swipe to Cancel
+                    _buildSwipeToCancel(isDark),
+                  ],
                 ),
               ),
             ],
@@ -183,55 +225,94 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with 
       ),
     );
   }
-}
 
-class _AnimatedCTAButton extends StatefulWidget {
-  final String text;
-  final Gradient gradient;
-  final VoidCallback onTap;
-  
-  const _AnimatedCTAButton({required this.text, required this.gradient, required this.onTap});
-
-  @override
-  State<_AnimatedCTAButton> createState() => _AnimatedCTAButtonState();
-}
-
-class _AnimatedCTAButtonState extends State<_AnimatedCTAButton> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) {
-        setState(() => _isPressed = false);
-        widget.onTap();
-      },
-      onTapCancel: () => setState(() => _isPressed = false),
-      child: AnimatedScale(
-        scale: _isPressed ? 0.95 : 1.0,
-        duration: const Duration(milliseconds: 100),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 18),
+  Widget _buildLostFeature(IconData icon, String text, bool isDark) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            gradient: widget.gradient,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: widget.gradient.colors.first.withValues(alpha: 0.4),
-                blurRadius: _isPressed ? 10 : 20,
-                offset: Offset(0, _isPressed ? 4 : 8),
-              )
-            ],
+            color: isDark ? const Color(0xFF0F172A) : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
           ),
-          child: Center(
-            child: Text(
-              widget.text,
-              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+          child: Icon(icon, size: 16, color: isDark ? Colors.grey[400] : Colors.grey[700]),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: isDark ? Colors.grey[300] : Colors.black87,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              decoration: TextDecoration.lineThrough,
+              decorationColor: const Color(0xFFEF4444).withOpacity(0.5),
             ),
           ),
         ),
+      ],
+    );
+  }
+
+
+  double _getModalWidth(BuildContext context) {
+    final w = MediaQuery.of(context).size.width * 0.9;
+    return w > 400 ? 400 : w;
+  }
+
+  Widget _buildSwipeToCancel(bool isDark) {
+    return Container(
+      height: 56,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+      ),
+      child: Stack(
+        children: [
+          Center(
+            child: Opacity(
+              opacity: 1.0 - (_cancelProgress * 2).clamp(0.0, 1.0),
+              child: Text(
+                'Desliza para cancelar',
+                style: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[500], fontSize: 13, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 4 + (_cancelProgress * ((_getModalWidth(context)) - 60 - 30 - 30)),
+            top: 4,
+            bottom: 4,
+            child: GestureDetector(
+              onPanUpdate: (details) {
+                setState(() {
+                  _cancelProgress += details.delta.dx / ((_getModalWidth(context)) - 60 - 30 - 30);
+                  _cancelProgress = _cancelProgress.clamp(0.0, 1.0);
+                });
+              },
+              onPanEnd: (details) {
+                if (_cancelProgress > 0.8) {
+                  setState(() => _cancelProgress = 1.0);
+                  _onCancelComplete();
+                } else {
+                  setState(() => _cancelProgress = 0.0);
+                }
+              },
+              child: Container(
+                width: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(color: const Color(0xFFEF4444).withOpacity(0.3), blurRadius: 8),
+                  ],
+                ),
+                child: const Icon(LucideIcons.chevronRight, color: Colors.white, size: 20),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

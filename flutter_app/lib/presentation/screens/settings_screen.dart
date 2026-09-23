@@ -291,7 +291,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     if (!isPremium) {
                       PremiumPaywallDialog.show(context, customMessage: 'Conecta notificaciones bancarias y atajos de voz de Siri con el Plan Premium.');
                     } else {
-                      PremiumSyncHubModal.show(context);
+                      /* PremiumSyncHubModal removed */
                     }
                   },
                 ),

@@ -1,3 +1,5 @@
+import '../modals/premium_modal.dart';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/models/micro_insight.dart';
@@ -516,7 +518,7 @@ class _CashFlowForecastCardState extends ConsumerState<CashFlowForecastCard> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(LucideIcons.lock, color: Color(0xFFF59E0B), size: 16),
+                        Icon(LucideIcons.lock, color: Color(0xFFF59E0B), size: 16),
                         const SizedBox(width: 8),
                         Text(
                           'Premium',

@@ -58,7 +58,7 @@ class SiriShortcutsService {
              final transaction = await AIAnalysisService.analyzeVoiceTransaction(spokenText, uid);
              if (transaction != null) {
                 ref.read(transactionRepositoryProvider).addTransaction(transaction);
-                await tts.speak('Listo, he registrado el ${transaction.type.name} de ${transaction.amount} en ${transaction.description}.');
+                await tts.speak('Listo, he registrado el ${transaction.type} de ${transaction.amount} en ${transaction.description}.');
                 await LocalNotificationService.showNotification(
                   title: '✅ Transacción agregada por Siri',
                   body: 'Se añadió ${transaction.amount} en ${transaction.description}.',

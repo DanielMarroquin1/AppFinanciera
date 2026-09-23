@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../presentation/providers/transaction_provider.dart';
 import '../../presentation/providers/credit_card_provider.dart';
 import '../../domain/entities/transaction.dart';
@@ -54,7 +55,9 @@ class ParsedBankCharge {
     rawText: json['rawText'] ?? '',
     bankName: json['bankName'],
   );
+
 }
+
 
 class BankNotificationListenerService {
   static const String _prefsKey = 'pending_bank_charges_v1';
@@ -125,20 +128,60 @@ class BankNotificationListenerService {
 
     if (!isFinancial) return;
 
-    final parsed = parseText(title, content, packageName);
-    final user = ref.read(authProvider).user;
-    if (user == null) return;
+        final parsed = parseText(title, content, packageName);
     if (parsed != null && parsed.amount > 0) {
-      await addPendingCharge(parsed);
-
       if (parsed.paymentMethod == 'cash') {
-        // Tarjeta de Débito -> Se va a efectivo
+        // Tarjeta de Débito -> Agregar a transacciones automáticamente
+        final transaction = TransactionModel(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          userId: FirebaseAuth.instance.currentUser?.uid ?? '',
+          amount: parsed.amount,
+          type: 'expense',
+          category: parsed.category,
+          date: parsed.date,
+          description: parsed.merchant,
+          isFixed: false,
+        );
+        ref.read(transactionRepositoryProvider).addTransaction(transaction);
+        
         await LocalNotificationService.showNotification(
-          title: '💸 Cargo Débito detectado (\${parsed.amount.toStringAsFixed(2)})',
-          body: 'En \${parsed.merchant}. Se registró como gasto en Efectivo/Débito. Toca para ver en la app.',
-          payload: 'sync_bank_charge_\${parsed.id}',
+          title: '💸 Gasto registrado automáticamente',
+          body: 'Se añadió ${parsed.amount.toStringAsFixed(2)} en ${parsed.merchant} desde tu cuenta bancaria.',
+          payload: 'sync_bank_charge_${parsed.id}',
         );
       } else {
+        // Tarjeta de Crédito -> Buscar si tiene alguna tarjeta y agregar
+        final cards = ref.read(creditCardControllerProvider).value ?? [];
+        if (cards.isNotEmpty) {
+           final card = cards.first; // Usar la primera por defecto si no se sabe
+           final transaction = TransactionModel(
+             id: DateTime.now().millisecondsSinceEpoch.toString(),
+             userId: FirebaseAuth.instance.currentUser?.uid ?? '',
+             amount: parsed.amount,
+             type: 'expense',
+             category: parsed.category,
+             date: parsed.date,
+             description: parsed.merchant,
+             creditCardId: card.id,
+             isFixed: false,
+           );
+           ref.read(transactionRepositoryProvider).addTransaction(transaction);
+           
+           await LocalNotificationService.showNotification(
+             title: '💳 Gasto de TC registrado automáticamente',
+             body: 'Se añadió ${parsed.amount.toStringAsFixed(2)} en ${parsed.merchant} a tu tarjeta ${card.name}.',
+             payload: 'sync_bank_charge_${parsed.id}',
+           );
+        } else {
+           // Si no tiene tarjetas, guardar como pendiente o solo notificar
+           await LocalNotificationService.showNotification(
+             title: '💳 Cargo en Tarjeta detectado',
+             body: 'Gastaste ${parsed.amount.toStringAsFixed(2)} en ${parsed.merchant}. Registra una tarjeta de crédito en QUIVO para sincronizar automáticamente.',
+           );
+        }
+      }
+    }
+  } else {
         // Tarjeta de Crédito -> Notificar para elegir a qué TC agregarlo
         await LocalNotificationService.showNotification(
           title: '💳 Cargo en Tarjeta de Crédito (\${parsed.amount.toStringAsFixed(2)})',
@@ -308,4 +351,5 @@ class BankNotificationListenerService {
       print('Error removing pending bank charge: $e');
     }
   }
+
 }

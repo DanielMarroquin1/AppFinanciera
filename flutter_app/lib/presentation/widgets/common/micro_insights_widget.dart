@@ -31,7 +31,9 @@ class MicroInsightsSection extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    return Column(
+    final isPremium = ref.watch(authProvider).user?.isPremium ?? false;
+
+    Widget contentWidget = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Header de la sección
@@ -84,6 +86,52 @@ class MicroInsightsSection extends ConsumerWidget {
                 onDismiss: () => ref.read(aiInsightsProvider.notifier).dismissInsight(index),
               );
             },
+          ),
+        ),
+      ],
+    );
+
+    if (isPremium) return contentWidget;
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        ImageFiltered(
+          imageFilter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+          child: IgnorePointer(child: contentWidget),
+        ),
+        Positioned.fill(
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => PremiumModal.show(context),
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B).withOpacity(0.9) : Colors.white.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.5)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(LucideIcons.lock, color: const Color(0xFFF59E0B), size: 16),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Insights Premium',
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ],

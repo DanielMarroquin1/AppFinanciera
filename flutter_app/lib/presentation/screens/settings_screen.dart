@@ -17,7 +17,6 @@ import '../providers/auth_provider.dart';
 import '../widgets/modals/edit_profile_modal.dart';
 import '../widgets/modals/color_palette_modal.dart';
 import '../widgets/modals/premium_modal.dart';
-import '../widgets/modals/premium_sync_hub_modal.dart';
 import '../widgets/modals/premium_paywall_dialog.dart';
 import '../widgets/modals/complete_profile_modal.dart';
 import '../widgets/modals/language_modal.dart';
@@ -318,17 +317,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: 'Suscripción Premium',
                 items: [
                   _buildSettingItem(isDark, icon: LucideIcons.crown, iconBg: const Color(0xFFFEF3C7), iconColor: const Color(0xFFD97706), title: 'Plan Premium', subtitle: 'Próxima renovación: 24 Feb 2027', badge: 'Activo', badgeColor: const Color(0xFF10B981)),
-                  _buildSettingItem(
-                    isDark,
-                    icon: LucideIcons.zap,
-                    iconBg: isDark ? const Color(0xFF312E81).withValues(alpha: 0.6) : const Color(0xFFE0E7FF),
-                    iconColor: const Color(0xFF6366F1),
-                    title: 'Hub de Sincronización',
-                    subtitle: 'Configura tus conexiones bancarias',
-                    badge: 'Premium',
-                    badgeColor: const Color(0xFF6366F1),
-                    onTap: () => PremiumSyncHubModal.show(context),
-                  ),
                 ],
               ),
               const SizedBox(height: 16),

@@ -1,18 +1,29 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'dart:ui';
 import '../../providers/auth_provider.dart';
 
 class PremiumModal extends ConsumerStatefulWidget {
   const PremiumModal({super.key});
 
   static void show(BuildContext context) {
-    showModalBottomSheet(
+    showGeneralDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const PremiumModal(),
+      barrierDismissible: true,
+      barrierLabel: 'PremiumModal',
+      barrierColor: Colors.black.withOpacity(0.8),
+      transitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (context, anim1, anim2) => const PremiumModal(),
+      transitionBuilder: (context, anim1, anim2, child) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10 * anim1.value, sigmaY: 10 * anim1.value),
+          child: SlideTransition(
+            position: Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
+            child: FadeTransition(opacity: anim1, child: child),
+          ),
+        );
+      },
     );
   }
 
@@ -20,212 +31,229 @@ class PremiumModal extends ConsumerStatefulWidget {
   ConsumerState<PremiumModal> createState() => _PremiumModalState();
 }
 
-class _PremiumModalState extends ConsumerState<PremiumModal> with SingleTickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late Animation<double> _scaleAnimation;
+class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProviderStateMixin {
+  late AnimationController _glowCtrl;
+  late AnimationController _bounceCtrl;
+  double _unlockProgress = 0.0;
+
+  final features = [
+    {'icon': LucideIcons.bot, 'title': 'Amigo Financiero SAMI', 'desc': 'Asistente IA personalizado'},
+    {'icon': LucideIcons.sparkles, 'title': 'Personalización Total', 'desc': 'Temas y colores exclusivos'},
+    {'icon': LucideIcons.pieChart, 'title': 'Reportes Detallados', 'desc': 'Análisis profundo de gastos'},
+    {'icon': LucideIcons.lineChart, 'title': 'Proyecciones Mensuales', 'desc': 'Predicciones inteligentes a fin de mes'},
+  ];
 
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))..repeat(reverse: true);
-    _scaleAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
+    _glowCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))..repeat(reverse: true);
+    _bounceCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000))..repeat(reverse: true);
   }
 
   @override
   void dispose() {
-    _pulseController.dispose();
+    _glowCtrl.dispose();
+    _bounceCtrl.dispose();
     super.dispose();
+  }
+
+  double _getModalWidth(BuildContext context) {
+    final w = MediaQuery.of(context).size.width * 0.9;
+    return w > 420 ? 420 : w;
+  }
+
+  void _onUnlockComplete() async {
+    await ref.read(authProvider.notifier).upgradeToPremium();
+    if (mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('¡Felicidades! Ahora eres Premium 👑'), backgroundColor: Color(0xFFD97706)),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isPremium = ref.watch(authProvider).user?.isPremium ?? false;
-    final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
 
-    final features = [
-      {'icon': LucideIcons.infinity, 'title': 'Presupuestos\nIlimitados', 'desc': 'Sin restricciones'},
-      {'icon': LucideIcons.bellRing, 'title': 'Recordatorios\nAvanzados', 'desc': 'No olvides nada'},
-      {'icon': LucideIcons.lineChart, 'title': 'Estadísticas\nDetalladas', 'desc': 'Análisis profundo'},
-      {'icon': LucideIcons.bot, 'title': 'Asistente IA\nPro', 'desc': 'Consejos 24/7'},
-      {'icon': LucideIcons.palette, 'title': 'Personalización\nTotal', 'desc': 'Temas exclusivos'},
-      {'icon': LucideIcons.sparkles, 'title': 'Proyección\ncon IA', 'desc': 'Predicciones a fin de mes'},
-      {'icon': LucideIcons.brain, 'title': 'Insights\nde QUIVO', 'desc': 'Análisis inteligente'},
-    ];
-
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.9,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF0F172A) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
-          border: Border(top: BorderSide(color: const Color(0xFFF59E0B).withValues(alpha: 0.3), width: 1)),
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: isDark ? Colors.white24 : Colors.black12, borderRadius: BorderRadius.circular(10))),
-            const SizedBox(height: 24),
-            
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: [
-                    // Header Header
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
+    return Center(
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          width: _getModalWidth(context),
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF0F172A) : Colors.white,
+            borderRadius: BorderRadius.circular(40),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFF59E0B).withOpacity(0.2),
+                blurRadius: 50,
+                spreadRadius: -10,
+              ),
+            ],
+            border: Border.all(color: const Color(0xFF1E293B), width: 1),
+          ),
+          child: Stack(
+            children: [
+              // Background pattern
+              Positioned(
+                top: -80,
+                left: -80,
+                child: RotationTransition(
+                  turns: Tween(begin: 0.0, end: 1.0).animate(_glowCtrl),
+                  child: Container(
+                    width: 250,
+                    height: 250,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          const Color(0xFFF59E0B).withOpacity(0.15),
+                          Colors.transparent,
+                        ],
                       ),
-                      child: const Icon(LucideIcons.crown, color: Color(0xFFF59E0B), size: 40),
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'QUIVO Premium',
-                      style: TextStyle(color: textColor, fontSize: 28, fontWeight: FontWeight.w900, letterSpacing: -0.5),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Lleva tus finanzas al siguiente nivel',
-                      style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 16),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 32),
+                  ),
+                ),
+              ),
 
-                    // Pricing Card
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header with Price
                     Stack(
                       clipBehavior: Clip.none,
-                      alignment: Alignment.topRight,
+                      alignment: Alignment.center,
                       children: [
                         Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(24),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                           decoration: BoxDecoration(
-                            gradient: isDark 
-                                ? const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF1E293B), Color(0xFF0F172A)])
-                                : const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFFFFFBEB), Color(0xFFFFFFFF)]),
+                            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
                             borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5), width: 2),
-                            boxShadow: [
-                              BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.2), blurRadius: 24, offset: const Offset(0, 12)),
-                            ]
+                            border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.3), width: 2),
                           ),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(color: const Color(0xFFF59E0B).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
-                                child: const Text('ACCESO TOTAL', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                              Text(
+                                'QUIVO Premium',
+                                style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w900,
+                                ),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 8),
                               Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.baseline,
+                                textBaseline: TextBaseline.alphabetic,
                                 children: [
-                                  Text('\$0.99', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 48, fontWeight: FontWeight.w900, height: 1)),
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 6, left: 8),
-                                    child: Text('/ mes', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 16, fontWeight: FontWeight.bold)),
+                                  Text(
+                                    '\$0.99',
+                                    style: TextStyle(color: const Color(0xFFF59E0B), fontSize: 40, fontWeight: FontWeight.w900, letterSpacing: -1),
+                                  ),
+                                  Text(
+                                    '/mes',
+                                    style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 16, fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 8),
-                              Text('Antes \$1.99', style: TextStyle(color: Colors.grey[500], fontSize: 16, fontWeight: FontWeight.w600, decoration: TextDecoration.lineThrough)),
+                              const SizedBox(height: 4),
+                              Text('Antes \$1.99', style: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 14, fontWeight: FontWeight.w600, decoration: TextDecoration.lineThrough)),
                             ],
                           ),
                         ),
-                        // Bouncing Tag
+                        
+                        // Bouncing -50% Tag
                         Positioned(
                           top: -15,
                           right: -10,
                           child: ScaleTransition(
-                            scale: _scaleAnimation,
+                            scale: Tween<double>(begin: 0.95, end: 1.05).animate(CurvedAnimation(parent: _bounceCtrl, curve: Curves.easeInOut)),
                             child: RotationTransition(
-                              turns: const AlwaysStoppedAnimation(10 / 360),
+                              turns: const AlwaysStoppedAnimation(8 / 360),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 decoration: BoxDecoration(
-                                  gradient: const LinearGradient(colors: [Color(0xFFEF4444), Color(0xFFB91C1C)]),
+                                  gradient: const LinearGradient(colors: [Color(0xFFEF4444), Color(0xFFDC2626)]),
                                   borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [BoxShadow(color: Colors.red.withValues(alpha: 0.4), blurRadius: 10, offset: const Offset(0, 4))],
+                                  boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))],
                                 ),
-                                child: const Text('-50% DTO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 1)),
+                                child: const Text('-50% DTO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5)),
                               ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
 
-                    // Features Grid
-                    GridView.builder(
-                      padding: EdgeInsets.zero,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 1.1,
+                    // Features List
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B).withOpacity(0.5) : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(24),
                       ),
-                      itemCount: features.length,
-                      itemBuilder: (context, index) {
-                        final f = features[index];
-                        return Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.5) : const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Icon(f['icon'] as IconData, color: const Color(0xFFF59E0B), size: 24),
-                              ),
-                              const Spacer(),
-                              Text(f['title'] as String, style: TextStyle(color: textColor, fontSize: 13, fontWeight: FontWeight.w800, height: 1.2)),
-                              const SizedBox(height: 4),
-                              Text(f['desc'] as String, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 11, fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                        );
-                      },
+                      child: Column(
+                        children: [
+                          for (int i = 0; i < features.length; i++) ...[
+                            _buildFeatureRow(features[i]['icon'] as IconData, features[i]['title'] as String, features[i]['desc'] as String, isDark),
+                            if (i < features.length - 1) const Divider(height: 20, color: Colors.transparent),
+                          ]
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 32),
 
-                    // CTA
-                    if (!isPremium)
-                      _PremiumCTAButton(
-                        onTap: () async {
-                          await ref.read(authProvider.notifier).upgradeToPremium();
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('¡Felicidades! Eres Premium 👑'), backgroundColor: Color(0xFFD97706)));
-                          }
-                        },
-                      )
-                    else
+                    if (!isPremium) ...[
+                      // Glowing Normal CTA
+                      GestureDetector(
+                        onTap: _onUnlockComplete,
+                        child: AnimatedBuilder(
+                          animation: _glowCtrl,
+                          builder: (context, child) {
+                            return Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                                ),
+                                borderRadius: BorderRadius.circular(24),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFF59E0B).withOpacity(0.3 + (_glowCtrl.value * 0.2)),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
+                                  )
+                                ],
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'SUSCRIBIRSE AHORA',
+                                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1.0),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      
+                      // Swipe to unlock
+                      _buildSwipeToUnlock(isDark),
+                    ] else ...[
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 20),
                         decoration: BoxDecoration(
-                          color: Colors.green.withValues(alpha: 0.1),
-                          border: Border.all(color: Colors.green.withValues(alpha: 0.5), width: 2),
+                          color: Colors.green.withOpacity(0.1),
+                          border: Border.all(color: Colors.green.withOpacity(0.5), width: 2),
                           borderRadius: BorderRadius.circular(24),
                         ),
                         child: const Row(
@@ -237,65 +265,119 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with SingleTickerPr
                           ],
                         ),
                       ),
-                    
-                    if (isPremium) ...[
-                      const SizedBox(height: 16),
-                      TextButton(
-                        onPressed: () async {
-                          await ref.read(authProvider.notifier).cancelSubscription();
-                          if (context.mounted) Navigator.pop(context);
-                        },
-                        style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
-                        child: const Text('Cancelar Suscripción', style: TextStyle(fontWeight: FontWeight.w600)),
-                      )
                     ],
-                    const SizedBox(height: 40),
+
+                    const SizedBox(height: 16),
+                    // Close button text
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Text(
+                        isPremium ? 'Cerrar' : 'Quizás más tarde',
+                        style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 14, fontWeight: FontWeight.w600),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
-}
 
-class _PremiumCTAButton extends StatefulWidget {
-  final VoidCallback onTap;
-  const _PremiumCTAButton({required this.onTap});
-
-  @override
-  State<_PremiumCTAButton> createState() => _PremiumCTAButtonState();
-}
-
-class _PremiumCTAButtonState extends State<_PremiumCTAButton> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) {
-        setState(() => _isPressed = false);
-        widget.onTap();
-      },
-      onTapCancel: () => setState(() => _isPressed = false),
-      child: AnimatedScale(
-        scale: _isPressed ? 0.95 : 1.0,
-        duration: const Duration(milliseconds: 100),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 20),
+  Widget _buildFeatureRow(IconData icon, String title, String desc, bool isDark) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFEA580C)]),
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 8))],
+            color: const Color(0xFFF59E0B).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: const Center(
-            child: Text('Obtener Premium', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+          child: Icon(icon, size: 20, color: const Color(0xFFF59E0B)),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                desc,
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildSwipeToUnlock(bool isDark) {
+    return Container(
+      height: 56,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+      ),
+      child: Stack(
+        children: [
+          Center(
+            child: Opacity(
+              opacity: 1.0 - (_unlockProgress * 2).clamp(0.0, 1.0),
+              child: Text(
+                'Desliza para ser Premium',
+                style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 4 + (_unlockProgress * (_getModalWidth(context) - 48 - 48 - 8)),
+            top: 4,
+            bottom: 4,
+            child: GestureDetector(
+              onPanUpdate: (details) {
+                setState(() {
+                  _unlockProgress += details.delta.dx / (_getModalWidth(context) - 48 - 48 - 8);
+                  _unlockProgress = _unlockProgress.clamp(0.0, 1.0);
+                });
+              },
+              onPanEnd: (details) {
+                if (_unlockProgress > 0.8) {
+                  setState(() => _unlockProgress = 1.0);
+                  _onUnlockComplete();
+                } else {
+                  setState(() => _unlockProgress = 0.0);
+                }
+              },
+              child: Container(
+                width: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(color: const Color(0xFFF59E0B).withOpacity(0.3), blurRadius: 8),
+                  ],
+                ),
+                child: const Icon(LucideIcons.chevronRight, color: Colors.white, size: 20),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

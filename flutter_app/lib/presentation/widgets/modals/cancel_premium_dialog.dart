@@ -170,11 +170,13 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with 
                       ),
                       child: Column(
                         children: [
-                          _buildLostFeature(LucideIcons.bot, 'IA Financiera y Proyecciones', isDark),
+                          _buildLostFeature(LucideIcons.bot, 'Amigo Financiero SAMI con IA', isDark),
                           const Divider(height: 16, color: Colors.transparent),
-                          _buildLostFeature(LucideIcons.mic, 'Registro Mágico por Voz (Siri)', isDark),
+                          _buildLostFeature(LucideIcons.sparkles, 'Temas y Personalización Total', isDark),
                           const Divider(height: 16, color: Colors.transparent),
-                          _buildLostFeature(LucideIcons.sparkles, 'Temas y Customización PRO', isDark),
+                          _buildLostFeature(LucideIcons.pieChart, 'Reportes Detallados', isDark),
+                          const Divider(height: 16, color: Colors.transparent),
+                          _buildLostFeature(LucideIcons.lineChart, 'Proyecciones Mensuales', isDark),
                         ],
                       ),
                     ),
@@ -204,7 +206,7 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with 
                             ),
                             child: const Center(
                               child: Text(
-                                'QUIERO SEGUIR SIENDO PRO',
+                                'MANTENER SUSCRIPCIÓN PREMIUM',
                                 style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1.0),
                               ),
                             ),

@@ -1,6 +1,7 @@
 import '../../presentation/providers/transaction_provider.dart';
 import '../../presentation/providers/credit_card_provider.dart';
-import '../models/transaction.dart';
+import '../../domain/entities/transaction.dart';
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -125,6 +126,8 @@ class BankNotificationListenerService {
     if (!isFinancial) return;
 
     final parsed = parseText(title, content, packageName);
+    final user = ref.read(authProvider).user;
+    if (user == null) return;
     if (parsed != null && parsed.amount > 0) {
       await addPendingCharge(parsed);
 

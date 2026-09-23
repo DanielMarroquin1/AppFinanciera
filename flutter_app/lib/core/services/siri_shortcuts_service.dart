@@ -1,3 +1,5 @@
+import '../../domain/repositories/transaction_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'ai_analysis_service.dart';
 import '../../presentation/providers/transaction_provider.dart';
 import 'local_notification_service.dart';
@@ -52,9 +54,10 @@ class SiriShortcutsService {
              final tts = FlutterTts();
              await TtsHelper.configureTts(tts, 'es');
              
-             final transaction = await AiAnalysisService.analyzeVoiceTransaction(spokenText, user.id);
+             final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+             final transaction = await AIAnalysisService.analyzeVoiceTransaction(spokenText, uid);
              if (transaction != null) {
-                ref.read(transactionsProvider.notifier).addTransaction(transaction);
+                ref.read(transactionRepositoryProvider).addTransaction(transaction);
                 await tts.speak('Listo, he registrado el ${transaction.type.name} de ${transaction.amount} en ${transaction.description}.');
                 await LocalNotificationService.showNotification(
                   title: '✅ Transacción agregada por Siri',

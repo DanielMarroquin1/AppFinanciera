@@ -19,7 +19,7 @@ class AIAnalysisService {
     return _model!;
   }
 
-  static Future<Transaction?> analyzeVoiceTransaction(String text, String userId) async {
+  static Future<TransactionModel?> analyzeVoiceTransaction(String text, String userId) async {
     if (AIConfig.apiKey.isEmpty) return null;
     
     final prompt = '''
@@ -45,14 +45,15 @@ Output STRICT JSON:
       
       if (map['amount'] == null) return null;
       
-      return Transaction(
+      return TransactionModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         amount: double.parse(map['amount'].toString()),
-        type: map['type'] == 'income' ? TransactionType.income : TransactionType.expense,
+        type: map['type'] == 'income' ? 'income' : 'expense',
         category: map['category'] ?? 'other',
         description: map['description'] ?? 'Transacción por Voz',
         date: DateTime.now(),
-        paymentMethod: map['paymentMethod'] ?? 'cash',
+        userId: userId,
+        isFixed: false,
       );
     } catch (e) {
       print('Error parsing Siri voice intent: $e');

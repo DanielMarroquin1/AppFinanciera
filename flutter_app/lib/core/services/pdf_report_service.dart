@@ -198,7 +198,7 @@ class PdfReportService {
              }
           }
 
-          content.addAll(_buildModernTransactionTable(filteredTxs, currencyCode, dateformat, primaryColor, greenColor, redColor, isEn, langCode));
+          content.addAll(_buildModernTransactionTable(filteredTxs, currencyCode, dateformat, primaryColor, greenColor, redColor, isEn, langCode, loc));
 
           return content;
         },
@@ -351,7 +351,7 @@ class PdfReportService {
     );
   }
 
-  static List<pw.Widget> _buildModernTransactionTable(List<TransactionModel> txs, String currencyCode, DateFormat format, PdfColor primary, PdfColor green, PdfColor red, bool isEn, String langCode) {
+  static List<pw.Widget> _buildModernTransactionTable(List<TransactionModel> txs, String currencyCode, DateFormat format, PdfColor primary, PdfColor green, PdfColor red, bool isEn, String langCode, AppLocalizations loc) {
     if (txs.isEmpty) {
       return [pw.Center(child: _safeText(isEn ? 'No transactions registered in this period.' : 'No hay movimientos registrados en este periodo.', style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey600)))];
     }

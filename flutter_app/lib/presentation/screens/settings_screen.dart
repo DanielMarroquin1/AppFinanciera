@@ -586,6 +586,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     bool budgetAlerts = true;
     bool weeklyReport = false;
     bool savingsReminder = true;
+    bool dailyReminders = true;
 
     showModalBottomSheet(
       context: context,
@@ -613,12 +614,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _buildSwitchItem(isDark, 'Alertas de Presupuesto', 'Aviso al acercarte al límite', budgetAlerts, (v) => setModalState(() => budgetAlerts = v), LucideIcons.alertTriangle),
               _buildSwitchItem(isDark, 'Reporte Semanal', 'Resumen semanal de tus finanzas', weeklyReport, (v) => setModalState(() => weeklyReport = v), LucideIcons.barChart2),
               _buildSwitchItem(isDark, 'Recordatorio de Ahorro', 'Recordatorio diario para ahorrar', savingsReminder, (v) => setModalState(() => savingsReminder = v), LucideIcons.piggyBank),
+              _buildSwitchItem(isDark, 'Recordatorio Diario (Gastos)', 'Avisos a las 9am, 2pm y 7pm', dailyReminders, (v) => setModalState(() => dailyReminders = v), LucideIcons.clock),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
+                                    onPressed: () {
                     setState(() => notificationsEnabled = pushEnabled);
+                    if (dailyReminders) {
+                      LocalNotificationService.scheduleDailyTransactionReminders();
+                    } else {
+                      LocalNotificationService.cancelDailyTransactionReminders();
+                    }
                     Navigator.pop(ctx);
                     setState(() {});
                   },

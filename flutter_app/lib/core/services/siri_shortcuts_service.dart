@@ -1,3 +1,6 @@
+import 'ai_analysis_service.dart';
+import '../../presentation/providers/transaction_provider.dart';
+import 'local_notification_service.dart';
 import '../helpers/tts_helper.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -41,8 +44,33 @@ class SiriShortcutsService {
           return;
         }
         
-        if (context.mounted) {
-          VoiceExpenseModal.show(context);
+        final spokenText = call.arguments is String ? call.arguments as String : (call.arguments is Map ? call.arguments['text'] : null);
+        
+        if (spokenText != null && spokenText.isNotEmpty) {
+           // Siri automatically passed the text! Let's analyze and insert.
+           try {
+             final tts = FlutterTts();
+             await TtsHelper.configureTts(tts, 'es');
+             
+             final transaction = await AiAnalysisService.analyzeVoiceTransaction(spokenText, user.id);
+             if (transaction != null) {
+                ref.read(transactionsProvider.notifier).addTransaction(transaction);
+                await tts.speak('Listo, he registrado el ${transaction.type.name} de ${transaction.amount} en ${transaction.description}.');
+                await LocalNotificationService.showNotification(
+                  title: '✅ Transacción agregada por Siri',
+                  body: 'Se añadió ${transaction.amount} en ${transaction.description}.',
+                );
+             } else {
+                await tts.speak('No pude entender el monto o los detalles, intenta de nuevo.');
+             }
+           } catch (e) {
+             print('Siri processing error: $e');
+           }
+        } else {
+           // Fallback to manual UI if no text was provided
+           if (context.mounted) {
+             VoiceExpenseModal.show(context);
+           }
         }
       }
     });

@@ -110,11 +110,11 @@ class LocalNotificationService {
     if (!_initialized) await init();
     try {
       // 8 AM
-      await _scheduleDailyTime(id: 1001, hour: 8, minute: 0, title: 'Buenos días 🌅', body: '¿Ya registraste tus gastos de la mañana? ¡Mantén tu presupuesto al día!');
+      await _scheduleDailyTime(id: 1001, hour: 9, minute: 0, title: 'Buenos días 🌅', body: '¿Ya registraste tus gastos de la mañana? ¡Mantén tu presupuesto al día!');
       // 2 PM
       await _scheduleDailyTime(id: 1002, hour: 14, minute: 0, title: 'Buenas tardes ☀️', body: 'Recuerda registrar cualquier gasto del almuerzo en la app.');
       // 8 PM
-      await _scheduleDailyTime(id: 1003, hour: 20, minute: 0, title: 'Buenas noches 🌙', body: 'Antes de dormir, asegúrate de que todos tus movimientos del día estén registrados.');
+      await _scheduleDailyTime(id: 1003, hour: 19, minute: 0, title: 'Buenas noches 🌙', body: 'Antes de dormir, asegúrate de que todos tus movimientos del día estén registrados.');
     } catch (e) {
       debugPrint('Error programando recordatorios diarios: $e');
     }
@@ -132,6 +132,17 @@ class LocalNotificationService {
   }
 
   /// Programa un recordatorio mensual para una fecha específica (ej. pago de tarjeta, deudas)
+    static Future<void> cancelDailyTransactionReminders() async {
+    if (kIsWeb) return;
+    try {
+      await _plugin.cancel(1001);
+      await _plugin.cancel(1002);
+      await _plugin.cancel(1003);
+    } catch (e) {
+      debugPrint('Error cancelando recordatorios diarios: $e');
+    }
+  }
+
   static Future<void> scheduleMonthlyReminder({required int id, required int dayOfMonth, required String title, required String body}) async {
     if (kIsWeb) return;
     if (!_initialized) await init();

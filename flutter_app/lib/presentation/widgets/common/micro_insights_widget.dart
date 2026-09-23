@@ -1,3 +1,4 @@
+import 'package:lucide_icons/lucide_icons.dart';
 import '../modals/premium_modal.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';

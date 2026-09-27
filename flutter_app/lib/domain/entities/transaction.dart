@@ -11,7 +11,8 @@ class TransactionModel {
   final bool isFixed;
   final String? recurrenceType; // 'monthly', 'bimonthly' (2 times/month), 'weekly', null
   final int? recurrenceDay; // primary day of month (1-31) or day of week (1-7 for weekly)
-  final int? recurrenceDay2; // secondary day for bimonthly (e.g. pay on 15 and 30)
+  final int? recurrenceDay2; // secondary day for bimonthly
+  final double? recurrenceAmount2; // specific amount for the second day (if null, defaults to amount/2 or amount depending on context) (e.g. pay on 15 and 30)
   final String? creditCardId; // Si es null, fue en efectivo/cuenta. Si tiene ID, fue con TC.
   final DateTime? lastProcessedDate;
 
@@ -27,6 +28,7 @@ class TransactionModel {
     this.recurrenceType,
     this.recurrenceDay,
     this.recurrenceDay2,
+    this.recurrenceAmount2,
     this.creditCardId,
     this.lastProcessedDate,
   });
@@ -66,6 +68,7 @@ class TransactionModel {
         recurrenceType: data['recurrenceType']?.toString(),
         recurrenceDay: data['recurrenceDay'] is int ? data['recurrenceDay'] : int.tryParse('${data['recurrenceDay']}'),
         recurrenceDay2: data['recurrenceDay2'] is int ? data['recurrenceDay2'] : int.tryParse('${data['recurrenceDay2']}'),
+        recurrenceAmount2: data['recurrenceAmount2'] != null ? _parseDouble(data['recurrenceAmount2']) : null,
         creditCardId: data['creditCardId']?.toString(),
         lastProcessedDate: data['lastProcessedDate'] != null ? _parseDate(data['lastProcessedDate']) : null,
       );
@@ -95,6 +98,7 @@ class TransactionModel {
       'recurrenceType': recurrenceType,
       'recurrenceDay': recurrenceDay,
       'recurrenceDay2': recurrenceDay2,
+      'recurrenceAmount2': recurrenceAmount2,
       'creditCardId': creditCardId,
       'lastProcessedDate': lastProcessedDate != null ? Timestamp.fromDate(lastProcessedDate!) : null,
     };
@@ -112,6 +116,7 @@ class TransactionModel {
     String? recurrenceType,
     int? recurrenceDay,
     int? recurrenceDay2,
+    double? recurrenceAmount2,
     String? creditCardId,
     DateTime? lastProcessedDate,
   }) {
@@ -127,6 +132,8 @@ class TransactionModel {
       recurrenceType: recurrenceType ?? this.recurrenceType,
       recurrenceDay: recurrenceDay ?? this.recurrenceDay,
       recurrenceDay2: recurrenceDay2 ?? this.recurrenceDay2,
+      recurrenceAmount2: recurrenceAmount2 ?? this.recurrenceAmount2,
+    this.recurrenceAmount2,
       creditCardId: creditCardId ?? this.creditCardId,
       lastProcessedDate: lastProcessedDate ?? this.lastProcessedDate,
     );
@@ -147,6 +154,17 @@ class TransactionModel {
       default:
         return recurrenceType ?? '';
     }
+  }
+
+    double getAmountForDay(int day) {
+    if (recurrenceType == 'bimonthly') {
+      if (recurrenceAmount2 != null) {
+        if (day == recurrenceDay2) return recurrenceAmount2!;
+        return amount; // amount is used for the first day
+      }
+      return amount / 2; // Old system
+    }
+    return amount;
   }
 
   /// Per-payment amount (for bimonthly, amount is split in half per payment)

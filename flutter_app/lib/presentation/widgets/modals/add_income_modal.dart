@@ -30,10 +30,12 @@ class AddIncomeModal extends ConsumerStatefulWidget {
 
 class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
   String amount = "";
+  String amount2 = "";
   String category = "";
   String description = "";
   DateTime date = DateTime.now();
   late TextEditingController _amountController;
+  late TextEditingController _amount2Controller;
   late TextEditingController _descController;
   bool isExtraIncome = false;
 
@@ -46,6 +48,7 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
     super.initState();
     if (widget.existingTransaction != null) {
       amount = widget.existingTransaction!.amount.toString();
+      amount2 = widget.existingTransaction!.recurrenceAmount2?.toString() ?? "";
       category = widget.existingTransaction!.category;
       description = widget.existingTransaction!.description;
       date = widget.existingTransaction!.date;
@@ -53,14 +56,16 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
       recurrenceDay = widget.existingTransaction!.recurrenceDay ?? 1;
       recurrenceDay2 = widget.existingTransaction!.recurrenceDay2;
     }
-    _amountController = TextEditingController(text: amount);
+        _amountController = TextEditingController(text: amount);
+    _amount2Controller = TextEditingController(text: amount2);
     _descController = TextEditingController(text: description.replaceAll('(Extra)', '').trim());
     isExtraIncome = widget.existingTransaction?.description.contains('(Extra)') ?? false;
   }
 
   @override
   void dispose() {
-    _amountController.dispose();
+        _amountController.dispose();
+    _amount2Controller.dispose();
     _descController.dispose();
     super.dispose();
   }
@@ -347,33 +352,85 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Massive Amount Input
-                  Center(
-                    child: Column(
-                      children: [
-                        Text('MONTO', style: TextStyle(color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 2)),
-                        const SizedBox(height: 8),
-                        IntrinsicWidth(
-                          child: TextField(
-                            controller: _amountController,
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            onChanged: (val) => amount = val,
-                            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 56, fontWeight: FontWeight.w900, letterSpacing: -2),
-                            textAlign: TextAlign.center,
-                            decoration: InputDecoration(
-                              hintText: '0.00',
-                              hintStyle: TextStyle(color: isDark ? Colors.grey[700] : Colors.grey[300]),
-                              prefixText: CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency),
-                              prefixStyle: TextStyle(color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669), fontSize: 32, fontWeight: FontWeight.bold),
-                              border: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              contentPadding: EdgeInsets.zero,
+                  if (widget.isFixed && category == 'salary' && recurrenceType == 'bimonthly') ...[
+                    Center(
+                      child: Column(
+                        children: [
+                          Text('MONTO QUINCENA 1', style: TextStyle(color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                          const SizedBox(height: 8),
+                          IntrinsicWidth(
+                            child: TextField(
+                              controller: _amountController,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              onChanged: (val) => amount = val,
+                              style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 40, fontWeight: FontWeight.w900, letterSpacing: -1.5),
+                              textAlign: TextAlign.center,
+                              decoration: InputDecoration(
+                                hintText: '0.00',
+                                hintStyle: TextStyle(color: isDark ? Colors.grey[700] : Colors.grey[300]),
+                                prefixText: CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency),
+                                prefixStyle: TextStyle(color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669), fontSize: 24, fontWeight: FontWeight.bold),
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 16),
+                          Text('MONTO QUINCENA 2', style: TextStyle(color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                          const SizedBox(height: 8),
+                          IntrinsicWidth(
+                            child: TextField(
+                              controller: _amount2Controller,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              onChanged: (val) => amount2 = val,
+                              style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 40, fontWeight: FontWeight.w900, letterSpacing: -1.5),
+                              textAlign: TextAlign.center,
+                              decoration: InputDecoration(
+                                hintText: '0.00',
+                                hintStyle: TextStyle(color: isDark ? Colors.grey[700] : Colors.grey[300]),
+                                prefixText: CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency),
+                                prefixStyle: TextStyle(color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669), fontSize: 24, fontWeight: FontWeight.bold),
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ] else ...[
+                    Center(
+                      child: Column(
+                        children: [
+                          Text('MONTO', style: TextStyle(color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                          const SizedBox(height: 8),
+                          IntrinsicWidth(
+                            child: TextField(
+                              controller: _amountController,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              onChanged: (val) => amount = val,
+                              style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 56, fontWeight: FontWeight.w900, letterSpacing: -2),
+                              textAlign: TextAlign.center,
+                              decoration: InputDecoration(
+                                hintText: '0.00',
+                                hintStyle: TextStyle(color: isDark ? Colors.grey[700] : Colors.grey[300]),
+                                prefixText: CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency),
+                                prefixStyle: TextStyle(color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669), fontSize: 32, fontWeight: FontWeight.bold),
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ]
                   const SizedBox(height: 32),
 
                   // Premium Category Selector
@@ -644,6 +701,8 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
 
                         final isEditing = widget.existingTransaction != null;
 
+                        final parsedAmount2 = double.tryParse(amount2);
+                        
                         final transaction = TransactionModel(
                           id: isEditing ? widget.existingTransaction!.id : '',
                           userId: uid,
@@ -656,6 +715,7 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                           recurrenceType: widget.isFixed ? (recurrenceType ?? 'monthly') : null,
                           recurrenceDay: widget.isFixed ? recurrenceDay : null,
                           recurrenceDay2: widget.isFixed && recurrenceType == 'bimonthly' ? recurrenceDay2 : null,
+                          recurrenceAmount2: (widget.isFixed && category == 'salary' && recurrenceType == 'bimonthly') ? parsedAmount2 : null,
                         );
 
                         if (isEditing) {

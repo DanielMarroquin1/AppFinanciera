@@ -101,7 +101,7 @@ class RecurringTransactionService {
           final newTx = TransactionModel(
             id: '',
             userId: user.uid,
-            amount: template.perPaymentAmount,
+            amount: template.getAmountForDay(current.day),
             type: template.type,
             category: template.category,
             description: '${template.description} (Automático)',
@@ -118,7 +118,7 @@ class RecurringTransactionService {
             id: notifRef.id,
             userId: user.uid,
             title: template.type == 'income' ? 'Ingreso Automático' : 'Cobro Automático',
-            body: 'Se ha registrado "${template.description}" por un monto de ${template.perPaymentAmount.toStringAsFixed(2)}.',
+            body: 'Se ha registrado "${template.description}" por un monto de ${template.getAmountForDay(current.day).toStringAsFixed(2)}.',
             createdAt: DateTime.now(),
             isRead: false,
             type: template.type,
@@ -138,8 +138,8 @@ class RecurringTransactionService {
               'to': user.email,
               'message': {
                 'subject': template.type == 'income' ? 'Ingreso Automático Registrado' : 'Cobro Automático Registrado',
-                'text': 'Se ha registrado "${template.description}" por un monto de ${template.perPaymentAmount.toStringAsFixed(2)}.',
-                'html': '<p>Se ha registrado <strong>"${template.description}"</strong> por un monto de ${template.perPaymentAmount.toStringAsFixed(2)}.</p>',
+                'text': 'Se ha registrado "${template.description}" por un monto de ${template.getAmountForDay(current.day).toStringAsFixed(2)}.',
+                'html': '<p>Se ha registrado <strong>"${template.description}"</strong> por un monto de ${template.getAmountForDay(current.day).toStringAsFixed(2)}.</p>',
               },
               'createdAt': FieldValue.serverTimestamp(),
             });

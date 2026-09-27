@@ -518,10 +518,37 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                                               textAlign: TextAlign.center,
                                             ),
                                             const SizedBox(height: 6),
-                                            Text(
-                                              CurrencyFormatter.format(income.amount, currencyCode), 
-                                              style: TextStyle(color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669), fontSize: 34, fontWeight: FontWeight.w900, letterSpacing: -1.0)
-                                            ),
+                                            if (income.category == 'salary' && income.recurrenceType == 'bimonthly') ...[
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Column(
+                                                    children: [
+                                                      Text('Quincena 1', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                                                      Text(
+                                                        CurrencyFormatter.format(income.amount, currencyCode), 
+                                                        style: TextStyle(color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669), fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -1.0)
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(width: 20),
+                                                  Column(
+                                                    children: [
+                                                      Text('Quincena 2', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                                                      Text(
+                                                        CurrencyFormatter.format(income.recurrenceAmount2 ?? (income.amount / 2), currencyCode), 
+                                                        style: TextStyle(color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669), fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -1.0)
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ] else ...[
+                                              Text(
+                                                CurrencyFormatter.format(income.amount, currencyCode), 
+                                                style: TextStyle(color: isDark ? const Color(0xFF10B981) : const Color(0xFF059669), fontSize: 34, fontWeight: FontWeight.w900, letterSpacing: -1.0)
+                                              ),
+                                            ],
                                             const SizedBox(height: 28),
                                             Container(
                                               padding: const EdgeInsets.all(20),

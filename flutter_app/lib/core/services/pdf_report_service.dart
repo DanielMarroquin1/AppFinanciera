@@ -164,7 +164,7 @@ class PdfReportService {
         totalIncome += tx.amount;
       } else if (tx.type == 'expense' || tx.type == 'cc_payment') {
         totalExpense += tx.amount;
-        final cat = _translateCategory(tx.category, langCode);
+        final cat = loc.translateCategory(tx.category);
         expensesByCategory[cat] = (expensesByCategory[cat] ?? 0) + tx.amount;
       }
     }
@@ -366,7 +366,7 @@ class PdfReportService {
       return [
         format.format(tx.date),
         _cleanText(tx.description.isEmpty ? (isEn ? 'No description' : 'Sin descripción') : tx.description),
-        _translateCategory(tx.category, langCode),
+        loc.translateCategory(tx.category),
         isIncome ? (loc.get('pdf_income_type') ?? 'Ingreso') : (loc.get('pdf_expense_type') ?? 'Gasto'),
         isIncome ? '+$formattedAmount' : '-$formattedAmount',
       ];

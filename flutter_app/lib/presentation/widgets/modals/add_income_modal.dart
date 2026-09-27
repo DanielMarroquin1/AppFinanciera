@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -430,7 +431,7 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                         ],
                       ),
                     ),
-                  ]
+                  ],
                   const SizedBox(height: 32),
 
                   // Premium Category Selector
@@ -692,7 +693,11 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: amount.isEmpty || category.isEmpty ? null : () async {
+                      onPressed: (amount.isEmpty || category.isEmpty || 
+                        (widget.isFixed && category == 'salary' && recurrenceType == 'bimonthly' && amount2.isEmpty)) 
+                        ? null : () async {
+                        // Add HapticFeedback
+                        HapticFeedback.mediumImpact();
                         final uid = FirebaseAuth.instance.currentUser?.uid;
                         if (uid == null) return;
                         

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../providers/auth_provider.dart';
@@ -60,7 +61,8 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with 
   void _onCancelComplete() async {
     await ref.read(authProvider.notifier).cancelSubscription();
     if (mounted) {
-      setState(() => _isCanceled = true);
+      HapticFeedback.heavyImpact();
+                            setState(() => _isCanceled = true);
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted && Navigator.canPop(context)) {
           Navigator.pop(context);

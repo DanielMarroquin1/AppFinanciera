@@ -133,7 +133,6 @@ class TransactionModel {
       recurrenceDay: recurrenceDay ?? this.recurrenceDay,
       recurrenceDay2: recurrenceDay2 ?? this.recurrenceDay2,
       recurrenceAmount2: recurrenceAmount2 ?? this.recurrenceAmount2,
-    this.recurrenceAmount2,
       creditCardId: creditCardId ?? this.creditCardId,
       lastProcessedDate: lastProcessedDate ?? this.lastProcessedDate,
     );

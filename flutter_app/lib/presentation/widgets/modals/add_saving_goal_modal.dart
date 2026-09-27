@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/presentation/widgets/common/shake_widget.dart';
+import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -56,8 +58,9 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
     super.initState();
     _nameController = TextEditingController(text: widget.initialName ?? "");
     _amountController = TextEditingController(
-      text: widget.initialTargetAmount != null && widget.initialTargetAmount! > 0 
-          ? widget.initialTargetAmount.toString() 
+      text:
+          widget.initialTargetAmount != null && widget.initialTargetAmount! > 0
+          ? widget.initialTargetAmount.toString()
           : "",
     );
     selectedIcon = widget.initialIcon ?? "🎯";
@@ -75,15 +78,21 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final sym = CurrencyFormatter.getSymbol(ref.watch(authProvider).user?.currency);
+    final sym = CurrencyFormatter.getSymbol(
+      ref.watch(authProvider).user?.currency,
+    );
 
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
       child: Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF0F172A).withOpacity(0.85) : Colors.white.withOpacity(0.9),
+          color: isDark
+              ? const Color(0xFF0F172A).withOpacity(0.85)
+              : Colors.white.withOpacity(0.9),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          border: Border(top: BorderSide(color: Colors.white.withOpacity(0.2), width: 1)),
+          border: Border(
+            top: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -95,12 +104,14 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.1),
+                  color: isDark
+                      ? Colors.white.withOpacity(0.2)
+                      : Colors.black.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-            
+
             // Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -109,19 +120,50 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF06B6D4)]),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF3B82F6), Color(0xFF06B6D4)],
+                      ),
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [BoxShadow(color: const Color(0xFF3B82F6).withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 4))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF3B82F6).withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    child: const Icon(LucideIcons.target, color: Colors.white, size: 24),
+                    child: const Icon(
+                      LucideIcons.target,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(widget.goalToEdit != null ? 'Editar Meta' : 'Nueva Meta', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.w900)),
-                        Text(widget.goalToEdit != null ? 'Modifica los detalles de tu meta' : 'Define tu próximo objetivo', style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 14)),
+                        Text(
+                          widget.goalToEdit != null
+                              ? 'Editar Meta'
+                              : 'Nueva Meta',
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        Text(
+                          widget.goalToEdit != null
+                              ? 'Modifica los detalles de tu meta'
+                              : 'Define tu próximo objetivo',
+                          style: TextStyle(
+                            color: isDark
+                                ? const Color(0xFF94A3B8)
+                                : const Color(0xFF64748B),
+                            fontSize: 14,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -133,65 +175,135 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
             Flexible(
               child: SingleChildScrollView(
                 padding: EdgeInsets.only(
-                  left: 24, right: 24,
+                  left: 24,
+                  right: 24,
                   bottom: MediaQuery.of(context).viewInsets.bottom + 40,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Nombre de la meta', style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.bold)),
+                    Text(
+                      'Nombre de la meta',
+                      style: TextStyle(
+                        color: isDark
+                            ? const Color(0xFF94A3B8)
+                            : const Color(0xFF64748B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Container(
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                        color: isDark
+                            ? const Color(0xFF1E293B)
+                            : const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFE2E8F0),
+                        ),
                       ),
                       child: TextField(
                         controller: _nameController,
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                         decoration: InputDecoration(
                           hintText: 'Ej: Viaje a Japón 🗼',
-                          hintStyle: TextStyle(color: isDark ? const Color(0xFF475569) : const Color(0xFF94A3B8)),
+                          hintStyle: TextStyle(
+                            color: isDark
+                                ? const Color(0xFF475569)
+                                : const Color(0xFF94A3B8),
+                          ),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 16,
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 24),
 
-                    Text('Monto Objetivo', style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.bold)),
+                    Text(
+                      'Monto Objetivo',
+                      style: TextStyle(
+                        color: isDark
+                            ? const Color(0xFF94A3B8)
+                            : const Color(0xFF64748B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Container(
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                        color: isDark
+                            ? const Color(0xFF1E293B)
+                            : const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFE2E8F0),
+                        ),
                       ),
                       child: TextField(
                         controller: _amountController,
                         keyboardType: TextInputType.number,
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.w900),
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                        ),
                         decoration: InputDecoration(
                           prefixIcon: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(sym, style: TextStyle(color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8), fontSize: 24, fontWeight: FontWeight.bold)),
+                                Text(
+                                  sym,
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? const Color(0xFF64748B)
+                                        : const Color(0xFF94A3B8),
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
                           hintText: '0.00',
-                          hintStyle: TextStyle(color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
+                          hintStyle: TextStyle(
+                            color: isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFCBD5E1),
+                          ),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 20),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 20,
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 24),
 
-                    Text('Icono representativo', style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.bold)),
+                    Text(
+                      'Icono representativo',
+                      style: TextStyle(
+                        color: isDark
+                            ? const Color(0xFF94A3B8)
+                            : const Color(0xFF64748B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 64,
@@ -206,18 +318,32 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                             onTap: () => setState(() => selectedIcon = icon),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
-                              width: 64, height: 64,
+                              width: 64,
+                              height: 64,
                               decoration: BoxDecoration(
-                                color: isSelected 
-                                    ? const Color(0xFF3B82F6).withOpacity(0.2) 
-                                    : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+                                color: isSelected
+                                    ? const Color(0xFF3B82F6).withOpacity(0.2)
+                                    : (isDark
+                                          ? const Color(0xFF1E293B)
+                                          : const Color(0xFFF1F5F9)),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: isSelected ? const Color(0xFF3B82F6) : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                                  color: isSelected
+                                      ? const Color(0xFF3B82F6)
+                                      : (isDark
+                                            ? const Color(0xFF334155)
+                                            : const Color(0xFFE2E8F0)),
                                   width: isSelected ? 2 : 1,
                                 ),
                               ),
-                              child: Center(child: Text(icon, style: TextStyle(fontSize: isSelected ? 32 : 24))),
+                              child: Center(
+                                child: Text(
+                                  icon,
+                                  style: TextStyle(
+                                    fontSize: isSelected ? 32 : 24,
+                                  ),
+                                ),
+                              ),
                             ),
                           );
                         },
@@ -227,17 +353,43 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
 
                     Container(
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF06B6D4)]),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF3B82F6), Color(0xFF06B6D4)],
+                        ),
                         borderRadius: BorderRadius.circular(20),
-                        boxShadow: [BoxShadow(color: const Color(0xFF3B82F6).withOpacity(0.3), blurRadius: 16, offset: const Offset(0, 8))],
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF3B82F6).withOpacity(0.3),
+                            blurRadius: 16,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
                       child: ElevatedButton(
                         onPressed: () async {
+                          HapticFeedback.mediumImpact();
                           final name = _nameController.text.trim();
-                          final amount = double.tryParse(_amountController.text) ?? 0.0;
-                          if (name.isEmpty || amount <= 0) {
+                          final amount =
+                              double.tryParse(_amountController.text) ?? 0.0;
+
+                          bool hasShakeError = false;
+                          if (name.isEmpty) {
+                            _nameShakeKey.currentState?.shake();
+                            hasShakeError = true;
+                          }
+                          if (amount <= 0) {
+                            _amountShakeKey.currentState?.shake();
+                            hasShakeError = true;
+                          }
+
+                          if (hasShakeError) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Por favor, ingresa un nombre y un monto válido.')),
+                              const SnackBar(
+                                dismissDirection: DismissDirection.horizontal,
+                                content: Text(
+                                  'Por favor, ingresa un nombre y un monto válido.',
+                                ),
+                              ),
                             );
                             return;
                           }
@@ -250,16 +402,26 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                                 targetAmount: amount,
                                 icon: selectedIcon,
                               );
-                              await ref.read(savingGoalsProvider.notifier).updateGoal(updatedGoal);
+                              await ref
+                                  .read(savingGoalsProvider.notifier)
+                                  .updateGoal(updatedGoal);
                               if (context.mounted) {
                                 Navigator.of(context).pop();
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Meta actualizada con éxito 🎉'), backgroundColor: Colors.green),
+                                  const SnackBar(
+                                    dismissDirection:
+                                        DismissDirection.horizontal,
+                                    content: Text(
+                                      'Meta actualizada con éxito 🎉',
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
                                 );
                               }
                             } else {
                               final goal = SavingGoal(
-                                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                                id: DateTime.now().millisecondsSinceEpoch
+                                    .toString(),
                                 name: name,
                                 targetAmount: amount,
                                 currentAmount: 0.0,
@@ -267,11 +429,20 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                                 userId: user.email,
                               );
 
-                              await ref.read(savingGoalsProvider.notifier).addGoal(goal);
+                              await ref
+                                  .read(savingGoalsProvider.notifier)
+                                  .addGoal(goal);
                               if (context.mounted) {
                                 Navigator.of(context).pop();
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Meta de ahorro creada con éxito 🎉'), backgroundColor: Colors.green),
+                                  const SnackBar(
+                                    dismissDirection:
+                                        DismissDirection.horizontal,
+                                    content: Text(
+                                      'Meta de ahorro creada con éxito 🎉',
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
                                 );
                               }
                             }
@@ -281,15 +452,26 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
                           padding: const EdgeInsets.symmetric(vertical: 20),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                         ),
-                        child: Text(widget.goalToEdit != null ? 'Guardar Cambios' : 'Comenzar a Ahorrar', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                        child: Text(
+                          widget.goalToEdit != null
+                              ? 'Guardar Cambios'
+                              : 'Comenzar a Ahorrar',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),

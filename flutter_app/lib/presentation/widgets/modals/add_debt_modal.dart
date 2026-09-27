@@ -36,6 +36,11 @@ class AddDebtModal extends ConsumerStatefulWidget {
 }
 
 class _AddDebtModalState extends ConsumerState<AddDebtModal> {
+
+
+  final _nameShakeKey = GlobalKey<ShakeWidgetState>();
+  final _amountShakeKey = GlobalKey<ShakeWidgetState>();
+
   String name = "";
   double amountPerInstallment = 0.0;
   int totalInstallments = 1;

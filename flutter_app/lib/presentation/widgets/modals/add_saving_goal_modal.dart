@@ -49,6 +49,11 @@ class AddSavingGoalModal extends ConsumerStatefulWidget {
 }
 
 class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
+
+
+  final _nameShakeKey = GlobalKey<ShakeWidgetState>();
+  final _amountShakeKey = GlobalKey<ShakeWidgetState>();
+
   late TextEditingController _nameController;
   late TextEditingController _amountController;
   late String selectedIcon;

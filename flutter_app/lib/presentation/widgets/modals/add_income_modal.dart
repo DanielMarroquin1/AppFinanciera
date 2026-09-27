@@ -42,6 +42,13 @@ class AddIncomeModal extends ConsumerStatefulWidget {
 }
 
 class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
+
+
+  final _amountShakeKey = GlobalKey<ShakeWidgetState>();
+  final _amount2ShakeKey = GlobalKey<ShakeWidgetState>();
+  final _categoryShakeKey = GlobalKey<ShakeWidgetState>();
+  final _recurrenceShakeKey = GlobalKey<ShakeWidgetState>();
+
   String amount = "";
   String amount2 = "";
   String category = "";

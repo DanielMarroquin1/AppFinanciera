@@ -49,6 +49,12 @@ class AddExpenseModal extends ConsumerStatefulWidget {
 }
 
 class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
+
+
+  final _amountShakeKey = GlobalKey<ShakeWidgetState>();
+  final _categoryShakeKey = GlobalKey<ShakeWidgetState>();
+  final _recurrenceShakeKey = GlobalKey<ShakeWidgetState>();
+
   String amount = "";
   String category = "";
   String description = "";

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/presentation/widgets/common/delete_confirmation_dialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -354,9 +355,11 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                                             ListTile(
                                               leading: const Icon(LucideIcons.trash2, color: Color(0xFFEF4444)),
                                               title: const Text('Eliminar', style: TextStyle(color: Color(0xFFEF4444))),
-                                              onTap: () {
-                                                ref.read(debtNotifierProvider.notifier).deleteDebt(debt.id);
-                                                Navigator.pop(ctx);
+                                              onTap: () async {
+                                                Navigator.pop(ctx); // close bottom sheet first
+                                                if (await DeleteConfirmationDialog.show(context, title: 'Eliminar Deuda', content: '¿Estás seguro de que deseas eliminar esta deuda?')) {
+                                                  ref.read(debtNotifierProvider.notifier).deleteDebt(debt.id);
+                                                }
                                               },
                                             ),
                                           ],

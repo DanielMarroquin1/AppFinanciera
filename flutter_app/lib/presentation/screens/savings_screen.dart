@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/presentation/widgets/common/delete_confirmation_dialog.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../widgets/modals/add_saving_goal_modal.dart';
 import '../widgets/modals/add_funds_modal.dart';
@@ -345,25 +346,7 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                                         goalToEdit: goal,
                                       );
                                     } else if (value == 'delete') {
-                                      final confirm = await showDialog<bool>(
-                                        context: context,
-                                        builder: (c) => AlertDialog(
-                                          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                                          title: const Text('Eliminar Meta'),
-                                          content: Text('¿Estás seguro de que quieres eliminar la meta "${goal.name}"? Esta acción no se puede deshacer.'),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(c, false),
-                                              child: const Text('Cancelar'),
-                                            ),
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(c, true),
-                                              child: const Text('Eliminar', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                                            ),
-                                          ],
-                                        ),
-                                      );
+                                      final confirm = await DeleteConfirmationDialog.show(context, title: 'Eliminar Meta', content: '¿Estás seguro de que quieres eliminar la meta "${goal.name}"? Esta acción no se puede deshacer.');
                                       if (confirm == true) {
                                         await ref.read(savingGoalsProvider.notifier).deleteGoal(goal.id);
                                       }

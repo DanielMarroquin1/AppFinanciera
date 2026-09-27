@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/presentation/widgets/common/delete_confirmation_dialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/utils/currency_formatter.dart';
@@ -313,7 +314,7 @@ class _QuickActionManagerModalInternal extends ConsumerWidget {
                                       icon: Icon(LucideIcons.moreVertical, color: isDark ? Colors.grey[400] : Colors.grey[600], size: 20),
                                       color: isDark ? const Color(0xFF1F2937) : Colors.white,
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                      onSelected: (value) {
+                                      onSelected: (value) async {
                                         if (value == 'edit') {
                                           Navigator.pop(context); // Close the quick action modal first
                                           if (isIncome) {
@@ -322,7 +323,9 @@ class _QuickActionManagerModalInternal extends ConsumerWidget {
                                             AddExpenseModal.show(context, isFixed: true, existingTransaction: expense);
                                           }
                                         } else if (value == 'delete') {
-                                          ref.read(transactionNotifierProvider.notifier).deleteTransaction(expense.id);
+                                          if (await DeleteConfirmationDialog.show(context)) {
+                                            ref.read(transactionNotifierProvider.notifier).deleteTransaction(expense.id);
+                                          }
                                         }
                                       },
                                       itemBuilder: (context) => [

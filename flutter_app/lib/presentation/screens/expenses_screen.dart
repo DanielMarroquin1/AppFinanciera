@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/presentation/widgets/common/delete_confirmation_dialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -720,11 +721,13 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                         icon: Icon(LucideIcons.moreVertical, color: isDark ? Colors.grey[400] : Colors.grey[600], size: 20),
                                         color: isDark ? const Color(0xFF374151) : Colors.white,
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                        onSelected: (value) {
+                                        onSelected: (value) async {
                                           if (value == 'edit') {
                                             AddExpenseModal.show(context, existingTransaction: expense, isFixed: expense.isFixed, currencyCode: currencyCode);
                                           } else if (value == 'delete') {
-                                            ref.read(transactionNotifierProvider.notifier).deleteTransaction(expense.id);
+                                            if (await DeleteConfirmationDialog.show(context)) {
+                                              ref.read(transactionNotifierProvider.notifier).deleteTransaction(expense.id);
+                                            }
                                           }
                                         },
                                         itemBuilder: (context) => [
@@ -814,31 +817,13 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                             PopupMenuButton<String>(
                               icon: Icon(LucideIcons.moreVertical, size: 20, color: isDark ? Colors.grey[400] : Colors.grey[600]),
                               color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                              onSelected: (value) {
+                              onSelected: (value) async {
                                 if (value == 'edit') {
                                   AddExpenseModal.show(context, existingTransaction: expense, isFixed: expense.isFixed, currencyCode: currencyCode);
                                 } else if (value == 'delete') {
-                                  showDialog(
-                                    context: context,
-                                    builder: (ctx) => AlertDialog(
-                                      backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
-                                      title: Text('Eliminar Gasto', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
-                                      content: Text('¿Estás seguro de que quieres eliminar este gasto? Esta acción no se puede deshacer.', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700])),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.of(ctx).pop(),
-                                          child: Text('Cancelar', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            ref.read(transactionNotifierProvider.notifier).deleteTransaction(expense.id);
-                                            Navigator.of(ctx).pop();
-                                          },
-                                          child: const Text('Eliminar', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                                        ),
-                                      ],
-                                    )
-                                  );
+                                  if (await DeleteConfirmationDialog.show(context)) {
+                                    ref.read(transactionNotifierProvider.notifier).deleteTransaction(expense.id);
+                                  }
                                 }
                               },
                               itemBuilder: (context) => [

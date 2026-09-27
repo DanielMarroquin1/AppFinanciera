@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -843,12 +844,25 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: amount.isEmpty || category.isEmpty ? null : () async {
+                      onPressed: () async {
+                        HapticFeedback.mediumImpact();
+                        final parsedAmount = double.tryParse(amount) ?? 0.0;
+                        bool missingRecurrence = widget.isFixed && recurrenceType == null;
+                        
+                        if (parsedAmount <= 0 || category.isEmpty || missingRecurrence) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('Por favor, completa todos los campos requeridos.', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              backgroundColor: Colors.redAccent,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            ),
+                          );
+                          return;
+                        }
+
                         final user = FirebaseAuth.instance.currentUser;
                         if (user == null) return;
-                        
-                        final parsedAmount = double.tryParse(amount) ?? 0.0;
-                        if (parsedAmount <= 0) return;
 
                         final transaction = TransactionModel(
                           id: widget.existingTransaction?.id ?? '',

@@ -700,7 +700,8 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                         final parsedAmount = double.tryParse(amount) ?? 0.0;
                         final parsedAmount2 = double.tryParse(amount2) ?? 0.0;
                         
-                        if (parsedAmount <= 0 || category.isEmpty || (isBiweekly && parsedAmount2 <= 0)) {
+                        bool missingRecurrence = widget.isFixed && recurrenceType == null;
+                        if (parsedAmount <= 0 || category.isEmpty || (isBiweekly && parsedAmount2 <= 0) || missingRecurrence) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: const Text('Por favor, completa y verifica todos los montos requeridos.', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),

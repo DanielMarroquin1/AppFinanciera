@@ -244,9 +244,9 @@ class PdfReportService {
                 children: [
                   _safeText("QUIVO", style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: primary)),
                   pw.SizedBox(height: 4),
-                  _safeText(isEn ? 'REPORT: ${typeLabel.toUpperCase()}' : 'REPORTE ${typeLabel.toUpperCase()}', style: pw.TextStyle(fontSize: 14, color: PdfColors.grey700, fontWeight: pw.FontWeight.bold)),
+                  _safeText(typeLabel.toUpperCase(), style: pw.TextStyle(fontSize: 14, color: PdfColors.grey700, fontWeight: pw.FontWeight.bold)),
                   pw.SizedBox(height: 2),
-                  _safeText(isEn ? 'Holder: ${_cleanText(userName)}' : 'Titular: ${_cleanText(userName)}', style: pw.TextStyle(fontSize: 12, color: PdfColors.grey800)),
+                  _safeText("${loc.get('pdf_holder') ?? 'Holder'}: ${_cleanText(userName)}", style: pw.TextStyle(fontSize: 12, color: PdfColors.grey800)),
                 ],
               ),
             ],
@@ -254,7 +254,7 @@ class PdfReportService {
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.end,
             children: [
-              _safeText(isEn ? 'PERIOD' : 'PERIODO', style: pw.TextStyle(fontSize: 10, color: PdfColors.grey600, fontWeight: pw.FontWeight.bold)),
+              _safeText(loc.get('pdf_period') ?? 'PERIOD', style: pw.TextStyle(fontSize: 10, color: PdfColors.grey600, fontWeight: pw.FontWeight.bold)),
               pw.SizedBox(height: 4),
               _safeText('${format.format(startDate)} - ${format.format(endDate)}', style: pw.TextStyle(fontSize: 12, color: primary, fontWeight: pw.FontWeight.bold)),
             ],
@@ -270,7 +270,7 @@ class PdfReportService {
       children: [
         _buildModernCard(loc.get('pdf_total_income') ?? 'INGRESOS', income, green, currencyCode),
         _buildModernCard(loc.get('pdf_total_expenses') ?? 'GASTOS', expense, red, currencyCode),
-        _buildModernCard(isEn ? 'NET BALANCE' : 'BALANCE NETO', balance, balance >= 0 ? primary : red, currencyCode),
+        _buildModernCard(loc.get('pdf_net_balance') ?? 'NET BALANCE', balance, balance >= 0 ? primary : red, currencyCode),
       ],
     );
   }
@@ -309,7 +309,7 @@ class PdfReportService {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          _safeText(isEn ? 'EXPENSES BREAKDOWN BY CATEGORY' : 'DESGLOSE DE GASTOS POR CATEGORÍA', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: primary)),
+          _safeText(loc.get('pdf_expenses_breakdown') ?? 'EXPENSES BREAKDOWN BY CATEGORY', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: primary)),
           pw.SizedBox(height: 16),
           ...sortedEntries.map((entry) {
             final percentage = (entry.value / totalExpense) * 100;
@@ -353,19 +353,23 @@ class PdfReportService {
 
   static List<pw.Widget> _buildModernTransactionTable(List<TransactionModel> txs, String currencyCode, DateFormat format, PdfColor primary, PdfColor green, PdfColor red, bool isEn, String langCode, AppLocalizations loc) {
     if (txs.isEmpty) {
-      return [pw.Center(child: _safeText(isEn ? 'No transactions registered in this period.' : 'No hay movimientos registrados en este periodo.', style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey600)))];
+      return [pw.Center(child: _safeText(loc.get('pdf_no_transactions') ?? 'No transactions', style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey600)))];
     }
 
-    final tableHeaders = isEn 
-        ? ['DATE', 'DESCRIPTION', 'CATEGORY', 'TYPE', 'AMOUNT']
-        : ['FECHA', 'DESCRIPCIÓN', 'CATEGORÍA', 'TIPO', 'MONTO'];
+    final tableHeaders = [
+      loc.get('pdf_table_date') ?? 'DATE',
+      loc.get('pdf_table_desc') ?? 'DESCRIPTION',
+      loc.get('pdf_table_cat') ?? 'CATEGORY',
+      loc.get('pdf_table_type') ?? 'TYPE',
+      loc.get('pdf_table_amount') ?? 'AMOUNT'
+    ];
 
     final tableData = txs.map((tx) {
       final isIncome = tx.type == 'income';
       final formattedAmount = CurrencyFormatter.format(tx.amount, currencyCode);
       return [
         format.format(tx.date),
-        _cleanText(tx.description.isEmpty ? (isEn ? 'No description' : 'Sin descripción') : tx.description),
+        _cleanText(tx.description.isEmpty ? (loc.get('pdf_no_description') ?? 'No description') : tx.description),
         loc.translateCategory(tx.category),
         isIncome ? (loc.get('pdf_income_type') ?? 'Ingreso') : (loc.get('pdf_expense_type') ?? 'Gasto'),
         isIncome ? '+$formattedAmount' : '-$formattedAmount',
@@ -373,7 +377,7 @@ class PdfReportService {
     }).toList();
 
     return [
-      _safeText(isEn ? 'TRANSACTION HISTORY' : 'HISTORIAL DE MOVIMIENTOS', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: primary)),
+      _safeText(loc.get('pdf_transaction_history') ?? 'TRANSACTION HISTORY', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: primary)),
       pw.SizedBox(height: 16),
       pw.TableHelper.fromTextArray(
         headers: tableHeaders,
@@ -401,8 +405,8 @@ class PdfReportService {
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          _safeText(isEn ? 'Generated by QUIVO' : 'Generado por QUIVO', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey500)),
-          _safeText(isEn ? 'Page ${context.pageNumber} of ${context.pagesCount}' : 'Página ${context.pageNumber} de ${context.pagesCount}', style: pw.TextStyle(fontSize: 10, color: primary, fontWeight: pw.FontWeight.bold)),
+          _safeText(loc.get('pdf_generated_by') ?? 'Generated by QUIVO', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey500)),
+          _safeText("${loc.get('pdf_page') ?? 'Page'} ${context.pageNumber} ${loc.get('pdf_of') ?? 'of'} ${context.pagesCount}", style: pw.TextStyle(fontSize: 10, color: primary, fontWeight: pw.FontWeight.bold)),
         ],
       ),
     );

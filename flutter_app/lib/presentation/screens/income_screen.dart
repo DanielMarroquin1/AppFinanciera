@@ -719,7 +719,9 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                                           if (value == 'edit') {
                                             AddIncomeModal.show(context, isFixed: true, existingTransaction: income);
                                           } else if (value == 'delete') {
-                                            ref.read(transactionNotifierProvider.notifier).deleteTransaction(income.id);
+                                            if (await DeleteConfirmationDialog.show(context)) {
+                                              ref.read(transactionNotifierProvider.notifier).deleteTransaction(income.id);
+                                            }
                                           }
                                         },
                                         itemBuilder: (context) => [

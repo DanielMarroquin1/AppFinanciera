@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter_app/presentation/widgets/common/custom_snackbar.dart';
 import 'package:flutter_app/presentation/widgets/common/shake_widget.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -36,8 +37,6 @@ class AddDebtModal extends ConsumerStatefulWidget {
 }
 
 class _AddDebtModalState extends ConsumerState<AddDebtModal> {
-
-
   final _nameShakeKey = GlobalKey<ShakeWidgetState>();
   final _amountShakeKey = GlobalKey<ShakeWidgetState>();
 
@@ -518,21 +517,9 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
                         }
 
                         if (hasShakeError) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text(
-                                'Por favor, completa los campos requeridos.',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              backgroundColor: Colors.redAccent,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
+                          CustomSnackBar.showError(
+                            context,
+                            'Por favor, completa los campos requeridos.',
                           );
                           return;
                         }

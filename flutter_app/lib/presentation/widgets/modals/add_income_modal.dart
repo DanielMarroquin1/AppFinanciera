@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/presentation/widgets/common/custom_snackbar.dart';
 import 'package:flutter_app/presentation/widgets/common/shake_widget.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -42,8 +43,6 @@ class AddIncomeModal extends ConsumerStatefulWidget {
 }
 
 class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
-
-
   final _amountShakeKey = GlobalKey<ShakeWidgetState>();
   final _amount2ShakeKey = GlobalKey<ShakeWidgetState>();
   final _categoryShakeKey = GlobalKey<ShakeWidgetState>();
@@ -1146,21 +1145,9 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                         }
 
                         if (hasShakeError) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text(
-                                'Por favor, completa y verifica todos los montos requeridos.',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              backgroundColor: Colors.redAccent,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
+                          CustomSnackBar.showError(
+                            context,
+                            'Por favor, completa y verifica todos los montos requeridos.',
                           );
                           return;
                         }
@@ -1209,26 +1196,11 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
 
                         if (context.mounted) {
                           Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              dismissDirection: DismissDirection.horizontal,
-                              content: Text(
-                                isEditing
-                                    ? 'Ingreso actualizado exitosamente'
-                                    : 'Ingreso agregado exitosamente',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              backgroundColor: isDark
-                                  ? const Color(0xFF065F46)
-                                  : const Color(0xFF10B981),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
+                          CustomSnackBar.showSuccess(
+                            context,
+                            isEditing
+                                ? 'Ingreso actualizado exitosamente'
+                                : 'Ingreso agregado exitosamente',
                           );
                         }
                       },

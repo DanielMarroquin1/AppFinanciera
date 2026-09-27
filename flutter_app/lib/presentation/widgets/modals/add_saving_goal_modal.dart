@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/presentation/widgets/common/custom_snackbar.dart';
 import 'package:flutter_app/presentation/widgets/common/shake_widget.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -49,8 +50,6 @@ class AddSavingGoalModal extends ConsumerStatefulWidget {
 }
 
 class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
-
-
   final _nameShakeKey = GlobalKey<ShakeWidgetState>();
   final _amountShakeKey = GlobalKey<ShakeWidgetState>();
 
@@ -388,13 +387,9 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                           }
 
                           if (hasShakeError) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                dismissDirection: DismissDirection.horizontal,
-                                content: Text(
-                                  'Por favor, ingresa un nombre y un monto válido.',
-                                ),
-                              ),
+                            CustomSnackBar.showError(
+                              context,
+                              'Por favor, ingresa un nombre y un monto válido.',
                             );
                             return;
                           }
@@ -412,15 +407,9 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                                   .updateGoal(updatedGoal);
                               if (context.mounted) {
                                 Navigator.of(context).pop();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    dismissDirection:
-                                        DismissDirection.horizontal,
-                                    content: Text(
-                                      'Meta actualizada con éxito 🎉',
-                                    ),
-                                    backgroundColor: Colors.green,
-                                  ),
+                                CustomSnackBar.showSuccess(
+                                  context,
+                                  'Meta actualizada con éxito 🎉',
                                 );
                               }
                             } else {

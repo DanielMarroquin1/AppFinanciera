@@ -224,6 +224,13 @@ class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal>
           ),
         );
 
+        final user = ref.read(authProvider).user;
+        final customCats = (user?.unlockedItems ?? [])
+            .where((item) => item.startsWith('cat_'))
+            .map((item) => item.replaceFirst('cat_', ''))
+            .toList();
+        final customCatsString = customCats.isNotEmpty ? '  - Custom user categories: ${customCats.join(", ")}' : '';
+
         final prompt =
             '''
 Analyze this financial transaction spoken by the user: "$_recognizedText"
@@ -1195,6 +1202,7 @@ $cardsInfo
   }
 
   Widget _buildListeningView(bool isDark) {
+    final loc = ref.read(localizationProvider);
     return Stack(
       children: [
         // Header
@@ -1275,7 +1283,7 @@ $cardsInfo
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
                   child: Text(
-                    'Cuéntame todos los detalles de tu transacción',
+                    loc.get('voice_prompt_details'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black54,
@@ -1324,21 +1332,7 @@ $cardsInfo
                           child: const Icon(LucideIcons.mic, color: Colors.white, size: 32),
                         ),
                       ),
-                      Positioned(
-                        right: -60,
-                        child: GestureDetector(
-                          onTap: _onProcessButton,
-                          child: Container(
-                            width: 56,
-                            height: 56,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF14B8A6),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(LucideIcons.send, color: Colors.white),
-                          ),
-                        ),
-                      ),
+
                     ],
                   ),
                 )
@@ -1365,18 +1359,7 @@ $cardsInfo
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 24),
-                            GestureDetector(
-                              onTap: () {},
-                              child: const Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(LucideIcons.camera, color: Colors.white, size: 20),
-                                  const SizedBox(height: 4),
-                                  Text('Foto', style: TextStyle(color: Colors.white, fontSize: 10)),
-                                ],
-                              ),
-                            ),
+
                           ],
                         ),
                       ),
@@ -1402,6 +1385,191 @@ $cardsInfo
         ),
       ],
     );
+  }
+
+  Future<void> _editDescription() async {
+    final TextEditingController controller = TextEditingController(text: _parsedDescription);
+    final newDesc = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        title: const Text('Editar descripción', style: TextStyle(color: Colors.white)),
+        content: TextField(
+          controller: controller,
+          style: const TextStyle(color: Colors.white),
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Descripción...',
+            hintStyle: TextStyle(color: Colors.white30),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
+            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF2DD4BF))),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar', style: TextStyle(color: Colors.white54))),
+          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Guardar', style: TextStyle(color: Color(0xFF2DD4BF)))),
+        ],
+      ),
+    );
+    if (newDesc != null && newDesc.isNotEmpty) {
+      setState(() => _parsedDescription = newDesc);
+    }
+  }
+
+  Future<void> _editCategory() async {
+    final loc = ref.read(localizationProvider);
+    final user = ref.read(authProvider).user;
+    
+    // Default categories
+    final defaultCategories = _parsedType == 'expense' 
+      ? ['food', 'transport', 'bills', 'shopping', 'entertainment', 'health', 'home', 'education', 'other']
+      : ['salary', 'business', 'investments', 'gifts', 'other_income'];
+      
+    // Combine with custom categories
+    final List<String> customCats = (user?.unlockedItems ?? [])
+        .where((item) => item.startsWith('cat_'))
+        .map((item) => item.replaceFirst('cat_', ''))
+        .toList();
+        
+    final allCats = [...defaultCategories, ...customCats];
+
+    final newCat = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1E293B),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (_, scrollController) => Column(
+          children: [
+            Container(margin: const EdgeInsets.only(top: 12, bottom: 20), width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Seleccionar Categoría', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  TextButton(
+                    onPressed: () async {
+                      // Show create category dialog
+                      final created = await showDialog<String>(
+                        context: context,
+                        builder: (context) {
+                          final ctrl = TextEditingController();
+                          return AlertDialog(
+                            backgroundColor: const Color(0xFF1E293B),
+                            title: const Text('Nueva Categoría', style: TextStyle(color: Colors.white)),
+                            content: TextField(
+                              controller: ctrl,
+                              style: const TextStyle(color: Colors.white),
+                              autofocus: true,
+                              decoration: const InputDecoration(
+                                hintText: 'Ej. Mascotas',
+                                hintStyle: TextStyle(color: Colors.white30),
+                              ),
+                            ),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+                              TextButton(
+                                onPressed: () {
+                                  final name = ctrl.text.trim();
+                                  if (name.isEmpty) return;
+                                  
+                                  // Simple bad words filter
+                                  final badWords = ['puta', 'mierda', 'pendejo', 'cabron', 'culo', 'fuck', 'shit', 'bitch'];
+                                  bool hasBadWord = badWords.any((w) => name.toLowerCase().contains(w));
+                                  if (hasBadWord) {
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se permiten palabras ofensivas')));
+                                    return;
+                                  }
+                                  
+                                  Navigator.pop(context, name);
+                                },
+                                child: const Text('Crear', style: TextStyle(color: Color(0xFF2DD4BF))),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      
+                      if (created != null && created.isNotEmpty) {
+                        // Save custom category to user profile
+                        if (user != null) {
+                          final authNotifier = ref.read(authProvider.notifier);
+                          final currentItems = List<String>.from(user.unlockedItems);
+                          final newTag = 'cat_$created';
+                          if (!currentItems.contains(newTag)) {
+                            currentItems.add(newTag);
+                            await authNotifier.updateProfile(user.copyWith(unlockedItems: currentItems));
+                          }
+                        }
+                        Navigator.pop(context, created); // Return it as selected
+                      }
+                    },
+                    child: const Text('Crear', style: TextStyle(color: Color(0xFF2DD4BF))),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: allCats.length,
+                itemBuilder: (context, index) {
+                  final cat = allCats[index];
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                    title: Text(loc.translateCategory(cat), style: const TextStyle(color: Colors.white)),
+                    trailing: _parsedCategory == cat ? const Icon(LucideIcons.check, color: Color(0xFF2DD4BF)) : null,
+                    onTap: () => Navigator.pop(context, cat),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (newCat != null) {
+      setState(() => _parsedCategory = newCat);
+    }
+  }
+
+  Future<void> _editPaymentMethod() async {
+    final cards = ref.read(creditCardsProvider).value ?? [];
+    final newMethod = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: const Color(0xFF1E293B),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => ListView(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        children: [
+          ListTile(
+            leading: const Icon(LucideIcons.banknote, color: Colors.green),
+            title: const Text('Efectivo / Cuenta', style: TextStyle(color: Colors.white)),
+            onTap: () => Navigator.pop(context, 'cash'),
+          ),
+          if (_parsedType == 'expense') ...cards.map((c) => ListTile(
+            leading: const Icon(LucideIcons.creditCard, color: Colors.blue),
+            title: Text(c.name, style: const TextStyle(color: Colors.white)),
+            subtitle: Text('Límite: ${CurrencyFormatter.format(c.limit, ref.read(authProvider).user?.currency ?? "USD")}', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+            onTap: () => Navigator.pop(context, c.id),
+          )).toList(),
+        ],
+      ),
+    );
+    if (newMethod != null) {
+      setState(() {
+        if (newMethod == 'cash') {
+          _selectedCreditCardId = null;
+        } else {
+          _selectedCreditCardId = newMethod;
+        }
+      });
+    }
   }
 
   Widget _buildPreviewView(bool isDark) {
@@ -1463,22 +1631,31 @@ $cardsInfo
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(_parsedDescription.isNotEmpty ? _parsedDescription : 'Transacción', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                              const Icon(LucideIcons.edit2, color: Colors.white54, size: 16),
-                            ],
+                          GestureDetector(
+                            onTap: _editDescription,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(child: Text(_parsedDescription.isNotEmpty ? _parsedDescription : 'Transacción', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+                                const SizedBox(width: 8),
+                                const Icon(LucideIcons.edit2, color: Colors.white54, size: 16),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Text(ref.read(localizationProvider).translateCategory(_parsedCategory), style: const TextStyle(color: Colors.white54, fontSize: 14)),
-                              const SizedBox(width: 8),
-                              const Icon(LucideIcons.calendar, color: Colors.white54, size: 12),
-                              const SizedBox(width: 4),
-                              Text('Hoy', style: const TextStyle(color: Colors.white54, fontSize: 14)),
-                            ],
+                          GestureDetector(
+                            onTap: _editCategory,
+                            child: Row(
+                              children: [
+                                Text(ref.read(localizationProvider).translateCategory(_parsedCategory), style: const TextStyle(color: Color(0xFF2DD4BF), fontSize: 14)),
+                                const SizedBox(width: 4),
+                                const Icon(LucideIcons.chevronDown, color: Color(0xFF2DD4BF), size: 14),
+                                const SizedBox(width: 12),
+                                const Icon(LucideIcons.calendar, color: Colors.white54, size: 12),
+                                const SizedBox(width: 4),
+                                Text('Hoy', style: const TextStyle(color: Colors.white54, fontSize: 14)),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -1488,6 +1665,19 @@ $cardsInfo
                 const SizedBox(height: 24),
                 Text(formattedAmount, style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 24),
+                GestureDetector(
+                  onTap: _editPaymentMethod,
+                  child: Row(
+                    children: [
+                      Icon(_selectedCreditCardId == null ? LucideIcons.banknote : LucideIcons.creditCard, color: Colors.white54, size: 14),
+                      const SizedBox(width: 8),
+                      Text(_selectedCreditCardId == null ? 'Efectivo / Cuenta' : 'Tarjeta de Crédito', style: const TextStyle(color: Color(0xFF2DD4BF), fontSize: 14)),
+                      const SizedBox(width: 4),
+                      const Icon(LucideIcons.chevronDown, color: Color(0xFF2DD4BF), size: 14),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     const Icon(LucideIcons.tag, color: Colors.white54, size: 14),

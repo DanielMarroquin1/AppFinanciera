@@ -23,9 +23,9 @@ class VoiceTransactionModal extends ConsumerStatefulWidget {
   const VoiceTransactionModal({super.key});
 
   static Future<void> show(BuildContext context) {
-    return showDialog(
-      context: context,
-      builder: (context) => const VoiceTransactionModal(),
+    return Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const VoiceTransactionModal()),
     );
   }
 
@@ -45,6 +45,7 @@ class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal>
   bool _isListening = false;
   bool _isProcessing = false;
   bool _isDone = false;
+  final TextEditingController _textController = TextEditingController();
   String _recognizedText = '';
   double _parsedAmount = 0.0;
   String _parsedCategory = 'other';
@@ -87,6 +88,7 @@ class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal>
   @override
   void dispose() {
     _silenceTimer?.cancel();
+    _textController.dispose();
     _controller.dispose();
     _speechToText.cancel();
     _flutterTts.stop();
@@ -142,7 +144,7 @@ class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal>
         await _speechToText.listen(
           onResult: (result) {
             setState(() {
-              _recognizedText = result.recognizedWords;
+              _recognizedText = result.recognizedWords; _textController.text = _recognizedText;
             });
             _silenceTimer?.cancel();
             if (_recognizedText.trim().isNotEmpty) {
@@ -743,7 +745,7 @@ $cardsInfo
       await _speechToText.listen(
         onResult: (result) {
           setState(() {
-            _recognizedText = result.recognizedWords;
+            _recognizedText = result.recognizedWords; _textController.text = _recognizedText;
           });
           _silenceTimer?.cancel();
           if (_recognizedText.trim().isNotEmpty) {
@@ -1173,339 +1175,356 @@ $cardsInfo
     }
   }
 
+  void _onProcessButton() {
+    if (_textController.text.isNotEmpty) {
+      _recognizedText = _textController.text;
+    }
+    _processText();
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutExpo,
-        width: double.infinity,
-        padding: const EdgeInsets.all(32),
-        decoration: BoxDecoration(
-          color: isDark
-              ? const Color(0xFF0F172A).withValues(alpha: 0.95)
-              : Colors.white.withValues(alpha: 0.95),
-          borderRadius: BorderRadius.circular(40),
-          border: Border.all(
-            color: _isListening
-                ? const Color(0xFF8B5CF6).withValues(alpha: 0.5)
-                : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
-            width: 2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: _isListening
-                  ? const Color(0xFF8B5CF6).withValues(alpha: 0.3)
-                  : Colors.black.withValues(alpha: 0.2),
-              blurRadius: _isListening ? 40 : 20,
-              spreadRadius: _isListening ? 10 : 0,
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (_showPreview) ...[
-              _buildPreviewView(isDark),
-            ] else ...[
-              _buildListeningView(isDark),
-            ],
-          ],
-        ),
+    
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF16132D) : const Color(0xFFF1F5F9),
+      body: SafeArea(
+        child: _showPreview ? _buildPreviewView(isDark) : _buildListeningView(isDark),
       ),
     );
   }
 
   Widget _buildListeningView(bool isDark) {
-    return Column(
+    return Stack(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const SizedBox(width: 32),
-            Text(
-              _isListening ? 'Escuchando...' : 'IA de Voz',
-              style: TextStyle(
-                color: isDark ? Colors.white : Colors.black,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            IconButton(
-              icon: Icon(
-                LucideIcons.x,
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-        const SizedBox(height: 32),
-        GestureDetector(
-          onTap: _toggleListening,
-          child: ScaleTransition(
-            scale: _isListening
-                ? _controller
-                : const AlwaysStoppedAnimation(1.0),
-            child: Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: _isListening
-                      ? [const Color(0xFF8B5CF6), const Color(0xFF6D28D9)]
-                      : [
-                          isDark
-                              ? const Color(0xFF334155)
-                              : const Color(0xFFE2E8F0),
-                          isDark
-                              ? const Color(0xFF1E293B)
-                              : const Color(0xFFCBD5E1),
-                        ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: _isListening
-                    ? [
-                        BoxShadow(
-                          color: const Color(0xFF8B5CF6).withValues(alpha: 0.5),
-                          blurRadius: 30,
-                          spreadRadius: 10,
-                        ),
-                      ]
-                    : [],
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  if (_isProcessing)
-                    const CircularProgressIndicator(color: Colors.white),
-                  Icon(
-                    _isListening ? LucideIcons.mic : LucideIcons.micOff,
-                    color: _isListening
-                        ? Colors.white
-                        : (isDark ? Colors.grey[400] : Colors.grey[600]),
-                    size: 48,
+        // Header
+        Positioned(
+          top: 16,
+          left: 16,
+          right: 16,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              if (_textController.text.isNotEmpty)
+                 IconButton(
+                  icon: const Icon(LucideIcons.chevronLeft, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                )
+              else
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
                   ),
-                ],
-              ),
+                  child: IconButton(
+                    icon: const Icon(LucideIcons.x, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+                
+              if (_textController.text.isNotEmpty)
+                const Text('Asistente Inteligente', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold))
+              else
+                Row(
+                  children: ['ES', 'EN', 'FR', 'PT'].map((lang) => Container(
+                    margin: const EdgeInsets.only(left: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: lang == 'ES' ? Colors.white.withValues(alpha: 0.2) : Colors.transparent,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(lang, style: TextStyle(color: lang == 'ES' ? Colors.white : Colors.white54, fontWeight: FontWeight.bold)),
+                  )).toList(),
+                ),
+            ],
+          ),
+        ),
+        
+        // Progress bar (if typing)
+        if (_textController.text.isNotEmpty)
+          Positioned(
+            top: 70,
+            left: 24,
+            right: 24,
+            child: Row(
+              children: [
+                const Icon(LucideIcons.sparkles, color: Colors.white54, size: 14),
+                const SizedBox(width: 8),
+                const Text('IA MENSUAL', style: TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.bold)),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: LinearProgressIndicator(
+                    value: 0.33,
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2DD4BF)),
+                    minHeight: 4,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text('33%', style: TextStyle(color: Colors.white54, fontSize: 10)),
+              ],
             ),
           ),
+
+        // Main Content (Center)
+        Positioned.fill(
+          top: 100,
+          bottom: 120,
+          child: _textController.text.isEmpty && !_isListening
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    'Cuéntame todos los detalles de tu transacción',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black54,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              )
+            : Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                child: TextField(
+                  controller: _textController,
+                  style: const TextStyle(color: Colors.white, fontSize: 24),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Gasté...',
+                    hintStyle: TextStyle(color: Colors.white30),
+                  ),
+                  maxLines: null,
+                  autofocus: true,
+                ),
+              ),
         ),
-        const SizedBox(height: 40),
-        Text(
-          _recognizedText.isEmpty
-              ? 'Toca para hablar y dime tu gasto...'
-              : '"$_recognizedText"',
-          style: TextStyle(
-            color: _recognizedText.isEmpty
-                ? (isDark ? Colors.grey[500] : Colors.grey[500])
-                : (isDark ? Colors.white : Colors.black),
-            fontSize: 18,
-            fontStyle: _recognizedText.isEmpty
-                ? FontStyle.normal
-                : FontStyle.italic,
-          ),
-          textAlign: TextAlign.center,
+
+        // Bottom Controls
+        Positioned(
+          bottom: 32,
+          left: 0,
+          right: 0,
+          child: _textController.text.isEmpty && !_isListening
+              ? Center(
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: _toggleListening,
+                        child: Container(
+                          width: 80,
+                          height: 80,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF8B5CF6),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(LucideIcons.mic, color: Colors.white, size: 32),
+                        ),
+                      ),
+                      Positioned(
+                        right: -60,
+                        child: GestureDetector(
+                          onTap: _onProcessButton,
+                          child: Container(
+                            width: 56,
+                            height: 56,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF14B8A6),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(LucideIcons.send, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Row(
+                          children: [
+                            GestureDetector(
+                              onTap: _toggleListening,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(LucideIcons.mic, color: _isListening ? const Color(0xFF2DD4BF) : Colors.white, size: 20),
+                                  const SizedBox(height: 4),
+                                  Text('Dictar', style: TextStyle(color: _isListening ? const Color(0xFF2DD4BF) : Colors.white, fontSize: 10)),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 24),
+                            GestureDetector(
+                              onTap: () {},
+                              child: const Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(LucideIcons.camera, color: Colors.white, size: 20),
+                                  const SizedBox(height: 4),
+                                  Text('Foto', style: TextStyle(color: Colors.white, fontSize: 10)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _isProcessing ? null : _onProcessButton,
+                          icon: _isProcessing 
+                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                              : const Icon(LucideIcons.sparkles, color: Colors.white, size: 20),
+                          label: Text(_isProcessing ? 'Procesando...' : 'Procesar', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2DD4BF),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                            elevation: 0,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
         ),
-        if (_errorMessage.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          Text(
-            _errorMessage,
-            style: const TextStyle(color: Colors.redAccent, fontSize: 14),
-            textAlign: TextAlign.center,
-          ),
-        ],
       ],
     );
   }
 
   Widget _buildPreviewView(bool isDark) {
-    // Reusing the rest from old file if possible, or simplifying it for the new minimalist look
-    // We will just do a simplified elegant summary
-    final bool isExpense = _parsedType == 'expense';
-    final Color typeColor = isExpense
-        ? const Color(0xFFEF4444)
-        : const Color(0xFF10B981);
-
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Resumen',
-              style: TextStyle(
-                color: isDark ? Colors.white : Colors.black,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+    final isIncome = _parsedType == 'income';
+    final amount = _parsedAmount;
+    final currencyCode = ref.read(authProvider).user?.currency ?? 'USD';
+    final formattedAmount = '${isIncome ? '+' : '-'}${CurrencyFormatter.format(amount, currencyCode)}';
+    
+    return Container(
+      width: double.infinity,
+      color: const Color(0xFF16132D),
+      child: Column(
+        children: [
+          Expanded(child: Container()), // Empty space at top
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(32), topRight: Radius.circular(32)),
             ),
-            if (_waitingForPaymentMethod)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
                 ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'Falta tarjeta',
-                  style: TextStyle(
-                    color: Color(0xFFF59E0B),
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: typeColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: typeColor.withValues(alpha: 0.3)),
-          ),
-          child: Column(
-            children: [
-              Text(
-                isExpense ? 'Gasto Detectado' : 'Ingreso Detectado',
-                style: TextStyle(
-                  color: typeColor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                CurrencyFormatter.format(
-                  _parsedAmount,
-                  ref.read(authProvider).user?.currency ?? 'USD',
-                ),
-                style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black,
-                  fontSize: 40,
-                  fontWeight: FontWeight.w900,
-                  height: 1,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(
-                      isExpense ? LucideIcons.shoppingBag : LucideIcons.wallet,
-                      size: 16,
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    Row(
+                      children: [
+                        const Icon(LucideIcons.alignLeft, color: Color(0xFF2DD4BF), size: 16),
+                        const SizedBox(width: 8),
+                        const Text('LEÍDO DE TU NOTA', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      _parsedCategory.toUpperCase(),
-                      style: TextStyle(
-                        color: isDark ? Colors.grey[300] : Colors.grey[700],
-                        fontWeight: FontWeight.bold,
+                    IconButton(
+                      icon: const Icon(LucideIcons.x, color: Colors.white54),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(isIncome ? LucideIcons.trendingUp : LucideIcons.car, color: const Color(0xFF3B82F6)),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(_parsedDescription.isNotEmpty ? _parsedDescription : 'Transacción', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                              const Icon(LucideIcons.edit2, color: Colors.white54, size: 16),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Text(ref.read(localizationProvider).translateCategory(_parsedCategory), style: const TextStyle(color: Colors.white54, fontSize: 14)),
+                              const SizedBox(width: 8),
+                              const Icon(LucideIcons.calendar, color: Colors.white54, size: 12),
+                              const SizedBox(width: 4),
+                              Text('Hoy', style: const TextStyle(color: Colors.white54, fontSize: 14)),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                _parsedDescription,
-                style: TextStyle(
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                  fontSize: 16,
+                const SizedBox(height: 24),
+                Text(formattedAmount, style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    const Icon(LucideIcons.tag, color: Colors.white54, size: 14),
+                    const SizedBox(width: 8),
+                    const Text('Etiquetas', style: TextStyle(color: Colors.white54, fontSize: 14)),
+                  ],
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-        if (_waitingForPaymentMethod) ...[
-          const Text(
-            'Escuchando método de pago...',
-            style: TextStyle(
-              color: Color(0xFFF59E0B),
-              fontWeight: FontWeight.bold,
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: const Text('+ #', style: TextStyle(color: Colors.white)),
+                ),
+                const SizedBox(height: 40),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _saveTransaction,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2DD4BF),
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    child: Text(isIncome ? 'Agregar ingreso' : 'Agregar gasto', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
             ),
           ),
-          const SizedBox(height: 16),
         ],
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () {
-                  _flutterTts.stop();
-                  setState(() {
-                    _showPreview = false;
-                    _recognizedText = '';
-                    _waitingForPaymentMethod = false;
-                  });
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  side: BorderSide(
-                    color: isDark
-                        ? const Color(0xFF334155)
-                        : const Color(0xFFE2E8F0),
-                  ),
-                ),
-                child: Text(
-                  'Reintentar',
-                  style: TextStyle(
-                    color: isDark ? Colors.grey[300] : Colors.grey[700],
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: _waitingForPaymentMethod ? null : _saveTransaction,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF8B5CF6),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 0,
-                ),
-                child: const Text(
-                  'Confirmar',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
+      ),
     );
   }
+
 }

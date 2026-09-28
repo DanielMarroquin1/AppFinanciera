@@ -209,14 +209,7 @@ class SwipeableTransaction extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionTile(
-    BuildContext context,
-    bool isDark,
-    String title,
-    IconData icon,
-    VoidCallback onTap, {
-    bool isDestructive = false,
-  }) {
+    Widget _buildActionTile(BuildContext context, bool isDark, String title, IconData icon, VoidCallback onTap, {bool isDestructive = false}) {
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -227,70 +220,18 @@ class SwipeableTransaction extends ConsumerWidget {
             Text(
               title,
               style: TextStyle(
-                color: isDestructive
-                    ? const Color(0xFFEF4444)
-                    : (isDark ? Colors.white : Colors.black),
+                color: isDestructive ? const Color(0xFFEF4444) : (isDark ? Colors.white : Colors.black),
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
             Icon(
               icon,
-              color: isDestructive
-                  ? const Color(0xFFEF4444)
-                  : (isDark ? Colors.grey[400] : Colors.grey[600]),
+              color: isDestructive ? const Color(0xFFEF4444) : (isDark ? Colors.grey[400] : Colors.grey[600]),
               size: 20,
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _executeDelete(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(transactionNotifierProvider.notifier);
-    notifier.deleteTransaction(transaction.id);
-
-    CustomSnackBar.showUndo(context, 'Movimiento eliminado', () {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      notifier.addTransaction(transaction);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return GestureDetector(
-      onLongPress: () => _showActionMenu(context, ref),
-      child: Dismissible(
-        key: Key(transaction.id),
-        direction: DismissDirection.endToStart,
-        onDismissed: (_) {
-          _executeDelete(context, ref);
-        },
-        background: Container(
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 24),
-          decoration: BoxDecoration(
-            color: const Color(0xFFEF4444), // Red
-            borderRadius: BorderRadius.circular(16), // Match corner radius
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: const [
-              Icon(LucideIcons.trash2, color: Colors.white, size: 24),
-              SizedBox(width: 8),
-              Text(
-                'Eliminar',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-        child: child,
       ),
     );
   }

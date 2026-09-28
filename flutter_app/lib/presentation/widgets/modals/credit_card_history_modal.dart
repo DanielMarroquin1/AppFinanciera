@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../common/custom_snackbar.dart';
+import 'add_expense_modal.dart';
+import 'add_income_modal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../domain/entities/credit_card.dart';
@@ -523,8 +526,52 @@ class _CreditCardHistoryModalState
                     final isIncome = t.type == 'income' || isPayment;
                     final categoryLabel = loc.translateCategory(t.category);
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 16),
+                    return Dismissible(
+                      key: Key('cc_tx_${t.id}'),
+                      direction: DismissDirection.horizontal,
+                      background: Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        alignment: Alignment.centerLeft,
+                        child: const Icon(LucideIcons.trash2, color: Colors.white),
+                      ),
+                      secondaryBackground: Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF3B82F6),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        alignment: Alignment.centerRight,
+                        child: const Icon(LucideIcons.edit2, color: Colors.white),
+                      ),
+                      confirmDismiss: (direction) async {
+                        if (direction == DismissDirection.endToStart) {
+                          // Edit
+                          if (isIncome) {
+                            AddIncomeModal.show(context, existingTransaction: t, isFixed: t.isFixed);
+                          } else {
+                            AddExpenseModal.show(context, existingTransaction: t, isFixed: t.isFixed, currencyCode: currencyCode);
+                          }
+                          return false; // Don't dismiss for edit
+                        }
+                        return true; // Dismiss for delete
+                      },
+                      onDismissed: (direction) {
+                        if (direction == DismissDirection.startToEnd) {
+                          final notifier = ref.read(transactionNotifierProvider.notifier);
+                          notifier.deleteTransaction(t.id);
+                          CustomSnackBar.showUndo(context, 'Movimiento eliminado', () {
+                            notifier.addTransaction(t);
+                          });
+                        }
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF1E293B) : Colors.white,

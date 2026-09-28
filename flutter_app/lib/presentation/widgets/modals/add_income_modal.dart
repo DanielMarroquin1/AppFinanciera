@@ -122,7 +122,7 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
   ];
 
   Map<String, String> _getCategoryDetails(String val) {
-    for (var mainCat in detailedCategories) {
+    for (var mainCat in _getAllCategories()) {
       for (var sub in mainCat['subs']) {
         if (sub['value'] == val) {
           return {'label': sub['label']!, 'emoji': sub['emoji']!};

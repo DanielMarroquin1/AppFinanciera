@@ -1,5 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import '../common/shake_widget.dart';
+import '../common/custom_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../domain/entities/credit_card.dart';
@@ -34,6 +36,11 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
   final _nameController = TextEditingController();
   final _limitController = TextEditingController();
   final _balanceController = TextEditingController();
+  final _nameShakeKey = GlobalKey<ShakeWidgetState>();
+  final _limitShakeKey = GlobalKey<ShakeWidgetState>();
+  final _cutOffShakeKey = GlobalKey<ShakeWidgetState>();
+  final _paymentShakeKey = GlobalKey<ShakeWidgetState>();
+
   int _cutOffDay = 15;
   int _paymentDay = 1;
   String _network = 'Visa';

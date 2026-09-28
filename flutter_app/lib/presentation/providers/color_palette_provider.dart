@@ -78,6 +78,14 @@ class ColorPaletteNotifier extends Notifier<ColorPalette> {
 
   @override
   ColorPalette build() {
+    final user = ref.watch(authProvider).user;
+    if (user?.theme != null) {
+      return presetPalettes.firstWhere(
+        (p) => p.id == user!.theme || p.name == user.theme,
+        orElse: () => presetPalettes.first,
+      );
+    }
+    
     final prefs = ref.read(sharedPreferencesProvider);
     final savedKey = prefs.getString(_paletteKey);
     if (savedKey != null) {
@@ -93,6 +101,12 @@ class ColorPaletteNotifier extends Notifier<ColorPalette> {
     state = palette;
     final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setString(_paletteKey, palette.id);
+    
+    final authState = ref.read(authProvider);
+    if (authState.user != null) {
+      final updatedUser = authState.user!.copyWith(theme: palette.id);
+      await ref.read(authProvider.notifier).updateProfile(updatedUser);
+    }
   }
 
   Future<void> setPaletteById(String id) async {

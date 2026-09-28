@@ -88,6 +88,7 @@ class AuthRepositoryImpl implements AuthRepository {
         if (user.language != null) 'language': user.language,
         if (user.salary != null) 'salary': user.salary,
         if (user.salaryType != null) 'salaryType': user.salaryType,
+        if (user.theme != null) 'theme': user.theme,
         'points': user.points,
         'currentStreak': user.currentStreak,
         if (user.lastActiveDate != null) 'lastActiveDate': user.lastActiveDate,

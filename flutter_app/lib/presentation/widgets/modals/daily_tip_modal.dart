@@ -605,9 +605,11 @@ class DailyTipModal {
     if (_hasShownThisSession) return;
     _hasShownThisSession = true;
 
-    // Pick a random tip
-    final random = math.Random();
-    final tip = kFinancialTips[random.nextInt(kFinancialTips.length)];
+    final prefs = await SharedPreferences.getInstance();
+    int lastIndex = prefs.getInt('last_tip_index') ?? -1;
+    int nextIndex = (lastIndex + 1) % kFinancialTips.length;
+    await prefs.setInt('last_tip_index', nextIndex);
+    final tip = kFinancialTips[nextIndex];
 
     if (!context.mounted) return;
     _show(context, tip);
@@ -615,8 +617,10 @@ class DailyTipModal {
 
   /// Force-show for testing / manual trigger.
   static void show(BuildContext context) {
-    final random = math.Random();
-    final tip = kFinancialTips[random.nextInt(kFinancialTips.length)];
+    final now = DateTime.now();
+    final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
+    final tipIndex = dayOfYear % kFinancialTips.length;
+    final tip = kFinancialTips[tipIndex];
     _show(context, tip);
   }
 

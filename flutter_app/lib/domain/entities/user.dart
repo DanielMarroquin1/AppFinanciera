@@ -9,6 +9,7 @@ class User {
   final String? language;
   final String? salary;
   final String? salaryType;
+  final String? theme;
 
   // Rewards & Streak Fields
   final int points;
@@ -34,6 +35,7 @@ class User {
     this.language,
     this.salary,
     this.salaryType,
+    this.theme,
     this.points = 0,
     this.currentStreak = 0,
     this.lastActiveDate,
@@ -58,6 +60,7 @@ class User {
     String? language,
     String? salary,
     String? salaryType,
+    String? theme,
     int? points,
     int? currentStreak,
     String? lastActiveDate,
@@ -81,6 +84,8 @@ class User {
       language: language ?? this.language,
       salary: salary ?? this.salary,
       salaryType: salaryType ?? this.salaryType,
+      theme: theme ?? this.theme,
+    this.theme,
       points: points ?? this.points,
       currentStreak: currentStreak ?? this.currentStreak,
       lastActiveDate: lastActiveDate ?? this.lastActiveDate,

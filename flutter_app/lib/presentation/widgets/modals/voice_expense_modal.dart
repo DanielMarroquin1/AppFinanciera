@@ -55,7 +55,7 @@ class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal>
   String _errorMessage = '';
   bool _showPreview = false;
   String? _selectedCreditCardId;
-  final FlutterTts _flutterTts = FlutterTts();
+  
   bool _waitingForPaymentMethod = false;
 
   @override
@@ -79,7 +79,7 @@ class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal>
         },
       );
 
-      await TtsHelper.configureTts(_flutterTts, _ttsLocale);
+      
     } catch (e) {
       // Handle init error
     }
@@ -91,7 +91,7 @@ class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal>
     _textController.dispose();
     _controller.dispose();
     _speechToText.cancel();
-    _flutterTts.stop();
+    
     super.dispose();
   }
 
@@ -565,14 +565,10 @@ $cardsInfo
             txt.contains('cartão') ||
             txt.contains('argent');
 
-        if (!hasPaymentMethod) {
-          _askForPaymentMethod();
-        } else {
-          setState(() {
-            _isProcessing = false;
-            _showPreview = true;
-          });
-        }
+        setState(() {
+          _isProcessing = false;
+          _showPreview = true;
+        });
       }
     } else {
       setState(() {
@@ -581,9 +577,7 @@ $cardsInfo
             .get('voice_no_amount')
             .replaceAll('{text}', _recognizedText);
       });
-      _flutterTts.speak(
-        "No logré detectar la cantidad. Por favor intenta de nuevo.",
-      );
+      
 
       // Auto-restart listening after error
       Future.delayed(const Duration(seconds: 3), () {
@@ -728,56 +722,7 @@ $cardsInfo
     return 'other';
   }
 
-  Future<void> _askForPaymentMethod() async {
-    final loc = ref.read(localizationProvider);
-    setState(() {
-      _waitingForPaymentMethod = true;
-      _isProcessing = false;
-      _recognizedText = '';
-    });
-
-    await _flutterTts.setLanguage(_ttsLocale);
-    await _flutterTts.speak(loc.get('voice_ask_payment_method'));
-
-    // Give the OS audio focus time to switch from speaker to microphone
-    await Future.delayed(const Duration(milliseconds: 800));
-
-    final available = await _speechToText.initialize();
-    if (available && mounted) {
-      setState(() {
-        _isListening = true;
-        _errorMessage = '';
-        _recognizedText = '';
-      });
-      await _speechToText.listen(
-        onResult: (result) {
-          setState(() {
-            _recognizedText = result.recognizedWords; _textController.text = _recognizedText;
-          });
-          _silenceTimer?.cancel();
-          if (_recognizedText.trim().isNotEmpty) {
-            _silenceTimer = Timer(const Duration(seconds: 3), () {
-              if (_isListening) {
-                _speechToText.stop();
-                if (mounted) {
-                  setState(() => _isListening = false);
-                  _processPaymentMethodResponse();
-                }
-              }
-            });
-          }
-          if (result.finalResult) {
-            _silenceTimer?.cancel();
-            setState(() => _isListening = false);
-            _processPaymentMethodResponse();
-          }
-        },
-        localeId: _speechLocale,
-        pauseFor: const Duration(seconds: 2),
-        listenFor: const Duration(seconds: 15),
-      );
-    }
-  }
+  
 
   void _processPaymentMethodResponse() {
     final cleanText = _recognizedText.toLowerCase();
@@ -1233,17 +1178,7 @@ $cardsInfo
               if (_textController.text.isNotEmpty)
                 const Text('Asistente Inteligente', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold))
               else
-                Row(
-                  children: ['ES', 'EN', 'FR', 'PT'].map((lang) => Container(
-                    margin: const EdgeInsets.only(left: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: lang == 'ES' ? Colors.white.withValues(alpha: 0.2) : Colors.transparent,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(lang, style: TextStyle(color: lang == 'ES' ? Colors.white : Colors.white54, fontWeight: FontWeight.bold)),
-                  )).toList(),
-                ),
+                const SizedBox.shrink(),
             ],
           ),
         ),

@@ -85,7 +85,7 @@ class User {
       salary: salary ?? this.salary,
       salaryType: salaryType ?? this.salaryType,
       theme: theme ?? this.theme,
-    this.theme,
+
       points: points ?? this.points,
       currentStreak: currentStreak ?? this.currentStreak,
       lastActiveDate: lastActiveDate ?? this.lastActiveDate,

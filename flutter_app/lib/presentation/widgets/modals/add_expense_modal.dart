@@ -309,13 +309,72 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                       ),
                     ],
                   ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    icon: Icon(
-                      LucideIcons.xCircle,
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
-                      size: 28,
-                    ),
+                  Row(
+                    children: [
+                      TextButton.icon(
+                        onPressed: () async {
+                          final created = await showDialog<String>(
+                            context: context,
+                            builder: (context) {
+                              final ctrl = TextEditingController();
+                              return AlertDialog(
+                                backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                title: Text('Nueva Categoría', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+                                content: TextField(
+                                  controller: ctrl,
+                                  style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                                  autofocus: true,
+                                  decoration: InputDecoration(
+                                    hintText: 'Ej. Mascotas',
+                                    hintStyle: TextStyle(color: isDark ? Colors.white30 : Colors.black38),
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+                                  TextButton(
+                                    onPressed: () {
+                                      final name = ctrl.text.trim();
+                                      if (name.isEmpty) return;
+                                      final badWords = ['puta', 'mierda', 'pendejo', 'cabron', 'culo', 'fuck', 'shit', 'bitch'];
+                                      if (badWords.any((w) => name.toLowerCase().contains(w))) {
+                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se permiten palabras ofensivas')));
+                                        return;
+                                      }
+                                      Navigator.pop(context, name);
+                                    },
+                                    child: const Text('Crear', style: TextStyle(color: Color(0xFF2DD4BF))),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                          
+                          if (created != null && created.isNotEmpty) {
+                            final user = ref.read(authProvider).user;
+                            if (user != null) {
+                              final currentItems = List<String>.from(user.unlockedItems);
+                              final newTag = 'cat_$created';
+                              if (!currentItems.contains(newTag)) {
+                                currentItems.add(newTag);
+                                await ref.read(authProvider.notifier).updateProfile(user.copyWith(unlockedItems: currentItems));
+                              }
+                            }
+                            setState(() => category = created);
+                            Navigator.pop(ctx);
+                          }
+                        },
+                        icon: const Icon(LucideIcons.plus, size: 16, color: Color(0xFF2DD4BF)),
+                        label: const Text('Nueva', style: TextStyle(color: Color(0xFF2DD4BF))),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: Icon(
+                          LucideIcons.xCircle,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          size: 28,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -329,10 +388,10 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                 key: _categoryShakeKey,
                 child: ListView.separated(
                   padding: const EdgeInsets.all(20),
-                  itemCount: detailedCategories.length,
+                  itemCount: _getAllCategories().length,
                   separatorBuilder: (ctx, i) => const SizedBox(height: 16),
                   itemBuilder: (ctx, i) {
-                    final mainCat = detailedCategories[i];
+                    final mainCat = _getAllCategories()[i];
                     final subs = mainCat['subs'] as List;
 
                     return Container(

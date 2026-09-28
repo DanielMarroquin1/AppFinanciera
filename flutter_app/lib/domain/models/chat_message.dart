@@ -1,7 +1,4 @@
-enum MessageRole {
-  user,
-  assistant,
-}
+enum MessageRole { user, assistant }
 
 class ChatMessage {
   final String text;

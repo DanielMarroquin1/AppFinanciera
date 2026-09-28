@@ -117,7 +117,7 @@ class _BadgesModalContentState extends ConsumerState<BadgesModalContent> {
         'description': loc.get('badge_visionary_desc'),
         'icon': LucideIcons.sparkles,
         'color': const Color(0xFFEC4899),
-        'current': 0, 
+        'current': 0,
         'target': 1,
       },
       {
@@ -126,20 +126,26 @@ class _BadgesModalContentState extends ConsumerState<BadgesModalContent> {
         'description': loc.get('badge_budget_king_desc'),
         'icon': LucideIcons.crown,
         'color': const Color(0xFFF59E0B),
-        'current': 1, 
+        'current': 1,
         'target': 1,
       },
     ];
 
-    final unlockedCount = badges.where((b) => (b['current'] as int) >= (b['target'] as int)).length;
+    final unlockedCount = badges
+        .where((b) => (b['current'] as int) >= (b['target'] as int))
+        .length;
 
     // Helper variables for selected badge
     final selBadge = _selectedBadge;
     final selCurrent = selBadge != null ? (selBadge['current'] as int) : 0;
     final selTarget = selBadge != null ? (selBadge['target'] as int) : 1;
     final selUnlocked = selCurrent >= selTarget;
-    final selColor = selBadge != null ? (selBadge['color'] as Color) : Colors.transparent;
-    final selIcon = selBadge != null ? (selBadge['icon'] as IconData) : LucideIcons.lock;
+    final selColor = selBadge != null
+        ? (selBadge['color'] as Color)
+        : Colors.transparent;
+    final selIcon = selBadge != null
+        ? (selBadge['icon'] as IconData)
+        : LucideIcons.lock;
     final selTitle = selBadge != null ? (selBadge['title'] as String) : '';
     final selDesc = selBadge != null ? (selBadge['description'] as String) : '';
 
@@ -148,18 +154,29 @@ class _BadgesModalContentState extends ConsumerState<BadgesModalContent> {
       child: Container(
         height: MediaQuery.of(context).size.height * 0.9,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF0F172A).withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.9),
+          color: isDark
+              ? const Color(0xFF0F172A).withValues(alpha: 0.8)
+              : Colors.white.withValues(alpha: 0.9),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
-          border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.2), width: 1)),
+          border: Border(
+            top: BorderSide(
+              color: Colors.white.withValues(alpha: 0.2),
+              width: 1,
+            ),
+          ),
         ),
         child: Column(
           children: [
             const SizedBox(height: 12),
             Container(
-              width: 40, height: 5,
-              decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(3)),
+              width: 40,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(3),
+              ),
             ),
-            
+
             Padding(
               padding: const EdgeInsets.fromLTRB(32, 24, 32, 16),
               child: Row(
@@ -171,89 +188,136 @@ class _BadgesModalContentState extends ConsumerState<BadgesModalContent> {
                     children: [
                       Text(
                         loc.get('trophies'),
-                        style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -1, color: isDark ? Colors.white : Colors.black),
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -1,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '$unlockedCount ${loc.get('unlocked_of')} ${badges.length}',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFF59E0B)),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFF59E0B),
+                        ),
                       ),
                     ],
                   ),
                   IconButton(
-                    icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                    icon: Icon(
+                      LucideIcons.x,
+                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
             ),
-            
+
             // Detail Card (Animated CrossFade)
             AnimatedCrossFade(
               firstChild: const SizedBox(width: double.infinity, height: 0),
-              secondChild: selBadge == null ? const SizedBox.shrink() : Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: selColor.withValues(alpha: 0.3), width: 2),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
+              secondChild: selBadge == null
+                  ? const SizedBox.shrink()
+                  : Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 8,
+                      ),
+                      padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: selUnlocked ? selColor.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
+                        color: isDark
+                            ? const Color(0xFF1E293B)
+                            : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: selColor.withValues(alpha: 0.3),
+                          width: 2,
+                        ),
                       ),
-                      child: Icon(
-                        selUnlocked ? selIcon : LucideIcons.lock,
-                        size: 32,
-                        color: selUnlocked ? selColor : Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: [
-                          Text(
-                            selUnlocked ? selTitle : 'Trofeo Oculto',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            selUnlocked ? selDesc : 'Sigue usando la aplicación para descubrir cómo desbloquear este trofeo.',
-                            style: TextStyle(fontSize: 13, color: isDark ? Colors.grey[400] : Colors.grey[600], height: 1.4),
-                          ),
-                          if (!selUnlocked) ...[
-                            const SizedBox(height: 12),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: LinearProgressIndicator(
-                                value: selCurrent / selTarget,
-                                backgroundColor: isDark ? Colors.grey[800] : Colors.grey[300],
-                                valueColor: AlwaysStoppedAnimation<Color>(isDark ? Colors.grey[600]! : Colors.grey[500]!),
-                                minHeight: 6,
-                              ),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: selUnlocked
+                                  ? selColor.withValues(alpha: 0.2)
+                                  : Colors.grey.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
                             ),
-                          ],
+                            child: Icon(
+                              selUnlocked ? selIcon : LucideIcons.lock,
+                              size: 32,
+                              color: selUnlocked ? selColor : Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  selUnlocked ? selTitle : 'Trofeo Oculto',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark ? Colors.white : Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  selUnlocked
+                                      ? selDesc
+                                      : 'Sigue usando la aplicación para descubrir cómo desbloquear este trofeo.',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: isDark
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                                    height: 1.4,
+                                  ),
+                                ),
+                                if (!selUnlocked) ...[
+                                  const SizedBox(height: 12),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: LinearProgressIndicator(
+                                      value: selCurrent / selTarget,
+                                      backgroundColor: isDark
+                                          ? Colors.grey[800]
+                                          : Colors.grey[300],
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        isDark
+                                            ? Colors.grey[600]!
+                                            : Colors.grey[500]!,
+                                      ),
+                                      minHeight: 6,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-              crossFadeState: selBadge == null ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+              crossFadeState: selBadge == null
+                  ? CrossFadeState.showFirst
+                  : CrossFadeState.showSecond,
               duration: const Duration(milliseconds: 300),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             Expanded(
               child: GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 physics: const BouncingScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
@@ -293,22 +357,44 @@ class _BadgesModalContentState extends ConsumerState<BadgesModalContent> {
                             height: isSelected ? 80 : 70,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: isUnlocked ? bColor.withValues(alpha: isSelected ? 0.2 : 0.1) : (isDark ? Colors.grey[800] : Colors.grey[200]),
-                              boxShadow: isUnlocked && isSelected ? [
-                                BoxShadow(color: bColor.withValues(alpha: 0.3), blurRadius: 20, spreadRadius: 2)
-                              ] : [],
+                              color: isUnlocked
+                                  ? bColor.withValues(
+                                      alpha: isSelected ? 0.2 : 0.1,
+                                    )
+                                  : (isDark
+                                        ? Colors.grey[800]
+                                        : Colors.grey[200]),
+                              boxShadow: isUnlocked && isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: bColor.withValues(alpha: 0.3),
+                                        blurRadius: 20,
+                                        spreadRadius: 2,
+                                      ),
+                                    ]
+                                  : [],
                               border: Border.all(
-                                color: isUnlocked 
-                                    ? bColor.withValues(alpha: isSelected ? 0.8 : 0.2)
-                                    : (isDark ? Colors.grey[700]! : Colors.grey[300]!),
+                                color: isUnlocked
+                                    ? bColor.withValues(
+                                        alpha: isSelected ? 0.8 : 0.2,
+                                      )
+                                    : (isDark
+                                          ? Colors.grey[700]!
+                                          : Colors.grey[300]!),
                                 width: isSelected ? 2 : 1,
-                              )
+                              ),
                             ),
                             child: Center(
                               child: Icon(
-                                isUnlocked ? badge['icon'] as IconData : LucideIcons.lock,
+                                isUnlocked
+                                    ? badge['icon'] as IconData
+                                    : LucideIcons.lock,
                                 size: isSelected ? 36 : 28,
-                                color: isUnlocked ? bColor : (isDark ? Colors.grey[600] : Colors.grey[400]),
+                                color: isUnlocked
+                                    ? bColor
+                                    : (isDark
+                                          ? Colors.grey[600]
+                                          : Colors.grey[400]),
                               ),
                             ),
                           ),
@@ -320,11 +406,19 @@ class _BadgesModalContentState extends ConsumerState<BadgesModalContent> {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
+                              fontWeight: isSelected
+                                  ? FontWeight.w900
+                                  : FontWeight.bold,
                               letterSpacing: -0.2,
-                              color: isSelected 
+                              color: isSelected
                                   ? (isDark ? Colors.white : Colors.black)
-                                  : (isUnlocked ? (isDark ? Colors.grey[300] : Colors.grey[800]) : (isDark ? Colors.grey[600] : Colors.grey[400])),
+                                  : (isUnlocked
+                                        ? (isDark
+                                              ? Colors.grey[300]
+                                              : Colors.grey[800])
+                                        : (isDark
+                                              ? Colors.grey[600]
+                                              : Colors.grey[400])),
                             ),
                           ),
                         ],

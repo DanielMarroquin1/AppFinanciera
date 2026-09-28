@@ -45,16 +45,19 @@ class ParsedBankCharge {
     'bankName': bankName,
   };
 
-  factory ParsedBankCharge.fromJson(Map<String, dynamic> json) => ParsedBankCharge(
-    id: json['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
-    amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
-    merchant: json['merchant'] ?? 'Comercio General',
-    paymentMethod: json['paymentMethod'] ?? 'credit_card',
-    category: json['category'] ?? 'general',
-    date: json['date'] != null ? DateTime.parse(json['date']) : DateTime.now(),
-    rawText: json['rawText'] ?? '',
-    bankName: json['bankName'],
-  );
+  factory ParsedBankCharge.fromJson(Map<String, dynamic> json) =>
+      ParsedBankCharge(
+        id: json['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+        amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+        merchant: json['merchant'] ?? 'Comercio General',
+        paymentMethod: json['paymentMethod'] ?? 'credit_card',
+        category: json['category'] ?? 'general',
+        date: json['date'] != null
+            ? DateTime.parse(json['date'])
+            : DateTime.now(),
+        rawText: json['rawText'] ?? '',
+        bankName: json['bankName'],
+      );
 }
 
 class BankNotificationListenerService {
@@ -85,7 +88,9 @@ class BankNotificationListenerService {
   static void startListening(WidgetRef ref) {
     if (kIsWeb || !Platform.isAndroid) return;
     try {
-      NotificationListenerService.notificationsStream.listen((ServiceNotificationEvent event) {
+      NotificationListenerService.notificationsStream.listen((
+        ServiceNotificationEvent event,
+      ) {
         _handleIncomingEvent(event, ref);
       });
     } catch (e) {
@@ -93,9 +98,13 @@ class BankNotificationListenerService {
     }
   }
 
-  static Future<void> _handleIncomingEvent(ServiceNotificationEvent event, WidgetRef ref) async {
+  static Future<void> _handleIncomingEvent(
+    ServiceNotificationEvent event,
+    WidgetRef ref,
+  ) async {
     final user = ref.read(authProvider).user;
-    if (user == null || !user.isPremium) return; // Función exclusiva para Plan Premium
+    if (user == null || !user.isPremium)
+      return; // Función exclusiva para Plan Premium
 
     final title = event.title ?? '';
     final content = event.content ?? '';
@@ -103,7 +112,8 @@ class BankNotificationListenerService {
     final fullText = '$title $content'.toLowerCase();
 
     // Palabras clave bancarias o financieras
-    final isFinancial = fullText.contains('compra') ||
+    final isFinancial =
+        fullText.contains('compra') ||
         fullText.contains('cargo') ||
         fullText.contains('pago') ||
         fullText.contains('tarjeta') ||
@@ -133,15 +143,19 @@ class BankNotificationListenerService {
       if (parsed.paymentMethod == 'cash') {
         // Tarjeta de Débito -> Se va a efectivo
         await LocalNotificationService.showNotification(
-          title: '💸 Cargo Débito detectado (\${parsed.amount.toStringAsFixed(2)})',
-          body: 'En \${parsed.merchant}. Se registró como gasto en Efectivo/Débito. Toca para ver en la app.',
+          title:
+              '💸 Cargo Débito detectado (\${parsed.amount.toStringAsFixed(2)})',
+          body:
+              'En \${parsed.merchant}. Se registró como gasto en Efectivo/Débito. Toca para ver en la app.',
           payload: 'sync_bank_charge_\${parsed.id}',
         );
       } else {
         // Tarjeta de Crédito -> Notificar para elegir a qué TC agregarlo
         await LocalNotificationService.showNotification(
-          title: '💳 Cargo en Tarjeta de Crédito (\${parsed.amount.toStringAsFixed(2)})',
-          body: 'En \${parsed.merchant}. Toca aquí para elegir a cuál de tus Tarjetas de Crédito agregar este gasto.',
+          title:
+              '💳 Cargo en Tarjeta de Crédito (\${parsed.amount.toStringAsFixed(2)})',
+          body:
+              'En \${parsed.merchant}. Toca aquí para elegir a cuál de tus Tarjetas de Crédito agregar este gasto.',
           payload: 'sync_bank_charge_\${parsed.id}',
         );
       }
@@ -149,14 +163,21 @@ class BankNotificationListenerService {
   }
 
   /// Analizador de texto de notificaciones bancarias
-  static ParsedBankCharge? parseText(String title, String body, String? packageName) {
+  static ParsedBankCharge? parseText(
+    String title,
+    String body,
+    String? packageName,
+  ) {
     final combined = '$title $body';
     final lower = combined.toLowerCase();
 
     // 1. Extraer Monto
     double amount = 0.0;
     // Soporta $, Q, USD, GTQ, con o sin decimales, con comas o puntos
-    final amountRegExp = RegExp(r'(?:\$|Q|USD|GTQ)?\s?([0-9]{1,6}(?:[\.,][0-9]{3})*(?:[\.,][0-9]{2})?)', caseSensitive: false);
+    final amountRegExp = RegExp(
+      r'(?:\$|Q|USD|GTQ)?\s?([0-9]{1,6}(?:[\.,][0-9]{3})*(?:[\.,][0-9]{2})?)',
+      caseSensitive: false,
+    );
     final matches = amountRegExp.allMatches(combined);
     for (var m in matches) {
       String rawNum = m.group(1) ?? '0';
@@ -178,7 +199,7 @@ class BankNotificationListenerService {
           rawNum = rawNum.replaceAll(',', '');
         }
       }
-      
+
       final val = double.tryParse(rawNum);
       if (val != null && val > 0) {
         amount = val;
@@ -189,7 +210,10 @@ class BankNotificationListenerService {
 
     // 2. Extraer Comercio (después de "en ", "comercio ", "compra en ", "pago a ")
     String merchant = 'Comercio General';
-    final merchantRegExp = RegExp(r'(?:en\s+|comercio\s+|compra en\s+|pago a\s+|establecimiento\s+|transferencia a\s+|enviado a\s+|retiro en\s+|cajero\s+)([*A-Za-z0-9\s&\.\-_]{3,30})', caseSensitive: false);
+    final merchantRegExp = RegExp(
+      r'(?:en\s+|comercio\s+|compra en\s+|pago a\s+|establecimiento\s+|transferencia a\s+|enviado a\s+|retiro en\s+|cajero\s+)([*A-Za-z0-9\s&\.\-_]{3,30})',
+      caseSensitive: false,
+    );
     final mMatch = merchantRegExp.firstMatch(combined);
     if (mMatch != null) {
       final found = mMatch.group(1)?.trim() ?? '';
@@ -225,38 +249,83 @@ class BankNotificationListenerService {
     // 4. Determinar Categoría sugerida según comercio
     String category = 'general';
     final mLower = merchant.toLowerCase();
-    if (mLower.contains('super') || mLower.contains('walmart') || mLower.contains('costco') || mLower.contains('soriana') || mLower.contains('oxxo') || mLower.contains('heb') || mLower.contains('mercadona')) {
+    if (mLower.contains('super') ||
+        mLower.contains('walmart') ||
+        mLower.contains('costco') ||
+        mLower.contains('soriana') ||
+        mLower.contains('oxxo') ||
+        mLower.contains('heb') ||
+        mLower.contains('mercadona')) {
       category = 'groceries';
-    } else if (mLower.contains('rest') || mLower.contains('burger') || mLower.contains('pizza') || mLower.contains('starbucks') || mLower.contains('cafe') || mLower.contains('mcdonald') || mLower.contains('taco')) {
+    } else if (mLower.contains('rest') ||
+        mLower.contains('burger') ||
+        mLower.contains('pizza') ||
+        mLower.contains('starbucks') ||
+        mLower.contains('cafe') ||
+        mLower.contains('mcdonald') ||
+        mLower.contains('taco')) {
       category = 'food';
-    } else if (mLower.contains('uber') || mLower.contains('didi') || mLower.contains('gas') || mLower.contains('pemex') || mLower.contains('shell') || mLower.contains('bp') || mLower.contains('taxi')) {
+    } else if (mLower.contains('uber') ||
+        mLower.contains('didi') ||
+        mLower.contains('gas') ||
+        mLower.contains('pemex') ||
+        mLower.contains('shell') ||
+        mLower.contains('bp') ||
+        mLower.contains('taxi')) {
       category = 'transport';
-    } else if (mLower.contains('cine') || mLower.contains('netflix') || mLower.contains('spotify') || mLower.contains('disney') || mLower.contains('prime') || mLower.contains('hbo')) {
+    } else if (mLower.contains('cine') ||
+        mLower.contains('netflix') ||
+        mLower.contains('spotify') ||
+        mLower.contains('disney') ||
+        mLower.contains('prime') ||
+        mLower.contains('hbo')) {
       category = 'entertainment';
-    } else if (mLower.contains('farmacia') || mLower.contains('doctor') || mLower.contains('hospital') || mLower.contains('salud') || mLower.contains('med')) {
+    } else if (mLower.contains('farmacia') ||
+        mLower.contains('doctor') ||
+        mLower.contains('hospital') ||
+        mLower.contains('salud') ||
+        mLower.contains('med')) {
       category = 'health';
-    } else if (mLower.contains('zar') || mLower.contains('hm') || mLower.contains('nike') || mLower.contains('adidas') || mLower.contains('ropa') || mLower.contains('mall')) {
+    } else if (mLower.contains('zar') ||
+        mLower.contains('hm') ||
+        mLower.contains('nike') ||
+        mLower.contains('adidas') ||
+        mLower.contains('ropa') ||
+        mLower.contains('mall')) {
       category = 'shopping';
     }
 
     // Identificar banco por packageName o texto
     String? bankName;
     if (packageName != null && packageName.isNotEmpty) {
-      if (packageName.contains('bbva')) bankName = 'BBVA';
-      else if (packageName.contains('santander')) bankName = 'Santander';
-      else if (packageName.contains('banamex')) bankName = 'Citibanamex';
-      else if (packageName.contains('nu')) bankName = 'Nu';
-      else if (packageName.contains('bac')) bankName = 'BAC Credomatic';
-      else if (packageName.contains('bi')) bankName = 'Banco Industrial';
-      else if (packageName.contains('amex')) bankName = 'American Express';
+      if (packageName.contains('bbva'))
+        bankName = 'BBVA';
+      else if (packageName.contains('santander'))
+        bankName = 'Santander';
+      else if (packageName.contains('banamex'))
+        bankName = 'Citibanamex';
+      else if (packageName.contains('nu'))
+        bankName = 'Nu';
+      else if (packageName.contains('bac'))
+        bankName = 'BAC Credomatic';
+      else if (packageName.contains('bi'))
+        bankName = 'Banco Industrial';
+      else if (packageName.contains('amex'))
+        bankName = 'American Express';
     }
     if (bankName == null) {
-      if (lower.contains('bbva')) bankName = 'BBVA';
-      else if (lower.contains('santander')) bankName = 'Santander';
-      else if (lower.contains('banamex')) bankName = 'Citibanamex';
-      else if (lower.contains('nu ')) bankName = 'Nu';
-      else if (lower.contains('bac')) bankName = 'BAC';
-      else if (lower.contains('banco industrial') || lower.contains('bi ')) bankName = 'Banco Industrial';
+      if (lower.contains('bbva'))
+        bankName = 'BBVA';
+      else if (lower.contains('santander'))
+        bankName = 'Santander';
+      else if (lower.contains('banamex'))
+        bankName = 'Citibanamex';
+      else if (lower.contains('nu '))
+        bankName = 'Nu';
+      else if (lower.contains('bac'))
+        bankName = 'BAC';
+      else if (lower.contains('banco industrial') || lower.contains('bi '))
+        bankName = 'Banco Industrial';
     }
 
     return ParsedBankCharge(
@@ -287,7 +356,9 @@ class BankNotificationListenerService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final listStr = prefs.getStringList(_prefsKey) ?? [];
-      return listStr.map((s) => ParsedBankCharge.fromJson(jsonDecode(s))).toList();
+      return listStr
+          .map((s) => ParsedBankCharge.fromJson(jsonDecode(s)))
+          .toList();
     } catch (e) {
       print('Error reading pending bank charges: $e');
       return [];

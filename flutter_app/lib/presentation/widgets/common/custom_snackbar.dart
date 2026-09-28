@@ -18,13 +18,15 @@ class _UndoSnackBarContent extends StatefulWidget {
   State<_UndoSnackBarContent> createState() => _UndoSnackBarContentState();
 }
 
-class _UndoSnackBarContentState extends State<_UndoSnackBarContent> with SingleTickerProviderStateMixin {
+class _UndoSnackBarContentState extends State<_UndoSnackBarContent>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: widget.duration)..forward();
+    _controller = AnimationController(vsync: this, duration: widget.duration)
+      ..forward();
   }
 
   @override
@@ -49,7 +51,7 @@ class _UndoSnackBarContentState extends State<_UndoSnackBarContent> with SingleT
             color: const Color(0xFF14B8A6).withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 6),
-          )
+          ),
         ],
       ),
       child: Stack(
@@ -75,7 +77,9 @@ class _UndoSnackBarContentState extends State<_UndoSnackBarContent> with SingleT
                   child: Text(
                     widget.message,
                     style: TextStyle(
-                      color: widget.isDark ? Colors.white : const Color(0xFF0F172A),
+                      color: widget.isDark
+                          ? Colors.white
+                          : const Color(0xFF0F172A),
                       fontWeight: FontWeight.w600,
                       fontSize: 15,
                     ),
@@ -85,9 +89,15 @@ class _UndoSnackBarContentState extends State<_UndoSnackBarContent> with SingleT
                   onPressed: widget.onUndo,
                   style: TextButton.styleFrom(
                     foregroundColor: const Color(0xFF2DD4BF),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                   ),
-                  child: const Text('Deshacer', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Deshacer',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),
@@ -103,7 +113,9 @@ class _UndoSnackBarContentState extends State<_UndoSnackBarContent> with SingleT
                 return LinearProgressIndicator(
                   value: 1.0 - _controller.value,
                   backgroundColor: Colors.transparent,
-                  valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF14B8A6).withValues(alpha: 0.5)),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    const Color(0xFF14B8A6).withValues(alpha: 0.5),
+                  ),
                   minHeight: 3,
                 );
               },
@@ -156,7 +168,11 @@ class CustomSnackBar {
                   color: const Color(0xFFEF4444).withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(LucideIcons.alertTriangle, color: Color(0xFFEF4444), size: 22),
+                child: const Icon(
+                  LucideIcons.alertTriangle,
+                  color: Color(0xFFEF4444),
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -212,7 +228,11 @@ class CustomSnackBar {
                   color: const Color(0xFF10B981).withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(LucideIcons.checkCircle2, color: Color(0xFF10B981), size: 22),
+                child: const Icon(
+                  LucideIcons.checkCircle2,
+                  color: Color(0xFF10B981),
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -268,7 +288,11 @@ class CustomSnackBar {
                   color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(LucideIcons.alertTriangle, color: Color(0xFFF59E0B), size: 22),
+                child: const Icon(
+                  LucideIcons.alertTriangle,
+                  color: Color(0xFFF59E0B),
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -289,7 +313,11 @@ class CustomSnackBar {
     );
   }
 
-  static void showUndo(BuildContext context, String message, VoidCallback onUndo) {
+  static void showUndo(
+    BuildContext context,
+    String message,
+    VoidCallback onUndo,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     const duration = Duration(seconds: 5);
     ScaffoldMessenger.of(context).removeCurrentSnackBar();

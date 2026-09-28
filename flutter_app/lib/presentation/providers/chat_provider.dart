@@ -19,15 +19,9 @@ class ChatState {
   final List<ChatMessage> messages;
   final bool isLoading;
 
-  ChatState({
-    this.messages = const [],
-    this.isLoading = false,
-  });
+  ChatState({this.messages = const [], this.isLoading = false});
 
-  ChatState copyWith({
-    List<ChatMessage>? messages,
-    bool? isLoading,
-  }) {
+  ChatState copyWith({List<ChatMessage>? messages, bool? isLoading}) {
     return ChatState(
       messages: messages ?? this.messages,
       isLoading: isLoading ?? this.isLoading,
@@ -58,11 +52,15 @@ class ChatNotifier extends Notifier<ChatState> {
       final transactions = ref.read(transactionsProvider).value ?? [];
       final debts = ref.read(debtsProvider).value ?? [];
       final authState = ref.read(authProvider);
-      
-      final contextStr = _buildFinancialContext(transactions, debts, authState.user);
+
+      final contextStr = _buildFinancialContext(
+        transactions,
+        debts,
+        authState.user,
+      );
 
       final responseStream = _repository.sendMessage(
-        text, 
+        text,
         state.messages.sublist(0, state.messages.length - 1),
         context: contextStr,
       );
@@ -72,7 +70,7 @@ class ChatNotifier extends Notifier<ChatState> {
 
       await for (final chunk in responseStream) {
         fullResponse += chunk;
-        
+
         // Intentar parsear el chunk para ver si es un payload JSON de propuesta
         bool isProposal = false;
         Map<String, dynamic>? payload;
@@ -86,24 +84,32 @@ class ChatNotifier extends Notifier<ChatState> {
           if (startIndex != -1 && endIndex != -1 && endIndex > startIndex) {
             jsonPart = fullResponse.substring(startIndex, endIndex + 1);
           }
-          
+
           final decoded = jsonDecode(jsonPart);
           if (decoded is Map<String, dynamic>) {
             if (decoded['___PROPOSAL___'] == true) {
               isProposal = true;
               payload = decoded;
-              displayText = fullResponse.substring(0, startIndex > 0 ? startIndex : fullResponse.length).trim();
+              displayText = fullResponse
+                  .substring(
+                    0,
+                    startIndex > 0 ? startIndex : fullResponse.length,
+                  )
+                  .trim();
               if (displayText.isEmpty) {
-                displayText = "He analizado tus datos y tengo una propuesta de ahorro para ti.";
+                displayText =
+                    "He analizado tus datos y tengo una propuesta de ahorro para ti.";
               }
             } else if (decoded['___ADD_TRANSACTION___'] == true) {
               payload = decoded;
               final typeStr = decoded['type'] == 'income' ? 'ingreso' : 'gasto';
-              displayText = "Registrando tu $typeStr de \$${decoded['amount']} en la categoría ${decoded['category']}... ¡Listo!";
+              displayText =
+                  "Registrando tu $typeStr de \$${decoded['amount']} en la categoría ${decoded['category']}... ¡Listo!";
               _executeAddTransaction(decoded);
             } else if (decoded['___CREATE_SAVINGS_GOAL___'] == true) {
               payload = decoded;
-              displayText = "Creando la meta de ahorro: ${decoded['name']} por \$${decoded['targetAmount']}... ¡Listo!";
+              displayText =
+                  "Creando la meta de ahorro: ${decoded['name']} por \$${decoded['targetAmount']}... ¡Listo!";
               _executeCreateSavingsGoal(decoded);
             }
           }
@@ -113,7 +119,7 @@ class ChatNotifier extends Notifier<ChatState> {
 
         if (assistantMessage == null) {
           assistantMessage = ChatMessage(
-            text: displayText, 
+            text: displayText,
             role: MessageRole.assistant,
             isProposal: isProposal,
             payload: payload,
@@ -123,47 +129,62 @@ class ChatNotifier extends Notifier<ChatState> {
           );
         } else {
           assistantMessage = ChatMessage(
-            text: displayText, 
+            text: displayText,
             role: MessageRole.assistant,
             isProposal: isProposal,
             payload: payload,
           );
           state = state.copyWith(
-            messages: [...state.messages.sublist(0, state.messages.length - 1), assistantMessage],
+            messages: [
+              ...state.messages.sublist(0, state.messages.length - 1),
+              assistantMessage,
+            ],
           );
         }
       }
     } catch (e) {
       final errorMessage = ChatMessage(
-        text: 'Lo siento, hubo un error al procesar tu solicitud: $e', 
-        role: MessageRole.assistant
+        text: 'Lo siento, hubo un error al procesar tu solicitud: $e',
+        role: MessageRole.assistant,
       );
-      state = state.copyWith(
-        messages: [...state.messages, errorMessage],
-      );
+      state = state.copyWith(messages: [...state.messages, errorMessage]);
     } finally {
       state = state.copyWith(isLoading: false);
     }
   }
 
-  String _buildFinancialContext(dynamic transactions, dynamic debts, dynamic user) {
+  String _buildFinancialContext(
+    dynamic transactions,
+    dynamic debts,
+    dynamic user,
+  ) {
     // Gastos e Ingresos
-    final expensesList = transactions.where((t) => t.type == 'expense').toList();
+    final expensesList = transactions
+        .where((t) => t.type == 'expense')
+        .toList();
     final incomesList = transactions.where((t) => t.type == 'income').toList();
-    
-    final totalExpenses = expensesList.fold(0.0, (sum, item) => sum + (item.amount as num).toDouble());
-    final totalIncomes = incomesList.fold(0.0, (sum, item) => sum + (item.amount as num).toDouble());
+
+    final totalExpenses = expensesList.fold(
+      0.0,
+      (sum, item) => sum + (item.amount as num).toDouble(),
+    );
+    final totalIncomes = incomesList.fold(
+      0.0,
+      (sum, item) => sum + (item.amount as num).toDouble(),
+    );
     final totalDebts = debts.fold(0.0, (sum, item) {
-      final remainingInstallments = item.totalInstallments - item.paidInstallments;
+      final remainingInstallments =
+          item.totalInstallments - item.paidInstallments;
       return sum + (item.installmentAmount * remainingInstallments);
     });
 
     // Desglose de Gastos por Categoría
     final Map<String, double> expensesByCategory = {};
     for (var exp in expensesList) {
-      expensesByCategory[exp.category] = (expensesByCategory[exp.category] ?? 0.0) + exp.amount;
+      expensesByCategory[exp.category] =
+          (expensesByCategory[exp.category] ?? 0.0) + exp.amount;
     }
-    
+
     String categoryBreakdown = expensesByCategory.entries
         .map((e) => "  - ${e.key}: \$${e.value.toStringAsFixed(2)}")
         .join("\n");
@@ -171,7 +192,7 @@ class ChatNotifier extends Notifier<ChatState> {
     // Datos del Usuario e idioma
     final rawLang = user?.language ?? 'Español';
     final lower = rawLang.toLowerCase();
-    
+
     String labelProfile = 'Resumen financiero y perfil del usuario:';
     String labelCountry = 'País';
     String labelCurrency = 'Moneda principal';
@@ -187,8 +208,10 @@ class ChatNotifier extends Notifier<ChatState> {
     String noDebtsMsg = '  - No hay deudas registradas.';
     String debtRemainingMsg = 'Restante';
     String installmentMsg = 'cuotas';
-    String languageInstruction = 'Instrucción de Idioma: DEBES responder SIEMPRE en el idioma preferido por el usuario (Español). Responde todas las consultas en español.';
-    String aiInstruction = 'Instrucción adicional para la IA: Utiliza estos datos precisos para crear estrategias personalizadas, planes de ahorro o presupuestos si el usuario te lo solicita. No inventes números, cíñete a los datos proporcionados.';
+    String languageInstruction =
+        'Instrucción de Idioma: DEBES responder SIEMPRE en el idioma preferido por el usuario (Español). Responde todas las consultas en español.';
+    String aiInstruction =
+        'Instrucción adicional para la IA: Utiliza estos datos precisos para crear estrategias personalizadas, planes de ahorro o presupuestos si el usuario te lo solicita. No inventes números, cíñete a los datos proporcionados.';
 
     if (lower == 'english' || lower == 'en') {
       labelProfile = 'Financial summary and user profile:';
@@ -206,8 +229,10 @@ class ChatNotifier extends Notifier<ChatState> {
       noDebtsMsg = '  - No registered debts.';
       debtRemainingMsg = 'Remaining';
       installmentMsg = 'installments';
-      languageInstruction = "Language Instruction: You MUST always respond in the user's preferred language (English). Answer all queries in English.";
-      aiInstruction = 'Additional instruction for the AI: Use these precise data to create personalized strategies, saving plans or budgets if requested by the user. Do not invent numbers, stick to the provided data.';
+      languageInstruction =
+          "Language Instruction: You MUST always respond in the user's preferred language (English). Answer all queries in English.";
+      aiInstruction =
+          'Additional instruction for the AI: Use these precise data to create personalized strategies, saving plans or budgets if requested by the user. Do not invent numbers, stick to the provided data.';
     } else if (lower == 'português' || lower == 'pt') {
       labelProfile = 'Resumo financeiro e perfil do usuário:';
       labelCountry = 'País';
@@ -224,8 +249,10 @@ class ChatNotifier extends Notifier<ChatState> {
       noDebtsMsg = '  - Nenhuma dívida registrada.';
       debtRemainingMsg = 'Restante';
       installmentMsg = 'parcelas';
-      languageInstruction = "Instrução de Idioma: Você DEVE sempre responder no idioma preferido do usuário (Português). Responda a todas as consultas em português.";
-      aiInstruction = 'Instrução adicional para a IA: Use esses dados precisos para criar estratégias personalizadas, planos de poupança ou orçamentos se solicitado pelo usuário. Não invente números, atenha-se aos dados fornecidos.';
+      languageInstruction =
+          "Instrução de Idioma: Você DEVE sempre responder no idioma preferido do usuário (Português). Responda a todas as consultas em português.";
+      aiInstruction =
+          'Instrução adicional para a IA: Use esses dados precisos para criar estratégias personalizadas, planos de poupança ou orçamentos se solicitado pelo usuário. Não invente números, atenha-se aos dados fornecidos.';
     } else if (lower == 'français' || lower == 'fr') {
       labelProfile = 'Résumé financier et profil de l\'utilisateur :';
       labelCountry = 'Pays';
@@ -242,8 +269,10 @@ class ChatNotifier extends Notifier<ChatState> {
       noDebtsMsg = '  - Aucune dette enregistrée.';
       debtRemainingMsg = 'Restant';
       installmentMsg = 'échéances';
-      languageInstruction = "Instruction de Langue: Vous DEVEZ toujours répondre dans la langue préférée de l'utilisateur (Français). Répondez à toutes les requêtes en français.";
-      aiInstruction = 'Instruction supplémentaire pour l\'IA : Utilisez ces données précises pour créer des stratégies personnalisées, des plans d\'épargne ou des budgets si l\'utilisateur le demande. N\'inventez pas de chiffres, tenez-vous-en aux données fournies.';
+      languageInstruction =
+          "Instruction de Langue: Vous DEVEZ toujours répondre dans la langue préférée de l'utilisateur (Français). Répondez à toutes les requêtes en français.";
+      aiInstruction =
+          'Instruction supplémentaire pour l\'IA : Utilisez ces données précises pour créer des stratégies personnalisées, des plans d\'épargne ou des budgets si l\'utilisateur le demande. N\'inventez pas de chiffres, tenez-vous-en aux données fournies.';
     } else if (lower == 'italiano' || lower == 'it') {
       labelProfile = 'Riepilogo finanziario e profilo utente:';
       labelCountry = 'Paese';
@@ -260,17 +289,23 @@ class ChatNotifier extends Notifier<ChatState> {
       noDebtsMsg = '  - Nessun debito registrato.';
       debtRemainingMsg = 'Rimanente';
       installmentMsg = 'rate';
-      languageInstruction = "Istruzione della Lingua: DEVI sempre rispondere nella lingua preferita dell'utente (Italiano). Rispondi a tutte le query in italiano.";
-      aiInstruction = 'Istruzione aggiuntiva per l\'IA: Utilizza questi dati precisi per creare strategie personalizzate, piani di risparmio o budget se richiesto dall\'utente. Non inventare numeri, attieniti ai dati forniti.';
+      languageInstruction =
+          "Istruzione della Lingua: DEVI sempre rispondere nella lingua preferita dell'utente (Italiano). Rispondi a tutte le query in italiano.";
+      aiInstruction =
+          'Istruzione aggiuntiva per l\'IA: Utilizza questi dati precisi per creare strategie personalizzate, piani di risparmio o budget se richiesto dall\'utente. Non inventare numeri, attieniti ai dati forniti.';
     }
 
     // Desglose de Deudas
-    String debtsBreakdown = debts.isEmpty 
-        ? noDebtsMsg 
-        : debts.map((d) {
-            final remaining = d.installmentAmount * (d.totalInstallments - d.paidInstallments);
-            return "  - ${d.name}: $debtRemainingMsg \$${remaining.toStringAsFixed(2)} (${d.paidInstallments}/${d.totalInstallments} $installmentMsg)";
-          }).join("\n");
+    String debtsBreakdown = debts.isEmpty
+        ? noDebtsMsg
+        : debts
+              .map((d) {
+                final remaining =
+                    d.installmentAmount *
+                    (d.totalInstallments - d.paidInstallments);
+                return "  - ${d.name}: $debtRemainingMsg \$${remaining.toStringAsFixed(2)} (${d.paidInstallments}/${d.totalInstallments} $installmentMsg)";
+              })
+              .join("\n");
 
     final salary = user?.salary ?? 'No especificado';
     final currency = user?.currency ?? 'USD';
@@ -324,7 +359,7 @@ $aiInstruction
     try {
       final user = ref.read(authProvider).user;
       if (user == null) return;
-      
+
       final goal = SavingGoal(
         id: '',
         userId: user.email,

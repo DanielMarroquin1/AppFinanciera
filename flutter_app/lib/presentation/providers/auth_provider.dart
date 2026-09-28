@@ -8,7 +8,9 @@ import 'package:firebase_auth/firebase_auth.dart' hide User;
 
 // Provider for SharedPreferences to be injected
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
-  throw UnimplementedError('sharedPreferencesProvider must be overridden in ProviderScope');
+  throw UnimplementedError(
+    'sharedPreferencesProvider must be overridden in ProviderScope',
+  );
 });
 
 // Provider for the AuthRepository
@@ -49,11 +51,15 @@ class AuthNotifier extends Notifier<AuthState> {
     final user = await _repository.getStoredUser();
     state = AuthState(user: user, isLoading: false);
     if (user != null) {
-      FirebaseAuth.instance.authStateChanges().firstWhere((u) => u != null).then((fbUser) {
-        if (fbUser != null) {
-          RecurrenceService.processRecurrences(fbUser.uid);
-        }
-      }).catchError((_) {});
+      FirebaseAuth.instance
+          .authStateChanges()
+          .firstWhere((u) => u != null)
+          .then((fbUser) {
+            if (fbUser != null) {
+              RecurrenceService.processRecurrences(fbUser.uid);
+            }
+          })
+          .catchError((_) {});
     }
   }
 
@@ -116,9 +122,13 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> updateProfile(User data) async {
     if (state.user != null) {
-      // Respect the profileComplete status from the incoming data, 
+      // Respect the profileComplete status from the incoming data,
       // or evaluate if required fields are present if it's not set.
-      bool isComplete = data.profileComplete || (data.country != null && data.currency != null && data.salary != null);
+      bool isComplete =
+          data.profileComplete ||
+          (data.country != null &&
+              data.currency != null &&
+              data.salary != null);
       final updatedUser = data.copyWith(profileComplete: isComplete);
       await _repository.saveUser(updatedUser);
       state = state.copyWith(user: updatedUser);
@@ -144,12 +154,18 @@ class AuthNotifier extends Notifier<AuthState> {
       final now = DateTime.now();
       final lastActive = DateTime.tryParse(user.lastActiveDate!);
       if (lastActive != null) {
-        final lastActiveDateOnly = DateTime(lastActive.year, lastActive.month, lastActive.day);
+        final lastActiveDateOnly = DateTime(
+          lastActive.year,
+          lastActive.month,
+          lastActive.day,
+        );
         final todayDateOnly = DateTime(now.year, now.month, now.day);
         final dayDiff = todayDateOnly.difference(lastActiveDateOnly).inDays;
 
         if (dayDiff == 2 && user.currentStreak > 0) {
-          final hasFreeze = user.unlockedItems.contains('spec2') || user.unlockedItems.contains('streak_freeze');
+          final hasFreeze =
+              user.unlockedItems.contains('spec2') ||
+              user.unlockedItems.contains('streak_freeze');
           if (!hasFreeze) {
             // Si pasaron 24h (estamos en dayDiff == 2) y NO tiene comprado el escudo congelador, se pierde la racha
             final updatedUser = user.copyWith(currentStreak: 0);
@@ -178,7 +194,8 @@ class AuthNotifier extends Notifier<AuthState> {
     if (user == null) return false;
 
     final now = DateTime.now();
-    final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final todayStr =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
 
     if (user.lastActiveDate == todayStr) {
       return false;
@@ -191,14 +208,20 @@ class AuthNotifier extends Notifier<AuthState> {
     if (user.lastActiveDate != null) {
       final lastActive = DateTime.tryParse(user.lastActiveDate!);
       if (lastActive != null) {
-        final lastActiveDateOnly = DateTime(lastActive.year, lastActive.month, lastActive.day);
+        final lastActiveDateOnly = DateTime(
+          lastActive.year,
+          lastActive.month,
+          lastActive.day,
+        );
         final todayDateOnly = DateTime(now.year, now.month, now.day);
         final dayDiff = todayDateOnly.difference(lastActiveDateOnly).inDays;
 
         if (dayDiff == 1) {
           newStreak += 1;
         } else if (dayDiff == 2) {
-          final hasFreeze = updatedUnlocked.contains('spec2') || updatedUnlocked.contains('streak_freeze');
+          final hasFreeze =
+              updatedUnlocked.contains('spec2') ||
+              updatedUnlocked.contains('streak_freeze');
           if (hasFreeze) {
             // Se consume el escudo para descongelar y continuar sumando racha
             updatedUnlocked.remove('spec2');
@@ -222,7 +245,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
     // Award points: base 50 + 5 per consecutive day
     newPoints += 50 + (newStreak * 5);
-    
+
     // Bonus points every 5 consecutive days
     if (newStreak % 5 == 0 && newStreak > 0) {
       newPoints += 200;
@@ -248,13 +271,14 @@ class AuthNotifier extends Notifier<AuthState> {
 
     if (user.points >= cost && !user.unlockedItems.contains(itemId)) {
       final newPoints = user.points - cost;
-      final newUnlockedItems = List<String>.from(user.unlockedItems)..add(itemId);
-      
+      final newUnlockedItems = List<String>.from(user.unlockedItems)
+        ..add(itemId);
+
       final updatedUser = user.copyWith(
         points: newPoints,
         unlockedItems: newUnlockedItems,
       );
-      
+
       await _repository.saveUser(updatedUser);
       state = state.copyWith(user: updatedUser);
       return true;
@@ -273,9 +297,11 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> equipAvatar(String avatarId) async {
     final user = state.user;
     if (user == null) return;
-    
+
     if (user.unlockedItems.contains(avatarId) || avatarId == 'default') {
-      final updatedUser = user.copyWith(currentAvatar: avatarId == 'default' ? null : avatarId);
+      final updatedUser = user.copyWith(
+        currentAvatar: avatarId == 'default' ? null : avatarId,
+      );
       await _repository.saveUser(updatedUser);
       state = state.copyWith(user: updatedUser);
     }
@@ -284,7 +310,7 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> updateMonthlyLimit(double limit) async {
     final user = state.user;
     if (user == null) return;
-    
+
     final updatedUser = user.copyWith(monthlyLimit: limit);
     await _repository.saveUser(updatedUser);
     state = state.copyWith(user: updatedUser);
@@ -294,7 +320,7 @@ class AuthNotifier extends Notifier<AuthState> {
     final user = state.user;
     if (user == null) return;
     if (user.unlockedItems.contains(itemId)) return;
-    
+
     final newUnlockedItems = List<String>.from(user.unlockedItems)..add(itemId);
     final updatedUser = user.copyWith(unlockedItems: newUnlockedItems);
     await _repository.saveUser(updatedUser);
@@ -327,7 +353,9 @@ class AuthNotifier extends Notifier<AuthState> {
     final user = state.user;
     if (user == null) return;
     final newUnlocked = List<String>.from(user.unlockedItems)
-      ..removeWhere((item) => item.startsWith('theme') && item != 'theme_default');
+      ..removeWhere(
+        (item) => item.startsWith('theme') && item != 'theme_default',
+      );
     final updatedUser = user.copyWith(
       unlockedItems: newUnlocked,
       points: user.points < 500 ? 500 : user.points,

@@ -8,21 +8,25 @@ import '../utils/localization.dart';
 import 'package:intl/intl.dart';
 
 class PdfReportService {
-  
   static String _cleanText(String text) {
-    var cleaned = text.replaceAll('€', 'EUR ')
-                      .replaceAll('£', 'GBP ')
-                      .replaceAll('¥', 'JPY ')
-                      .replaceAll('₡', 'CRC ')
-                      .replaceAll('Bs.', 'BOB ')
-                      .replaceAll('S/', 'PEN ')
-                      .replaceAll(r'R$', 'BRL ')
-                      .replaceAll(r'CA$', 'CAD ')
-                      .replaceAll(r'A$', 'AUD ');
+    var cleaned = text
+        .replaceAll('€', 'EUR ')
+        .replaceAll('£', 'GBP ')
+        .replaceAll('¥', 'JPY ')
+        .replaceAll('₡', 'CRC ')
+        .replaceAll('Bs.', 'BOB ')
+        .replaceAll('S/', 'PEN ')
+        .replaceAll(r'R$', 'BRL ')
+        .replaceAll(r'CA$', 'CAD ')
+        .replaceAll(r'A$', 'AUD ');
     return cleaned.trim();
   }
 
-  static pw.Text _safeText(String text, {pw.TextStyle? style, pw.TextAlign? textAlign}) {
+  static pw.Text _safeText(
+    String text, {
+    pw.TextStyle? style,
+    pw.TextAlign? textAlign,
+  }) {
     return pw.Text(_cleanText(text), style: style, textAlign: textAlign);
   }
 
@@ -32,92 +36,162 @@ class PdfReportService {
     final isPt = langCode.startsWith('pt');
     final isFr = langCode.startsWith('fr');
     final isIt = langCode.startsWith('it');
-    
+
     if (isEn) {
       switch (cat) {
-        case 'salary': return 'Salary';
-        case 'freelance': return 'Freelance';
-        case 'sale': return 'Sales';
-        case 'groceries': return 'Groceries';
-        case 'food': return 'Food';
-        case 'transport': return 'Transport';
-        case 'entertainment': return 'Entertainment';
-        case 'health': return 'Health';
-        case 'shopping': return 'Shopping';
-        case 'services': return 'Services';
-        case 'utilities': return 'Utilities';
-        case 'education': return 'Education';
-        case 'debt': return 'Debt Payment';
-        default: return cat;
+        case 'salary':
+          return 'Salary';
+        case 'freelance':
+          return 'Freelance';
+        case 'sale':
+          return 'Sales';
+        case 'groceries':
+          return 'Groceries';
+        case 'food':
+          return 'Food';
+        case 'transport':
+          return 'Transport';
+        case 'entertainment':
+          return 'Entertainment';
+        case 'health':
+          return 'Health';
+        case 'shopping':
+          return 'Shopping';
+        case 'services':
+          return 'Services';
+        case 'utilities':
+          return 'Utilities';
+        case 'education':
+          return 'Education';
+        case 'debt':
+          return 'Debt Payment';
+        default:
+          return cat;
       }
     } else if (isPt) {
       switch (cat) {
-        case 'salary': return 'Salário';
-        case 'freelance': return 'Autônomo';
-        case 'sale': return 'Vendas';
-        case 'groceries': return 'Supermercado';
-        case 'food': return 'Comida';
-        case 'transport': return 'Transporte';
-        case 'entertainment': return 'Entretenimento';
-        case 'health': return 'Saúde';
-        case 'shopping': return 'Compras';
-        case 'services': return 'Serviços';
-        case 'utilities': return 'Contas (Água/Luz)';
-        case 'education': return 'Educação';
-        case 'debt': return 'Pagamento de Dívida';
-        default: return cat;
+        case 'salary':
+          return 'Salário';
+        case 'freelance':
+          return 'Autônomo';
+        case 'sale':
+          return 'Vendas';
+        case 'groceries':
+          return 'Supermercado';
+        case 'food':
+          return 'Comida';
+        case 'transport':
+          return 'Transporte';
+        case 'entertainment':
+          return 'Entretenimento';
+        case 'health':
+          return 'Saúde';
+        case 'shopping':
+          return 'Compras';
+        case 'services':
+          return 'Serviços';
+        case 'utilities':
+          return 'Contas (Água/Luz)';
+        case 'education':
+          return 'Educação';
+        case 'debt':
+          return 'Pagamento de Dívida';
+        default:
+          return cat;
       }
     } else if (isFr) {
       switch (cat) {
-        case 'salary': return 'Salaire';
-        case 'freelance': return 'Indépendant';
-        case 'sale': return 'Ventes';
-        case 'groceries': return 'Épicerie';
-        case 'food': return 'Nourriture';
-        case 'transport': return 'Transports';
-        case 'entertainment': return 'Divertissement';
-        case 'health': return 'Santé';
-        case 'shopping': return 'Achats';
-        case 'services': return 'Services';
-        case 'utilities': return 'Factures';
-        case 'education': return 'Éducation';
-        case 'debt': return 'Paiement de dette';
-        default: return cat;
+        case 'salary':
+          return 'Salaire';
+        case 'freelance':
+          return 'Indépendant';
+        case 'sale':
+          return 'Ventes';
+        case 'groceries':
+          return 'Épicerie';
+        case 'food':
+          return 'Nourriture';
+        case 'transport':
+          return 'Transports';
+        case 'entertainment':
+          return 'Divertissement';
+        case 'health':
+          return 'Santé';
+        case 'shopping':
+          return 'Achats';
+        case 'services':
+          return 'Services';
+        case 'utilities':
+          return 'Factures';
+        case 'education':
+          return 'Éducation';
+        case 'debt':
+          return 'Paiement de dette';
+        default:
+          return cat;
       }
     } else if (isIt) {
       switch (cat) {
-        case 'salary': return 'Stipendio';
-        case 'freelance': return 'Libero Professionista';
-        case 'sale': return 'Vendite';
-        case 'groceries': return 'Spesa';
-        case 'food': return 'Cibo';
-        case 'transport': return 'Trasporti';
-        case 'entertainment': return 'Intrattenimento';
-        case 'health': return 'Salute';
-        case 'shopping': return 'Shopping';
-        case 'services': return 'Servizi';
-        case 'utilities': return 'Utenze';
-        case 'education': return 'Istruzione';
-        case 'debt': return 'Pagamento Debito';
-        default: return cat;
+        case 'salary':
+          return 'Stipendio';
+        case 'freelance':
+          return 'Libero Professionista';
+        case 'sale':
+          return 'Vendite';
+        case 'groceries':
+          return 'Spesa';
+        case 'food':
+          return 'Cibo';
+        case 'transport':
+          return 'Trasporti';
+        case 'entertainment':
+          return 'Intrattenimento';
+        case 'health':
+          return 'Salute';
+        case 'shopping':
+          return 'Shopping';
+        case 'services':
+          return 'Servizi';
+        case 'utilities':
+          return 'Utenze';
+        case 'education':
+          return 'Istruzione';
+        case 'debt':
+          return 'Pagamento Debito';
+        default:
+          return cat;
       }
     } else {
       // Spanish default
       switch (cat) {
-        case 'salary': return 'Salario';
-        case 'freelance': return 'Freelance';
-        case 'sale': return 'Ventas';
-        case 'groceries': return 'Supermercado';
-        case 'food': return 'Comida';
-        case 'transport': return 'Transporte';
-        case 'entertainment': return 'Entretenimiento';
-        case 'health': return 'Salud';
-        case 'shopping': return 'Compras';
-        case 'services': return 'Servicios';
-        case 'utilities': return 'Servicios Públicos';
-        case 'education': return 'Educación';
-        case 'debt': return 'Pago de Deuda';
-        default: return cat;
+        case 'salary':
+          return 'Salario';
+        case 'freelance':
+          return 'Freelance';
+        case 'sale':
+          return 'Ventas';
+        case 'groceries':
+          return 'Supermercado';
+        case 'food':
+          return 'Comida';
+        case 'transport':
+          return 'Transporte';
+        case 'entertainment':
+          return 'Entretenimiento';
+        case 'health':
+          return 'Salud';
+        case 'shopping':
+          return 'Compras';
+        case 'services':
+          return 'Servicios';
+        case 'utilities':
+          return 'Servicios Públicos';
+        case 'education':
+          return 'Educación';
+        case 'debt':
+          return 'Pago de Deuda';
+        default:
+          return cat;
       }
     }
   }
@@ -134,7 +208,7 @@ class PdfReportService {
     final fontRegular = await PdfGoogleFonts.robotoRegular();
     final fontBold = await PdfGoogleFonts.robotoBold();
     final emojiFallback = await PdfGoogleFonts.notoColorEmoji();
-    
+
     final theme = pw.ThemeData.withFont(
       base: fontRegular,
       bold: fontBold,
@@ -148,7 +222,7 @@ class PdfReportService {
     // Filtramos las transacciones por el rango de fechas
     final filteredTxs = transactions.where((tx) {
       return tx.date.isAfter(startDate.subtract(const Duration(days: 1))) &&
-             tx.date.isBefore(endDate.add(const Duration(days: 1)));
+          tx.date.isBefore(endDate.add(const Duration(days: 1)));
     }).toList();
 
     // Ordenamos de más reciente a más antigua
@@ -182,23 +256,67 @@ class PdfReportService {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(40),
-        header: (context) => _buildModernHeader(userName, startDate, endDate, dateformat, primaryColor, accentColor, reportType, isEn, loc),
+        header: (context) => _buildModernHeader(
+          userName,
+          startDate,
+          endDate,
+          dateformat,
+          primaryColor,
+          accentColor,
+          reportType,
+          isEn,
+          loc,
+        ),
         footer: (context) => _buildFooter(context, primaryColor, isEn, loc),
         build: (pw.Context context) {
           List<pw.Widget> content = [];
-          
+
           content.add(pw.SizedBox(height: 30));
-          content.add(_buildModernSummaryCards(totalIncome, totalExpense, balance, currencyCode, greenColor, redColor, primaryColor, isEn, loc));
+          content.add(
+            _buildModernSummaryCards(
+              totalIncome,
+              totalExpense,
+              balance,
+              currencyCode,
+              greenColor,
+              redColor,
+              primaryColor,
+              isEn,
+              loc,
+            ),
+          );
           content.add(pw.SizedBox(height: 40));
 
           if (reportType == 'expense' || reportType == 'general') {
-             if (totalExpense > 0) {
-               content.add(_buildCategoryBreakdown(expensesByCategory, currencyCode, totalExpense, primaryColor, accentColor, isEn, loc));
-               content.add(pw.SizedBox(height: 40));
-             }
+            if (totalExpense > 0) {
+              content.add(
+                _buildCategoryBreakdown(
+                  expensesByCategory,
+                  currencyCode,
+                  totalExpense,
+                  primaryColor,
+                  accentColor,
+                  isEn,
+                  loc,
+                ),
+              );
+              content.add(pw.SizedBox(height: 40));
+            }
           }
 
-          content.addAll(_buildModernTransactionTable(filteredTxs, currencyCode, dateformat, primaryColor, greenColor, redColor, isEn, langCode, loc));
+          content.addAll(
+            _buildModernTransactionTable(
+              filteredTxs,
+              currencyCode,
+              dateformat,
+              primaryColor,
+              greenColor,
+              redColor,
+              isEn,
+              langCode,
+              loc,
+            ),
+          );
 
           return content;
         },
@@ -208,10 +326,22 @@ class PdfReportService {
     return pdf.save();
   }
 
-  static pw.Widget _buildModernHeader(String userName, DateTime startDate, DateTime endDate, DateFormat format, PdfColor primary, PdfColor accent, String reportType, bool isEn, AppLocalizations loc) {
+  static pw.Widget _buildModernHeader(
+    String userName,
+    DateTime startDate,
+    DateTime endDate,
+    DateFormat format,
+    PdfColor primary,
+    PdfColor accent,
+    String reportType,
+    bool isEn,
+    AppLocalizations loc,
+  ) {
     String typeLabel = loc.get('pdf_report_general') ?? 'Reporte Financiero';
-    if (reportType == 'income') typeLabel = loc.get('pdf_report_income') ?? 'Reporte de Ingresos';
-    if (reportType == 'expense') typeLabel = loc.get('pdf_report_expense') ?? 'Reporte de Gastos';
+    if (reportType == 'income')
+      typeLabel = loc.get('pdf_report_income') ?? 'Reporte de Ingresos';
+    if (reportType == 'expense')
+      typeLabel = loc.get('pdf_report_expense') ?? 'Reporte de Gastos';
 
     return pw.Container(
       margin: const pw.EdgeInsets.only(bottom: 20),
@@ -232,21 +362,47 @@ class PdfReportService {
                 height: 48,
                 decoration: pw.BoxDecoration(
                   color: primary,
-                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(12)),
+                  borderRadius: const pw.BorderRadius.all(
+                    pw.Radius.circular(12),
+                  ),
                 ),
                 child: pw.Center(
-                  child: pw.Text('Q', style: pw.TextStyle(color: PdfColors.white, fontSize: 32, fontWeight: pw.FontWeight.bold)),
+                  child: pw.Text(
+                    'Q',
+                    style: pw.TextStyle(
+                      color: PdfColors.white,
+                      fontSize: 32,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
               pw.SizedBox(width: 16),
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  _safeText("QUIVO", style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: primary)),
+                  _safeText(
+                    "QUIVO",
+                    style: pw.TextStyle(
+                      fontSize: 24,
+                      fontWeight: pw.FontWeight.bold,
+                      color: primary,
+                    ),
+                  ),
                   pw.SizedBox(height: 4),
-                  _safeText(typeLabel.toUpperCase(), style: pw.TextStyle(fontSize: 14, color: PdfColors.grey700, fontWeight: pw.FontWeight.bold)),
+                  _safeText(
+                    typeLabel.toUpperCase(),
+                    style: pw.TextStyle(
+                      fontSize: 14,
+                      color: PdfColors.grey700,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
                   pw.SizedBox(height: 2),
-                  _safeText("${loc.get('pdf_holder') ?? 'Holder'}: ${_cleanText(userName)}", style: pw.TextStyle(fontSize: 12, color: PdfColors.grey800)),
+                  _safeText(
+                    "${loc.get('pdf_holder') ?? 'Holder'}: ${_cleanText(userName)}",
+                    style: pw.TextStyle(fontSize: 12, color: PdfColors.grey800),
+                  ),
                 ],
               ),
             ],
@@ -254,9 +410,23 @@ class PdfReportService {
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.end,
             children: [
-              _safeText(loc.get('pdf_period') ?? 'PERIOD', style: pw.TextStyle(fontSize: 10, color: PdfColors.grey600, fontWeight: pw.FontWeight.bold)),
+              _safeText(
+                loc.get('pdf_period') ?? 'PERIOD',
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  color: PdfColors.grey600,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
               pw.SizedBox(height: 4),
-              _safeText('${format.format(startDate)} - ${format.format(endDate)}', style: pw.TextStyle(fontSize: 12, color: primary, fontWeight: pw.FontWeight.bold)),
+              _safeText(
+                '${format.format(startDate)} - ${format.format(endDate)}',
+                style: pw.TextStyle(
+                  fontSize: 12,
+                  color: primary,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
             ],
           ),
         ],
@@ -264,18 +434,48 @@ class PdfReportService {
     );
   }
 
-  static pw.Widget _buildModernSummaryCards(double income, double expense, double balance, String currencyCode, PdfColor green, PdfColor red, PdfColor primary, bool isEn, AppLocalizations loc) {
+  static pw.Widget _buildModernSummaryCards(
+    double income,
+    double expense,
+    double balance,
+    String currencyCode,
+    PdfColor green,
+    PdfColor red,
+    PdfColor primary,
+    bool isEn,
+    AppLocalizations loc,
+  ) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
-        _buildModernCard(loc.get('pdf_total_income') ?? 'INGRESOS', income, green, currencyCode),
-        _buildModernCard(loc.get('pdf_total_expenses') ?? 'GASTOS', expense, red, currencyCode),
-        _buildModernCard(loc.get('pdf_net_balance') ?? 'NET BALANCE', balance, balance >= 0 ? primary : red, currencyCode),
+        _buildModernCard(
+          loc.get('pdf_total_income') ?? 'INGRESOS',
+          income,
+          green,
+          currencyCode,
+        ),
+        _buildModernCard(
+          loc.get('pdf_total_expenses') ?? 'GASTOS',
+          expense,
+          red,
+          currencyCode,
+        ),
+        _buildModernCard(
+          loc.get('pdf_net_balance') ?? 'NET BALANCE',
+          balance,
+          balance >= 0 ? primary : red,
+          currencyCode,
+        ),
       ],
     );
   }
 
-  static pw.Widget _buildModernCard(String title, double amount, PdfColor color, String currencyCode) {
+  static pw.Widget _buildModernCard(
+    String title,
+    double amount,
+    PdfColor color,
+    String currencyCode,
+  ) {
     return pw.Container(
       width: 155,
       padding: const pw.EdgeInsets.all(16),
@@ -287,15 +487,37 @@ class PdfReportService {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          _safeText(title, style: pw.TextStyle(fontSize: 10, color: PdfColors.grey600, fontWeight: pw.FontWeight.bold)),
+          _safeText(
+            title,
+            style: pw.TextStyle(
+              fontSize: 10,
+              color: PdfColors.grey600,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
           pw.SizedBox(height: 8),
-          _safeText(CurrencyFormatter.format(amount, currencyCode), style: pw.TextStyle(fontSize: 18, color: color, fontWeight: pw.FontWeight.bold)),
+          _safeText(
+            CurrencyFormatter.format(amount, currencyCode),
+            style: pw.TextStyle(
+              fontSize: 18,
+              color: color,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  static pw.Widget _buildCategoryBreakdown(Map<String, double> expensesByCategory, String currencyCode, double totalExpense, PdfColor primary, PdfColor accent, bool isEn, AppLocalizations loc) {
+  static pw.Widget _buildCategoryBreakdown(
+    Map<String, double> expensesByCategory,
+    String currencyCode,
+    double totalExpense,
+    PdfColor primary,
+    PdfColor accent,
+    bool isEn,
+    AppLocalizations loc,
+  ) {
     // Ordenar de mayor a menor gasto
     final sortedEntries = expensesByCategory.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
@@ -309,7 +531,15 @@ class PdfReportService {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          _safeText(loc.get('pdf_expenses_breakdown') ?? 'EXPENSES BREAKDOWN BY CATEGORY', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: primary)),
+          _safeText(
+            loc.get('pdf_expenses_breakdown') ??
+                'EXPENSES BREAKDOWN BY CATEGORY',
+            style: pw.TextStyle(
+              fontSize: 14,
+              fontWeight: pw.FontWeight.bold,
+              color: primary,
+            ),
+          ),
           pw.SizedBox(height: 16),
           ...sortedEntries.map((entry) {
             final percentage = (entry.value / totalExpense) * 100;
@@ -319,7 +549,10 @@ class PdfReportService {
                 children: [
                   pw.Expanded(
                     flex: 2,
-                    child: _safeText(entry.key, style: const pw.TextStyle(fontSize: 12)),
+                    child: _safeText(
+                      entry.key,
+                      style: const pw.TextStyle(fontSize: 12),
+                    ),
                   ),
                   pw.Expanded(
                     flex: 3,
@@ -327,20 +560,37 @@ class PdfReportService {
                       children: [
                         pw.Container(
                           height: 8,
-                          width: (percentage * 2).clamp(0, 200).toDouble(), // 200 is max width approx
+                          width: (percentage * 2)
+                              .clamp(0, 200)
+                              .toDouble(), // 200 is max width approx
                           decoration: pw.BoxDecoration(
                             color: accent,
-                            borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+                            borderRadius: const pw.BorderRadius.all(
+                              pw.Radius.circular(4),
+                            ),
                           ),
                         ),
                         pw.SizedBox(width: 8),
-                        _safeText('${percentage.toStringAsFixed(1)}%', style: pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+                        _safeText(
+                          '${percentage.toStringAsFixed(1)}%',
+                          style: pw.TextStyle(
+                            fontSize: 10,
+                            color: PdfColors.grey700,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   pw.Expanded(
                     flex: 1,
-                    child: _safeText(CurrencyFormatter.format(entry.value, currencyCode), textAlign: pw.TextAlign.right, style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                    child: _safeText(
+                      CurrencyFormatter.format(entry.value, currencyCode),
+                      textAlign: pw.TextAlign.right,
+                      style: pw.TextStyle(
+                        fontSize: 12,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -351,9 +601,26 @@ class PdfReportService {
     );
   }
 
-  static List<pw.Widget> _buildModernTransactionTable(List<TransactionModel> txs, String currencyCode, DateFormat format, PdfColor primary, PdfColor green, PdfColor red, bool isEn, String langCode, AppLocalizations loc) {
+  static List<pw.Widget> _buildModernTransactionTable(
+    List<TransactionModel> txs,
+    String currencyCode,
+    DateFormat format,
+    PdfColor primary,
+    PdfColor green,
+    PdfColor red,
+    bool isEn,
+    String langCode,
+    AppLocalizations loc,
+  ) {
     if (txs.isEmpty) {
-      return [pw.Center(child: _safeText(loc.get('pdf_no_transactions') ?? 'No transactions', style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey600)))];
+      return [
+        pw.Center(
+          child: _safeText(
+            loc.get('pdf_no_transactions') ?? 'No transactions',
+            style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey600),
+          ),
+        ),
+      ];
     }
 
     final tableHeaders = [
@@ -361,7 +628,7 @@ class PdfReportService {
       loc.get('pdf_table_desc') ?? 'DESCRIPTION',
       loc.get('pdf_table_cat') ?? 'CATEGORY',
       loc.get('pdf_table_type') ?? 'TYPE',
-      loc.get('pdf_table_amount') ?? 'AMOUNT'
+      loc.get('pdf_table_amount') ?? 'AMOUNT',
     ];
 
     final tableData = txs.map((tx) {
@@ -369,21 +636,38 @@ class PdfReportService {
       final formattedAmount = CurrencyFormatter.format(tx.amount, currencyCode);
       return [
         format.format(tx.date),
-        _cleanText(tx.description.isEmpty ? (loc.get('pdf_no_description') ?? 'No description') : tx.description),
+        _cleanText(
+          tx.description.isEmpty
+              ? (loc.get('pdf_no_description') ?? 'No description')
+              : tx.description,
+        ),
         loc.translateCategory(tx.category),
-        isIncome ? (loc.get('pdf_income_type') ?? 'Ingreso') : (loc.get('pdf_expense_type') ?? 'Gasto'),
+        isIncome
+            ? (loc.get('pdf_income_type') ?? 'Ingreso')
+            : (loc.get('pdf_expense_type') ?? 'Gasto'),
         isIncome ? '+$formattedAmount' : '-$formattedAmount',
       ];
     }).toList();
 
     return [
-      _safeText(loc.get('pdf_transaction_history') ?? 'TRANSACTION HISTORY', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: primary)),
+      _safeText(
+        loc.get('pdf_transaction_history') ?? 'TRANSACTION HISTORY',
+        style: pw.TextStyle(
+          fontSize: 14,
+          fontWeight: pw.FontWeight.bold,
+          color: primary,
+        ),
+      ),
       pw.SizedBox(height: 16),
       pw.TableHelper.fromTextArray(
         headers: tableHeaders,
         data: tableData,
         border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
-        headerStyle: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+        headerStyle: pw.TextStyle(
+          fontSize: 10,
+          fontWeight: pw.FontWeight.bold,
+          color: PdfColors.white,
+        ),
         headerDecoration: pw.BoxDecoration(color: primary),
         cellHeight: 30,
         cellAlignments: {
@@ -399,14 +683,29 @@ class PdfReportService {
     ];
   }
 
-  static pw.Widget _buildFooter(pw.Context context, PdfColor primary, bool isEn, AppLocalizations loc) {
+  static pw.Widget _buildFooter(
+    pw.Context context,
+    PdfColor primary,
+    bool isEn,
+    AppLocalizations loc,
+  ) {
     return pw.Container(
       margin: const pw.EdgeInsets.only(top: 20),
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          _safeText(loc.get('pdf_generated_by') ?? 'Generated by QUIVO', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey500)),
-          _safeText("${loc.get('pdf_page') ?? 'Page'} ${context.pageNumber} ${loc.get('pdf_of') ?? 'of'} ${context.pagesCount}", style: pw.TextStyle(fontSize: 10, color: primary, fontWeight: pw.FontWeight.bold)),
+          _safeText(
+            loc.get('pdf_generated_by') ?? 'Generated by QUIVO',
+            style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey500),
+          ),
+          _safeText(
+            "${loc.get('pdf_page') ?? 'Page'} ${context.pageNumber} ${loc.get('pdf_of') ?? 'of'} ${context.pagesCount}",
+            style: pw.TextStyle(
+              fontSize: 10,
+              color: primary,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );

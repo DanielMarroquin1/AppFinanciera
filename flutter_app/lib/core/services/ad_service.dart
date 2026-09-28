@@ -173,9 +173,15 @@ class AdService {
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF0F172A) : Colors.white,
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5), width: 2),
+            border: Border.all(
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
+              width: 2,
+            ),
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 30),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 30,
+              ),
             ],
           ),
           child: Column(
@@ -185,18 +191,28 @@ class AdService {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Text(
                       '📢 ANUNCIO ADMOB TEST',
-                      style: TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.w900, fontSize: 10),
+                      style: TextStyle(
+                        color: Color(0xFFF59E0B),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 10,
+                      ),
                     ),
                   ),
                   IconButton(
-                    icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                    icon: Icon(
+                      LucideIcons.x,
+                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    ),
                     onPressed: () => Navigator.pop(ctx),
                   ),
                 ],
@@ -221,7 +237,11 @@ class AdService {
                     SizedBox(height: 8),
                     Text(
                       'Inversiones Inteligentes App',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
                     ),
                     Text(
                       'Multiplica tus ahorros en 3 sencillos pasos',
@@ -234,19 +254,35 @@ class AdService {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                  color: isDark
+                      ? const Color(0xFF1E293B)
+                      : const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
                   children: [
-                    const Icon(LucideIcons.crown, color: Color(0xFFF59E0B), size: 22),
+                    const Icon(
+                      LucideIcons.crown,
+                      color: Color(0xFFF59E0B),
+                      size: 22,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('¿Cansado de la publicidad?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isDark ? Colors.white : Colors.black87)),
-                          const Text('Actualiza al Plan Premium VIP y navega 100% libre de anuncios.', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                          Text(
+                            '¿Cansado de la publicidad?',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                          const Text(
+                            'Actualiza al Plan Premium VIP y navega 100% libre de anuncios.',
+                            style: TextStyle(fontSize: 11, color: Colors.grey),
+                          ),
                         ],
                       ),
                     ),
@@ -262,9 +298,14 @@ class AdService {
                     backgroundColor: const Color(0xFF38BDF8),
                     foregroundColor: const Color(0xFF0F172A),
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                  child: const Text('Continuar a mi Finanza', style: TextStyle(fontWeight: FontWeight.w800)),
+                  child: const Text(
+                    'Continuar a mi Finanza',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
                 ),
               ),
             ],
@@ -297,7 +338,10 @@ class AdService {
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF0F172A) : Colors.white,
                   borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.6), width: 2),
+                  border: Border.all(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.6),
+                    width: 2,
+                  ),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -306,14 +350,23 @@ class AdService {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                            color: const Color(
+                              0xFF10B981,
+                            ).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Text(
                             '🎬 VIDEO RECOMPENSA ADMOB',
-                            style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.w900, fontSize: 10),
+                            style: TextStyle(
+                              color: Color(0xFF10B981),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 10,
+                            ),
                           ),
                         ),
                         if (secondsLeft == 0)
@@ -324,7 +377,11 @@ class AdService {
                         else
                           Text(
                             '00:0$secondsLeft',
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF38BDF8), fontSize: 14),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF38BDF8),
+                              fontSize: 14,
+                            ),
                           ),
                       ],
                     ),
@@ -334,7 +391,11 @@ class AdService {
                       width: double.infinity,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF059669), Color(0xFF10B981), Color(0xFF34D399)],
+                          colors: [
+                            Color(0xFF059669),
+                            Color(0xFF10B981),
+                            Color(0xFF34D399),
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -344,18 +405,29 @@ class AdService {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(LucideIcons.gift, color: Colors.white, size: 54),
+                          const Icon(
+                            LucideIcons.gift,
+                            color: Colors.white,
+                            size: 54,
+                          ),
                           const SizedBox(height: 12),
                           const Text(
                             '¡Patrocinador Oficial Finanzas App!',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             secondsLeft > 0
                                 ? 'Espera $secondsLeft seg para reclamar tus +50 Puntos'
                                 : '🎉 ¡Listo! Recompensa desbloqueada.',
-                            style: const TextStyle(color: Colors.white70, fontSize: 12),
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ),
@@ -364,17 +436,26 @@ class AdService {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: secondsLeft == 0 ? () => Navigator.pop(ctx, true) : null,
+                        onPressed: secondsLeft == 0
+                            ? () => Navigator.pop(ctx, true)
+                            : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF10B981),
                           foregroundColor: Colors.white,
                           disabledBackgroundColor: Colors.grey[700],
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                         child: Text(
-                          secondsLeft == 0 ? '🎁 RECLAMAR MI RECOMPENSA' : 'REPRODUCIENDO VIDEO...',
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                          secondsLeft == 0
+                              ? '🎁 RECLAMAR MI RECOMPENSA'
+                              : 'REPRODUCIENDO VIDEO...',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     ),
@@ -448,10 +529,17 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         gradient: isDark
-            ? LinearGradient(colors: [const Color(0xFF1E293B).withValues(alpha: 0.8), const Color(0xFF0F172A).withValues(alpha: 0.9)])
+            ? LinearGradient(
+                colors: [
+                  const Color(0xFF1E293B).withValues(alpha: 0.8),
+                  const Color(0xFF0F172A).withValues(alpha: 0.9),
+                ],
+              )
             : LinearGradient(colors: [Colors.blue[50]!, Colors.purple[50]!]),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
+        border: Border.all(
+          color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
@@ -461,7 +549,11 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
               color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(LucideIcons.sparkles, color: Color(0xFF38BDF8), size: 22),
+            child: const Icon(
+              LucideIcons.sparkles,
+              color: Color(0xFF38BDF8),
+              size: 22,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -471,19 +563,33 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.amber.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Text('PATROCINADO • ADMOB TEST', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.amber)),
+                      child: const Text(
+                        'PATROCINADO • ADMOB TEST',
+                        style: TextStyle(
+                          fontSize: 8,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.amber,
+                        ),
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Asegura tu futuro con las mejores tasas de inversión 2026.',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.white : Colors.black87),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
                 ),
               ],
             ),

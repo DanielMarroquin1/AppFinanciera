@@ -31,8 +31,18 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
   String? _errorMessage;
 
   final List<String> _months = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Septiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre',
   ];
 
   Future<void> _generatePdf() async {
@@ -40,11 +50,11 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
       _isGenerating = true;
       _errorMessage = null;
     });
-    
+
     final transactions = ref.read(transactionsProvider).value ?? [];
     final user = ref.read(authProvider).user;
     final loc = ref.read(localizationProvider);
-    
+
     if (user == null) {
       setState(() => _isGenerating = false);
       return;
@@ -55,20 +65,31 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
       if (_reportType == 'income') {
         filteredTxs = filteredTxs.where((tx) => tx.type == 'income').toList();
       } else if (_reportType == 'expense') {
-        filteredTxs = filteredTxs.where((tx) => tx.type == 'expense' || tx.type == 'cc_payment').toList();
+        filteredTxs = filteredTxs
+            .where((tx) => tx.type == 'expense' || tx.type == 'cc_payment')
+            .toList();
       }
 
       final startDate = DateTime(_selectedYear, _selectedMonth, 1);
-      final endDate = DateTime(_selectedYear, _selectedMonth + 1, 0, 23, 59, 59);
+      final endDate = DateTime(
+        _selectedYear,
+        _selectedMonth + 1,
+        0,
+        23,
+        59,
+        59,
+      );
 
-      final hasRecords = filteredTxs.any((tx) => 
-        tx.date.isAfter(startDate.subtract(const Duration(days: 1))) && 
-        tx.date.isBefore(endDate.add(const Duration(days: 1)))
+      final hasRecords = filteredTxs.any(
+        (tx) =>
+            tx.date.isAfter(startDate.subtract(const Duration(days: 1))) &&
+            tx.date.isBefore(endDate.add(const Duration(days: 1))),
       );
 
       if (!hasRecords) {
         setState(() {
-          _errorMessage = 'No hay registros en el mes de ${_months[_selectedMonth - 1]} del $_selectedYear.';
+          _errorMessage =
+              'No hay registros en el mes de ${_months[_selectedMonth - 1]} del $_selectedYear.';
           _isGenerating = false;
         });
         return;
@@ -87,7 +108,8 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
       if (mounted) {
         await Printing.sharePdf(
           bytes: pdfBytes,
-          filename: 'Reporte_${_reportType}_${_months[_selectedMonth - 1]}_$_selectedYear.pdf',
+          filename:
+              'Reporte_${_reportType}_${_months[_selectedMonth - 1]}_$_selectedYear.pdf',
         );
       }
     } catch (e) {
@@ -169,9 +191,16 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
                         Navigator.pop(context);
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                        color: isSelected 
-                            ? (isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFF6366F1).withValues(alpha: 0.1))
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
+                        color: isSelected
+                            ? (isDark
+                                  ? Colors.white.withValues(alpha: 0.1)
+                                  : const Color(
+                                      0xFF6366F1,
+                                    ).withValues(alpha: 0.1))
                             : Colors.transparent,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -180,14 +209,22 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
                               labelBuilder(item),
                               style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                                color: isSelected 
+                                fontWeight: isSelected
+                                    ? FontWeight.w800
+                                    : FontWeight.w500,
+                                color: isSelected
                                     ? const Color(0xFF6366F1)
-                                    : (isDark ? Colors.grey[300] : Colors.grey[800]),
+                                    : (isDark
+                                          ? Colors.grey[300]
+                                          : Colors.grey[800]),
                               ),
                             ),
                             if (isSelected)
-                              const Icon(LucideIcons.checkCircle2, color: Color(0xFF6366F1), size: 22),
+                              const Icon(
+                                LucideIcons.checkCircle2,
+                                color: Color(0xFF6366F1),
+                                size: 22,
+                              ),
                           ],
                         ),
                       ),
@@ -207,7 +244,7 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final currentYear = DateTime.now().year;
     final years = List.generate(5, (index) => currentYear - index);
-    
+
     // Softer colors for a friendly, non-tech look
     final bgColor = isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF9FAFB);
     final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
@@ -239,7 +276,7 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
             ),
           ),
           const SizedBox(height: 24),
-          
+
           // Friendly Header
           Row(
             children: [
@@ -249,7 +286,11 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
                   color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(LucideIcons.fileOutput, color: Color(0xFF6366F1), size: 26),
+                child: const Icon(
+                  LucideIcons.fileOutput,
+                  color: Color(0xFF6366F1),
+                  size: 26,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -278,9 +319,9 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // Period Selection
           Text(
             'Elige el periodo',
@@ -334,9 +375,9 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // Report Type
           Text(
             '¿Qué datos incluimos?',
@@ -377,7 +418,7 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
               ),
             ],
           ),
-          
+
           if (_errorMessage != null) ...[
             const SizedBox(height: 24),
             Container(
@@ -385,16 +426,26 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
               decoration: BoxDecoration(
                 color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+                ),
               ),
               child: Row(
                 children: [
-                  const Icon(LucideIcons.alertCircle, color: Color(0xFFEF4444), size: 20),
+                  const Icon(
+                    LucideIcons.alertCircle,
+                    color: Color(0xFFEF4444),
+                    size: 20,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       _errorMessage!,
-                      style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        color: Color(0xFFEF4444),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -404,7 +455,7 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
           ] else ...[
             const SizedBox(height: 40),
           ],
-          
+
           // Friendly Action Button
           ElevatedButton(
             onPressed: _isGenerating ? null : _generatePdf,
@@ -412,7 +463,9 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
               padding: const EdgeInsets.symmetric(vertical: 18),
               backgroundColor: const Color(0xFF6366F1),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               elevation: 4,
               shadowColor: const Color(0xFF6366F1).withValues(alpha: 0.3),
             ),
@@ -420,7 +473,10 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
                 ? const SizedBox(
                     height: 24,
                     width: 24,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 3,
+                    ),
                   )
                 : const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -429,7 +485,10 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
                       SizedBox(width: 10),
                       Text(
                         'Generar Archivo',
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ],
                   ),
@@ -454,13 +513,15 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: isDark ? [] : [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            )
-          ],
+          boxShadow: isDark
+              ? []
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -495,7 +556,7 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
     required Color cardColor,
   }) {
     final isSelected = _reportType == value;
-    
+
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _reportType = value),
@@ -505,16 +566,32 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
           decoration: BoxDecoration(
             color: isSelected ? baseColor : cardColor,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: isSelected 
-              ? [BoxShadow(color: baseColor.withValues(alpha: 0.4), blurRadius: 12, offset: const Offset(0, 6))] 
-              : (isDark ? [] : [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))]),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: baseColor.withValues(alpha: 0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : (isDark
+                      ? []
+                      : [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ]),
           ),
           child: Column(
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.white.withValues(alpha: 0.2) : baseColor.withValues(alpha: 0.1),
+                  color: isSelected
+                      ? Colors.white.withValues(alpha: 0.2)
+                      : baseColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -529,7 +606,9 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                  color: isSelected ? Colors.white : (isDark ? Colors.grey[300] : const Color(0xFF4B5563)),
+                  color: isSelected
+                      ? Colors.white
+                      : (isDark ? Colors.grey[300] : const Color(0xFF4B5563)),
                 ),
               ),
             ],

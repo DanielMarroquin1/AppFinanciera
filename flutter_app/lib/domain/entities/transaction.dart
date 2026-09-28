@@ -9,11 +9,15 @@ class TransactionModel {
   final String description;
   final DateTime date;
   final bool isFixed;
-  final String? recurrenceType; // 'monthly', 'bimonthly' (2 times/month), 'weekly', null
-  final int? recurrenceDay; // primary day of month (1-31) or day of week (1-7 for weekly)
+  final String?
+  recurrenceType; // 'monthly', 'bimonthly' (2 times/month), 'weekly', null
+  final int?
+  recurrenceDay; // primary day of month (1-31) or day of week (1-7 for weekly)
   final int? recurrenceDay2; // secondary day for bimonthly
-  final double? recurrenceAmount2; // specific amount for the second day (if null, defaults to amount/2 or amount depending on context) (e.g. pay on 15 and 30)
-  final String? creditCardId; // Si es null, fue en efectivo/cuenta. Si tiene ID, fue con TC.
+  final double?
+  recurrenceAmount2; // specific amount for the second day (if null, defaults to amount/2 or amount depending on context) (e.g. pay on 15 and 30)
+  final String?
+  creditCardId; // Si es null, fue en efectivo/cuenta. Si tiene ID, fue con TC.
   final DateTime? lastProcessedDate;
 
   TransactionModel({
@@ -66,11 +70,19 @@ class TransactionModel {
         date: _parseDate(data['date']),
         isFixed: data['isFixed'] == true,
         recurrenceType: data['recurrenceType']?.toString(),
-        recurrenceDay: data['recurrenceDay'] is int ? data['recurrenceDay'] : int.tryParse('${data['recurrenceDay']}'),
-        recurrenceDay2: data['recurrenceDay2'] is int ? data['recurrenceDay2'] : int.tryParse('${data['recurrenceDay2']}'),
-        recurrenceAmount2: data['recurrenceAmount2'] != null ? _parseDouble(data['recurrenceAmount2']) : null,
+        recurrenceDay: data['recurrenceDay'] is int
+            ? data['recurrenceDay']
+            : int.tryParse('${data['recurrenceDay']}'),
+        recurrenceDay2: data['recurrenceDay2'] is int
+            ? data['recurrenceDay2']
+            : int.tryParse('${data['recurrenceDay2']}'),
+        recurrenceAmount2: data['recurrenceAmount2'] != null
+            ? _parseDouble(data['recurrenceAmount2'])
+            : null,
         creditCardId: data['creditCardId']?.toString(),
-        lastProcessedDate: data['lastProcessedDate'] != null ? _parseDate(data['lastProcessedDate']) : null,
+        lastProcessedDate: data['lastProcessedDate'] != null
+            ? _parseDate(data['lastProcessedDate'])
+            : null,
       );
     } catch (e) {
       return TransactionModel(
@@ -100,7 +112,9 @@ class TransactionModel {
       'recurrenceDay2': recurrenceDay2,
       'recurrenceAmount2': recurrenceAmount2,
       'creditCardId': creditCardId,
-      'lastProcessedDate': lastProcessedDate != null ? Timestamp.fromDate(lastProcessedDate!) : null,
+      'lastProcessedDate': lastProcessedDate != null
+          ? Timestamp.fromDate(lastProcessedDate!)
+          : null,
     };
   }
 
@@ -148,14 +162,19 @@ class TransactionModel {
         return 'Quincenal - Días $recurrenceDay y ${recurrenceDay2 ?? '?'}';
       case 'weekly':
         const days = ['', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-        final dayName = (recurrenceDay != null && recurrenceDay! >= 1 && recurrenceDay! <= 7) ? days[recurrenceDay!] : '?';
+        final dayName =
+            (recurrenceDay != null &&
+                recurrenceDay! >= 1 &&
+                recurrenceDay! <= 7)
+            ? days[recurrenceDay!]
+            : '?';
         return 'Semanal - $dayName';
       default:
         return recurrenceType ?? '';
     }
   }
 
-    double getAmountForDay(int day) {
+  double getAmountForDay(int day) {
     if (recurrenceType == 'bimonthly') {
       if (recurrenceAmount2 != null) {
         if (day == recurrenceDay2) return recurrenceAmount2!;

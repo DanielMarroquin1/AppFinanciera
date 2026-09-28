@@ -12,7 +12,8 @@ import '../../firebase_options.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final SharedPreferences prefs;
-  final firebase_auth.FirebaseAuth _firebaseAuth = firebase_auth.FirebaseAuth.instance;
+  final firebase_auth.FirebaseAuth _firebaseAuth =
+      firebase_auth.FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   AuthRepositoryImpl(this.prefs);
@@ -23,39 +24,50 @@ class AuthRepositoryImpl implements AuthRepository {
     if (firebaseUser != null) {
       await firebaseUser.reload();
       final updatedUser = _firebaseAuth.currentUser;
-      
+
       if (updatedUser != null && updatedUser.emailVerified) {
-         try {
-           final doc = await _firestore.collection('users').doc(updatedUser.uid).get();
-           if (doc.exists) {
-             final map = doc.data()!;
-             return User(
-               email: updatedUser.email ?? '',
-               name: map['name'] ?? '',
-               purpose: map['purpose'] ?? '',
-               hasCompletedTour: map['hasCompletedTour'] ?? false,
-               profileComplete: map['profileComplete'] ?? false,
-               country: map['country'],
-               currency: map['currency'],
-               language: map['language'],
-               salary: map['salary'],
-               salaryType: map['salaryType'],
-               points: map['points'] ?? 0,
-               currentStreak: map['currentStreak'] ?? 0,
-               lastActiveDate: map['lastActiveDate'],
-               unlockedItems: List<String>.from(map['unlockedItems'] ?? []),
-               currentAvatar: map['currentAvatar'],
-               monthlyLimit: map['monthlyLimit'] != null ? (map['monthlyLimit'] as num).toDouble() : null,
-               isTwoFactorEnabled: map['isTwoFactorEnabled'] ?? false,
-               twoFactorMethod: map['twoFactorMethod'],
-               twoFactorPhone: map['twoFactorPhone'],
-               categoryBudgets: map['categoryBudgets'] != null ? Map<String, double>.from((map['categoryBudgets'] as Map).map((k, v) => MapEntry(k.toString(), (v as num).toDouble()))) : null,
-               autoLockMinutes: map['autoLockMinutes'] ?? 1,
-             );
-           }
-         } catch (e) {
-           print("Error fetching user from Firestore: $e");
-         }
+        try {
+          final doc = await _firestore
+              .collection('users')
+              .doc(updatedUser.uid)
+              .get();
+          if (doc.exists) {
+            final map = doc.data()!;
+            return User(
+              email: updatedUser.email ?? '',
+              name: map['name'] ?? '',
+              purpose: map['purpose'] ?? '',
+              hasCompletedTour: map['hasCompletedTour'] ?? false,
+              profileComplete: map['profileComplete'] ?? false,
+              country: map['country'],
+              currency: map['currency'],
+              language: map['language'],
+              salary: map['salary'],
+              salaryType: map['salaryType'],
+              points: map['points'] ?? 0,
+              currentStreak: map['currentStreak'] ?? 0,
+              lastActiveDate: map['lastActiveDate'],
+              unlockedItems: List<String>.from(map['unlockedItems'] ?? []),
+              currentAvatar: map['currentAvatar'],
+              monthlyLimit: map['monthlyLimit'] != null
+                  ? (map['monthlyLimit'] as num).toDouble()
+                  : null,
+              isTwoFactorEnabled: map['isTwoFactorEnabled'] ?? false,
+              twoFactorMethod: map['twoFactorMethod'],
+              twoFactorPhone: map['twoFactorPhone'],
+              categoryBudgets: map['categoryBudgets'] != null
+                  ? Map<String, double>.from(
+                      (map['categoryBudgets'] as Map).map(
+                        (k, v) => MapEntry(k.toString(), (v as num).toDouble()),
+                      ),
+                    )
+                  : null,
+              autoLockMinutes: map['autoLockMinutes'] ?? 1,
+            );
+          }
+        } catch (e) {
+          print("Error fetching user from Firestore: $e");
+        }
       }
     }
     return null;
@@ -85,7 +97,8 @@ class AuthRepositoryImpl implements AuthRepository {
         'isTwoFactorEnabled': user.isTwoFactorEnabled,
         'twoFactorMethod': user.twoFactorMethod,
         if (user.twoFactorPhone != null) 'twoFactorPhone': user.twoFactorPhone,
-        if (user.categoryBudgets != null) 'categoryBudgets': user.categoryBudgets,
+        if (user.categoryBudgets != null)
+          'categoryBudgets': user.categoryBudgets,
         'autoLockMinutes': user.autoLockMinutes,
       };
       try {
@@ -103,21 +116,25 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<User> login(String email, String password) async {
-    final credential = await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+    final credential = await _firebaseAuth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
     final user = credential.user;
-    
+
     if (user != null && !user.emailVerified) {
       throw firebase_auth.FirebaseAuthException(
         code: 'email-not-verified',
-        message: 'Por favor verifica tu correo electrónico antes de iniciar sesión.',
+        message:
+            'Por favor verifica tu correo electrónico antes de iniciar sesión.',
       );
     }
-    
+
     final storedUser = await getStoredUser();
     if (storedUser != null) {
       return storedUser;
     }
-    
+
     final fallbackUser = User(
       email: email,
       name: email.split('@').first,
@@ -140,11 +157,13 @@ class AuthRepositoryImpl implements AuthRepository {
       if (kIsWeb || defaultTargetPlatform == TargetPlatform.windows) {
         // On Web or Windows, use signInWithPopup (or similar Firebase flow)
         // Note: For Windows, this might still need configuration, but it prevents native package errors
-        userCredential = await _firebaseAuth.signInWithPopup(firebase_auth.GoogleAuthProvider());
+        userCredential = await _firebaseAuth.signInWithPopup(
+          firebase_auth.GoogleAuthProvider(),
+        );
       } else {
         // On Android/iOS, use the GoogleSignIn package via safe factory
         final dynamic googleSignIn = createSafeGoogleSignIn();
-        
+
         if (googleSignIn == null) {
           throw firebase_auth.FirebaseAuthException(
             code: 'unsupported-platform',
@@ -154,10 +173,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
         // google_sign_in v7 API: initialize first, then authenticate
         await googleSignIn.initialize();
-        
+
         try {
           final dynamic googleUser = await googleSignIn.authenticate();
-          
+
           // v7: authentication is a sync property with idToken
           final dynamic googleAuth = googleUser.authentication;
 
@@ -176,9 +195,12 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       final firebaseUser = userCredential.user!;
-      
+
       // Verifica si existe en Firestore
-      final docSnapshot = await _firestore.collection('users').doc(firebaseUser.uid).get();
+      final docSnapshot = await _firestore
+          .collection('users')
+          .doc(firebaseUser.uid)
+          .get();
       if (!docSnapshot.exists) {
         await _firestore.collection('users').doc(firebaseUser.uid).set({
           'email': firebaseUser.email,
@@ -201,7 +223,7 @@ class AuthRepositoryImpl implements AuthRepository {
           monthlyLimit: null,
         );
       }
-      
+
       final data = docSnapshot.data()!;
       return User(
         email: data['email'] ?? '',
@@ -219,23 +241,37 @@ class AuthRepositoryImpl implements AuthRepository {
         lastActiveDate: data['lastActiveDate'],
         unlockedItems: List<String>.from(data['unlockedItems'] ?? []),
         currentAvatar: data['currentAvatar'],
-        monthlyLimit: data['monthlyLimit'] != null ? (data['monthlyLimit'] as num).toDouble() : null,
+        monthlyLimit: data['monthlyLimit'] != null
+            ? (data['monthlyLimit'] as num).toDouble()
+            : null,
         isTwoFactorEnabled: data['isTwoFactorEnabled'] ?? false,
         twoFactorMethod: data['twoFactorMethod'],
         twoFactorPhone: data['twoFactorPhone'],
-        categoryBudgets: data['categoryBudgets'] != null ? Map<String, double>.from((data['categoryBudgets'] as Map).map((k, v) => MapEntry(k.toString(), (v as num).toDouble()))) : null,
+        categoryBudgets: data['categoryBudgets'] != null
+            ? Map<String, double>.from(
+                (data['categoryBudgets'] as Map).map(
+                  (k, v) => MapEntry(k.toString(), (v as num).toDouble()),
+                ),
+              )
+            : null,
         autoLockMinutes: data['autoLockMinutes'] ?? 1,
       );
     } catch (e) {
       if (e is firebase_auth.FirebaseAuthException) rethrow;
-      throw firebase_auth.FirebaseAuthException(code: 'unknown', message: e.toString());
+      throw firebase_auth.FirebaseAuthException(
+        code: 'unknown',
+        message: e.toString(),
+      );
     }
   }
 
   @override
   Future<User> register(String email, String password, String purpose) async {
-    final credential = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-    
+    final credential = await _firebaseAuth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
     final user = User(
       email: email,
       name: email.split('@').first,
@@ -243,13 +279,14 @@ class AuthRepositoryImpl implements AuthRepository {
       hasCompletedTour: false,
       profileComplete: false,
     );
-    
+
     await saveUser(user);
     await credential.user?.sendEmailVerification();
-    
+
     throw firebase_auth.FirebaseAuthException(
       code: 'email-not-verified-registered',
-      message: 'Te hemos enviado un correo de verificación. Por favor revisa tu bandeja de entrada.',
+      message:
+          'Te hemos enviado un correo de verificación. Por favor revisa tu bandeja de entrada.',
     );
   }
 
@@ -272,9 +309,10 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> resetPassword(String email) async {
     try {
       // -- CÓDIGO PARA RESEND (Cloud Functions) --
-      final callable = FirebaseFunctions.instance.httpsCallable('sendCustomResetEmail');
+      final callable = FirebaseFunctions.instance.httpsCallable(
+        'sendCustomResetEmail',
+      );
       await callable.call({'email': email});
-      
     } catch (e) {
       if (e is firebase_auth.FirebaseAuthException) {
         if (e.code == 'user-not-found') {
@@ -290,7 +328,7 @@ class AuthRepositoryImpl implements AuthRepository {
         }
         rethrow;
       }
-      
+
       // Manejo de errores de Cloud Functions
       if (e is FirebaseFunctionsException) {
         if (e.code == 'not-found' || e.message == 'user-not-found') {
@@ -304,7 +342,7 @@ class AuthRepositoryImpl implements AuthRepository {
           message: 'Error al enviar el correo: ${e.message}',
         );
       }
-      
+
       rethrow;
     }
   }

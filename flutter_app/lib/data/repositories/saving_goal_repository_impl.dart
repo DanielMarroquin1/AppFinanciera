@@ -13,10 +13,10 @@ class SavingGoalRepositoryImpl implements SavingGoalRepository {
         .collection('saving_goals')
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return SavingGoal.fromMap(doc.data(), doc.id);
-      }).toList();
-    });
+          return snapshot.docs.map((doc) {
+            return SavingGoal.fromMap(doc.data(), doc.id);
+          }).toList();
+        });
   }
 
   @override
@@ -41,10 +41,12 @@ class SavingGoalRepositoryImpl implements SavingGoalRepository {
   @override
   Future<void> deleteGoal(String id) async {
     // We would need the userId to delete correctly from the subcollection.
-    // However, usually we can use a collectionGroup query if id is unique, 
+    // However, usually we can use a collectionGroup query if id is unique,
     // or pass userId to delete. For simplicity, assuming we only delete knowing the path.
     // A better approach is to pass userId and goalId.
-    throw UnimplementedError("Use deleteUserGoal(userId, goalId) instead or add it to interface");
+    throw UnimplementedError(
+      "Use deleteUserGoal(userId, goalId) instead or add it to interface",
+    );
   }
 
   Future<void> deleteUserGoal(String userId, String goalId) async {

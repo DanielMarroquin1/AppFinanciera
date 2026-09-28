@@ -24,10 +24,10 @@ class RecurrenceService {
 
       for (var doc in debtsQuery.docs) {
         final debt = DebtModel.fromFirestore(doc);
-        
+
         if (debt.paidInstallments >= debt.totalInstallments) continue;
         if (debt.recurrenceType == null) continue;
-        
+
         bool shouldProcess = _checkRecurrence(
           debt.recurrenceType!,
           debt.recurrenceDay,
@@ -39,7 +39,7 @@ class RecurrenceService {
         if (shouldProcess) {
           // Register payment (increment paid installments)
           final newPaid = debt.paidInstallments + 1;
-          
+
           // Update debt
           await _firestore.collection('debts').doc(debt.id).update({
             'paidInstallments': newPaid,
@@ -58,7 +58,7 @@ class RecurrenceService {
             date: now,
             isFixed: false,
           );
-          
+
           await newTxRef.set(tx.toFirestore());
         }
 
@@ -68,7 +68,8 @@ class RecurrenceService {
             id: debt.id.hashCode,
             dayOfMonth: debt.recurrenceDay!,
             title: 'Recordatorio de Deuda 🏦',
-            body: 'Hoy es el día de pago para: ${debt.name} (${debt.installmentAmount})',
+            body:
+                'Hoy es el día de pago para: ${debt.name} (${debt.installmentAmount})',
           );
         }
       }
@@ -86,14 +87,17 @@ class RecurrenceService {
 
       for (var doc in fixedTxQuery.docs) {
         final txTemplate = TransactionModel.fromFirestore(doc);
-        
+
         // NOTIFICACION MENSUAL DE GASTO/INGRESO FIJO
         if (txTemplate.recurrenceDay != null) {
           await LocalNotificationService.scheduleMonthlyReminder(
             id: txTemplate.id.hashCode,
             dayOfMonth: txTemplate.recurrenceDay!,
-            title: txTemplate.type == 'income' ? 'Ingreso Fijo 💰' : 'Gasto Fijo 📉',
-            body: 'Hoy se procesa tu ${txTemplate.type == 'income' ? 'ingreso' : 'gasto'}: ${txTemplate.description} (${txTemplate.amount})',
+            title: txTemplate.type == 'income'
+                ? 'Ingreso Fijo 💰'
+                : 'Gasto Fijo 📉',
+            body:
+                'Hoy se procesa tu ${txTemplate.type == 'income' ? 'ingreso' : 'gasto'}: ${txTemplate.description} (${txTemplate.amount})',
           );
         }
 
@@ -109,9 +113,9 @@ class RecurrenceService {
 
         if (shouldProcess) {
           // Update template transaction
-          await _firestore.collection('transactions').doc(txTemplate.id).update({
-            'lastProcessedDate': Timestamp.fromDate(now),
-          });
+          await _firestore.collection('transactions').doc(txTemplate.id).update(
+            {'lastProcessedDate': Timestamp.fromDate(now)},
+          );
 
           // Generate new transaction
           final newTxRef = _firestore.collection('transactions').doc();
@@ -123,7 +127,8 @@ class RecurrenceService {
             category: txTemplate.category,
             description: txTemplate.description,
             date: now,
-            isFixed: false, // Set to false so it acts as a normal entry for the month
+            isFixed:
+                false, // Set to false so it acts as a normal entry for the month
           );
 
           await newTxRef.set(newTx.toFirestore());
@@ -140,7 +145,7 @@ class RecurrenceService {
           .doc(userId)
           .collection('credit_cards')
           .get();
-          
+
       for (var doc in cardsQuery.docs) {
         try {
           final card = CreditCard.fromFirestore(doc);
@@ -156,19 +161,20 @@ class RecurrenceService {
             id: '${card.id}_pago'.hashCode,
             dayOfMonth: card.paymentDay,
             title: 'Pago de Tarjeta 💳',
-            body: 'Hoy es la fecha límite de pago para tu ${card.name}. ¡Evita intereses!',
+            body:
+                'Hoy es la fecha límite de pago para tu ${card.name}. ¡Evita intereses!',
           );
         } catch (_) {}
       }
     } catch (e) {
       print('Error processing credit card notifications: $e');
     }
-    
+
     _isProcessing = false;
     _hasProcessedThisSession = true;
   }
 
-    static bool _checkRecurrence(
+  static bool _checkRecurrence(
     String recurrenceType,
     int? day1,
     int? day2,
@@ -176,28 +182,33 @@ class RecurrenceService {
     DateTime now,
   ) {
     if (day1 == null) return false;
-    
+
     // If never processed, check if today is the day
     if (lastProcessed == null) {
       if (recurrenceType == 'monthly' && now.day == day1) return true;
       if (recurrenceType == 'weekly' && now.weekday == day1) return true;
-      if (recurrenceType == 'bimonthly' && (now.day == day1 || now.day == day2)) return true;
+      if (recurrenceType == 'bimonthly' && (now.day == day1 || now.day == day2))
+        return true;
       return false;
     }
 
     // Iterate from lastProcessed + 1 day up to now
-    DateTime current = DateTime(lastProcessed.year, lastProcessed.month, lastProcessed.day).add(const Duration(days: 1));
+    DateTime current = DateTime(
+      lastProcessed.year,
+      lastProcessed.month,
+      lastProcessed.day,
+    ).add(const Duration(days: 1));
     DateTime today = DateTime(now.year, now.month, now.day);
-    
+
     while (!current.isAfter(today)) {
       if (recurrenceType == 'monthly' && current.day == day1) return true;
       if (recurrenceType == 'weekly' && current.weekday == day1) return true;
-      if (recurrenceType == 'bimonthly' && (current.day == day1 || current.day == day2)) return true;
+      if (recurrenceType == 'bimonthly' &&
+          (current.day == day1 || current.day == day2))
+        return true;
       current = current.add(const Duration(days: 1));
     }
 
     return false;
   }
-
-
 }

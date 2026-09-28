@@ -1,17 +1,18 @@
 class AIConfig {
   // Original env key
-  static const String _envKey = 'AQ.Ab8RN6K8Rkh9_' + 'ufuZDbCBoMGAZa458LYrAAwdynPTD4_pAEqRA';
-  
+  static const String _envKey =
+      'AQ.Ab8RN6K8Rkh9_' + 'ufuZDbCBoMGAZa458LYrAAwdynPTD4_pAEqRA';
+
   // Dynamic key that can be loaded from SharedPreferences
   static String? dynamicApiKey;
-  
+
   static String get apiKey {
     if (dynamicApiKey != null && dynamicApiKey!.trim().isNotEmpty) {
       return dynamicApiKey!.trim();
     }
     return _envKey.trim();
   }
-  
+
   static const String modelName = 'gemini-2.5-flash';
   static const String assistantName = 'QUIVO';
 

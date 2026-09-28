@@ -6,7 +6,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   final FirebaseFirestore _firestore;
 
   TransactionRepositoryImpl({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   Stream<List<TransactionModel>> watchTransactions(String userId) {
@@ -26,7 +26,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
   @override
   Future<void> addTransaction(TransactionModel transaction) async {
     if (transaction.id.isEmpty) {
-      await _firestore.collection('transactions').add(transaction.toFirestore());
+      await _firestore
+          .collection('transactions')
+          .add(transaction.toFirestore());
     } else {
       await _firestore
           .collection('transactions')

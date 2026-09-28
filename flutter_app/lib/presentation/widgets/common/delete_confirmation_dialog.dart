@@ -3,10 +3,16 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter/services.dart';
 
 class DeleteConfirmationDialog extends StatelessWidget {
-  static Future<bool> show(BuildContext context, {String title = 'Eliminar registro', String content = '¿Estás seguro de que deseas eliminar esto? Esta acción no se puede deshacer.'}) async {
+  static Future<bool> show(
+    BuildContext context, {
+    String title = 'Eliminar registro',
+    String content =
+        '¿Estás seguro de que deseas eliminar esto? Esta acción no se puede deshacer.',
+  }) async {
     final result = await showDialog<bool>(
       context: context,
-      builder: (context) => DeleteConfirmationDialog(title: title, content: content),
+      builder: (context) =>
+          DeleteConfirmationDialog(title: title, content: content),
     );
     return result ?? false;
   }
@@ -14,12 +20,16 @@ class DeleteConfirmationDialog extends StatelessWidget {
   final String title;
   final String content;
 
-  const DeleteConfirmationDialog({super.key, required this.title, required this.content});
+  const DeleteConfirmationDialog({
+    super.key,
+    required this.title,
+    required this.content,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -46,7 +56,11 @@ class DeleteConfirmationDialog extends StatelessWidget {
                 color: const Color(0xFFEF4444).withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(LucideIcons.trash2, color: Color(0xFFEF4444), size: 36),
+              child: const Icon(
+                LucideIcons.trash2,
+                color: Color(0xFFEF4444),
+                size: 36,
+              ),
             ),
             const SizedBox(height: 24),
             Text(
@@ -77,7 +91,9 @@ class DeleteConfirmationDialog extends StatelessWidget {
                     onPressed: () => Navigator.of(context).pop(false),
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                     child: Text(
                       'Cancelar',
@@ -101,11 +117,16 @@ class DeleteConfirmationDialog extends StatelessWidget {
                       foregroundColor: Colors.white,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                     child: const Text(
                       'Eliminar',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ),

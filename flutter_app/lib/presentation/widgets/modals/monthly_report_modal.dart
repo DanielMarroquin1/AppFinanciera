@@ -16,9 +16,13 @@ class MonthlyReportModal extends ConsumerStatefulWidget {
   static void show(BuildContext context, {String reportType = 'general'}) {
     final container = ProviderScope.containerOf(context, listen: false);
     final isPremium = container.read(authProvider).user?.isPremium ?? false;
-    
+
     if (!isPremium) {
-      PremiumPaywallDialog.show(context, customMessage: 'Desbloquea los reportes detallados y análisis de tu balance con el Plan Premium.');
+      PremiumPaywallDialog.show(
+        context,
+        customMessage:
+            'Desbloquea los reportes detallados y análisis de tu balance con el Plan Premium.',
+      );
       return;
     }
 
@@ -31,7 +35,10 @@ class MonthlyReportModal extends ConsumerStatefulWidget {
         initialChildSize: 0.9,
         minChildSize: 0.5,
         maxChildSize: 0.95,
-        builder: (_, controller) => MonthlyReportContent(scrollController: controller, reportType: reportType),
+        builder: (_, controller) => MonthlyReportContent(
+          scrollController: controller,
+          reportType: reportType,
+        ),
       ),
     );
   }
@@ -51,10 +58,15 @@ class MonthlyReportContent extends ConsumerStatefulWidget {
   final ScrollController scrollController;
   final String reportType;
 
-  const MonthlyReportContent({super.key, required this.scrollController, this.reportType = 'general'});
+  const MonthlyReportContent({
+    super.key,
+    required this.scrollController,
+    this.reportType = 'general',
+  });
 
   @override
-  ConsumerState<MonthlyReportContent> createState() => _MonthlyReportContentState();
+  ConsumerState<MonthlyReportContent> createState() =>
+      _MonthlyReportContentState();
 }
 
 class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
@@ -98,45 +110,76 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
         int tempMonth = selectedMonth;
         int tempYear = selectedYear;
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        
+
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return Dialog(
               backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(32),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Seleccionar Fecha', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text(
+                      'Seleccionar Fecha',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 24),
-                    
+
                     // Selector de Año
                     Container(
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                        color: isDark
+                            ? const Color(0xFF0F172A)
+                            : const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFE2E8F0),
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           IconButton(
-                            icon: Icon(LucideIcons.chevronLeft, color: isDark ? Colors.white : Colors.black),
+                            icon: Icon(
+                              LucideIcons.chevronLeft,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
                             onPressed: () => setDialogState(() => tempYear--),
                           ),
-                          Text(tempYear.toString(), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 22, fontWeight: FontWeight.w900)),
+                          Text(
+                            tempYear.toString(),
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
                           IconButton(
-                            icon: Icon(LucideIcons.chevronRight, color: isDark ? Colors.white : Colors.black),
+                            icon: Icon(
+                              LucideIcons.chevronRight,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
                             onPressed: () => setDialogState(() => tempYear++),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Selector de Mes
                     Wrap(
                       spacing: 8,
@@ -145,36 +188,66 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
                       children: List.generate(12, (index) {
                         final monthNum = index + 1;
                         final isSelected = monthNum == tempMonth;
-                        String monthStr = DateFormat('MMM', 'es').format(DateTime(2000, monthNum));
-                        monthStr = monthStr[0].toUpperCase() + monthStr.substring(1);
-                        
+                        String monthStr = DateFormat(
+                          'MMM',
+                          'es',
+                        ).format(DateTime(2000, monthNum));
+                        monthStr =
+                            monthStr[0].toUpperCase() + monthStr.substring(1);
+
                         return GestureDetector(
-                          onTap: () => setDialogState(() => tempMonth = monthNum),
+                          onTap: () =>
+                              setDialogState(() => tempMonth = monthNum),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
                             width: 65,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
                               gradient: isSelected
-                                  ? const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)])
+                                  ? const LinearGradient(
+                                      colors: [
+                                        Color(0xFF10B981),
+                                        Color(0xFF059669),
+                                      ],
+                                    )
                                   : null,
-                              color: isSelected ? null : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9)),
+                              color: isSelected
+                                  ? null
+                                  : (isDark
+                                        ? const Color(0xFF0F172A)
+                                        : const Color(0xFFF1F5F9)),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: isSelected 
-                                    ? Colors.transparent 
-                                    : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))
+                                color: isSelected
+                                    ? Colors.transparent
+                                    : (isDark
+                                          ? const Color(0xFF334155)
+                                          : const Color(0xFFE2E8F0)),
                               ),
-                              boxShadow: isSelected ? [
-                                BoxShadow(color: const Color(0xFF10B981).withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 4))
-                              ] : [],
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(
+                                          0xFF10B981,
+                                        ).withOpacity(0.4),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ]
+                                  : [],
                             ),
                             child: Center(
                               child: Text(
                                 monthStr,
                                 style: TextStyle(
-                                  color: isSelected ? Colors.white : (isDark ? Colors.grey[400] : Colors.grey[600]),
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : (isDark
+                                            ? Colors.grey[400]
+                                            : Colors.grey[600]),
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
                                 ),
                               ),
                             ),
@@ -183,14 +256,22 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
                       }),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Botones de Acción
                     Row(
                       children: [
                         Expanded(
                           child: TextButton(
                             onPressed: () => Navigator.pop(context),
-                            child: Text('Cancelar', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 16)),
+                            child: Text(
+                              'Cancelar',
+                              style: TextStyle(
+                                color: isDark
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
+                                fontSize: 16,
+                              ),
+                            ),
                           ),
                         ),
                         Expanded(
@@ -206,10 +287,18 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
                               backgroundColor: const Color(0xFF10B981),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
                               elevation: 0,
                             ),
-                            child: const Text('Confirmar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            child: const Text(
+                              'Confirmar',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -231,18 +320,28 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
     final authState = ref.watch(authProvider);
     final currencyCode = authState.user?.currency ?? 'GTQ';
     final loc = ref.watch(localizationProvider);
-    
-    final paletteGradient = ref.watch(colorPaletteProvider.notifier).getGradient(isDark);
 
-    String formattedMonth = DateFormat('MMMM yyyy', loc.intlLocale).format(DateTime(selectedYear, selectedMonth));
-    formattedMonth = formattedMonth[0].toUpperCase() + formattedMonth.substring(1);
+    final paletteGradient = ref
+        .watch(colorPaletteProvider.notifier)
+        .getGradient(isDark);
+
+    String formattedMonth = DateFormat(
+      'MMMM yyyy',
+      loc.intlLocale,
+    ).format(DateTime(selectedYear, selectedMonth));
+    formattedMonth =
+        formattedMonth[0].toUpperCase() + formattedMonth.substring(1);
 
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 20, offset: const Offset(0, -5))
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          ),
         ],
       ),
       child: transactionsAsync.when(
@@ -259,19 +358,21 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
               if (t.type == 'income') {
                 totalIncome += t.amount;
                 if (widget.reportType == 'income') {
-                  categoryData[t.category] = (categoryData[t.category] ?? 0) + t.amount;
+                  categoryData[t.category] =
+                      (categoryData[t.category] ?? 0) + t.amount;
                 }
               } else if (t.type == 'expense') {
                 totalExpense += t.amount;
                 if (widget.reportType != 'income' && t.creditCardId == null) {
-                   categoryData[t.category] = (categoryData[t.category] ?? 0) + t.amount;
+                  categoryData[t.category] =
+                      (categoryData[t.category] ?? 0) + t.amount;
                 }
               } else if (t.type == 'cc_payment') {
                 totalExpense += t.amount;
               }
             }
           }
-          
+
           final netBalance = totalIncome - totalExpense;
 
           var sortedCategories = categoryData.entries.toList()
@@ -284,11 +385,25 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
                 child: Column(
                   children: [
                     const SizedBox(height: 12),
-                    Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(2))),
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
                     const SizedBox(height: 24),
-                    Text('Reporte Mensual', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                    Text(
+                      'Reporte Mensual',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
                     const SizedBox(height: 24),
-                    
+
                     // Month Selector
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -296,41 +411,68 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           IconButton(
-                            icon: Icon(Icons.chevron_left, color: isDark ? Colors.white : Colors.black),
+                            icon: Icon(
+                              Icons.chevron_left,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
                             onPressed: _previousMonth,
                           ),
                           InkWell(
                             onTap: _showMonthPicker,
                             borderRadius: BorderRadius.circular(16),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 10,
+                              ),
                               decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                                color: isDark
+                                    ? const Color(0xFF1E293B)
+                                    : const Color(0xFFF1F5F9),
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                                border: Border.all(
+                                  color: isDark
+                                      ? const Color(0xFF334155)
+                                      : const Color(0xFFE2E8F0),
+                                ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    formattedMonth, 
-                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)
+                                    formattedMonth,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black,
+                                    ),
                                   ),
                                   const SizedBox(width: 8),
-                                  Icon(LucideIcons.calendar, size: 18, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                                  Icon(
+                                    LucideIcons.calendar,
+                                    size: 18,
+                                    color: isDark
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                                  ),
                                 ],
                               ),
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.chevron_right, color: isDark ? Colors.white : Colors.black),
+                            icon: Icon(
+                              Icons.chevron_right,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
                             onPressed: _nextMonth,
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Totals
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -347,7 +489,8 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
                               ),
                             ),
                           ],
-                          if (widget.reportType == 'general') const SizedBox(width: 16),
+                          if (widget.reportType == 'general')
+                            const SizedBox(width: 16),
                           if (widget.reportType != 'income') ...[
                             Expanded(
                               child: _buildSummaryCard(
@@ -371,62 +514,102 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(colors: paletteGradient),
                             borderRadius: BorderRadius.circular(20),
-                            boxShadow: [BoxShadow(color: paletteGradient[0].withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
+                            boxShadow: [
+                              BoxShadow(
+                                color: paletteGradient[0].withValues(
+                                  alpha: 0.3,
+                                ),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text('Flujo Neto', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
-                              Text(CurrencyFormatter.format(netBalance, currencyCode), style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                              const Text(
+                                'Flujo Neto',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                CurrencyFormatter.format(
+                                  netBalance,
+                                  currencyCode,
+                                ),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       ),
                     ],
-                    
+
                     const SizedBox(height: 32),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Align(
                         alignment: Alignment.centerLeft,
-                        child: Text(widget.reportType == 'income' ? 'Ingresos por Categoría' : 'Gastos por Categoría', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                        child: Text(
+                          widget.reportType == 'income'
+                              ? 'Ingresos por Categoría'
+                              : 'Gastos por Categoría',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
                   ],
                 ),
               ),
-              
+
               if (sortedCategories.isEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(40),
                     child: Center(
-                      child: Text('No hay gastos en este mes.', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400])),
+                      child: Text(
+                        'No hay gastos en este mes.',
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[500] : Colors.grey[400],
+                        ),
+                      ),
                     ),
                   ),
                 )
               else
                 SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final category = sortedCategories[index];
-                      final percentage = widget.reportType == 'income' 
-                          ? (totalIncome > 0 ? (category.value / totalIncome) : 0.0)
-                          : (totalExpense > 0 ? (category.value / totalExpense) : 0.0);
-                      return _buildCategoryItem(
-                        loc.translateCategory(category.key),
-                        category.value,
-                        percentage,
-                        currencyCode,
-                        isDark,
-                        emoji: loc.getCategoryEmoji(category.key),
-                      );
-                    },
-                    childCount: sortedCategories.length,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final category = sortedCategories[index];
+                    final percentage = widget.reportType == 'income'
+                        ? (totalIncome > 0
+                              ? (category.value / totalIncome)
+                              : 0.0)
+                        : (totalExpense > 0
+                              ? (category.value / totalExpense)
+                              : 0.0);
+                    return _buildCategoryItem(
+                      loc.translateCategory(category.key),
+                      category.value,
+                      percentage,
+                      currencyCode,
+                      isDark,
+                      emoji: loc.getCategoryEmoji(category.key),
+                    );
+                  }, childCount: sortedCategories.length),
                 ),
-                
+
               const SliverToBoxAdapter(child: SizedBox(height: 40)),
             ],
           );
@@ -435,15 +618,29 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
     );
   }
 
-  Widget _buildSummaryCard({required String title, required double amount, required Color color, required IconData icon, required String currencyCode}) {
+  Widget _buildSummaryCard({
+    required String title,
+    required double amount,
+    required Color color,
+    required IconData icon,
+    required String currencyCode,
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 4))],
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -452,21 +649,45 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
                 child: Icon(icon, color: color, size: 20),
               ),
               const SizedBox(width: 8),
-              Text(title, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w500)),
+              Text(
+                title,
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
-          Text(CurrencyFormatter.format(amount, currencyCode), style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            CurrencyFormatter.format(amount, currencyCode),
+            style: TextStyle(
+              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryItem(String name, double amount, double percentage, String currencyCode, bool isDark, {String emoji = '💰'}) {
+  Widget _buildCategoryItem(
+    String name,
+    double amount,
+    double percentage,
+    String currencyCode,
+    bool isDark, {
+    String emoji = '💰',
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       child: Row(
@@ -475,7 +696,9 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF334155).withValues(alpha: 0.5) : const Color(0xFFF1F5F9),
+              color: isDark
+                  ? const Color(0xFF334155).withValues(alpha: 0.5)
+                  : const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(12),
             ),
             alignment: Alignment.center,
@@ -489,20 +712,40 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(name, style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black)),
-                    Text(CurrencyFormatter.format(amount, currencyCode), style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    Text(
+                      CurrencyFormatter.format(amount, currencyCode),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 LinearProgressIndicator(
                   value: percentage,
-                  backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  backgroundColor: isDark
+                      ? const Color(0xFF334155)
+                      : const Color(0xFFE2E8F0),
                   color: const Color(0xFF6366F1),
                   borderRadius: BorderRadius.circular(4),
                   minHeight: 8,
                 ),
                 const SizedBox(height: 4),
-                Text('${(percentage * 100).toStringAsFixed(1)}%', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12)),
+                Text(
+                  '${(percentage * 100).toStringAsFixed(1)}%',
+                  style: TextStyle(
+                    color: isDark ? Colors.grey[500] : Colors.grey[500],
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ),
           ),

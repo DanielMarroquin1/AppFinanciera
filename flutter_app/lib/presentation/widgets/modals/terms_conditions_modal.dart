@@ -27,7 +27,11 @@ class TermsConditionsModal extends StatelessWidget {
           color: isDark ? const Color(0xFF111827) : Colors.white,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 30, offset: const Offset(0, 15))
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 30,
+              offset: const Offset(0, 15),
+            ),
           ],
         ),
         child: Column(
@@ -36,10 +40,16 @@ class TermsConditionsModal extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               decoration: BoxDecoration(
-                gradient: isDark 
-                    ? const LinearGradient(colors: [Color(0xFF0F766E), Color(0xFF047857)])
-                    : const LinearGradient(colors: [Color(0xFF14B8A6), Color(0xFF10B981)]),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                gradient: isDark
+                    ? const LinearGradient(
+                        colors: [Color(0xFF0F766E), Color(0xFF047857)],
+                      )
+                    : const LinearGradient(
+                        colors: [Color(0xFF14B8A6), Color(0xFF10B981)],
+                      ),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,17 +60,25 @@ class TermsConditionsModal extends StatelessWidget {
                       Row(
                         children: [
                           Container(
-                            width: 40, height: 40,
+                            width: 40,
+                            height: 40,
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(LucideIcons.fileSignature, color: Colors.white),
+                            child: const Icon(
+                              LucideIcons.fileSignature,
+                              color: Colors.white,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           const Text(
                             'Términos y Condiciones',
-                            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
@@ -68,18 +86,31 @@ class TermsConditionsModal extends StatelessWidget {
                         onTap: () => Navigator.pop(context),
                         child: Container(
                           padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.1)),
-                          child: const Icon(LucideIcons.x, color: Colors.white, size: 20),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
+                          child: const Icon(
+                            LucideIcons.x,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text('Última actualización: Marzo 2026', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 13)),
+                  Text(
+                    'Última actualización: Marzo 2026',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 13,
+                    ),
+                  ),
                 ],
               ),
             ),
-            
+
             // Body Content
             Expanded(
               child: SingleChildScrollView(
@@ -91,65 +122,126 @@ class TermsConditionsModal extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF064E3B).withValues(alpha: 0.3) : const Color(0xFFECFDF5),
-                        border: Border.all(color: isDark ? const Color(0xFF064E3B) : const Color(0xFFA7F3D0), width: 2),
+                        color: isDark
+                            ? const Color(0xFF064E3B).withValues(alpha: 0.3)
+                            : const Color(0xFFECFDF5),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF064E3B)
+                              : const Color(0xFFA7F3D0),
+                          width: 2,
+                        ),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: RichText(
                         text: TextSpan(
-                          style: TextStyle(color: isDark ? const Color(0xFF6EE7B7) : const Color(0xFF065F46), fontSize: 14, height: 1.5),
+                          style: TextStyle(
+                            color: isDark
+                                ? const Color(0xFF6EE7B7)
+                                : const Color(0xFF065F46),
+                            fontSize: 14,
+                            height: 1.5,
+                          ),
                           children: const [
-                            TextSpan(text: 'Al utilizar esta aplicación, aceptas los siguientes términos y condiciones. Te rogamos leer detenidamente este contrato antes de continuar.'),
+                            TextSpan(
+                              text:
+                                  'Al utilizar esta aplicación, aceptas los siguientes términos y condiciones. Te rogamos leer detenidamente este contrato antes de continuar.',
+                            ),
                           ],
                         ),
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
-                    _buildSectionTitle('1. Uso de la Aplicación', LucideIcons.smartphone, isDark),
-                    _buildParagraph('Esta aplicación es de uso personal e intransferible. Te comprometes a usar la aplicación de buena fe y no para propósitos ilícitos o fraudulentos.', isDark),
-                    
+
+                    _buildSectionTitle(
+                      '1. Uso de la Aplicación',
+                      LucideIcons.smartphone,
+                      isDark,
+                    ),
+                    _buildParagraph(
+                      'Esta aplicación es de uso personal e intransferible. Te comprometes a usar la aplicación de buena fe y no para propósitos ilícitos o fraudulentos.',
+                      isDark,
+                    ),
+
                     const SizedBox(height: 20),
-                    
-                    _buildSectionTitle('2. Propiedad Intelectual', LucideIcons.copyright, isDark),
-                    _buildParagraph('Todo el contenido, marcas registradas, logotipos y diseños son propiedad exclusiva de los desarrolladores. No está permitida su copia, distribución o modificación sin consentimiento.', isDark),
-                    
+
+                    _buildSectionTitle(
+                      '2. Propiedad Intelectual',
+                      LucideIcons.copyright,
+                      isDark,
+                    ),
+                    _buildParagraph(
+                      'Todo el contenido, marcas registradas, logotipos y diseños son propiedad exclusiva de los desarrolladores. No está permitida su copia, distribución o modificación sin consentimiento.',
+                      isDark,
+                    ),
+
                     const SizedBox(height: 20),
-                    
-                    _buildSectionTitle('3. Responsabilidad', LucideIcons.alertTriangle, isDark),
-                    _buildParagraph('La aplicación se proporciona "tal cual". Los desarrolladores no garantizan que la aplicación estará libre de errores o interrupciones, y no se hacen responsables de daños directos o indirectos ocasionados por su uso.', isDark),
-                    
+
+                    _buildSectionTitle(
+                      '3. Responsabilidad',
+                      LucideIcons.alertTriangle,
+                      isDark,
+                    ),
+                    _buildParagraph(
+                      'La aplicación se proporciona "tal cual". Los desarrolladores no garantizan que la aplicación estará libre de errores o interrupciones, y no se hacen responsables de daños directos o indirectos ocasionados por su uso.',
+                      isDark,
+                    ),
+
                     const SizedBox(height: 20),
-                    
-                    _buildSectionTitle('4. Actualizaciones y Modificaciones', LucideIcons.refreshCw, isDark),
-                    _buildParagraph('Nos reservamos el derecho de modificar estos términos en cualquier momento. El uso continuado de la aplicación tras dichos cambios constituirá tu consentimiento a los mismos.', isDark),
+
+                    _buildSectionTitle(
+                      '4. Actualizaciones y Modificaciones',
+                      LucideIcons.refreshCw,
+                      isDark,
+                    ),
+                    _buildParagraph(
+                      'Nos reservamos el derecho de modificar estos términos en cualquier momento. El uso continuado de la aplicación tras dichos cambios constituirá tu consentimiento a los mismos.',
+                      isDark,
+                    ),
 
                     const SizedBox(height: 40),
                   ],
                 ),
               ),
             ),
-            
+
             // Footer
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1F2937) : const Color(0xFFF9FAFB),
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
-                border: Border(top: BorderSide(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6))),
+                color: isDark
+                    ? const Color(0xFF1F2937)
+                    : const Color(0xFFF9FAFB),
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(24),
+                ),
+                border: Border(
+                  top: BorderSide(
+                    color: isDark
+                        ? const Color(0xFF374151)
+                        : const Color(0xFFF3F4F6),
+                  ),
+                ),
               ),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark ? const Color(0xFF0F766E) : const Color(0xFF10B981),
+                    backgroundColor: isDark
+                        ? const Color(0xFF0F766E)
+                        : const Color(0xFF10B981),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     elevation: 0,
                   ),
-                  child: const Text('Entendido', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Entendido',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ),
@@ -164,7 +256,11 @@ class TermsConditionsModal extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: isDark ? const Color(0xFF14B8A6) : const Color(0xFF059669)),
+          Icon(
+            icon,
+            size: 20,
+            color: isDark ? const Color(0xFF14B8A6) : const Color(0xFF059669),
+          ),
           const SizedBox(width: 8),
           Text(
             title,

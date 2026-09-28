@@ -11,10 +11,13 @@ import 'premium_paywall_dialog.dart';
 
 class AIChatModal extends ConsumerStatefulWidget {
   final String? initialMessage;
-  
+
   const AIChatModal({super.key, this.initialMessage});
 
-  static Future<void> show(BuildContext context, {String? initialMessage}) async {
+  static Future<void> show(
+    BuildContext context, {
+    String? initialMessage,
+  }) async {
     try {
       await showModalBottomSheet(
         context: context,
@@ -28,7 +31,9 @@ class AIChatModal extends ConsumerStatefulWidget {
       debugPrint('Error showing AIChatModal: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Error al abrir el chat: $e'),
+          SnackBar(
+            dismissDirection: DismissDirection.horizontal,
+            content: Text('Error al abrir el chat: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -96,17 +101,23 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
             children: [
               const Icon(LucideIcons.crown, color: Color(0xFFF59E0B), size: 48),
               const SizedBox(height: 16),
-              const Text('Función Premium', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text(
+                'Función Premium',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 32),
-                child: Text('Interactúa con el Asistente IA impulsado por la magia del Plan Premium.', textAlign: TextAlign.center),
+                child: Text(
+                  'Interactúa con el Asistente IA impulsado por la magia del Plan Premium.',
+                  textAlign: TextAlign.center,
+                ),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text('Cerrar'),
-              )
+              ),
             ],
           ),
         ),
@@ -114,14 +125,15 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
     }
 
     // Initial greeting if no messages
-    final messages = chatState.messages.isEmpty 
-      ? [
-          ChatMessage(
-            text: '¡Hola! 👋 Soy QUIVO, tu asistente financiero. Estoy aquí para ayudarte con consejos de ahorro, análisis de gastos y planificación financiera basada en tus datos reales. ¿En qué puedo ayudarte hoy?',
-            role: MessageRole.assistant,
-          )
-        ]
-      : chatState.messages;
+    final messages = chatState.messages.isEmpty
+        ? [
+            ChatMessage(
+              text:
+                  '¡Hola! 👋 Soy QUIVO, tu asistente financiero. Estoy aquí para ayudarte con consejos de ahorro, análisis de gastos y planificación financiera basada en tus datos reales. ¿En qué puedo ayudarte hoy?',
+              role: MessageRole.assistant,
+            ),
+          ]
+        : chatState.messages;
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
@@ -136,9 +148,15 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: isDark
-                  ? const LinearGradient(colors: [Color(0xFF9333EA), Color(0xFFDB2777)])
-                  : const LinearGradient(colors: [Color(0xFFA855F7), Color(0xFFEC4899)]),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  ? const LinearGradient(
+                      colors: [Color(0xFF9333EA), Color(0xFFDB2777)],
+                    )
+                  : const LinearGradient(
+                      colors: [Color(0xFFA855F7), Color(0xFFEC4899)],
+                    ),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -147,17 +165,40 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                   child: Row(
                     children: [
                       Container(
-                        width: 40, height: 40,
-                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
-                        child: const Icon(LucideIcons.sparkles, color: Colors.white, size: 24),
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          LucideIcons.sparkles,
+                          color: Colors.white,
+                          size: 24,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('QUIVO', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
-                            Text('Siempre disponible para ayudarte', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12), overflow: TextOverflow.ellipsis),
+                            const Text(
+                              'QUIVO',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              'Siempre disponible para ayudarte',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                fontSize: 12,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ],
                         ),
                       ),
@@ -167,7 +208,7 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                 IconButton(
                   icon: const Icon(LucideIcons.x, color: Colors.white),
                   onPressed: () => Navigator.of(context).pop(),
-                )
+                ),
               ],
             ),
           ),
@@ -184,18 +225,32 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                     alignment: Alignment.centerLeft,
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 16),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1F2937) : const Color(0xFFF3F4F6),
-                        border: isDark ? Border.all(color: const Color(0xFF374151)) : null,
+                        color: isDark
+                            ? const Color(0xFF1F2937)
+                            : const Color(0xFFF3F4F6),
+                        border: isDark
+                            ? Border.all(color: const Color(0xFF374151))
+                            : null,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(LucideIcons.sparkles, color: Color(0xFFC084FC), size: 16),
+                          Icon(
+                            LucideIcons.sparkles,
+                            color: Color(0xFFC084FC),
+                            size: 16,
+                          ),
                           SizedBox(width: 8),
-                          Text(' QUIVO está pensando...', style: TextStyle(color: Colors.grey)),
+                          Text(
+                            ' QUIVO está pensando...',
+                            style: TextStyle(color: Colors.grey),
+                          ),
                         ],
                       ),
                     ),
@@ -210,36 +265,79 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                   return Align(
                     alignment: Alignment.centerLeft,
                     child: Container(
-                      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.85),
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.85,
+                      ),
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                        border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF374151)
+                              : const Color(0xFFE5E7EB),
+                        ),
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2))],
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              const Icon(LucideIcons.sparkles, color: Color(0xFFC084FC), size: 16),
+                              const Icon(
+                                LucideIcons.sparkles,
+                                color: Color(0xFFC084FC),
+                                size: 16,
+                              ),
                               const SizedBox(width: 4),
-                              Text('QUIVO ha propuesto un Plan de Ahorro', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                              Text(
+                                'QUIVO ha propuesto un Plan de Ahorro',
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 12),
                           Row(
                             children: [
-                              Text(p['icon'] ?? '🎯', style: const TextStyle(fontSize: 32)),
+                              Text(
+                                p['icon'] ?? '🎯',
+                                style: const TextStyle(fontSize: 32),
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(p['name'] ?? 'Meta', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
-                                    Text('\$${p['targetAmount']}', style: const TextStyle(color: Color(0xFF10B981), fontSize: 14, fontWeight: FontWeight.bold)),
+                                    Text(
+                                      p['name'] ?? 'Meta',
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? Colors.white
+                                            : Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      '\$${p['targetAmount']}',
+                                      style: const TextStyle(
+                                        color: Color(0xFF10B981),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -248,7 +346,12 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                           const SizedBox(height: 12),
                           Text(
                             p['description'] ?? '',
-                            style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13),
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.grey[300]
+                                  : Colors.grey[700],
+                              fontSize: 13,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           Row(
@@ -260,14 +363,24 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                                     AddSavingGoalModal.show(
                                       context,
                                       initialName: p['name'],
-                                      initialTargetAmount: (p['targetAmount'] as num?)?.toDouble(),
+                                      initialTargetAmount:
+                                          (p['targetAmount'] as num?)
+                                              ?.toDouble(),
                                       initialIcon: p['icon'],
                                     );
                                   },
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: isDark ? Colors.white : Colors.black,
-                                    side: BorderSide(color: isDark ? const Color(0xFF374151) : const Color(0xFFD1D5DB)),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    foregroundColor: isDark
+                                        ? Colors.white
+                                        : Colors.black,
+                                    side: BorderSide(
+                                      color: isDark
+                                          ? const Color(0xFF374151)
+                                          : const Color(0xFFD1D5DB),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
                                   child: const Text('Modificar'),
                                 ),
@@ -279,27 +392,40 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                                     final user = ref.read(authProvider).user;
                                     if (user != null) {
                                       final goal = SavingGoal(
-                                        id: DateTime.now().millisecondsSinceEpoch.toString(),
+                                        id: DateTime.now()
+                                            .millisecondsSinceEpoch
+                                            .toString(),
                                         name: p['name'] ?? 'Plan',
-                                        targetAmount: (p['targetAmount'] as num?)?.toDouble() ?? 0.0,
+                                        targetAmount:
+                                            (p['targetAmount'] as num?)
+                                                ?.toDouble() ??
+                                            0.0,
                                         icon: p['icon'] ?? '🎯',
                                         userId: user.email,
                                       );
-                                      await ref.read(savingGoalsProvider.notifier).addGoal(goal);
-                                      ref.read(chatProvider.notifier).sendMessage("¡He aceptado el plan de ahorro! Se ha guardado en mi cuenta.");
+                                      await ref
+                                          .read(savingGoalsProvider.notifier)
+                                          .addGoal(goal);
+                                      ref
+                                          .read(chatProvider.notifier)
+                                          .sendMessage(
+                                            "¡He aceptado el plan de ahorro! Se ha guardado en mi cuenta.",
+                                          );
                                     }
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF10B981),
                                     foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                     elevation: 0,
                                   ),
                                   child: const Text('Aceptar'),
                                 ),
                               ),
                             ],
-                          )
+                          ),
                         ],
                       ),
                     ),
@@ -307,16 +433,29 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                 }
 
                 return Align(
-                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: isUser
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: Container(
-                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.8,
+                    ),
                     margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
-                      color: isUser 
-                          ? (isDark ? const Color(0xFF7E22CE) : const Color(0xFF9333EA))
-                          : (isDark ? const Color(0xFF1F2937) : const Color(0xFFF3F4F6)),
-                      border: (!isUser && isDark) ? Border.all(color: const Color(0xFF374151)) : null,
+                      color: isUser
+                          ? (isDark
+                                ? const Color(0xFF7E22CE)
+                                : const Color(0xFF9333EA))
+                          : (isDark
+                                ? const Color(0xFF1F2937)
+                                : const Color(0xFFF3F4F6)),
+                      border: (!isUser && isDark)
+                          ? Border.all(color: const Color(0xFF374151))
+                          : null,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Column(
@@ -326,26 +465,49 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(LucideIcons.sparkles, color: Color(0xFFC084FC), size: 16),
+                              const Icon(
+                                LucideIcons.sparkles,
+                                color: Color(0xFFC084FC),
+                                size: 16,
+                              ),
                               const SizedBox(width: 4),
-                              Text('QUIVO', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12), overflow: TextOverflow.ellipsis),
+                              Text(
+                                'QUIVO',
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ],
                           ),
                           const SizedBox(height: 4),
                         ],
                         Text(
                           msg.text,
-                          style: TextStyle(color: isUser ? Colors.white : (isDark ? Colors.white : Colors.black), fontSize: 14, height: 1.45),
+                          style: TextStyle(
+                            color: isUser
+                                ? Colors.white
+                                : (isDark ? Colors.white : Colors.black),
+                            fontSize: 14,
+                            height: 1.45,
+                          ),
                           softWrap: true,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '${msg.timestamp.hour.toString().padLeft(2, '0')}:${msg.timestamp.minute.toString().padLeft(2, '0')}',
                           style: TextStyle(
-                            color: isUser ? Colors.white70 : (isDark ? Colors.grey[500] : Colors.grey[500]),
+                            color: isUser
+                                ? Colors.white70
+                                : (isDark
+                                      ? Colors.grey[500]
+                                      : Colors.grey[500]),
                             fontSize: 10,
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -370,10 +532,19 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                     icon: Icon(q['icon'] as IconData, size: 16),
                     label: Text(q['text'] as String),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+                      backgroundColor: isDark
+                          ? const Color(0xFF1F2937)
+                          : Colors.white,
                       foregroundColor: isDark ? Colors.white : Colors.black,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB))),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(
+                          color: isDark
+                              ? const Color(0xFF374151)
+                              : const Color(0xFFE5E7EB),
+                        ),
+                      ),
                     ),
                   );
                 },
@@ -383,45 +554,86 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
           // Input
           Container(
             padding: EdgeInsets.only(
-              left: 16, right: 16, top: 12,
-              bottom: MediaQuery.of(context).viewInsets.bottom + MediaQuery.of(context).padding.bottom + 12,
+              left: 16,
+              right: 16,
+              top: 12,
+              bottom:
+                  MediaQuery.of(context).viewInsets.bottom +
+                  MediaQuery.of(context).padding.bottom +
+                  12,
             ),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF1F2937) : const Color(0xFFF9FAFB),
-              border: Border(top: BorderSide(color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB))),
+              border: Border(
+                top: BorderSide(
+                  color: isDark
+                      ? const Color(0xFF374151)
+                      : const Color(0xFFE5E7EB),
+                ),
+              ),
             ),
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _controller,
-                    style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
                     onSubmitted: handleSendMessage,
                     decoration: InputDecoration(
                       hintText: 'Escribe tu pregunta...',
-                      hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                      hintStyle: TextStyle(
+                        color: isDark ? Colors.grey[500] : Colors.grey[400],
+                      ),
                       filled: true,
-                      fillColor: isDark ? const Color(0xFF374151) : Colors.white,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFD1D5DB), width: 2)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFA855F7), width: 2)),
+                      fillColor: isDark
+                          ? const Color(0xFF374151)
+                          : Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: isDark
+                              ? const Color(0xFF4B5563)
+                              : const Color(0xFFD1D5DB),
+                          width: 2,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: isDark
+                              ? const Color(0xFF4B5563)
+                              : const Color(0xFFD1D5DB),
+                          width: 2,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFA855F7),
+                          width: 2,
+                        ),
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF7E22CE) : const Color(0xFF9333EA),
+                    color: isDark
+                        ? const Color(0xFF7E22CE)
+                        : const Color(0xFF9333EA),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: IconButton(
                     icon: const Icon(LucideIcons.send, color: Colors.white),
                     onPressed: () => handleSendMessage(_controller.text),
                   ),
-                )
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );

@@ -6,16 +6,19 @@ class MarketDataService {
   // API Key se pasa por variable de entorno al compilar:
   // flutter run --dart-define=MASSIVE_API_KEY=tu_clave_aqui
   static const String _envApiKey = String.fromEnvironment('MASSIVE_API_KEY');
-  static String get _apiKey => _envApiKey.trim().isEmpty ? 'TWKMI7RFpjlcuPpUM1nOplhKrByQ0swf' : _envApiKey.trim();
+  static String get _apiKey => _envApiKey.trim().isEmpty
+      ? 'TWKMI7RFpjlcuPpUM1nOplhKrByQ0swf'
+      : _envApiKey.trim();
 
   /// Busca datos financieros en tiempo real consultando la API de Massive (antes Polygon)
   static Future<Map<String, dynamic>> getStockData(String ticker) async {
     final uppercaseTicker = ticker.toUpperCase().trim();
-    
+
     try {
       // La URL base del API de Massive
-      final baseUrl = 'https://api.massive.com/v2/aggs/ticker/$uppercaseTicker/prev?adjusted=true&apiKey=$_apiKey';
-      
+      final baseUrl =
+          'https://api.massive.com/v2/aggs/ticker/$uppercaseTicker/prev?adjusted=true&apiKey=$_apiKey';
+
       // En Flutter Web, el navegador bloquea llamadas directas a APIs externas
       // por política CORS. Usamos un proxy CORS para evitar esto.
       final url = kIsWeb
@@ -24,12 +27,14 @@ class MarketDataService {
 
       print('[MarketDataService] Fetching data for $uppercaseTicker...');
       print('[MarketDataService] URL: $url');
-      
+
       final response = await http.get(Uri.parse(url));
-      
+
       print('[MarketDataService] Status: ${response.statusCode}');
-      print('[MarketDataService] Body: ${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}');
-      
+      print(
+        '[MarketDataService] Body: ${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}',
+      );
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['results'] != null && data['results'].isNotEmpty) {
@@ -48,13 +53,15 @@ class MarketDataService {
         } else {
           return {
             'status': 'error',
-            'message': 'No se encontraron datos recientes para el ticker $uppercaseTicker. Puede que no sea un ticker válido.',
+            'message':
+                'No se encontraron datos recientes para el ticker $uppercaseTicker. Puede que no sea un ticker válido.',
           };
         }
       } else {
         return {
           'status': 'error',
-          'message': 'Error HTTP ${response.statusCode} al consultar datos de $uppercaseTicker.',
+          'message':
+              'Error HTTP ${response.statusCode} al consultar datos de $uppercaseTicker.',
         };
       }
     } catch (e) {
@@ -66,4 +73,3 @@ class MarketDataService {
     }
   }
 }
-

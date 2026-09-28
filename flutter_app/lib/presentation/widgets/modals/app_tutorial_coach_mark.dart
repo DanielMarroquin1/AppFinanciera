@@ -8,16 +8,28 @@ import '../../../core/utils/localization.dart';
 class AppTutorialCoachMark {
   static TutorialCoachMark? _tutorialCoachMark;
 
-  static Widget _buildDialogBox(String title, String description, IconData icon, Color color, TutorialCoachMarkController controller, AppLocalizations loc) {
+  static Widget _buildDialogBox(
+    String title,
+    String description,
+    IconData icon,
+    Color color,
+    TutorialCoachMarkController controller,
+    AppLocalizations loc,
+  ) {
     return Builder(
       builder: (context) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
-        
+
         return Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.95) : Colors.white.withValues(alpha: 0.95),
+            color: isDark
+                ? const Color(0xFF1E293B).withValues(alpha: 0.95)
+                : Colors.white.withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.5),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.2),
+              width: 1.5,
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.25),
@@ -54,7 +66,9 @@ class AppTutorialCoachMark {
                               fontSize: 20,
                               fontWeight: FontWeight.w900,
                               letterSpacing: -0.5,
-                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF0F172A),
                             ),
                           ),
                         ),
@@ -66,7 +80,9 @@ class AppTutorialCoachMark {
                       style: TextStyle(
                         fontSize: 15,
                         height: 1.5,
-                        color: isDark ? Colors.grey[300] : const Color(0xFF475569),
+                        color: isDark
+                            ? Colors.grey[300]
+                            : const Color(0xFF475569),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -75,23 +91,43 @@ class AppTutorialCoachMark {
                       child: GestureDetector(
                         onTap: () => controller.next(),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 12,
+                          ),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(colors: [color, color.withValues(alpha: 0.8)]),
+                            gradient: LinearGradient(
+                              colors: [color, color.withValues(alpha: 0.8)],
+                            ),
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: [
-                              BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4)),
+                              BoxShadow(
+                                color: color.withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
                             ],
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                loc.get('next') ?? (loc.langCode.startsWith('en') ? 'Next' : 'Siguiente'),
-                                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14),
+                                loc.get('next') ??
+                                    (loc.langCode.startsWith('en')
+                                        ? 'Next'
+                                        : 'Siguiente'),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
                               ),
                               const SizedBox(width: 6),
-                              const Icon(LucideIcons.arrowRight, color: Colors.white, size: 16),
+                              const Icon(
+                                LucideIcons.arrowRight,
+                                color: Colors.white,
+                                size: 16,
+                              ),
                             ],
                           ),
                         ),
@@ -103,7 +139,7 @@ class AppTutorialCoachMark {
             ),
           ),
         );
-      }
+      },
     );
   }
 
@@ -111,7 +147,11 @@ class AppTutorialCoachMark {
     return loc.langCode.startsWith('en') ? en : es;
   }
 
-  static void showTutorial(BuildContext context, {required AppLocalizations loc, VoidCallback? onFinish}) {
+  static void showTutorial(
+    BuildContext context, {
+    required AppLocalizations loc,
+    VoidCallback? onFinish,
+  }) {
     List<TargetFocus> targets = [
       TargetFocus(
         identify: "balance",
@@ -128,7 +168,7 @@ class AppTutorialCoachMark {
                 _translate(
                   "Este es tu centro de mando. Aquí verás el gran total de tu dinero disponible después de descontar tus gastos. ¡Tu salud financiera de un vistazo!",
                   "This is your command center. Here you'll see your total available money after deducting expenses. Your financial health at a glance!",
-                  loc
+                  loc,
                 ),
                 LucideIcons.wallet,
                 const Color(0xFF38BDF8),
@@ -154,7 +194,7 @@ class AppTutorialCoachMark {
                 _translate(
                   "Toca aquí para registrar rápidamente cualquier dinero que entre a tu cuenta, como tu salario, bonos o regalos.",
                   "Tap here to quickly log any money entering your account, like your salary, bonuses, or gifts.",
-                  loc
+                  loc,
                 ),
                 LucideIcons.trendingUp,
                 const Color(0xFF10B981),
@@ -180,7 +220,7 @@ class AppTutorialCoachMark {
                 _translate(
                   "Registra aquí todo lo que pagas, desde un café hasta el súper. Puedes ponerle categorías y recibos.",
                   "Log everything you pay here, from a coffee to groceries. You can add categories and receipts.",
-                  loc
+                  loc,
                 ),
                 LucideIcons.trendingDown,
                 const Color(0xFFEF4444),
@@ -206,7 +246,7 @@ class AppTutorialCoachMark {
                 _translate(
                   "Agrega tus préstamos o deudas pendientes. QUIVO te ayudará a crear un plan para pagarlas más rápido.",
                   "Add your loans or pending debts. QUIVO will help you create a plan to pay them off faster.",
-                  loc
+                  loc,
                 ),
                 LucideIcons.target,
                 const Color(0xFFF59E0B),
@@ -232,7 +272,7 @@ class AppTutorialCoachMark {
                 _translate(
                   "¡Crea metas de ahorro para ese viaje o coche nuevo! Podrás apartar el dinero mes a mes y ver tu progreso en tiempo real.",
                   "Create savings goals for that trip or new car! You can set aside money month by month and see your progress in real-time.",
-                  loc
+                  loc,
                 ),
                 LucideIcons.piggyBank,
                 const Color(0xFFEC4899),
@@ -258,7 +298,7 @@ class AppTutorialCoachMark {
                 _translate(
                   "Toca este botón para hablar con tu asistente inteligente. Puedes pedirle que analice tus gastos o te dé consejos personalizados.",
                   "Tap this button to talk to your smart assistant. You can ask it to analyze your expenses or give you personalized advice.",
-                  loc
+                  loc,
                 ),
                 LucideIcons.bot,
                 const Color(0xFF6366F1),
@@ -284,7 +324,7 @@ class AppTutorialCoachMark {
                 _translate(
                   "Administra todas tus tarjetas desde aquí. Podrás ver tus fechas de corte y límites de crédito.",
                   "Manage all your cards from here. You can check your statement dates and credit limits.",
-                  loc
+                  loc,
                 ),
                 LucideIcons.creditCard,
                 const Color(0xFF8B5CF6),
@@ -294,13 +334,17 @@ class AppTutorialCoachMark {
             },
           ),
         ],
-      )
+      ),
     ];
 
     _tutorialCoachMark = TutorialCoachMark(
       targets: targets,
-      colorShadow: Theme.of(context).brightness == Brightness.dark ? Colors.black : const Color(0xFF1E293B),
-      textSkip: loc.get('skip') ?? (loc.langCode.startsWith('en') ? "Skip" : "Saltar"),
+      colorShadow: Theme.of(context).brightness == Brightness.dark
+          ? Colors.black
+          : const Color(0xFF1E293B),
+      textSkip:
+          loc.get('skip') ??
+          (loc.langCode.startsWith('en') ? "Skip" : "Saltar"),
       textStyleSkip: const TextStyle(
         color: Colors.white,
         fontWeight: FontWeight.bold,

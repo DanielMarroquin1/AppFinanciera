@@ -11,7 +11,9 @@ class TechnicalSupportModal extends StatefulWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
         child: const TechnicalSupportModal(),
       ),
     );
@@ -25,7 +27,7 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
   final _emailController = TextEditingController();
   final _subjectController = TextEditingController();
   final _descriptionController = TextEditingController();
-  List<String> _attachedImages = []; 
+  List<String> _attachedImages = [];
   bool _isSubmitting = false;
 
   @override
@@ -40,15 +42,15 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now();
     final monthKey = 'ticket_count_${now.year}_${now.month}';
-    
+
     int currentCount = prefs.getInt(monthKey) ?? 0;
     currentCount++;
     await prefs.setInt(monthKey, currentCount);
-    
+
     final yearStr = now.year.toString();
     final monthStr = now.month.toString().padLeft(2, '0');
     final countStr = currentCount.toString().padLeft(4, '0');
-    
+
     return 'TKT-$yearStr$monthStr-$countStr';
   }
 
@@ -59,34 +61,50 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
 
     if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('El correo electrónico es obligatorio.'), backgroundColor: Colors.red),
+        const SnackBar(
+          dismissDirection: DismissDirection.horizontal,
+          content: Text('El correo electrónico es obligatorio.'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Por favor, ingresa un correo válido.'), backgroundColor: Colors.red),
+        const SnackBar(
+          dismissDirection: DismissDirection.horizontal,
+          content: Text('Por favor, ingresa un correo válido.'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
-    
+
     if (subject.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Por favor, ingresa un asunto o título.'), backgroundColor: Colors.red),
+        const SnackBar(
+          dismissDirection: DismissDirection.horizontal,
+          content: Text('Por favor, ingresa un asunto o título.'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
     if (description.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Por favor, describe el error o consulta.'), backgroundColor: Colors.red),
+        const SnackBar(
+          dismissDirection: DismissDirection.horizontal,
+          content: Text('Por favor, describe el error o consulta.'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
     setState(() => _isSubmitting = true);
-    
+
     final ticketNumber = await _generateTicketNumber();
 
     // Simulate network request and email sending
@@ -97,9 +115,14 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('¡Ticket Creado!'),
-            content: Text('Tu número de ticket es: $ticketNumber\n\nHemos enviado un correo de confirmación a "$email".'),
+            content: Text(
+              'Tu número de ticket es: $ticketNumber\n\nHemos enviado un correo de confirmación a "$email".',
+            ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Entendido'))
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Entendido'),
+              ),
             ],
           ),
         );
@@ -110,11 +133,14 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
   void _attachImage() {
     if (_attachedImages.length >= 2) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Solo puedes adjuntar un máximo de 2 imágenes.')),
+        const SnackBar(
+          dismissDirection: DismissDirection.horizontal,
+          content: Text('Solo puedes adjuntar un máximo de 2 imágenes.'),
+        ),
       );
       return;
     }
-    
+
     setState(() {
       _attachedImages.add('image_${_attachedImages.length + 1}.png');
     });
@@ -123,13 +149,21 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.92),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.92,
+      ),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 40, offset: const Offset(0, -10))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 40,
+            offset: const Offset(0, -10),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -138,8 +172,16 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF1E293B) : Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-              border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(32),
+              ),
+              border: Border(
+                bottom: BorderSide(
+                  color: isDark
+                      ? const Color(0xFF334155)
+                      : const Color(0xFFE2E8F0),
+                ),
+              ),
             ),
             child: Row(
               children: [
@@ -149,33 +191,60 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
                     color: const Color(0xFF3B82F6).withOpacity(0.15),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(LucideIcons.lifeBuoy, color: Color(0xFF3B82F6), size: 28),
+                  child: const Icon(
+                    LucideIcons.lifeBuoy,
+                    color: Color(0xFF3B82F6),
+                    size: 28,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Soporte Técnico', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                      Text(
+                        'Soporte Técnico',
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
                       const SizedBox(height: 2),
-                      Text('Estamos aquí para ayudarte', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                      Text(
+                        'Estamos aquí para ayudarte',
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
-                  style: IconButton.styleFrom(backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
+                  icon: Icon(
+                    LucideIcons.x,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                  style: IconButton.styleFrom(
+                    backgroundColor: isDark
+                        ? const Color(0xFF334155)
+                        : const Color(0xFFF1F5F9),
+                  ),
                 ),
               ],
             ),
           ),
-          
+
           // Form Content
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.only(
-                left: 24, right: 24, top: 24,
+                left: 24,
+                right: 24,
+                top: 24,
                 bottom: MediaQuery.of(context).viewInsets.bottom + 24,
               ),
               child: Column(
@@ -183,71 +252,142 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
                 children: [
                   _buildInputLabel(isDark, 'Correo de contacto'),
                   const SizedBox(height: 8),
-                  _buildTextField(isDark, controller: _emailController, hintText: 'tu@correo.com', prefixIcon: LucideIcons.mail, keyboardType: TextInputType.emailAddress),
-                  
+                  _buildTextField(
+                    isDark,
+                    controller: _emailController,
+                    hintText: 'tu@correo.com',
+                    prefixIcon: LucideIcons.mail,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+
                   const SizedBox(height: 20),
                   _buildInputLabel(isDark, 'Asunto del ticket'),
                   const SizedBox(height: 8),
-                  _buildTextField(isDark, controller: _subjectController, hintText: 'Ej. Error en presupuesto', prefixIcon: LucideIcons.tag),
-                  
+                  _buildTextField(
+                    isDark,
+                    controller: _subjectController,
+                    hintText: 'Ej. Error en presupuesto',
+                    prefixIcon: LucideIcons.tag,
+                  ),
+
                   const SizedBox(height: 20),
                   _buildInputLabel(isDark, 'Descripción del problema'),
                   const SizedBox(height: 8),
-                  _buildTextField(isDark, controller: _descriptionController, hintText: 'Describe el error o tu consulta con detalle...', prefixIcon: LucideIcons.messageSquare, maxLines: 5),
-                  
+                  _buildTextField(
+                    isDark,
+                    controller: _descriptionController,
+                    hintText: 'Describe el error o tu consulta con detalle...',
+                    prefixIcon: LucideIcons.messageSquare,
+                    maxLines: 5,
+                  ),
+
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Imágenes (Max 2)', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text(
+                        'Imágenes (Max 2)',
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       TextButton.icon(
                         onPressed: _attachImage,
                         icon: const Icon(LucideIcons.imagePlus, size: 18),
-                        label: const Text('Adjuntar', style: TextStyle(fontWeight: FontWeight.bold)),
-                        style: TextButton.styleFrom(foregroundColor: const Color(0xFF3B82F6)),
+                        label: const Text(
+                          'Adjuntar',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFF3B82F6),
+                        ),
                       ),
                     ],
                   ),
                   if (_attachedImages.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     Row(
-                      children: _attachedImages.map((img) => Container(
-                        margin: const EdgeInsets.only(right: 12),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: isDark ? const Color(0xFF475569) : const Color(0xFFE2E8F0)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(LucideIcons.image, size: 16, color: Color(0xFF3B82F6)),
-                            const SizedBox(width: 8),
-                            Text(img, style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13, fontWeight: FontWeight.w600)),
-                          ],
-                        ),
-                      )).toList(),
+                      children: _attachedImages
+                          .map(
+                            (img) => Container(
+                              margin: const EdgeInsets.only(right: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? const Color(0xFF334155)
+                                    : const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isDark
+                                      ? const Color(0xFF475569)
+                                      : const Color(0xFFE2E8F0),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    LucideIcons.image,
+                                    size: 16,
+                                    color: Color(0xFF3B82F6),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    img,
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? Colors.grey[300]
+                                          : Colors.grey[700],
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                          .toList(),
                     ),
                   ],
-                  
+
                   const SizedBox(height: 32),
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF59E0B).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.3)),
+                      border: Border.all(
+                        color: const Color(0xFFF59E0B).withOpacity(0.3),
+                      ),
                     ),
                     child: Row(
                       children: [
-                        const Icon(LucideIcons.alertCircle, color: Color(0xFFF59E0B), size: 24),
+                        const Icon(
+                          LucideIcons.alertCircle,
+                          color: Color(0xFFF59E0B),
+                          size: 24,
+                        ),
                         const SizedBox(width: 16),
-                        Expanded(child: Text('Políticas de Soporte: Si no respondes tras 24h, cerraremos el ticket.', style: TextStyle(color: isDark ? const Color(0xFFFDE68A) : const Color(0xFFD97706), fontSize: 13))),
+                        Expanded(
+                          child: Text(
+                            'Políticas de Soporte: Si no respondes tras 24h, cerraremos el ticket.',
+                            style: TextStyle(
+                              color: isDark
+                                  ? const Color(0xFFFDE68A)
+                                  : const Color(0xFFD97706),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 32),
-                  
+
                   // Submit Button
                   SizedBox(
                     width: double.infinity,
@@ -257,12 +397,28 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
                         backgroundColor: const Color(0xFF3B82F6),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 18),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                         elevation: 0,
                       ),
-                      child: _isSubmitting 
-                          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : const Text('Enviar Ticket', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'Enviar Ticket',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -278,7 +434,11 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
   Widget _buildInputLabel(bool isDark, String label) {
     return Text(
       label,
-      style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14, fontWeight: FontWeight.w600),
+      style: TextStyle(
+        color: isDark ? Colors.grey[400] : Colors.grey[600],
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+      ),
     );
   }
 
@@ -294,19 +454,35 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        ),
       ),
       child: TextField(
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
-        style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 15),
+        style: TextStyle(
+          color: isDark ? Colors.white : Colors.black,
+          fontSize: 15,
+        ),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400]),
-          prefixIcon: maxLines == 1 ? Icon(prefixIcon, color: isDark ? Colors.grey[500] : Colors.grey[400], size: 20) : null,
+          hintStyle: TextStyle(
+            color: isDark ? Colors.grey[600] : Colors.grey[400],
+          ),
+          prefixIcon: maxLines == 1
+              ? Icon(
+                  prefixIcon,
+                  color: isDark ? Colors.grey[500] : Colors.grey[400],
+                  size: 20,
+                )
+              : null,
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: maxLines > 1 ? 16 : 14),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: maxLines > 1 ? 16 : 14,
+          ),
         ),
       ),
     );

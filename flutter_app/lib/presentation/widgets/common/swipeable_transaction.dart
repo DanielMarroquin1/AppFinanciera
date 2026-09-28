@@ -22,11 +22,14 @@ class SwipeableTransaction extends ConsumerWidget {
     required this.child,
   });
 
-    void _showActionMenu(BuildContext context, WidgetRef ref) {
+  void _showActionMenu(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bool isIncome = transaction.type == 'income';
     final loc = ref.read(localizationProvider);
-    final formattedDate = DateFormat("d 'de' MMMM 'de' yyyy", 'es').format(transaction.date);
+    final formattedDate = DateFormat(
+      "d 'de' MMMM 'de' yyyy",
+      'es',
+    ).format(transaction.date);
 
     showDialog(
       context: context,
@@ -34,7 +37,10 @@ class SwipeableTransaction extends ConsumerWidget {
         return Dialog(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 24,
+          ),
           child: Container(
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
@@ -45,7 +51,7 @@ class SwipeableTransaction extends ConsumerWidget {
                   color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
-                )
+                ),
               ],
             ),
             child: Column(
@@ -63,14 +69,22 @@ class SwipeableTransaction extends ConsumerWidget {
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: isIncome
-                                  ? const Color(0xFF10B981).withValues(alpha: 0.15)
-                                  : const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                                  ? const Color(
+                                      0xFF10B981,
+                                    ).withValues(alpha: 0.15)
+                                  : const Color(
+                                      0xFF3B82F6,
+                                    ).withValues(alpha: 0.15),
                               shape: BoxShape.rectangle,
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Icon(
-                              isIncome ? LucideIcons.trendingUp : LucideIcons.shoppingBag,
-                              color: isIncome ? const Color(0xFF10B981) : const Color(0xFF3B82F6),
+                              isIncome
+                                  ? LucideIcons.trendingUp
+                                  : LucideIcons.shoppingBag,
+                              color: isIncome
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFF3B82F6),
                               size: 24,
                             ),
                           ),
@@ -80,7 +94,11 @@ class SwipeableTransaction extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  transaction.description.isNotEmpty ? transaction.description : loc.translateCategory(transaction.category),
+                                  transaction.description.isNotEmpty
+                                      ? transaction.description
+                                      : loc.translateCategory(
+                                          transaction.category,
+                                        ),
                                   style: TextStyle(
                                     color: isDark ? Colors.white : Colors.black,
                                     fontSize: 18,
@@ -91,7 +109,9 @@ class SwipeableTransaction extends ConsumerWidget {
                                 Text(
                                   loc.translateCategory(transaction.category),
                                   style: TextStyle(
-                                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                    color: isDark
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
                                     fontSize: 14,
                                   ),
                                 ),
@@ -99,10 +119,17 @@ class SwipeableTransaction extends ConsumerWidget {
                             ),
                           ),
                           IconButton(
-                            icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                            icon: Icon(
+                              LucideIcons.x,
+                              color: isDark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                            ),
                             onPressed: () => Navigator.pop(context),
                             style: IconButton.styleFrom(
-                              backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                              backgroundColor: isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFF1F5F9),
                             ),
                           ),
                         ],
@@ -127,21 +154,53 @@ class SwipeableTransaction extends ConsumerWidget {
                     ],
                   ),
                 ),
-                Divider(height: 1, color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                Divider(
+                  height: 1,
+                  color: isDark
+                      ? const Color(0xFF334155)
+                      : const Color(0xFFE2E8F0),
+                ),
                 // Action List
-                _buildActionTile(context, isDark, 'Editar', LucideIcons.edit2, () {
-                  Navigator.pop(context);
-                  if (isIncome) {
-                    AddIncomeModal.show(context, existingTransaction: transaction, isFixed: transaction.isFixed);
-                  } else {
-                    AddExpenseModal.show(context, existingTransaction: transaction, isFixed: transaction.isFixed, currencyCode: currencyCode);
-                  }
-                }),
-                Divider(height: 1, color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                _buildActionTile(context, isDark, 'Eliminar', LucideIcons.trash2, () {
-                  Navigator.pop(context);
-                  _executeDelete(context, ref);
-                }, isDestructive: true),
+                _buildActionTile(
+                  context,
+                  isDark,
+                  'Editar',
+                  LucideIcons.edit2,
+                  () {
+                    Navigator.pop(context);
+                    if (isIncome) {
+                      AddIncomeModal.show(
+                        context,
+                        existingTransaction: transaction,
+                        isFixed: transaction.isFixed,
+                      );
+                    } else {
+                      AddExpenseModal.show(
+                        context,
+                        existingTransaction: transaction,
+                        isFixed: transaction.isFixed,
+                        currencyCode: currencyCode,
+                      );
+                    }
+                  },
+                ),
+                Divider(
+                  height: 1,
+                  color: isDark
+                      ? const Color(0xFF334155)
+                      : const Color(0xFFE2E8F0),
+                ),
+                _buildActionTile(
+                  context,
+                  isDark,
+                  'Eliminar',
+                  LucideIcons.trash2,
+                  () {
+                    Navigator.pop(context);
+                    _executeDelete(context, ref);
+                  },
+                  isDestructive: true,
+                ),
               ],
             ),
           ),

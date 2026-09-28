@@ -23,7 +23,9 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
       if (mounted) {
         setState(() => isExporting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(dismissDirection: DismissDirection.horizontal, content: const Row(
+          SnackBar(
+            dismissDirection: DismissDirection.horizontal,
+            content: const Row(
               children: [
                 Icon(LucideIcons.checkCircle, color: Colors.white),
                 SizedBox(width: 12),
@@ -32,7 +34,9 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             ),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -55,28 +59,43 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF1F2937) : Colors.white,
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5), width: 2),
+              border: Border.all(
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.5),
+                width: 2,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 24, offset: const Offset(0, 12)
-                )
-              ]
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                ),
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(LucideIcons.crown, size: 64, color: Color(0xFFF59E0B)),
+                const Icon(
+                  LucideIcons.crown,
+                  size: 64,
+                  color: Color(0xFFF59E0B),
+                ),
                 const SizedBox(height: 24),
                 Text(
                   'Reportes Avanzados',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   'Desbloquea estadísticas detalladas, análisis visuales y exportación de PDFs con el Plan Premium.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 15),
+                  style: TextStyle(
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    fontSize: 15,
+                  ),
                 ),
                 const SizedBox(height: 32),
                 SizedBox(
@@ -85,13 +104,25 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                     onPressed: () {
                       PremiumModal.show(context);
                     },
-                    icon: const Icon(LucideIcons.crown, color: Colors.white, size: 20),
-                    label: const Text('Actualizar a Premium', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    icon: const Icon(
+                      LucideIcons.crown,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    label: const Text(
+                      'Actualizar a Premium',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFD97706),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                   ),
                 ),
@@ -116,16 +147,47 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     double maxValue = 0;
     for (var d in data) {
       if ((d['income'] as double) > maxValue) maxValue = d['income'] as double;
-      if ((d['expenses'] as double) > maxValue) maxValue = d['expenses'] as double;
+      if ((d['expenses'] as double) > maxValue)
+        maxValue = d['expenses'] as double;
     }
 
     final categoryData = [
-      {'name': 'Comida', 'amount': 450.0, 'color': const Color(0xFFEF4444), 'percentage': 35},
-      {'name': 'Transporte', 'amount': 280.0, 'color': const Color(0xFF3B82F6), 'percentage': 22},
-      {'name': 'Hogar', 'amount': 520.0, 'color': const Color(0xFFA855F7), 'percentage': 40},
-      {'name': 'Entretenimiento', 'amount': 150.0, 'color': const Color(0xFFEC4899), 'percentage': 12},
-      {'name': 'Salud', 'amount': 95.0, 'color': const Color(0xFF22C55E), 'percentage': 7},
-      {'name': 'Otros', 'amount': 55.0, 'color': const Color(0xFF6B7280), 'percentage': 4},
+      {
+        'name': 'Comida',
+        'amount': 450.0,
+        'color': const Color(0xFFEF4444),
+        'percentage': 35,
+      },
+      {
+        'name': 'Transporte',
+        'amount': 280.0,
+        'color': const Color(0xFF3B82F6),
+        'percentage': 22,
+      },
+      {
+        'name': 'Hogar',
+        'amount': 520.0,
+        'color': const Color(0xFFA855F7),
+        'percentage': 40,
+      },
+      {
+        'name': 'Entretenimiento',
+        'amount': 150.0,
+        'color': const Color(0xFFEC4899),
+        'percentage': 12,
+      },
+      {
+        'name': 'Salud',
+        'amount': 95.0,
+        'color': const Color(0xFF22C55E),
+        'percentage': 7,
+      },
+      {
+        'name': 'Otros',
+        'amount': 55.0,
+        'color': const Color(0xFF6B7280),
+        'percentage': 4,
+      },
     ];
 
     return Scaffold(
@@ -136,9 +198,21 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Header
-            Text('Reportes 📊', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+            Text(
+              'Reportes 📊',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text('Análisis de tus finanzas', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
+            Text(
+              'Análisis de tus finanzas',
+              style: TextStyle(
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+              ),
+            ),
             const SizedBox(height: 24),
 
             // Period Selector
@@ -147,21 +221,56 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                 // Show simple selection
                 showModalBottomSheet(
                   context: context,
-                  backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+                  backgroundColor: isDark
+                      ? const Color(0xFF1F2937)
+                      : Colors.white,
                   shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
                   ),
                   builder: (context) => Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(24.0),
-                        child: Text('Seleccionar Período', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: isDark ? Colors.white : Colors.black)),
+                        child: Text(
+                          'Seleccionar Período',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
+                        ),
                       ),
-                      ListTile(title: const Text('Último mes'), onTap: () { setState(() => selectedPeriod = 'Último mes'); Navigator.pop(context); }),
-                      ListTile(title: const Text('Últimos 3 meses'), onTap: () { setState(() => selectedPeriod = 'Últimos 3 meses'); Navigator.pop(context); }),
-                      ListTile(title: const Text('Últimos 6 meses'), onTap: () { setState(() => selectedPeriod = 'Últimos 6 meses'); Navigator.pop(context); }),
-                      ListTile(title: const Text('Este año'), onTap: () { setState(() => selectedPeriod = 'Este año'); Navigator.pop(context); }),
+                      ListTile(
+                        title: const Text('Último mes'),
+                        onTap: () {
+                          setState(() => selectedPeriod = 'Último mes');
+                          Navigator.pop(context);
+                        },
+                      ),
+                      ListTile(
+                        title: const Text('Últimos 3 meses'),
+                        onTap: () {
+                          setState(() => selectedPeriod = 'Últimos 3 meses');
+                          Navigator.pop(context);
+                        },
+                      ),
+                      ListTile(
+                        title: const Text('Últimos 6 meses'),
+                        onTap: () {
+                          setState(() => selectedPeriod = 'Últimos 6 meses');
+                          Navigator.pop(context);
+                        },
+                      ),
+                      ListTile(
+                        title: const Text('Este año'),
+                        onTap: () {
+                          setState(() => selectedPeriod = 'Este año');
+                          Navigator.pop(context);
+                        },
+                      ),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -169,25 +278,57 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               },
               borderRadius: BorderRadius.circular(16),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                  border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(0xFF374151)
+                        : const Color(0xFFF3F4F6),
+                  ),
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.chevron_left, color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                    Icon(
+                      Icons.chevron_left,
+                      color: isDark ? Colors.grey[500] : Colors.grey[400],
+                    ),
                     Row(
                       children: [
-                        Icon(LucideIcons.calendar, color: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), size: 20),
+                        Icon(
+                          LucideIcons.calendar,
+                          color: isDark
+                              ? const Color(0xFFC084FC)
+                              : const Color(0xFF9333EA),
+                          size: 20,
+                        ),
                         const SizedBox(width: 8),
-                        Text(selectedPeriod, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.bold)),
+                        Text(
+                          selectedPeriod,
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
-                    Icon(Icons.chevron_right, color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                    Icon(
+                      Icons.chevron_right,
+                      color: isDark ? Colors.grey[500] : Colors.grey[400],
+                    ),
                   ],
                 ),
               ),
@@ -201,26 +342,59 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      gradient: isDark 
-                          ? const LinearGradient(colors: [Color(0xFF166534), Color(0xFF064E3B)]) 
-                          : const LinearGradient(colors: [Color(0xFF22C55E), Color(0xFF059669)]), 
+                      gradient: isDark
+                          ? const LinearGradient(
+                              colors: [Color(0xFF166534), Color(0xFF064E3B)],
+                            )
+                          : const LinearGradient(
+                              colors: [Color(0xFF22C55E), Color(0xFF059669)],
+                            ),
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 8, offset: const Offset(0, 4))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            const Icon(LucideIcons.trendingUp, color: Colors.white, size: 16),
+                            const Icon(
+                              LucideIcons.trendingUp,
+                              color: Colors.white,
+                              size: 16,
+                            ),
                             const SizedBox(width: 8),
-                            Text('Ingresos', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
+                            Text(
+                              'Ingresos',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.9),
+                                fontSize: 12,
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Text('${sym}22,000', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                        Text(
+                          '${sym}22,000',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text('Este período', style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 12)),
+                        Text(
+                          'Este período',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.75),
+                            fontSize: 12,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -230,26 +404,59 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      gradient: isDark 
-                          ? const LinearGradient(colors: [Color(0xFF991B1B), Color(0xFF831843)]) 
-                          : const LinearGradient(colors: [Color(0xFFEF4444), Color(0xFFDB2777)]), 
+                      gradient: isDark
+                          ? const LinearGradient(
+                              colors: [Color(0xFF991B1B), Color(0xFF831843)],
+                            )
+                          : const LinearGradient(
+                              colors: [Color(0xFFEF4444), Color(0xFFDB2777)],
+                            ),
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 8, offset: const Offset(0, 4))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            const Icon(LucideIcons.trendingDown, color: Colors.white, size: 16),
+                            const Icon(
+                              LucideIcons.trendingDown,
+                              color: Colors.white,
+                              size: 16,
+                            ),
                             const SizedBox(width: 8),
-                            Text('Gastos', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
+                            Text(
+                              'Gastos',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.9),
+                                fontSize: 12,
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Text('${sym}15,150', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                        Text(
+                          '${sym}15,150',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text('Este período', style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 12)),
+                        Text(
+                          'Este período',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.75),
+                            fontSize: 12,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -263,14 +470,31 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0xFF374151)
+                      : const Color(0xFFF3F4F6),
+                ),
                 borderRadius: BorderRadius.circular(24),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Ingresos vs Gastos', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    'Ingresos vs Gastos',
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   SizedBox(
                     height: 192,
@@ -288,30 +512,62 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                                   children: [
                                     Container(
                                       width: double.infinity,
-                                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                                      height: ((item['income'] as double) / maxValue) * 150,
-                                      constraints: const BoxConstraints(minHeight: 20),
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                      ),
+                                      height:
+                                          ((item['income'] as double) /
+                                              maxValue) *
+                                          150,
+                                      constraints: const BoxConstraints(
+                                        minHeight: 20,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: isDark ? const Color(0xFF16A34A) : const Color(0xFF22C55E),
-                                        borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                                        color: isDark
+                                            ? const Color(0xFF16A34A)
+                                            : const Color(0xFF22C55E),
+                                        borderRadius:
+                                            const BorderRadius.vertical(
+                                              top: Radius.circular(8),
+                                            ),
                                       ),
                                     ),
                                     const SizedBox(height: 2),
                                     Container(
                                       width: double.infinity,
-                                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                                      height: ((item['expenses'] as double) / maxValue) * 150,
-                                      constraints: const BoxConstraints(minHeight: 20),
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                      ),
+                                      height:
+                                          ((item['expenses'] as double) /
+                                              maxValue) *
+                                          150,
+                                      constraints: const BoxConstraints(
+                                        minHeight: 20,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: isDark ? const Color(0xFFDC2626) : const Color(0xFFEF4444),
-                                        borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                                        color: isDark
+                                            ? const Color(0xFFDC2626)
+                                            : const Color(0xFFEF4444),
+                                        borderRadius:
+                                            const BorderRadius.vertical(
+                                              top: Radius.circular(8),
+                                            ),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              Text(item['month'] as String, style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12)),
+                              Text(
+                                item['month'] as String,
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.grey[500]
+                                      : Colors.grey[500],
+                                  fontSize: 12,
+                                ),
+                              ),
                             ],
                           ),
                         );
@@ -328,7 +584,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                       const SizedBox(width: 16),
                       _buildLegend(isDark, const Color(0xFFEF4444), 'Gastos'),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
@@ -339,28 +595,68 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0xFF374151)
+                      : const Color(0xFFF3F4F6),
+                ),
                 borderRadius: BorderRadius.circular(24),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Distribución de Gastos', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    'Distribución de Gastos',
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 24),
                   Center(
                     child: SizedBox(
-                      width: 160, height: 160,
+                      width: 160,
+                      height: 160,
                       child: CustomPaint(
                         painter: _DonutChartPainter(
-                          data: categoryData.map((d) => _ChartItem(value: (d['percentage'] as int).toDouble(), color: d['color'] as Color)).toList()
+                          data: categoryData
+                              .map(
+                                (d) => _ChartItem(
+                                  value: (d['percentage'] as int).toDouble(),
+                                  color: d['color'] as Color,
+                                ),
+                              )
+                              .toList(),
                         ),
                         child: Center(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('${sym}1,550', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.bold)),
-                              Text('Total', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12)),
+                              Text(
+                                '${sym}1,550',
+                                style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                'Total',
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.grey[500]
+                                      : Colors.grey[500],
+                                  fontSize: 12,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -376,18 +672,52 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                         children: [
                           Row(
                             children: [
-                              Container(width: 12, height: 12, decoration: BoxDecoration(color: (cat['color'] as Color), borderRadius: BorderRadius.circular(4))),
+                              Container(
+                                width: 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  color: (cat['color'] as Color),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
                               const SizedBox(width: 8),
-                              Text(cat['name'] as String, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                              Text(
+                                cat['name'] as String,
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600],
+                                  fontSize: 14,
+                                ),
+                              ),
                             ],
                           ),
                           Row(
                             children: [
-                              Text('${cat['percentage']}%', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12)),
+                              Text(
+                                '${cat['percentage']}%',
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.grey[500]
+                                      : Colors.grey[500],
+                                  fontSize: 12,
+                                ),
+                              ),
                               const SizedBox(width: 12),
-                              SizedBox(width: 70, child: Text('$sym${(cat['amount'] as double).toStringAsFixed(0)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
+                              SizedBox(
+                                width: 70,
+                                child: Text(
+                                  '$sym${(cat['amount'] as double).toStringAsFixed(0)}',
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : Colors.black,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
                             ],
-                          )
+                          ),
                         ],
                       ),
                     );
@@ -401,24 +731,41 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             ElevatedButton(
               onPressed: isExporting ? null : _exportReport,
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDark ? const Color(0xFF7E22CE) : const Color(0xFF9333EA),
+                backgroundColor: isDark
+                    ? const Color(0xFF7E22CE)
+                    : const Color(0xFF9333EA),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 18),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 elevation: 4,
               ),
-              child: isExporting 
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+              child: isExporting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
                   : const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(LucideIcons.download, size: 20),
                         SizedBox(width: 12),
-                        Text('Descargar Reporte PDF', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text(
+                          'Descargar Reporte PDF',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
             ),
-            const SizedBox(height: 80), 
+            const SizedBox(height: 80),
           ],
         ),
       ),
@@ -428,9 +775,22 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   Widget _buildLegend(bool isDark, Color color, String text) {
     return Row(
       children: [
-        Container(width: 12, height: 12, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4))),
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
         const SizedBox(width: 8),
-        Text(text, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+        Text(
+          text,
+          style: TextStyle(
+            color: isDark ? Colors.grey[400] : Colors.grey[600],
+            fontSize: 12,
+          ),
+        ),
       ],
     );
   }
@@ -453,7 +813,7 @@ class _DonutChartPainter extends CustomPainter {
 
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
-    
+
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 20
@@ -462,7 +822,7 @@ class _DonutChartPainter extends CustomPainter {
     for (var item in data) {
       final sweepAngle = (item.value / total) * 2 * 3.14159;
       paint.color = item.color;
-      
+
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius - paint.strokeWidth / 2),
         currentAngle,
@@ -470,7 +830,7 @@ class _DonutChartPainter extends CustomPainter {
         false,
         paint,
       );
-      
+
       currentAngle += sweepAngle;
     }
   }

@@ -12,10 +12,15 @@ class CreditCardHistoryModal extends ConsumerStatefulWidget {
   final CreditCard card;
   final ScrollController scrollController;
 
-  const CreditCardHistoryModal({super.key, required this.card, required this.scrollController});
+  const CreditCardHistoryModal({
+    super.key,
+    required this.card,
+    required this.scrollController,
+  });
 
   @override
-  ConsumerState<CreditCardHistoryModal> createState() => _CreditCardHistoryModalState();
+  ConsumerState<CreditCardHistoryModal> createState() =>
+      _CreditCardHistoryModalState();
 
   static void show(BuildContext context, CreditCard card) {
     showModalBottomSheet(
@@ -27,14 +32,15 @@ class CreditCardHistoryModal extends ConsumerStatefulWidget {
         initialChildSize: 0.92,
         minChildSize: 0.5,
         maxChildSize: 0.96,
-        builder: (_, controller) => CreditCardHistoryModal(card: card, scrollController: controller),
+        builder: (_, controller) =>
+            CreditCardHistoryModal(card: card, scrollController: controller),
       ),
     );
   }
-
 }
 
-class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal> {
+class _CreditCardHistoryModalState
+    extends ConsumerState<CreditCardHistoryModal> {
   int _selectedMonth = DateTime.now().month;
   int _selectedYear = DateTime.now().year;
 
@@ -45,45 +51,76 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
         int tempMonth = _selectedMonth;
         int tempYear = _selectedYear;
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        
+
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return Dialog(
               backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(32),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Seleccionar Fecha', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text(
+                      'Seleccionar Fecha',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 24),
-                    
+
                     // Selector de Año
                     Container(
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                        color: isDark
+                            ? const Color(0xFF0F172A)
+                            : const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFE2E8F0),
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           IconButton(
-                            icon: Icon(LucideIcons.chevronLeft, color: isDark ? Colors.white : Colors.black),
+                            icon: Icon(
+                              LucideIcons.chevronLeft,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
                             onPressed: () => setDialogState(() => tempYear--),
                           ),
-                          Text(tempYear.toString(), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 22, fontWeight: FontWeight.w900)),
+                          Text(
+                            tempYear.toString(),
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
                           IconButton(
-                            icon: Icon(LucideIcons.chevronRight, color: isDark ? Colors.white : Colors.black),
+                            icon: Icon(
+                              LucideIcons.chevronRight,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
                             onPressed: () => setDialogState(() => tempYear++),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Selector de Mes
                     Wrap(
                       spacing: 8,
@@ -92,36 +129,66 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
                       children: List.generate(12, (index) {
                         final monthNum = index + 1;
                         final isSelected = monthNum == tempMonth;
-                        String monthStr = DateFormat('MMM', 'es').format(DateTime(2000, monthNum));
-                        monthStr = monthStr[0].toUpperCase() + monthStr.substring(1);
-                        
+                        String monthStr = DateFormat(
+                          'MMM',
+                          'es',
+                        ).format(DateTime(2000, monthNum));
+                        monthStr =
+                            monthStr[0].toUpperCase() + monthStr.substring(1);
+
                         return GestureDetector(
-                          onTap: () => setDialogState(() => tempMonth = monthNum),
+                          onTap: () =>
+                              setDialogState(() => tempMonth = monthNum),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
                             width: 65,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
                               gradient: isSelected
-                                  ? const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)])
+                                  ? const LinearGradient(
+                                      colors: [
+                                        Color(0xFF10B981),
+                                        Color(0xFF059669),
+                                      ],
+                                    )
                                   : null,
-                              color: isSelected ? null : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9)),
+                              color: isSelected
+                                  ? null
+                                  : (isDark
+                                        ? const Color(0xFF0F172A)
+                                        : const Color(0xFFF1F5F9)),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: isSelected 
-                                    ? Colors.transparent 
-                                    : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))
+                                color: isSelected
+                                    ? Colors.transparent
+                                    : (isDark
+                                          ? const Color(0xFF334155)
+                                          : const Color(0xFFE2E8F0)),
                               ),
-                              boxShadow: isSelected ? [
-                                BoxShadow(color: const Color(0xFF10B981).withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 4))
-                              ] : [],
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(
+                                          0xFF10B981,
+                                        ).withOpacity(0.4),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ]
+                                  : [],
                             ),
                             child: Center(
                               child: Text(
                                 monthStr,
                                 style: TextStyle(
-                                  color: isSelected ? Colors.white : (isDark ? Colors.grey[400] : Colors.grey[600]),
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : (isDark
+                                            ? Colors.grey[400]
+                                            : Colors.grey[600]),
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
                                 ),
                               ),
                             ),
@@ -130,14 +197,22 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
                       }),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Botones de Acción
                     Row(
                       children: [
                         Expanded(
                           child: TextButton(
                             onPressed: () => Navigator.pop(context),
-                            child: Text('Cancelar', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 16)),
+                            child: Text(
+                              'Cancelar',
+                              style: TextStyle(
+                                color: isDark
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
+                                fontSize: 16,
+                              ),
+                            ),
                           ),
                         ),
                         Expanded(
@@ -153,10 +228,18 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
                               backgroundColor: const Color(0xFF10B981),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
                               elevation: 0,
                             ),
-                            child: const Text('Confirmar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            child: const Text(
+                              'Confirmar',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -187,7 +270,7 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
             color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, -5),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -202,7 +285,7 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
               borderRadius: BorderRadius.circular(3),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -216,9 +299,15 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
                       decoration: BoxDecoration(
                         color: widget.card.color.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: widget.card.color.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: widget.card.color.withValues(alpha: 0.3),
+                        ),
                       ),
-                      child: Icon(LucideIcons.history, color: widget.card.color, size: 22),
+                      child: Icon(
+                        LucideIcons.history,
+                        color: widget.card.color,
+                        size: 22,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Column(
@@ -226,28 +315,45 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
                       children: [
                         Text(
                           loc.get('credit_card_history'),
-                          style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 20, fontWeight: FontWeight.w900),
+                          style: TextStyle(
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xFF0F172A),
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
                         Text(
                           widget.card.name,
-                          style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
                   ],
                 ),
                 IconButton(
-                  icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                  icon: Icon(
+                    LucideIcons.x,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  ),
                   onPressed: () => Navigator.pop(context),
                   style: IconButton.styleFrom(
-                    backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    backgroundColor: isDark
+                        ? const Color(0xFF1E293B)
+                        : const Color(0xFFE2E8F0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          
+
           // Filtros
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -255,7 +361,10 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                  icon: Icon(Icons.chevron_left, color: isDark ? Colors.white : Colors.black),
+                  icon: Icon(
+                    Icons.chevron_left,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
                   onPressed: () {
                     setState(() {
                       if (_selectedMonth == 1) {
@@ -271,27 +380,47 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
                   onTap: _showMonthPicker,
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                      color: isDark
+                          ? const Color(0xFF1E293B)
+                          : const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFFE2E8F0),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '${['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][_selectedMonth - 1]} $_selectedYear', 
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)
+                          '${['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'][_selectedMonth - 1]} $_selectedYear',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
                         ),
                         const SizedBox(width: 8),
-                        Icon(LucideIcons.calendar, size: 18, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                        Icon(
+                          LucideIcons.calendar,
+                          size: 18,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        ),
                       ],
                     ),
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.chevron_right, color: isDark ? Colors.white : Colors.black),
+                  icon: Icon(
+                    Icons.chevron_right,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
                   onPressed: () {
                     setState(() {
                       if (_selectedMonth == 12) {
@@ -306,21 +435,32 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
               ],
             ),
           ),
-          
-          Divider(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0), height: 1),
+
+          Divider(
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+            height: 1,
+          ),
 
           // Content
           Expanded(
             child: transactionsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Error: $err', style: TextStyle(color: isDark ? Colors.white : Colors.black))),
+              error: (err, _) => Center(
+                child: Text(
+                  'Error: $err',
+                  style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                ),
+              ),
               data: (allTransactions) {
-                final cardTransactions = allTransactions.where((t) => 
-                  t.creditCardId == widget.card.id && 
-                  !t.isFixed &&
-                  t.date.month == _selectedMonth &&
-                  t.date.year == _selectedYear
-                ).toList();
+                final cardTransactions = allTransactions
+                    .where(
+                      (t) =>
+                          t.creditCardId == widget.card.id &&
+                          !t.isFixed &&
+                          t.date.month == _selectedMonth &&
+                          t.date.year == _selectedYear,
+                    )
+                    .toList();
                 cardTransactions.sort((a, b) => b.date.compareTo(a.date));
 
                 if (cardTransactions.isEmpty) {
@@ -333,20 +473,39 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
                           Container(
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                              color: isDark
+                                  ? const Color(0xFF1E293B)
+                                  : const Color(0xFFF1F5F9),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(LucideIcons.receipt, size: 48, color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                            child: Icon(
+                              LucideIcons.receipt,
+                              size: 48,
+                              color: isDark
+                                  ? Colors.grey[500]
+                                  : Colors.grey[400],
+                            ),
                           ),
                           const SizedBox(height: 20),
                           Text(
                             loc.get('no_transactions'),
-                            style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 17, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.grey[300]
+                                  : Colors.grey[700],
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: 6),
                           Text(
                             loc.get('recent_activity'),
-                            style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 13),
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.grey[500]
+                                  : Colors.grey[500],
+                              fontSize: 13,
+                            ),
                           ),
                         ],
                       ),
@@ -363,31 +522,51 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
                     final isPayment = t.type == 'cc_payment';
                     final isIncome = t.type == 'income' || isPayment;
                     final categoryLabel = loc.translateCategory(t.category);
-                    
+
                     return Container(
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF1E293B) : Colors.white,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFE2E8F0),
+                        ),
                         boxShadow: [
-                          if (!isDark) BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2))
+                          if (!isDark)
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.03),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
                         ],
                       ),
                       child: Row(
                         children: [
                           Container(
-                            width: 54, height: 54,
+                            width: 54,
+                            height: 54,
                             decoration: BoxDecoration(
-                              color: isIncome 
-                                ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.6) : const Color(0xFFECFDF5))
-                                : (isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.6) : const Color(0xFFFEF2F2)),
+                              color: isIncome
+                                  ? (isDark
+                                        ? const Color(
+                                            0xFF064E3B,
+                                          ).withValues(alpha: 0.6)
+                                        : const Color(0xFFECFDF5))
+                                  : (isDark
+                                        ? const Color(
+                                            0xFF7F1D1D,
+                                          ).withValues(alpha: 0.6)
+                                        : const Color(0xFFFEF2F2)),
                               borderRadius: BorderRadius.circular(18),
                             ),
                             child: Center(
                               child: Text(
-                                isPayment ? '💸' : loc.getCategoryEmoji(t.category),
+                                isPayment
+                                    ? '💸'
+                                    : loc.getCategoryEmoji(t.category),
                                 style: const TextStyle(fontSize: 26),
                               ),
                             ),
@@ -401,28 +580,55 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        categoryLabel, 
-                                        style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16),
+                                        categoryLabel,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: isDark
+                                              ? Colors.white
+                                              : const Color(0xFF0F172A),
+                                          fontSize: 16,
+                                        ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                     if (isPayment)
                                       Container(
                                         margin: const EdgeInsets.only(left: 6),
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(8),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 3,
                                         ),
-                                        child: const Text('Abono', style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
+                                        decoration: BoxDecoration(
+                                          color: const Color(
+                                            0xFF10B981,
+                                          ).withValues(alpha: 0.15),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Abono',
+                                          style: TextStyle(
+                                            color: Color(0xFF10B981),
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                       ),
                                   ],
                                 ),
-                                if (t.description.isNotEmpty && t.description != t.category) ...[
+                                if (t.description.isNotEmpty &&
+                                    t.description != t.category) ...[
                                   const SizedBox(height: 3),
                                   Text(
-                                    t.description, 
-                                    style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13, fontStyle: FontStyle.italic),
+                                    t.description,
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                      fontSize: 13,
+                                      fontStyle: FontStyle.italic,
+                                    ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -430,11 +636,26 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
                                 const SizedBox(height: 6),
                                 Row(
                                   children: [
-                                    Icon(LucideIcons.calendar, size: 12, color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                                    Icon(
+                                      LucideIcons.calendar,
+                                      size: 12,
+                                      color: isDark
+                                          ? Colors.grey[500]
+                                          : Colors.grey[400],
+                                    ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      DateFormat('d MMM yyyy • HH:mm', loc.intlLocale).format(t.date), 
-                                      style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 11, fontWeight: FontWeight.w500),
+                                      DateFormat(
+                                        'd MMM yyyy • HH:mm',
+                                        loc.intlLocale,
+                                      ).format(t.date),
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? Colors.grey[500]
+                                            : Colors.grey[500],
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -448,7 +669,9 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
                               Text(
                                 '${isIncome ? '+' : '-'}${CurrencyFormatter.format(t.amount, currencyCode)}',
                                 style: TextStyle(
-                                  color: isIncome ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                  color: isIncome
+                                      ? const Color(0xFF10B981)
+                                      : const Color(0xFFEF4444),
                                   fontWeight: FontWeight.w900,
                                   fontSize: 16,
                                   letterSpacing: -0.5,
@@ -457,7 +680,13 @@ class _CreditCardHistoryModalState extends ConsumerState<CreditCardHistoryModal>
                               const SizedBox(height: 4),
                               Text(
                                 isIncome ? 'Crédito' : 'Cargo',
-                                style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 10, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.grey[500]
+                                      : Colors.grey[400],
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),

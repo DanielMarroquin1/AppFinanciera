@@ -18,10 +18,12 @@ class InteractiveAiPlanModal extends ConsumerStatefulWidget {
   }
 
   @override
-  ConsumerState<InteractiveAiPlanModal> createState() => _InteractiveAiPlanModalState();
+  ConsumerState<InteractiveAiPlanModal> createState() =>
+      _InteractiveAiPlanModalState();
 }
 
-class _InteractiveAiPlanModalState extends ConsumerState<InteractiveAiPlanModal> {
+class _InteractiveAiPlanModalState
+    extends ConsumerState<InteractiveAiPlanModal> {
   final PageController _pageController = PageController();
   int _currentStep = 0;
   bool _isGenerating = false;
@@ -37,13 +39,17 @@ class _InteractiveAiPlanModalState extends ConsumerState<InteractiveAiPlanModal>
 
   void _nextStep() {
     if (_currentStep == 0) {
-      if (_goalController.text.isEmpty || _amountController.text.isEmpty) return;
+      if (_goalController.text.isEmpty || _amountController.text.isEmpty)
+        return;
       _goalName = _goalController.text;
       _targetAmount = double.tryParse(_amountController.text) ?? 0.0;
     }
 
     if (_currentStep < 2) {
-      _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
       setState(() => _currentStep++);
     } else {
       _generatePlan();
@@ -52,19 +58,23 @@ class _InteractiveAiPlanModalState extends ConsumerState<InteractiveAiPlanModal>
 
   void _previousStep() {
     if (_currentStep > 0) {
-      _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
       setState(() => _currentStep--);
     }
   }
 
   Future<void> _generatePlan() async {
     setState(() => _isGenerating = true);
-    
+
     // Simulate generation for demo, but normally call AI here
     final user = ref.read(authProvider).user;
-    
+
     // Create prompt
-    final prompt = '''
+    final prompt =
+        '''
       Eres un asesor financiero experto. El usuario ${user?.name ?? ''} quiere crear el siguiente plan de ahorro:
       - Meta: $_goalName
       - Monto: $_targetAmount
@@ -78,8 +88,9 @@ class _InteractiveAiPlanModalState extends ConsumerState<InteractiveAiPlanModal>
     // In reality, you'd call ref.read(chatProvider.notifier).sendMessage(prompt) or a direct API.
     // We will just wait a bit and push the result screen.
     await Future.delayed(const Duration(seconds: 3));
-    
-    final mockMarkdown = '''
+
+    final mockMarkdown =
+        '''
 # Plan Financiero: $_goalName
 
 ## 1. Resumen Ejecutivo
@@ -100,7 +111,11 @@ Debes ahorrar aproximadamente un monto especifico cada mes. Ajusta tus gastos in
     setState(() => _isGenerating = false);
     if (mounted) {
       Navigator.pop(context); // close modal
-      AiPlanResultScreen.show(context, planMarkdown: mockMarkdown, goalName: _goalName);
+      AiPlanResultScreen.show(
+        context,
+        planMarkdown: mockMarkdown,
+        goalName: _goalName,
+      );
     }
   }
 
@@ -118,13 +133,24 @@ Debes ahorrar aproximadamente un monto especifico cada mes. Ajusta tus gastos in
         children: [
           const SizedBox(height: 16),
           Container(
-            width: 40, height: 4,
-            decoration: BoxDecoration(color: isDark ? Colors.grey[800] : Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.grey[800] : Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
           const SizedBox(height: 16),
-          Text('Creador de Plan de Ahorro IA', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+          Text(
+            'Creador de Plan de Ahorro IA',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : Colors.black,
+            ),
+          ),
           const SizedBox(height: 24),
-          
+
           // Progress Bar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -135,7 +161,9 @@ Debes ahorrar aproximadamente un monto especifico cada mes. Ajusta tus gastos in
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     height: 4,
                     decoration: BoxDecoration(
-                      color: index <= _currentStep ? Theme.of(context).primaryColor : (isDark ? Colors.grey[800] : Colors.grey[300]),
+                      color: index <= _currentStep
+                          ? Theme.of(context).primaryColor
+                          : (isDark ? Colors.grey[800] : Colors.grey[300]),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -169,12 +197,18 @@ Debes ahorrar aproximadamente un monto especifico cada mes. Ajusta tus gastos in
                       onPressed: _previousStep,
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
-                      child: const Text('Atrás', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Atrás',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
-                if (_currentStep > 0 && !_isGenerating) const SizedBox(width: 16),
+                if (_currentStep > 0 && !_isGenerating)
+                  const SizedBox(width: 16),
                 Expanded(
                   flex: 2,
                   child: ElevatedButton(
@@ -182,16 +216,33 @@ Debes ahorrar aproximadamente un monto especifico cada mes. Ajusta tus gastos in
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       backgroundColor: Theme.of(context).primaryColor,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
-                    child: _isGenerating 
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : Text(_currentStep == 2 ? 'Generar Plan Mágico' : 'Siguiente', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                    child: _isGenerating
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            _currentStep == 2
+                                ? 'Generar Plan Mágico'
+                                : 'Siguiente',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -203,16 +254,26 @@ Debes ahorrar aproximadamente un monto especifico cada mes. Ajusta tus gastos in
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('1. Define tu objetivo', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            '1. Define tu objetivo',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
-          Text('¿Qué quieres lograr y cuánto necesitas?', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
+          Text(
+            '¿Qué quieres lograr y cuánto necesitas?',
+            style: TextStyle(
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+            ),
+          ),
           const SizedBox(height: 32),
-          
+
           TextField(
             controller: _goalController,
             decoration: InputDecoration(
               labelText: 'Nombre de la Meta (ej. Coche nuevo)',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               prefixIcon: const Icon(LucideIcons.target),
             ),
           ),
@@ -222,7 +283,9 @@ Debes ahorrar aproximadamente un monto especifico cada mes. Ajusta tus gastos in
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
               labelText: 'Monto a Ahorrar',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               prefixIcon: const Icon(LucideIcons.dollarSign),
             ),
           ),
@@ -238,19 +301,29 @@ Debes ahorrar aproximadamente un monto especifico cada mes. Ajusta tus gastos in
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('2. Tiempo Estimado', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            '2. Tiempo Estimado',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
-          Text('¿Para cuándo necesitas este dinero?', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
+          Text(
+            '¿Para cuándo necesitas este dinero?',
+            style: TextStyle(
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+            ),
+          ),
           const SizedBox(height: 32),
-          
-          ...options.map((opt) => RadioListTile(
-            title: Text(opt),
-            value: opt,
-            groupValue: _timeframe,
-            onChanged: (v) => setState(() => _timeframe = v.toString()),
-            activeColor: Theme.of(context).primaryColor,
-            contentPadding: EdgeInsets.zero,
-          )),
+
+          ...options.map(
+            (opt) => RadioListTile(
+              title: Text(opt),
+              value: opt,
+              groupValue: _timeframe,
+              onChanged: (v) => setState(() => _timeframe = v.toString()),
+              activeColor: Theme.of(context).primaryColor,
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
         ],
       ),
     );
@@ -258,29 +331,45 @@ Debes ahorrar aproximadamente un monto especifico cada mes. Ajusta tus gastos in
 
   Widget _buildStep3(bool isDark) {
     final options = [
-      {'title': 'Conservador', 'desc': 'Ahorros lentos sin afectar tu estilo de vida'},
+      {
+        'title': 'Conservador',
+        'desc': 'Ahorros lentos sin afectar tu estilo de vida',
+      },
       {'title': 'Moderado', 'desc': 'Recortes de lujos pero sin ser extremo'},
-      {'title': 'Agresivo', 'desc': 'Ahorro masivo recortando todos los gastos no esenciales'},
+      {
+        'title': 'Agresivo',
+        'desc': 'Ahorro masivo recortando todos los gastos no esenciales',
+      },
     ];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('3. Perfil de Ajuste', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            '3. Perfil de Ajuste',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
-          Text('¿Qué tan estrictos pueden ser tus recortes?', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
+          Text(
+            '¿Qué tan estrictos pueden ser tus recortes?',
+            style: TextStyle(
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+            ),
+          ),
           const SizedBox(height: 32),
-          
-          ...options.map((opt) => RadioListTile(
-            title: Text(opt['title']!),
-            subtitle: Text(opt['desc']!),
-            value: opt['title']!,
-            groupValue: _riskProfile,
-            onChanged: (v) => setState(() => _riskProfile = v.toString()),
-            activeColor: Theme.of(context).primaryColor,
-            contentPadding: EdgeInsets.zero,
-          )),
+
+          ...options.map(
+            (opt) => RadioListTile(
+              title: Text(opt['title']!),
+              subtitle: Text(opt['desc']!),
+              value: opt['title']!,
+              groupValue: _riskProfile,
+              onChanged: (v) => setState(() => _riskProfile = v.toString()),
+              activeColor: Theme.of(context).primaryColor,
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
         ],
       ),
     );

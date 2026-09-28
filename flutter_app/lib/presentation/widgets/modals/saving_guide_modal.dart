@@ -18,10 +18,26 @@ class SavingGuideModal extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final tips = [
-      {'icon': '🏦', 'title': 'Regla 50/30/20', 'desc': '50% necesidades, 30% deseos, 20% ahorros.'},
-      {'icon': '🛒', 'title': 'Ahorro Hormiga', 'desc': 'Identifica gastos pequeños diarios que suman mucho al mes.'},
-      {'icon': '🔄', 'title': 'Automatización', 'desc': 'Configura transferencias automáticas a tu cuenta de ahorros.'},
-      {'icon': '📊', 'title': 'Auditoría Mensual', 'desc': 'Revisa tus suscripciones y cancela lo que no usas.'},
+      {
+        'icon': '🏦',
+        'title': 'Regla 50/30/20',
+        'desc': '50% necesidades, 30% deseos, 20% ahorros.',
+      },
+      {
+        'icon': '🛒',
+        'title': 'Ahorro Hormiga',
+        'desc': 'Identifica gastos pequeños diarios que suman mucho al mes.',
+      },
+      {
+        'icon': '🔄',
+        'title': 'Automatización',
+        'desc': 'Configura transferencias automáticas a tu cuenta de ahorros.',
+      },
+      {
+        'icon': '📊',
+        'title': 'Auditoría Mensual',
+        'desc': 'Revisa tus suscripciones y cancela lo que no usas.',
+      },
     ];
 
     return Container(
@@ -34,8 +50,12 @@ class SavingGuideModal extends StatelessWidget {
         children: [
           Container(
             margin: const EdgeInsets.symmetric(vertical: 12),
-            height: 4, width: 40,
-            decoration: BoxDecoration(color: isDark ? Colors.grey[700] : Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+            height: 4,
+            width: 40,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.grey[700] : Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(24),
@@ -47,8 +67,21 @@ class SavingGuideModal extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Guía de Ahorro Inteligente', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
-                      Text('Consejos de expertos financieros', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                      Text(
+                        'Guía de Ahorro Inteligente',
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Consejos de expertos financieros',
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -66,9 +99,15 @@ class SavingGuideModal extends StatelessWidget {
                 return Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF374151).withValues(alpha: 0.5) : const Color(0xFFF9FAFB),
+                    color: isDark
+                        ? const Color(0xFF374151).withValues(alpha: 0.5)
+                        : const Color(0xFFF9FAFB),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
+                    border: Border.all(
+                      color: isDark
+                          ? const Color(0xFF4B5563)
+                          : const Color(0xFFE5E7EB),
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -78,9 +117,23 @@ class SavingGuideModal extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(tip['title']!, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
+                            Text(
+                              tip['title']!,
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             const SizedBox(height: 4),
-                            Text(tip['desc']!, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13)),
+                            Text(
+                              tip['desc']!,
+                              style: TextStyle(
+                                color: isDark
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
+                                fontSize: 13,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -98,11 +151,13 @@ class SavingGuideModal extends StatelessWidget {
                 backgroundColor: const Color(0xFF9333EA),
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: const Text('¡Entendido!'),
             ),
-          )
+          ),
         ],
       ),
     );

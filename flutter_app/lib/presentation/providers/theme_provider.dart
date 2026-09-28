@@ -17,9 +17,12 @@ class ThemeNotifier extends Notifier<ThemeMode> {
   }
 
   Future<void> toggleTheme(BuildContext context) async {
-    final isDark = state == ThemeMode.dark || 
-        (state == ThemeMode.system && View.of(context).platformDispatcher.platformBrightness == Brightness.dark);
-    
+    final isDark =
+        state == ThemeMode.dark ||
+        (state == ThemeMode.system &&
+            View.of(context).platformDispatcher.platformBrightness ==
+                Brightness.dark);
+
     final newMode = isDark ? ThemeMode.light : ThemeMode.dark;
     state = newMode;
     final prefs = ref.read(sharedPreferencesProvider);

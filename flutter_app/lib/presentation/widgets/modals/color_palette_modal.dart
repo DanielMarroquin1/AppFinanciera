@@ -106,7 +106,9 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(28),
+                  ),
                   border: Border(
                     bottom: BorderSide(
                       color: selectedPalette.colors[0].withValues(alpha: 0.2),
@@ -125,17 +127,25 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(colors: selectedPalette.colors),
+                                gradient: LinearGradient(
+                                  colors: selectedPalette.colors,
+                                ),
                                 borderRadius: BorderRadius.circular(14),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: selectedPalette.colors[0].withValues(alpha: 0.4),
+                                    color: selectedPalette.colors[0].withValues(
+                                      alpha: 0.4,
+                                    ),
                                     blurRadius: 10,
                                     offset: const Offset(0, 3),
                                   ),
                                 ],
                               ),
-                              child: const Icon(LucideIcons.palette, color: Colors.white, size: 22),
+                              child: const Icon(
+                                LucideIcons.palette,
+                                color: Colors.white,
+                                size: 22,
+                              ),
                             ),
                             const SizedBox(width: 14),
                             Column(
@@ -144,7 +154,9 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                                 Text(
                                   'Paleta & Apariencia visual 🎨',
                                   style: TextStyle(
-                                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                    color: isDark
+                                        ? Colors.white
+                                        : const Color(0xFF0F172A),
                                     fontSize: 20,
                                     fontWeight: FontWeight.w900,
                                   ),
@@ -153,7 +165,9 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                                 Text(
                                   'Personaliza los colores y gradientes de tu app',
                                   style: TextStyle(
-                                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                    color: isDark
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
                                     fontSize: 13,
                                   ),
                                 ),
@@ -162,7 +176,10 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                           ],
                         ),
                         IconButton(
-                          icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                          icon: Icon(
+                            LucideIcons.x,
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          ),
                           onPressed: () => Navigator.of(context).pop(),
                         ),
                       ],
@@ -170,7 +187,10 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                     if (isPremium) ...[
                       const SizedBox(height: 14),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
@@ -178,7 +198,9 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
+                              color: const Color(
+                                0xFFF59E0B,
+                              ).withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -187,12 +209,20 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(LucideIcons.crown, color: Colors.white, size: 16),
+                            Icon(
+                              LucideIcons.crown,
+                              color: Colors.white,
+                              size: 16,
+                            ),
                             SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 '⭐ MEMBRESÍA PREMIUM ACTIVA: Puedes aplicar todos los temas canjeados',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
                               ),
                             ),
                           ],
@@ -224,20 +254,28 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                          color: isDark
+                              ? const Color(0xFF1E293B)
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(28),
                           border: Border.all(
-                            color: selectedPalette.colors[0].withValues(alpha: 0.4),
+                            color: selectedPalette.colors[0].withValues(
+                              alpha: 0.4,
+                            ),
                             width: 1.5,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: selectedPalette.colors[0].withValues(alpha: 0.15),
+                              color: selectedPalette.colors[0].withValues(
+                                alpha: 0.15,
+                              ),
                               blurRadius: 24,
                               offset: const Offset(0, 10),
                             ),
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                              color: Colors.black.withValues(
+                                alpha: isDark ? 0.2 : 0.05,
+                              ),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -254,48 +292,85 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                                     Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color: selectedPalette.colors[0].withValues(alpha: 0.1),
+                                        color: selectedPalette.colors[0]
+                                            .withValues(alpha: 0.1),
                                         shape: BoxShape.circle,
                                       ),
-                                      child: Text(selectedPalette.icon, style: const TextStyle(fontSize: 20)),
+                                      child: Text(
+                                        selectedPalette.icon,
+                                        style: const TextStyle(fontSize: 20),
+                                      ),
                                     ),
                                     const SizedBox(width: 12),
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           selectedPalette.name,
-                                          style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
+                                          style: TextStyle(
+                                            color: isDark
+                                                ? Colors.white
+                                                : Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
                                         ),
                                         Text(
                                           'Tarjeta Principal',
-                                          style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 11),
+                                          style: TextStyle(
+                                            color: isDark
+                                                ? Colors.grey[400]
+                                                : Colors.grey[500],
+                                            fontSize: 11,
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ],
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(colors: [selectedPalette.colors[0], selectedPalette.colors[1]]),
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        selectedPalette.colors[0],
+                                        selectedPalette.colors[1],
+                                      ],
+                                    ),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
-                                  child: const Text('ESTILO ACTIVO', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900)),
+                                  child: const Text(
+                                    'ESTILO ACTIVO',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 24),
                             Text(
                               'Balance Total Estimado',
-                              style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 13, fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                color: isDark
+                                    ? Colors.grey[400]
+                                    : Colors.grey[500],
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             const SizedBox(height: 6),
                             Text(
                               '\$14,850.00 USD',
                               style: TextStyle(
-                                color: isDark ? Colors.white : Colors.black, 
-                                fontSize: 32, 
+                                color: isDark ? Colors.white : Colors.black,
+                                fontSize: 32,
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: -1.0,
                               ),
@@ -305,16 +380,34 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                               children: [
                                 Expanded(
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
                                     decoration: BoxDecoration(
-                                      gradient: LinearGradient(colors: [selectedPalette.colors[0], selectedPalette.colors[1]]),
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          selectedPalette.colors[0],
+                                          selectedPalette.colors[1],
+                                        ],
+                                      ),
                                       borderRadius: BorderRadius.circular(16),
-                                      boxShadow: [BoxShadow(color: selectedPalette.colors[0].withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: selectedPalette.colors[0]
+                                              .withValues(alpha: 0.3),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
                                     ),
                                     child: const Center(
                                       child: Text(
                                         '+ Agregar Ingreso',
-                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -322,16 +415,30 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                                      color: isDark
+                                          ? const Color(0xFF334155)
+                                          : const Color(0xFFF1F5F9),
                                       borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: isDark ? const Color(0xFF475569) : const Color(0xFFE2E8F0)),
+                                      border: Border.all(
+                                        color: isDark
+                                            ? const Color(0xFF475569)
+                                            : const Color(0xFFE2E8F0),
+                                      ),
                                     ),
                                     child: Center(
                                       child: Text(
                                         '- Registrar Gasto',
-                                        style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 13),
+                                        style: TextStyle(
+                                          color: isDark
+                                              ? Colors.white
+                                              : Colors.black87,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -342,8 +449,24 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Presupuesto por categoría', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w600)),
-                                Text('75%', style: TextStyle(color: selectedPalette.colors[0], fontWeight: FontWeight.bold, fontSize: 13)),
+                                Text(
+                                  'Presupuesto por categoría',
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  '75%',
+                                  style: TextStyle(
+                                    color: selectedPalette.colors[0],
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 8),
@@ -351,16 +474,33 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                               children: [
                                 Container(
                                   height: 8,
-                                  decoration: BoxDecoration(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(4)),
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? const Color(0xFF334155)
+                                        : const Color(0xFFE2E8F0),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
                                 ),
                                 FractionallySizedBox(
                                   widthFactor: 0.75,
                                   child: Container(
                                     height: 8,
                                     decoration: BoxDecoration(
-                                      gradient: LinearGradient(colors: [selectedPalette.colors[0], selectedPalette.colors[1]]),
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          selectedPalette.colors[0],
+                                          selectedPalette.colors[1],
+                                        ],
+                                      ),
                                       borderRadius: BorderRadius.circular(4),
-                                      boxShadow: [BoxShadow(color: selectedPalette.colors[0].withValues(alpha: 0.4), blurRadius: 6, offset: const Offset(0, 2))],
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: selectedPalette.colors[0]
+                                              .withValues(alpha: 0.4),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -384,7 +524,8 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                       // PALETTES GRID
                       ...presetPalettes.map((palette) {
                         final unlocked = isUnlocked(palette);
-                        final isSelectedPreview = selectedPaletteId == palette.id;
+                        final isSelectedPreview =
+                            selectedPaletteId == palette.id;
                         final isEquipped = currentPalette.id == palette.id;
                         final cost = _getCostForPalette(palette.id);
 
@@ -398,23 +539,39 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: !unlocked
-                                  ? (isDark ? const Color(0xFF090D16) : const Color(0xFFE2E8F0))
+                                  ? (isDark
+                                        ? const Color(0xFF090D16)
+                                        : const Color(0xFFE2E8F0))
                                   : isSelectedPreview
-                                      ? (isDark ? palette.colors[0].withValues(alpha: 0.15) : palette.colors[0].withValues(alpha: 0.08))
-                                      : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC)),
+                                  ? (isDark
+                                        ? palette.colors[0].withValues(
+                                            alpha: 0.15,
+                                          )
+                                        : palette.colors[0].withValues(
+                                            alpha: 0.08,
+                                          ))
+                                  : (isDark
+                                        ? const Color(0xFF1E293B)
+                                        : const Color(0xFFF8FAFC)),
                               borderRadius: BorderRadius.circular(18),
                               border: Border.all(
                                 color: !unlocked
-                                    ? (isDark ? const Color(0xFF1E293B) : const Color(0xFFCBD5E1))
+                                    ? (isDark
+                                          ? const Color(0xFF1E293B)
+                                          : const Color(0xFFCBD5E1))
                                     : isSelectedPreview
-                                        ? palette.colors[0]
-                                        : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                                    ? palette.colors[0]
+                                    : (isDark
+                                          ? const Color(0xFF334155)
+                                          : const Color(0xFFE2E8F0)),
                                 width: isSelectedPreview ? 2.2 : 1.2,
                               ),
                               boxShadow: isSelectedPreview
                                   ? [
                                       BoxShadow(
-                                        color: palette.colors[0].withValues(alpha: 0.15),
+                                        color: palette.colors[0].withValues(
+                                          alpha: 0.15,
+                                        ),
                                         blurRadius: 10,
                                         offset: const Offset(0, 3),
                                       ),
@@ -424,25 +581,39 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                             child: Column(
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Row(
                                       children: [
-                                        Text(palette.icon, style: const TextStyle(fontSize: 22)),
+                                        Text(
+                                          palette.icon,
+                                          style: const TextStyle(fontSize: 22),
+                                        ),
                                         const SizedBox(width: 10),
                                         Text(
                                           palette.name,
                                           style: TextStyle(
                                             color: !unlocked
-                                                ? (isDark ? Colors.grey[500] : Colors.grey[600])
-                                                : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                                                ? (isDark
+                                                      ? Colors.grey[500]
+                                                      : Colors.grey[600])
+                                                : (isDark
+                                                      ? Colors.white
+                                                      : const Color(
+                                                          0xFF0F172A,
+                                                        )),
                                             fontWeight: FontWeight.bold,
                                             fontSize: 15,
                                           ),
                                         ),
                                         if (!unlocked) ...[
                                           const SizedBox(width: 6),
-                                          const Icon(LucideIcons.lock, size: 14, color: Color(0xFFF59E0B)),
+                                          const Icon(
+                                            LucideIcons.lock,
+                                            size: 14,
+                                            color: Color(0xFFF59E0B),
+                                          ),
                                         ],
                                       ],
                                     ),
@@ -450,42 +621,94 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                                       children: [
                                         if (isEquipped)
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 4,
+                                            ),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                                              borderRadius: BorderRadius.circular(12),
-                                              border: Border.all(color: const Color(0xFF10B981)),
+                                              color: const Color(
+                                                0xFF10B981,
+                                              ).withValues(alpha: 0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              border: Border.all(
+                                                color: const Color(0xFF10B981),
+                                              ),
                                             ),
                                             child: const Row(
                                               children: [
-                                                Icon(LucideIcons.checkCircle, color: Color(0xFF10B981), size: 13),
+                                                Icon(
+                                                  LucideIcons.checkCircle,
+                                                  color: Color(0xFF10B981),
+                                                  size: 13,
+                                                ),
                                                 SizedBox(width: 4),
-                                                Text('EQUIPADO', style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
+                                                Text(
+                                                  'EQUIPADO',
+                                                  style: TextStyle(
+                                                    color: Color(0xFF10B981),
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
                                               ],
                                             ),
                                           )
                                         else if (unlocked)
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: palette.colors[0].withValues(alpha: 0.15),
-                                              borderRadius: BorderRadius.circular(12),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 4,
                                             ),
-                                            child: Text('DESBLOQUEADO', style: TextStyle(color: palette.colors[0], fontSize: 10, fontWeight: FontWeight.bold)),
+                                            decoration: BoxDecoration(
+                                              color: palette.colors[0]
+                                                  .withValues(alpha: 0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              'DESBLOQUEADO',
+                                              style: TextStyle(
+                                                color: palette.colors[0],
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
                                           )
                                         else
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 4,
+                                            ),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFEF4444).withValues(alpha: 0.12),
-                                              borderRadius: BorderRadius.circular(12),
-                                              border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+                                              color: const Color(
+                                                0xFFEF4444,
+                                              ).withValues(alpha: 0.12),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              border: Border.all(
+                                                color: const Color(
+                                                  0xFFEF4444,
+                                                ).withValues(alpha: 0.4),
+                                              ),
                                             ),
                                             child: Row(
                                               children: [
-                                                const Icon(LucideIcons.lock, size: 12, color: Color(0xFFEF4444)),
+                                                const Icon(
+                                                  LucideIcons.lock,
+                                                  size: 12,
+                                                  color: Color(0xFFEF4444),
+                                                ),
                                                 const SizedBox(width: 4),
-                                                Text('$cost PTS', style: const TextStyle(color: Color(0xFFEF4444), fontSize: 10, fontWeight: FontWeight.bold)),
+                                                Text(
+                                                  '$cost PTS',
+                                                  style: const TextStyle(
+                                                    color: Color(0xFFEF4444),
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -501,17 +724,26 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                                       return Expanded(
                                         child: Container(
                                           height: 36,
-                                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                                          margin: const EdgeInsets.symmetric(
+                                            horizontal: 3,
+                                          ),
                                           decoration: BoxDecoration(
                                             color: c,
-                                            borderRadius: BorderRadius.circular(10),
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
                                             boxShadow: !unlocked
                                                 ? null
                                                 : [
                                                     BoxShadow(
-                                                      color: c.withValues(alpha: 0.35),
+                                                      color: c.withValues(
+                                                        alpha: 0.35,
+                                                      ),
                                                       blurRadius: 6,
-                                                      offset: const Offset(0, 2),
+                                                      offset: const Offset(
+                                                        0,
+                                                        2,
+                                                      ),
                                                     ),
                                                   ],
                                           ),
@@ -523,37 +755,81 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                                 if (!unlocked) ...[
                                   Container(
                                     margin: const EdgeInsets.only(top: 12),
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFF334155),
+                                      color: isDark
+                                          ? const Color(0xFF1E293B)
+                                          : const Color(0xFF334155),
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5)),
+                                      border: Border.all(
+                                        color: const Color(
+                                          0xFFF59E0B,
+                                        ).withValues(alpha: 0.5),
+                                      ),
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(LucideIcons.lock, color: Color(0xFFFBBF24), size: 15),
+                                        const Icon(
+                                          LucideIcons.lock,
+                                          color: Color(0xFFFBBF24),
+                                          size: 15,
+                                        ),
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
                                             'BLOQUEADO • Canjeable por $cost pts en Tienda',
-                                            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800),
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w800,
+                                            ),
                                           ),
                                         ),
                                         GestureDetector(
                                           onTap: () {
                                             Navigator.of(context).pop();
-                                            Future.delayed(const Duration(milliseconds: 100), () {
-                                              RewardsShopModal.show(context);
-                                            });
+                                            Future.delayed(
+                                              const Duration(milliseconds: 100),
+                                              () {
+                                                RewardsShopModal.show(context);
+                                              },
+                                            );
                                           },
                                           child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                            decoration: BoxDecoration(
-                                              gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
-                                              borderRadius: BorderRadius.circular(8),
-                                              boxShadow: [BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.4), blurRadius: 6, offset: const Offset(0, 2))],
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 6,
                                             ),
-                                            child: const Text('Ir a Tienda 🛒', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900)),
+                                            decoration: BoxDecoration(
+                                              gradient: const LinearGradient(
+                                                colors: [
+                                                  Color(0xFFF59E0B),
+                                                  Color(0xFFD97706),
+                                                ],
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: const Color(
+                                                    0xFFF59E0B,
+                                                  ).withValues(alpha: 0.4),
+                                                  blurRadius: 6,
+                                                  offset: const Offset(0, 2),
+                                                ),
+                                              ],
+                                            ),
+                                            child: const Text(
+                                              'Ir a Tienda 🛒',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w900,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -574,11 +850,17 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
-                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+                  color: isDark
+                      ? const Color(0xFF1E293B)
+                      : const Color(0xFFF8FAFC),
+                  borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(28),
+                  ),
                   border: Border(
                     top: BorderSide(
-                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                      color: isDark
+                          ? const Color(0xFF334155)
+                          : const Color(0xFFE2E8F0),
                     ),
                   ),
                 ),
@@ -588,13 +870,22 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                       child: ElevatedButton(
                         onPressed: () => Navigator.of(context).pop(),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                          foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
+                          backgroundColor: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFE2E8F0),
+                          foregroundColor: isDark
+                              ? Colors.white
+                              : const Color(0xFF0F172A),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
-                        child: const Text('Cerrar', style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          'Cerrar',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -604,122 +895,198 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                           ? ElevatedButton(
                               onPressed: null,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                backgroundColor: isDark
+                                    ? const Color(0xFF334155)
+                                    : const Color(0xFFCBD5E1),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
                               ),
-                              child: const Text('Ya está equipada ✔', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+                              child: const Text(
+                                'Ya está equipada ✔',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 15,
+                                ),
+                              ),
                             )
                           : (!isPremium && !isUnlocked(selectedPalette))
-                              ? ElevatedButton.icon(
-                                  onPressed: () {
-                                    _showLockedOptionsDialog(
-                                      context, 
-                                      selectedPalette, 
-                                      _getCostForPalette(selectedPalette.id), 
-                                      isPremium
-                                    );
-                                  },
-                                  icon: const Icon(LucideIcons.lock, color: Colors.white, size: 20),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: selectedPalette.colors[0],
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    elevation: 4,
-                                    shadowColor: selectedPalette.colors[0].withValues(alpha: 0.4),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                  ),
-                                  label: const Text(
-                                    'Desbloquear Paleta 🔒',
-                                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14),
-                                  ),
-                                )
-                              : (!isPremium)
-                                  ? ElevatedButton.icon(
-                                      onPressed: () {
-                                        AdService().showRewardedAd(
-                                          context,
-                                          false,
-                                          onRewardEarned: () async {
-                                            await ref.read(colorPaletteProvider.notifier).setPaletteById(selectedPalette.id);
-                                            if (context.mounted) {
-                                              Navigator.of(context).pop();
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(dismissDirection: DismissDirection.horizontal, content: Row(
-                                                    children: [
-                                                      const Icon(LucideIcons.palette, color: Colors.white, size: 20),
-                                                      const SizedBox(width: 10),
-                                                      Expanded(
-                                                        child: Text(
-                                                          '✨ Paleta "${selectedPalette.name}" aplicada a toda tu aplicación.',
-                                                          style: const TextStyle(fontWeight: FontWeight.bold),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  backgroundColor: selectedPalette.colors[0],
-                                                  behavior: SnackBarBehavior.floating,
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                                  duration: const Duration(seconds: 4),
-                                                ),
-                                              );
-                                            }
-                                          },
-                                        );
-                                      },
-                                      icon: const Icon(LucideIcons.video, color: Colors.white, size: 20),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: selectedPalette.colors[0],
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(vertical: 16),
-                                        elevation: 4,
-                                        shadowColor: selectedPalette.colors[0].withValues(alpha: 0.4),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                      ),
-                                      label: const Text(
-                                        'Ver Anuncio para Equipar',
-                                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
-                                      ),
-                                    )
-                                  : ElevatedButton(
-                                      onPressed: () async {
-                                        await ref.read(colorPaletteProvider.notifier).setPaletteById(selectedPalette.id);
-                                        if (context.mounted) {
-                                          Navigator.of(context).pop();
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(dismissDirection: DismissDirection.horizontal, content: Row(
-                                                children: [
-                                                  const Icon(LucideIcons.palette, color: Colors.white, size: 20),
-                                                  const SizedBox(width: 10),
-                                                  Expanded(
-                                                    child: Text(
-                                                      '✨ Paleta "${selectedPalette.name}" aplicada a toda tu aplicación.',
-                                                      style: const TextStyle(fontWeight: FontWeight.bold),
-                                                    ),
-                                                  ),
-                                                ],
+                          ? ElevatedButton.icon(
+                              onPressed: () {
+                                _showLockedOptionsDialog(
+                                  context,
+                                  selectedPalette,
+                                  _getCostForPalette(selectedPalette.id),
+                                  isPremium,
+                                );
+                              },
+                              icon: const Icon(
+                                LucideIcons.lock,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: selectedPalette.colors[0],
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                elevation: 4,
+                                shadowColor: selectedPalette.colors[0]
+                                    .withValues(alpha: 0.4),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              label: const Text(
+                                'Desbloquear Paleta 🔒',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            )
+                          : (!isPremium)
+                          ? ElevatedButton.icon(
+                              onPressed: () {
+                                AdService().showRewardedAd(
+                                  context,
+                                  false,
+                                  onRewardEarned: () async {
+                                    await ref
+                                        .read(colorPaletteProvider.notifier)
+                                        .setPaletteById(selectedPalette.id);
+                                    if (context.mounted) {
+                                      Navigator.of(context).pop();
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          dismissDirection:
+                                              DismissDirection.horizontal,
+                                          content: Row(
+                                            children: [
+                                              const Icon(
+                                                LucideIcons.palette,
+                                                color: Colors.white,
+                                                size: 20,
                                               ),
-                                              backgroundColor: selectedPalette.colors[0],
-                                              behavior: SnackBarBehavior.floating,
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                                              duration: const Duration(seconds: 4),
+                                              const SizedBox(width: 10),
+                                              Expanded(
+                                                child: Text(
+                                                  '✨ Paleta "${selectedPalette.name}" aplicada a toda tu aplicación.',
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          backgroundColor:
+                                              selectedPalette.colors[0],
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              14,
                                             ),
-                                          );
-                                        }
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: selectedPalette.colors[0],
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(vertical: 16),
-                                        elevation: 4,
-                                        shadowColor: selectedPalette.colors[0].withValues(alpha: 0.4),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                          ),
+                                          duration: const Duration(seconds: 4),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                              icon: const Icon(
+                                LucideIcons.video,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: selectedPalette.colors[0],
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                elevation: 4,
+                                shadowColor: selectedPalette.colors[0]
+                                    .withValues(alpha: 0.4),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              label: const Text(
+                                'Ver Anuncio para Equipar',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            )
+                          : ElevatedButton(
+                              onPressed: () async {
+                                await ref
+                                    .read(colorPaletteProvider.notifier)
+                                    .setPaletteById(selectedPalette.id);
+                                if (context.mounted) {
+                                  Navigator.of(context).pop();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      dismissDirection:
+                                          DismissDirection.horizontal,
+                                      content: Row(
+                                        children: [
+                                          const Icon(
+                                            LucideIcons.palette,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Text(
+                                              '✨ Paleta "${selectedPalette.name}" aplicada a toda tu aplicación.',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      child: const Text(
-                                        'Equipar y Aplicar ✨',
-                                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
+                                      backgroundColor:
+                                          selectedPalette.colors[0],
+                                      behavior: SnackBarBehavior.floating,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
                                       ),
+                                      duration: const Duration(seconds: 4),
                                     ),
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: selectedPalette.colors[0],
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                elevation: 4,
+                                shadowColor: selectedPalette.colors[0]
+                                    .withValues(alpha: 0.4),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: const Text(
+                                'Equipar y Aplicar ✨',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
                     ),
                   ],
                 ),
@@ -731,14 +1098,21 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
     );
   }
 
-  void _showLockedOptionsDialog(BuildContext context, ColorPalette palette, int cost, bool isPremium) {
+  void _showLockedOptionsDialog(
+    BuildContext context,
+    ColorPalette palette,
+    int cost,
+    bool isPremium,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) {
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
         return AlertDialog(
           backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           title: Row(
             children: [
               Text(palette.icon, style: const TextStyle(fontSize: 26)),
@@ -746,19 +1120,32 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
               Expanded(
                 child: Text(
                   'Paleta Bloqueada 🔒',
-                  style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 18),
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
                 ),
               ),
             ],
           ),
           content: Text(
             'La paleta "${palette.name}" está reservada. Puedes canjearla ahora por $cost Pts en la Tienda de Recompensas, o desbloquearla con tu membresía Premium.',
-            style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], height: 1.4, fontSize: 14),
+            style: TextStyle(
+              color: isDark ? Colors.grey[300] : Colors.grey[700],
+              height: 1.4,
+              fontSize: 14,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: Text('Cancelar', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
+              child: Text(
+                'Cancelar',
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                ),
+              ),
             ),
             if (!isPremium)
               TextButton(
@@ -770,7 +1157,11 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                     onRewardEarned: () {
                       setState(() => selectedPaletteId = palette.id);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(dismissDirection: DismissDirection.horizontal, content: const Text('Si ya no quieres ver anuncios, ¡hazte PREMIUM! 👑'),
+                        SnackBar(
+                          dismissDirection: DismissDirection.horizontal,
+                          content: const Text(
+                            'Si ya no quieres ver anuncios, ¡hazte PREMIUM! 👑',
+                          ),
                           backgroundColor: const Color(0xFF7E22CE),
                           action: SnackBarAction(
                             label: 'Ver Planes',
@@ -783,12 +1174,20 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
                     },
                   );
                 },
-                child: const Text('Ver Anuncio', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Ver Anuncio',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(ctx).pop();
-                Navigator.of(context).pop(); // cerramos el modal de paletas y abrimos la tienda
+                Navigator.of(
+                  context,
+                ).pop(); // cerramos el modal de paletas y abrimos la tienda
                 Future.delayed(const Duration(milliseconds: 100), () {
                   if (context.mounted) {
                     RewardsShopModal.show(context);
@@ -798,9 +1197,14 @@ class _ColorPaletteModalState extends ConsumerState<ColorPaletteModal> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: palette.colors[0],
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              child: const Text('Ir a la Tienda 🛒', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Ir a la Tienda 🛒',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         );

@@ -9,7 +9,11 @@ import '../services/market_data_service.dart';
 
 class AIRepositoryImpl implements AIRepository {
   @override
-  Stream<String> sendMessage(String prompt, List<ChatMessage> history, {String? context}) async* {
+  Stream<String> sendMessage(
+    String prompt,
+    List<ChatMessage> history, {
+    String? context,
+  }) async* {
     if (prompt.trim() == 'testkey') {
       yield 'API Key loaded in app is length: ${AIConfig.apiKey.length}, value starts with: ${AIConfig.apiKey.substring(0, 5)}';
       return;
@@ -25,19 +29,20 @@ class AIRepositoryImpl implements AIRepository {
       systemMessage += '\n\n$ragContext';
     }
 
-
-
     if (AIConfig.apiKey.isEmpty || AIConfig.apiKey == 'tu_clave_aqui') {
       // Simulador sin API Key
       final p = prompt.toLowerCase();
-      if (p.contains('opción 1') || p.contains('opcion 1') || p.contains('50/30/20')) {
+      if (p.contains('opción 1') ||
+          p.contains('opcion 1') ||
+          p.contains('50/30/20')) {
         yield '¡Excelente elección! La regla 50/30/20 te ayudará a balancear tus gastos. He creado la meta para ti:';
         yield jsonEncode({
           "___PROPOSAL___": true,
           "name": "Plan 50/30/20",
           "targetAmount": 2000,
           "icon": "⚖️",
-          "description": "El 50% de tus ingresos irá a necesidades, 30% a deseos y 20% a esta meta de ahorro."
+          "description":
+              "El 50% de tus ingresos irá a necesidades, 30% a deseos y 20% a esta meta de ahorro.",
         });
       } else if (p.contains('plan de ahorro') || p.contains('ahorrar')) {
         yield '¡Hola! He analizado tus datos. *(Nota: Modo simulación sin API Key)*.\n\nPara ayudarte a ahorrar, te propongo 3 opciones basadas en tus ingresos y gastos:\n\n1. **Regla 50/30/20**: Un enfoque balanceado. Destinas 20% al ahorro.\n2. **Plan Agresivo**: Ideal para metas a corto plazo. Destinas 40% al ahorro reduciendo lujos.\n3. **Plan Conservador**: Cómodo y seguro. Destinas 10% al ahorro sin afectar tu estilo de vida.\n\n¿Qué opción prefieres que apliquemos?';
@@ -48,91 +53,151 @@ class AIRepositoryImpl implements AIRepository {
     }
 
     // Definir la herramienta para proponer planes de ahorro
-    final proposeSavingsPlanTool = Tool(functionDeclarations: [
-      FunctionDeclaration(
-        'propose_savings_plan',
-        'Propone un plan de ahorro estructurado al usuario basándose en su capacidad financiera.',
-        Schema(
-          SchemaType.object,
-          properties: {
-            'name': Schema(SchemaType.string, description: 'El título de la meta de ahorro (ej. Viaje a Europa, Fondo de Emergencia)'),
-            'target_amount': Schema(SchemaType.number, description: 'El monto total objetivo a ahorrar'),
-            'icon': Schema(SchemaType.string, description: 'Un emoji representativo para la meta de ahorro'),
-            'description': Schema(SchemaType.string, description: 'Breve explicación o consejo de por qué este plan es bueno para el usuario'),
-          },
-          requiredProperties: ['name', 'target_amount', 'icon', 'description'],
+    final proposeSavingsPlanTool = Tool(
+      functionDeclarations: [
+        FunctionDeclaration(
+          'propose_savings_plan',
+          'Propone un plan de ahorro estructurado al usuario basándose en su capacidad financiera.',
+          Schema(
+            SchemaType.object,
+            properties: {
+              'name': Schema(
+                SchemaType.string,
+                description:
+                    'El título de la meta de ahorro (ej. Viaje a Europa, Fondo de Emergencia)',
+              ),
+              'target_amount': Schema(
+                SchemaType.number,
+                description: 'El monto total objetivo a ahorrar',
+              ),
+              'icon': Schema(
+                SchemaType.string,
+                description: 'Un emoji representativo para la meta de ahorro',
+              ),
+              'description': Schema(
+                SchemaType.string,
+                description:
+                    'Breve explicación o consejo de por qué este plan es bueno para el usuario',
+              ),
+            },
+            requiredProperties: [
+              'name',
+              'target_amount',
+              'icon',
+              'description',
+            ],
+          ),
         ),
-      )
-    ]);
+      ],
+    );
 
     // Definir la herramienta para investigar mercado
-    final getStockDataTool = Tool(functionDeclarations: [
-      FunctionDeclaration(
-        'get_stock_data',
-        'Busca los datos de precio de cierre, apertura, volumen, etc. de una acción en tiempo real usando la API de Polygon. Úsalo SIEMPRE que el usuario pregunte por el precio de una empresa o el mercado.',
-        Schema(
-          SchemaType.object,
-          properties: {
-            'ticker': Schema(SchemaType.string, description: 'El código bursátil o ticker de la empresa (ej. AAPL, TSLA, NVDA). Mapea el nombre de la empresa al ticker correcto.'),
-          },
-          requiredProperties: ['ticker'],
+    final getStockDataTool = Tool(
+      functionDeclarations: [
+        FunctionDeclaration(
+          'get_stock_data',
+          'Busca los datos de precio de cierre, apertura, volumen, etc. de una acción en tiempo real usando la API de Polygon. Úsalo SIEMPRE que el usuario pregunte por el precio de una empresa o el mercado.',
+          Schema(
+            SchemaType.object,
+            properties: {
+              'ticker': Schema(
+                SchemaType.string,
+                description:
+                    'El código bursátil o ticker de la empresa (ej. AAPL, TSLA, NVDA). Mapea el nombre de la empresa al ticker correcto.',
+              ),
+            },
+            requiredProperties: ['ticker'],
+          ),
         ),
-      )
-    ]);
+      ],
+    );
 
-    final addTransactionTool = Tool(functionDeclarations: [
-      FunctionDeclaration(
-        'add_transaction',
-        'Registra un nuevo ingreso o gasto en el historial del usuario.',
-        Schema(
-          SchemaType.object,
-          properties: {
-            'amount': Schema(SchemaType.number, description: 'Monto de la transacción en número'),
-            'type': Schema(SchemaType.string, description: 'Tipo de transacción: "income" o "expense"'),
-            'category': Schema(SchemaType.string, description: 'Categoría en inglés: food, transport, bills, shopping, entertainment, health, home, education, other, salary, freelance, investments'),
-            'description': Schema(SchemaType.string, description: 'Breve descripción de la transacción'),
-          },
-          requiredProperties: ['amount', 'type', 'category', 'description'],
+    final addTransactionTool = Tool(
+      functionDeclarations: [
+        FunctionDeclaration(
+          'add_transaction',
+          'Registra un nuevo ingreso o gasto en el historial del usuario.',
+          Schema(
+            SchemaType.object,
+            properties: {
+              'amount': Schema(
+                SchemaType.number,
+                description: 'Monto de la transacción en número',
+              ),
+              'type': Schema(
+                SchemaType.string,
+                description: 'Tipo de transacción: "income" o "expense"',
+              ),
+              'category': Schema(
+                SchemaType.string,
+                description:
+                    'Categoría en inglés: food, transport, bills, shopping, entertainment, health, home, education, other, salary, freelance, investments',
+              ),
+              'description': Schema(
+                SchemaType.string,
+                description: 'Breve descripción de la transacción',
+              ),
+            },
+            requiredProperties: ['amount', 'type', 'category', 'description'],
+          ),
         ),
-      )
-    ]);
+      ],
+    );
 
-    final createSavingsGoalTool = Tool(functionDeclarations: [
-      FunctionDeclaration(
-        'create_savings_goal',
-        'Crea una nueva meta de ahorro en el historial del usuario.',
-        Schema(
-          SchemaType.object,
-          properties: {
-            'name': Schema(SchemaType.string, description: 'Nombre o título de la meta de ahorro'),
-            'target_amount': Schema(SchemaType.number, description: 'Monto total objetivo a ahorrar'),
-            'icon': Schema(SchemaType.string, description: 'Emoji para la meta (ej. 🚗, ✈️, 🏡, 🎓)'),
-          },
-          requiredProperties: ['name', 'target_amount', 'icon'],
+    final createSavingsGoalTool = Tool(
+      functionDeclarations: [
+        FunctionDeclaration(
+          'create_savings_goal',
+          'Crea una nueva meta de ahorro en el historial del usuario.',
+          Schema(
+            SchemaType.object,
+            properties: {
+              'name': Schema(
+                SchemaType.string,
+                description: 'Nombre o título de la meta de ahorro',
+              ),
+              'target_amount': Schema(
+                SchemaType.number,
+                description: 'Monto total objetivo a ahorrar',
+              ),
+              'icon': Schema(
+                SchemaType.string,
+                description: 'Emoji para la meta (ej. 🚗, ✈️, 🏡, 🎓)',
+              ),
+            },
+            requiredProperties: ['name', 'target_amount', 'icon'],
+          ),
         ),
-      )
-    ]);
+      ],
+    );
 
-    print('[AIRepo] Initializing Gemini Model with API Key: "${AIConfig.apiKey}"');
+    print(
+      '[AIRepo] Initializing Gemini Model with API Key: "${AIConfig.apiKey}"',
+    );
     final model = GenerativeModel(
       model: AIConfig.modelName,
       apiKey: AIConfig.apiKey,
       systemInstruction: Content.system(systemMessage),
-      tools: [proposeSavingsPlanTool, getStockDataTool, addTransactionTool, createSavingsGoalTool],
+      tools: [
+        proposeSavingsPlanTool,
+        getStockDataTool,
+        addTransactionTool,
+        createSavingsGoalTool,
+      ],
     );
 
     final chatHistory = history.map((msg) {
-      return Content(
-        msg.role == MessageRole.user ? 'user' : 'model',
-        [TextPart(msg.text)],
-      );
+      return Content(msg.role == MessageRole.user ? 'user' : 'model', [
+        TextPart(msg.text),
+      ]);
     }).toList();
 
     final chat = model.startChat(history: chatHistory);
 
     try {
       print('[AIRepo] Sending message to Gemini...');
-      final response = await chat.sendMessage(Content.text(prompt))
+      final response = await chat
+          .sendMessage(Content.text(prompt))
           .timeout(
             Duration(seconds: AIConfig.apiTimeoutSeconds),
             onTimeout: () => throw TimeoutException(
@@ -143,14 +208,18 @@ class AIRepositoryImpl implements AIRepository {
       // Bucle para manejar llamadas a funciones
       var functionCalls = response.functionCalls;
       var currentResponse = response;
-      
+
       final initialText = currentResponse.text ?? '(function call, no text)';
-      print('[AIRepo] Initial response - functionCalls: ${functionCalls.length}, text: ${initialText.substring(0, initialText.length > 100 ? 100 : initialText.length)}');
-      
+      print(
+        '[AIRepo] Initial response - functionCalls: ${functionCalls.length}, text: ${initialText.substring(0, initialText.length > 100 ? 100 : initialText.length)}',
+      );
+
       while (functionCalls.isNotEmpty) {
         final call = functionCalls.first;
-        print('[AIRepo] Function call detected: ${call.name} with args: ${call.args}');
-        
+        print(
+          '[AIRepo] Function call detected: ${call.name} with args: ${call.args}',
+        );
+
         if (call.name == 'propose_savings_plan') {
           // Devolver el payload codificado para que el Provider lo identifique
           final payload = {
@@ -184,24 +253,30 @@ class AIRepositoryImpl implements AIRepository {
         } else if (call.name == 'get_stock_data') {
           // Ejecutamos la consulta real
           final ticker = call.args['ticker'] as String? ?? 'SPY';
-          print('[AIRepo] Calling MarketDataService.getStockData("$ticker")...');
+          print(
+            '[AIRepo] Calling MarketDataService.getStockData("$ticker")...',
+          );
           final apiResult = await MarketDataService.getStockData(ticker);
           print('[AIRepo] MarketDataService returned: $apiResult');
-          
+
           // Enviamos el resultado de la función de vuelta a Gemini
           currentResponse = await chat.sendMessage(
-            Content.functionResponse('get_stock_data', apiResult)
+            Content.functionResponse('get_stock_data', apiResult),
           );
           functionCalls = currentResponse.functionCalls;
           final afterText = currentResponse.text ?? '(function call, no text)';
-          print('[AIRepo] After functionResponse - more calls: ${functionCalls.length}, text: ${afterText.substring(0, afterText.length > 100 ? 100 : afterText.length)}');
+          print(
+            '[AIRepo] After functionResponse - more calls: ${functionCalls.length}, text: ${afterText.substring(0, afterText.length > 100 ? 100 : afterText.length)}',
+          );
         } else {
           break; // Función no soportada
         }
       }
 
       if (currentResponse.text != null && currentResponse.text!.isNotEmpty) {
-        print('[AIRepo] Final text response length: ${currentResponse.text!.length}');
+        print(
+          '[AIRepo] Final text response length: ${currentResponse.text!.length}',
+        );
         yield currentResponse.text!;
       } else {
         yield 'No pude generar una respuesta. Por favor, intenta de nuevo.';

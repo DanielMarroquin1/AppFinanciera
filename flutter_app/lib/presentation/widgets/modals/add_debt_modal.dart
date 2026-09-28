@@ -562,23 +562,11 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
 
                         if (context.mounted) {
                           Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              dismissDirection: DismissDirection.horizontal,
-                              content: Text(
-                                isEditing
-                                    ? 'Deuda actualizada'
-                                    : 'Deuda creada',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              backgroundColor: const Color(0xFF3B82F6),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
+                          CustomSnackBar.showSuccess(
+                            context,
+                            isEditing
+                                ? 'Deuda actualizada'
+                                : 'Deuda creada exitosamente',
                           );
                         }
                       },

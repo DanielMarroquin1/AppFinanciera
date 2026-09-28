@@ -18,81 +18,531 @@ class FinancialTip {
 }
 
 const List<FinancialTip> kFinancialTips = [
-  FinancialTip(id: 1,  categoria: 'personal', titulo: 'Regla 24 Horas',          consejo: 'Antes de una compra impulsiva, espera 24 horas. Si mañana aún lo quieres, cómpralo.'),
-  FinancialTip(id: 2,  categoria: 'parejas',  titulo: 'Cita Financiera',          consejo: 'Tengan una breve reunión mensual para revisar su dashboard compartido y ajustar metas.'),
-  FinancialTip(id: 3,  categoria: 'ahorro',   titulo: 'Pequeñas Gotas',           consejo: 'Ahorrar 5 dólares a la semana es mejor que no ahorrar nada. La constancia vence a la cantidad.'),
-  FinancialTip(id: 4,  categoria: 'personal', titulo: 'Gasto Hormiga',            consejo: 'Ese café diario suma más de lo que crees. Calcula cuánto gastas en él al mes.'),
-  FinancialTip(id: 5,  categoria: 'parejas',  titulo: 'Metas Comunes',            consejo: 'Definan un objetivo grande juntos (viaje, casa) para mantener la motivación en el ahorro duo.'),
-  FinancialTip(id: 6,  categoria: 'ahorro',   titulo: 'Págate a ti primero',      consejo: 'En cuanto recibas tu ingreso, separa un porcentaje para ahorro antes de empezar a gastar.'),
-  FinancialTip(id: 7,  categoria: 'personal', titulo: 'Suscripciones',            consejo: 'Revisa tus suscripciones mensuales. Cancela las que no hayas usado en los últimos 30 días.'),
-  FinancialTip(id: 8,  categoria: 'parejas',  titulo: 'Sinceridad Ante Todo',     consejo: 'La honestidad financiera es la base de la confianza en la pareja. Registren todos los gastos compartidos.'),
-  FinancialTip(id: 9,  categoria: 'ahorro',   titulo: 'Fondo de Emergencia',      consejo: 'Tu primera meta debe ser ahorrar al menos un mes de tus gastos básicos para imprevistos.'),
-  FinancialTip(id: 10, categoria: 'personal', titulo: 'Lista de Compras',         consejo: 'Nunca vayas al supermercado con hambre o sin lista; gastarás un 20% más por impulso.'),
-  FinancialTip(id: 11, categoria: 'parejas',  titulo: 'Gastos Individuales',      consejo: 'Es sano que cada uno tenga un pequeño presupuesto personal \'libre\' dentro de la economía duo.'),
-  FinancialTip(id: 12, categoria: 'ahorro',   titulo: 'Día de Cero Gastos',       consejo: 'Reta al menos un día a la semana a no gastar absolutamente nada fuera de lo esencial.'),
-  FinancialTip(id: 13, categoria: 'personal', titulo: 'Calidad vs Precio',        consejo: 'A veces lo barato sale caro. Invierte en cosas que duren más tiempo para ahorrar a largo plazo.'),
-  FinancialTip(id: 14, categoria: 'parejas',  titulo: 'Fondo Común',              consejo: 'Aporten al fondo compartido proporcionalmente a sus ingresos para que sea un trato justo.'),
-  FinancialTip(id: 15, categoria: 'ahorro',   titulo: 'Regla 50/30/20',           consejo: 'Intenta destinar 50% a necesidades, 30% a deseos y 20% directamente a tus ahorros.'),
-  FinancialTip(id: 16, categoria: 'personal', titulo: 'Evita Deudas',             consejo: 'Si no puedes pagarlo en efectivo hoy, probablemente no puedas permitírtelo todavía.'),
-  FinancialTip(id: 17, categoria: 'parejas',  titulo: 'Celebración',              consejo: 'Cuando alcancen una meta de ahorro en pareja, celebren con algo sencillo para reforzar el hábito.'),
-  FinancialTip(id: 18, categoria: 'ahorro',   titulo: 'Servicios Públicos',       consejo: 'Apagar luces y desconectar aparatos puede ahorrarte un buen porcentaje en tu factura mensual.'),
-  FinancialTip(id: 19, categoria: 'personal', titulo: 'Inflación de Estilo',      consejo: 'Si tus ingresos suben, no subas tus gastos de inmediato. Aumenta tu capacidad de ahorro.'),
-  FinancialTip(id: 20, categoria: 'parejas',  titulo: 'Transparencia',            consejo: 'Usen las categorías de la app para que ambos entiendan en qué se está yendo el dinero del dúo.'),
-  FinancialTip(id: 21, categoria: 'ahorro',   titulo: 'Marcas Blancas',           consejo: 'Prueba productos genéricos o de marca propia del súper; la calidad suele ser igual por menor precio.'),
-  FinancialTip(id: 22, categoria: 'personal', titulo: 'Educa tu Mente',           consejo: 'Dedica 15 minutos a la semana a leer sobre finanzas personales o inversiones.'),
-  FinancialTip(id: 23, categoria: 'parejas',  titulo: 'Plan de Comida',           consejo: 'Planear el menú semanal en pareja reduce drásticamente el gasto en comida rápida y domicilio.'),
-  FinancialTip(id: 24, categoria: 'ahorro',   titulo: 'Vende lo que no usas',     consejo: 'Si algo lleva un año guardado, véndelo. Es dinero estancado que podrías estar ahorrando.'),
-  FinancialTip(id: 25, categoria: 'personal', titulo: 'Efectivo vs Tarjeta',      consejo: 'Si te cuesta controlarte, intenta usar efectivo para tus gastos variables; duele más soltar el billete.'),
-  FinancialTip(id: 26, categoria: 'parejas',  titulo: 'Regalos con Tiempo',       consejo: 'Planifiquen los regalos de cumpleaños o navidad con meses de antelación para aprovechar ofertas.'),
-  FinancialTip(id: 27, categoria: 'ahorro',   titulo: 'Interés Compuesto',        consejo: 'Entender cómo el dinero crece con el tiempo es la mejor herramienta para tu futuro.'),
-  FinancialTip(id: 28, categoria: 'personal', titulo: 'Revisión Semanal',         consejo: 'No esperes a fin de mes. Revisa tus gastos cada domingo para ver si vas por buen camino.'),
-  FinancialTip(id: 29, categoria: 'parejas',  titulo: 'Limites de Gasto',         consejo: 'Pongan un límite de gasto por el cual deben consultarse antes de realizar la compra.'),
-  FinancialTip(id: 30, categoria: 'ahorro',   titulo: 'Repara antes de Comprar',  consejo: 'Antes de tirar algo roto, mira si tiene arreglo. Reparar suele ser mucho más barato que reemplazar.'),
-  FinancialTip(id: 31, categoria: 'personal', titulo: 'Presupuesto Base Cero',    consejo: 'Dale un trabajo a cada centavo que ganes antes de que el mes comience.'),
-  FinancialTip(id: 32, categoria: 'parejas',  titulo: 'Fondo de Citas',           consejo: 'Tengan un pequeño presupuesto mensual exclusivo para salir y fortalecer su relación.'),
-  FinancialTip(id: 33, categoria: 'ahorro',   titulo: 'Agua en Casa',             consejo: 'Llevar tu propia botella de agua te ahorra mucho dinero al mes y ayudas al medio ambiente.'),
-  FinancialTip(id: 34, categoria: 'personal', titulo: 'Analiza tus Errores',      consejo: 'Si un mes te excedes, no te castigues. Analiza por qué pasó y ajusta el siguiente mes.'),
-  FinancialTip(id: 35, categoria: 'parejas',  titulo: 'Tareas Divididas',         consejo: 'Dividan quién revisa qué facturas para que ambos estén involucrados en la administración.'),
-  FinancialTip(id: 36, categoria: 'ahorro',   titulo: 'Coche vs Caminar',         consejo: 'Si el trayecto es corto, camina. Ahorras gasolina, mantenimiento y ganas salud.'),
-  FinancialTip(id: 37, categoria: 'personal', titulo: 'Objetivos Visuales',       consejo: 'Pon una foto de lo que quieres lograr cerca de tu billetera o como fondo de pantalla.'),
-  FinancialTip(id: 38, categoria: 'parejas',  titulo: 'Ahorro Automático',        consejo: 'Programen una transferencia automática a su cuenta de ahorro duo el día que cobran.'),
-  FinancialTip(id: 39, categoria: 'ahorro',   titulo: 'Comparar Precios',         consejo: 'Antes de una compra grande, revisa al menos tres opciones o tiendas diferentes.'),
-  FinancialTip(id: 40, categoria: 'personal', titulo: 'Seguros',                  consejo: 'Tener un buen seguro no es un gasto, es una protección para tu ahorro ante una catástrofe.'),
-  FinancialTip(id: 41, categoria: 'parejas',  titulo: 'Sin Culpa',                consejo: 'Si la pareja se equivoca con un gasto, hablen de cómo evitarlo en lugar de buscar culpables.'),
-  FinancialTip(id: 42, categoria: 'ahorro',   titulo: 'Luz Natural',              consejo: 'Aprovecha la luz del sol lo más posible para reducir el consumo eléctrico en casa.'),
-  FinancialTip(id: 43, categoria: 'personal', titulo: 'Ingresos Extras',          consejo: 'Si recibes un bono o regalo, destina al menos el 50% de eso directamente a tus ahorros.'),
-  FinancialTip(id: 44, categoria: 'parejas',  titulo: 'Diversión Low-Cost',       consejo: 'Busquen actividades gratuitas en su ciudad; no siempre hay que gastar para pasarla bien.'),
-  FinancialTip(id: 45, categoria: 'ahorro',   titulo: 'Cocina en Lote',           consejo: 'Cocinar grandes cantidades evita que pidas comida por cansancio entre semana.'),
-  FinancialTip(id: 46, categoria: 'personal', titulo: 'Cero Comisiones',          consejo: 'Asegúrate de que tus cuentas bancarias no te cobren comisiones por manejo o retiros.'),
-  FinancialTip(id: 47, categoria: 'parejas',  titulo: 'Sincronización',           consejo: 'Anoten el gasto en la app en el momento que sucede para que el dashboard sea real.'),
-  FinancialTip(id: 48, categoria: 'ahorro',   titulo: 'Biblioteca',               consejo: 'Antes de comprar un libro, mira si está en una biblioteca o si alguien te lo puede prestar.'),
-  FinancialTip(id: 49, categoria: 'personal', titulo: 'Mantén la Calma',          consejo: 'Las inversiones a largo plazo requieren paciencia. No tomes decisiones financieras por pánico.'),
-  FinancialTip(id: 50, categoria: 'ahorro',   titulo: 'Mentalidad de Abundancia', consejo: '¡Ahorrar no es limitarse, es liberarse de preocupaciones futuras! ¡Sigue adelante!'),
-  FinancialTip(id: 51, categoria: 'personal', titulo: 'Paga tus deudas', consejo: 'Prioriza las deudas con mayor tasa de interés para liberar tu flujo de caja mensual.'),
-  FinancialTip(id: 52, categoria: 'parejas',  titulo: 'Ahorro Conjunto', consejo: 'Establezcan una meta mutua y aporten proporcionalmente según sus ingresos.'),
-  FinancialTip(id: 53, categoria: 'ahorro',   titulo: 'Menos Suscripciones', consejo: 'Revisa tus suscripciones mensuales; cancela las que no has usado en el último mes.'),
-  FinancialTip(id: 54, categoria: 'personal', titulo: 'Fondo de Emergencia', consejo: 'El objetivo es tener de 3 a 6 meses de gastos fijos ahorrados solo para imprevistos.'),
-  FinancialTip(id: 55, categoria: 'parejas',  titulo: 'Comunicación', consejo: 'La honestidad financiera en pareja previene sorpresas y fortalece la confianza mutua.'),
-  FinancialTip(id: 56, categoria: 'ahorro',   titulo: 'Regla del 50/30/20', consejo: '50% necesidades, 30% deseos, 20% ahorro e inversión. Una guía básica y efectiva.'),
-  FinancialTip(id: 57, categoria: 'personal', titulo: 'Automatiza', consejo: 'Automatiza tus transferencias a ahorros para no tener que decidir hacerlo cada mes.'),
-  FinancialTip(id: 58, categoria: 'parejas',  titulo: 'Planifica Viajes', consejo: 'Un viaje en pareja planeado con anticipación evita endeudarse con tarjetas de crédito.'),
-  FinancialTip(id: 59, categoria: 'ahorro',   titulo: 'Evita compras impulsivas', consejo: 'Espera 24 horas antes de comprar algo no esencial. Muchas veces la urgencia desaparece.'),
-  FinancialTip(id: 60, categoria: 'personal', titulo: 'Diversifica', consejo: 'No pongas todos los huevos en una sola canasta. Busca diferentes fuentes de ingresos.'),
-  FinancialTip(id: 61, categoria: 'parejas',  titulo: 'Asignaciones Mensuales', consejo: 'Ambos deberían tener dinero libre para gastar sin rendir cuentas al otro.'),
-  FinancialTip(id: 62, categoria: 'ahorro',   titulo: 'Marcas Blancas', consejo: 'El supermercado tiene marcas propias que son de igual calidad y mucho más económicas.'),
-  FinancialTip(id: 63, categoria: 'personal', titulo: 'Invierte en ti', consejo: 'Tu mejor activo eres tú. Invierte en cursos y educación para aumentar tus ingresos.'),
-  FinancialTip(id: 64, categoria: 'parejas',  titulo: 'Reunión Financiera', consejo: 'Tengan una cena mensual para revisar números, metas y felicitaciones por los logros.'),
-  FinancialTip(id: 65, categoria: 'ahorro',   titulo: 'Ahorra en Energía', consejo: 'Usa focos LED y apaga equipos electrónicos que no uses; notarás la diferencia en tu recibo.'),
-  FinancialTip(id: 66, categoria: 'personal', titulo: 'Ignora las Apariencias', consejo: 'No te endeudes para impresionar a personas que no importan con dinero que no tienes.'),
-  FinancialTip(id: 67, categoria: 'parejas',  titulo: 'Visión Compartida', consejo: 'Hagan un tablero de visión financiero; ver juntos el futuro motiva el ahorro del presente.'),
-  FinancialTip(id: 68, categoria: 'ahorro',   titulo: 'Lista de Compras', consejo: 'Nunca vayas al súper con hambre ni sin una lista; terminarás comprando de más.'),
-  FinancialTip(id: 69, categoria: 'personal', titulo: 'Paga de Contado', consejo: 'Evita los pagos a cuotas para bienes de consumo que pierden valor rápidamente.'),
-  FinancialTip(id: 70, categoria: 'parejas',  titulo: 'Dividir Gastos', consejo: 'Si ganan diferente, dividan los gastos de forma porcentual, no en partes iguales.'),
-  FinancialTip(id: 71, categoria: 'ahorro',   titulo: 'Negocia Servicios', consejo: 'Llama a tus proveedores de internet o seguro y pide descuentos o mejoras en tu plan.'),
-  FinancialTip(id: 72, categoria: 'personal', titulo: 'Descuentos', consejo: 'Usa cupones o aplicaciones de cashback para recuperar un porcentaje de tus gastos diarios.'),
-  FinancialTip(id: 73, categoria: 'parejas',  titulo: 'Prioridad de Pagos', consejo: 'Si tienen deudas compartidas, ataquen primero la que tiene la tasa de interés más alta.'),
-  FinancialTip(id: 74, categoria: 'ahorro',   titulo: 'Ropa Inteligente', consejo: 'Compra ropa básica y de calidad; dura más tiempo y nunca pasa de moda.'),
-  FinancialTip(id: 75, categoria: 'personal', titulo: 'Visualiza el Retiro', consejo: 'Entre más joven empieces a aportar para tu jubilación, menor será el esfuerzo mensual.'),
+  FinancialTip(
+    id: 1,
+    categoria: 'personal',
+    titulo: 'Regla 24 Horas',
+    consejo:
+        'Antes de una compra impulsiva, espera 24 horas. Si mañana aún lo quieres, cómpralo.',
+  ),
+  FinancialTip(
+    id: 2,
+    categoria: 'parejas',
+    titulo: 'Cita Financiera',
+    consejo:
+        'Tengan una breve reunión mensual para revisar su dashboard compartido y ajustar metas.',
+  ),
+  FinancialTip(
+    id: 3,
+    categoria: 'ahorro',
+    titulo: 'Pequeñas Gotas',
+    consejo:
+        'Ahorrar 5 dólares a la semana es mejor que no ahorrar nada. La constancia vence a la cantidad.',
+  ),
+  FinancialTip(
+    id: 4,
+    categoria: 'personal',
+    titulo: 'Gasto Hormiga',
+    consejo:
+        'Ese café diario suma más de lo que crees. Calcula cuánto gastas en él al mes.',
+  ),
+  FinancialTip(
+    id: 5,
+    categoria: 'parejas',
+    titulo: 'Metas Comunes',
+    consejo:
+        'Definan un objetivo grande juntos (viaje, casa) para mantener la motivación en el ahorro duo.',
+  ),
+  FinancialTip(
+    id: 6,
+    categoria: 'ahorro',
+    titulo: 'Págate a ti primero',
+    consejo:
+        'En cuanto recibas tu ingreso, separa un porcentaje para ahorro antes de empezar a gastar.',
+  ),
+  FinancialTip(
+    id: 7,
+    categoria: 'personal',
+    titulo: 'Suscripciones',
+    consejo:
+        'Revisa tus suscripciones mensuales. Cancela las que no hayas usado en los últimos 30 días.',
+  ),
+  FinancialTip(
+    id: 8,
+    categoria: 'parejas',
+    titulo: 'Sinceridad Ante Todo',
+    consejo:
+        'La honestidad financiera es la base de la confianza en la pareja. Registren todos los gastos compartidos.',
+  ),
+  FinancialTip(
+    id: 9,
+    categoria: 'ahorro',
+    titulo: 'Fondo de Emergencia',
+    consejo:
+        'Tu primera meta debe ser ahorrar al menos un mes de tus gastos básicos para imprevistos.',
+  ),
+  FinancialTip(
+    id: 10,
+    categoria: 'personal',
+    titulo: 'Lista de Compras',
+    consejo:
+        'Nunca vayas al supermercado con hambre o sin lista; gastarás un 20% más por impulso.',
+  ),
+  FinancialTip(
+    id: 11,
+    categoria: 'parejas',
+    titulo: 'Gastos Individuales',
+    consejo:
+        'Es sano que cada uno tenga un pequeño presupuesto personal \'libre\' dentro de la economía duo.',
+  ),
+  FinancialTip(
+    id: 12,
+    categoria: 'ahorro',
+    titulo: 'Día de Cero Gastos',
+    consejo:
+        'Reta al menos un día a la semana a no gastar absolutamente nada fuera de lo esencial.',
+  ),
+  FinancialTip(
+    id: 13,
+    categoria: 'personal',
+    titulo: 'Calidad vs Precio',
+    consejo:
+        'A veces lo barato sale caro. Invierte en cosas que duren más tiempo para ahorrar a largo plazo.',
+  ),
+  FinancialTip(
+    id: 14,
+    categoria: 'parejas',
+    titulo: 'Fondo Común',
+    consejo:
+        'Aporten al fondo compartido proporcionalmente a sus ingresos para que sea un trato justo.',
+  ),
+  FinancialTip(
+    id: 15,
+    categoria: 'ahorro',
+    titulo: 'Regla 50/30/20',
+    consejo:
+        'Intenta destinar 50% a necesidades, 30% a deseos y 20% directamente a tus ahorros.',
+  ),
+  FinancialTip(
+    id: 16,
+    categoria: 'personal',
+    titulo: 'Evita Deudas',
+    consejo:
+        'Si no puedes pagarlo en efectivo hoy, probablemente no puedas permitírtelo todavía.',
+  ),
+  FinancialTip(
+    id: 17,
+    categoria: 'parejas',
+    titulo: 'Celebración',
+    consejo:
+        'Cuando alcancen una meta de ahorro en pareja, celebren con algo sencillo para reforzar el hábito.',
+  ),
+  FinancialTip(
+    id: 18,
+    categoria: 'ahorro',
+    titulo: 'Servicios Públicos',
+    consejo:
+        'Apagar luces y desconectar aparatos puede ahorrarte un buen porcentaje en tu factura mensual.',
+  ),
+  FinancialTip(
+    id: 19,
+    categoria: 'personal',
+    titulo: 'Inflación de Estilo',
+    consejo:
+        'Si tus ingresos suben, no subas tus gastos de inmediato. Aumenta tu capacidad de ahorro.',
+  ),
+  FinancialTip(
+    id: 20,
+    categoria: 'parejas',
+    titulo: 'Transparencia',
+    consejo:
+        'Usen las categorías de la app para que ambos entiendan en qué se está yendo el dinero del dúo.',
+  ),
+  FinancialTip(
+    id: 21,
+    categoria: 'ahorro',
+    titulo: 'Marcas Blancas',
+    consejo:
+        'Prueba productos genéricos o de marca propia del súper; la calidad suele ser igual por menor precio.',
+  ),
+  FinancialTip(
+    id: 22,
+    categoria: 'personal',
+    titulo: 'Educa tu Mente',
+    consejo:
+        'Dedica 15 minutos a la semana a leer sobre finanzas personales o inversiones.',
+  ),
+  FinancialTip(
+    id: 23,
+    categoria: 'parejas',
+    titulo: 'Plan de Comida',
+    consejo:
+        'Planear el menú semanal en pareja reduce drásticamente el gasto en comida rápida y domicilio.',
+  ),
+  FinancialTip(
+    id: 24,
+    categoria: 'ahorro',
+    titulo: 'Vende lo que no usas',
+    consejo:
+        'Si algo lleva un año guardado, véndelo. Es dinero estancado que podrías estar ahorrando.',
+  ),
+  FinancialTip(
+    id: 25,
+    categoria: 'personal',
+    titulo: 'Efectivo vs Tarjeta',
+    consejo:
+        'Si te cuesta controlarte, intenta usar efectivo para tus gastos variables; duele más soltar el billete.',
+  ),
+  FinancialTip(
+    id: 26,
+    categoria: 'parejas',
+    titulo: 'Regalos con Tiempo',
+    consejo:
+        'Planifiquen los regalos de cumpleaños o navidad con meses de antelación para aprovechar ofertas.',
+  ),
+  FinancialTip(
+    id: 27,
+    categoria: 'ahorro',
+    titulo: 'Interés Compuesto',
+    consejo:
+        'Entender cómo el dinero crece con el tiempo es la mejor herramienta para tu futuro.',
+  ),
+  FinancialTip(
+    id: 28,
+    categoria: 'personal',
+    titulo: 'Revisión Semanal',
+    consejo:
+        'No esperes a fin de mes. Revisa tus gastos cada domingo para ver si vas por buen camino.',
+  ),
+  FinancialTip(
+    id: 29,
+    categoria: 'parejas',
+    titulo: 'Limites de Gasto',
+    consejo:
+        'Pongan un límite de gasto por el cual deben consultarse antes de realizar la compra.',
+  ),
+  FinancialTip(
+    id: 30,
+    categoria: 'ahorro',
+    titulo: 'Repara antes de Comprar',
+    consejo:
+        'Antes de tirar algo roto, mira si tiene arreglo. Reparar suele ser mucho más barato que reemplazar.',
+  ),
+  FinancialTip(
+    id: 31,
+    categoria: 'personal',
+    titulo: 'Presupuesto Base Cero',
+    consejo:
+        'Dale un trabajo a cada centavo que ganes antes de que el mes comience.',
+  ),
+  FinancialTip(
+    id: 32,
+    categoria: 'parejas',
+    titulo: 'Fondo de Citas',
+    consejo:
+        'Tengan un pequeño presupuesto mensual exclusivo para salir y fortalecer su relación.',
+  ),
+  FinancialTip(
+    id: 33,
+    categoria: 'ahorro',
+    titulo: 'Agua en Casa',
+    consejo:
+        'Llevar tu propia botella de agua te ahorra mucho dinero al mes y ayudas al medio ambiente.',
+  ),
+  FinancialTip(
+    id: 34,
+    categoria: 'personal',
+    titulo: 'Analiza tus Errores',
+    consejo:
+        'Si un mes te excedes, no te castigues. Analiza por qué pasó y ajusta el siguiente mes.',
+  ),
+  FinancialTip(
+    id: 35,
+    categoria: 'parejas',
+    titulo: 'Tareas Divididas',
+    consejo:
+        'Dividan quién revisa qué facturas para que ambos estén involucrados en la administración.',
+  ),
+  FinancialTip(
+    id: 36,
+    categoria: 'ahorro',
+    titulo: 'Coche vs Caminar',
+    consejo:
+        'Si el trayecto es corto, camina. Ahorras gasolina, mantenimiento y ganas salud.',
+  ),
+  FinancialTip(
+    id: 37,
+    categoria: 'personal',
+    titulo: 'Objetivos Visuales',
+    consejo:
+        'Pon una foto de lo que quieres lograr cerca de tu billetera o como fondo de pantalla.',
+  ),
+  FinancialTip(
+    id: 38,
+    categoria: 'parejas',
+    titulo: 'Ahorro Automático',
+    consejo:
+        'Programen una transferencia automática a su cuenta de ahorro duo el día que cobran.',
+  ),
+  FinancialTip(
+    id: 39,
+    categoria: 'ahorro',
+    titulo: 'Comparar Precios',
+    consejo:
+        'Antes de una compra grande, revisa al menos tres opciones o tiendas diferentes.',
+  ),
+  FinancialTip(
+    id: 40,
+    categoria: 'personal',
+    titulo: 'Seguros',
+    consejo:
+        'Tener un buen seguro no es un gasto, es una protección para tu ahorro ante una catástrofe.',
+  ),
+  FinancialTip(
+    id: 41,
+    categoria: 'parejas',
+    titulo: 'Sin Culpa',
+    consejo:
+        'Si la pareja se equivoca con un gasto, hablen de cómo evitarlo en lugar de buscar culpables.',
+  ),
+  FinancialTip(
+    id: 42,
+    categoria: 'ahorro',
+    titulo: 'Luz Natural',
+    consejo:
+        'Aprovecha la luz del sol lo más posible para reducir el consumo eléctrico en casa.',
+  ),
+  FinancialTip(
+    id: 43,
+    categoria: 'personal',
+    titulo: 'Ingresos Extras',
+    consejo:
+        'Si recibes un bono o regalo, destina al menos el 50% de eso directamente a tus ahorros.',
+  ),
+  FinancialTip(
+    id: 44,
+    categoria: 'parejas',
+    titulo: 'Diversión Low-Cost',
+    consejo:
+        'Busquen actividades gratuitas en su ciudad; no siempre hay que gastar para pasarla bien.',
+  ),
+  FinancialTip(
+    id: 45,
+    categoria: 'ahorro',
+    titulo: 'Cocina en Lote',
+    consejo:
+        'Cocinar grandes cantidades evita que pidas comida por cansancio entre semana.',
+  ),
+  FinancialTip(
+    id: 46,
+    categoria: 'personal',
+    titulo: 'Cero Comisiones',
+    consejo:
+        'Asegúrate de que tus cuentas bancarias no te cobren comisiones por manejo o retiros.',
+  ),
+  FinancialTip(
+    id: 47,
+    categoria: 'parejas',
+    titulo: 'Sincronización',
+    consejo:
+        'Anoten el gasto en la app en el momento que sucede para que el dashboard sea real.',
+  ),
+  FinancialTip(
+    id: 48,
+    categoria: 'ahorro',
+    titulo: 'Biblioteca',
+    consejo:
+        'Antes de comprar un libro, mira si está en una biblioteca o si alguien te lo puede prestar.',
+  ),
+  FinancialTip(
+    id: 49,
+    categoria: 'personal',
+    titulo: 'Mantén la Calma',
+    consejo:
+        'Las inversiones a largo plazo requieren paciencia. No tomes decisiones financieras por pánico.',
+  ),
+  FinancialTip(
+    id: 50,
+    categoria: 'ahorro',
+    titulo: 'Mentalidad de Abundancia',
+    consejo:
+        '¡Ahorrar no es limitarse, es liberarse de preocupaciones futuras! ¡Sigue adelante!',
+  ),
+  FinancialTip(
+    id: 51,
+    categoria: 'personal',
+    titulo: 'Paga tus deudas',
+    consejo:
+        'Prioriza las deudas con mayor tasa de interés para liberar tu flujo de caja mensual.',
+  ),
+  FinancialTip(
+    id: 52,
+    categoria: 'parejas',
+    titulo: 'Ahorro Conjunto',
+    consejo:
+        'Establezcan una meta mutua y aporten proporcionalmente según sus ingresos.',
+  ),
+  FinancialTip(
+    id: 53,
+    categoria: 'ahorro',
+    titulo: 'Menos Suscripciones',
+    consejo:
+        'Revisa tus suscripciones mensuales; cancela las que no has usado en el último mes.',
+  ),
+  FinancialTip(
+    id: 54,
+    categoria: 'personal',
+    titulo: 'Fondo de Emergencia',
+    consejo:
+        'El objetivo es tener de 3 a 6 meses de gastos fijos ahorrados solo para imprevistos.',
+  ),
+  FinancialTip(
+    id: 55,
+    categoria: 'parejas',
+    titulo: 'Comunicación',
+    consejo:
+        'La honestidad financiera en pareja previene sorpresas y fortalece la confianza mutua.',
+  ),
+  FinancialTip(
+    id: 56,
+    categoria: 'ahorro',
+    titulo: 'Regla del 50/30/20',
+    consejo:
+        '50% necesidades, 30% deseos, 20% ahorro e inversión. Una guía básica y efectiva.',
+  ),
+  FinancialTip(
+    id: 57,
+    categoria: 'personal',
+    titulo: 'Automatiza',
+    consejo:
+        'Automatiza tus transferencias a ahorros para no tener que decidir hacerlo cada mes.',
+  ),
+  FinancialTip(
+    id: 58,
+    categoria: 'parejas',
+    titulo: 'Planifica Viajes',
+    consejo:
+        'Un viaje en pareja planeado con anticipación evita endeudarse con tarjetas de crédito.',
+  ),
+  FinancialTip(
+    id: 59,
+    categoria: 'ahorro',
+    titulo: 'Evita compras impulsivas',
+    consejo:
+        'Espera 24 horas antes de comprar algo no esencial. Muchas veces la urgencia desaparece.',
+  ),
+  FinancialTip(
+    id: 60,
+    categoria: 'personal',
+    titulo: 'Diversifica',
+    consejo:
+        'No pongas todos los huevos en una sola canasta. Busca diferentes fuentes de ingresos.',
+  ),
+  FinancialTip(
+    id: 61,
+    categoria: 'parejas',
+    titulo: 'Asignaciones Mensuales',
+    consejo:
+        'Ambos deberían tener dinero libre para gastar sin rendir cuentas al otro.',
+  ),
+  FinancialTip(
+    id: 62,
+    categoria: 'ahorro',
+    titulo: 'Marcas Blancas',
+    consejo:
+        'El supermercado tiene marcas propias que son de igual calidad y mucho más económicas.',
+  ),
+  FinancialTip(
+    id: 63,
+    categoria: 'personal',
+    titulo: 'Invierte en ti',
+    consejo:
+        'Tu mejor activo eres tú. Invierte en cursos y educación para aumentar tus ingresos.',
+  ),
+  FinancialTip(
+    id: 64,
+    categoria: 'parejas',
+    titulo: 'Reunión Financiera',
+    consejo:
+        'Tengan una cena mensual para revisar números, metas y felicitaciones por los logros.',
+  ),
+  FinancialTip(
+    id: 65,
+    categoria: 'ahorro',
+    titulo: 'Ahorra en Energía',
+    consejo:
+        'Usa focos LED y apaga equipos electrónicos que no uses; notarás la diferencia en tu recibo.',
+  ),
+  FinancialTip(
+    id: 66,
+    categoria: 'personal',
+    titulo: 'Ignora las Apariencias',
+    consejo:
+        'No te endeudes para impresionar a personas que no importan con dinero que no tienes.',
+  ),
+  FinancialTip(
+    id: 67,
+    categoria: 'parejas',
+    titulo: 'Visión Compartida',
+    consejo:
+        'Hagan un tablero de visión financiero; ver juntos el futuro motiva el ahorro del presente.',
+  ),
+  FinancialTip(
+    id: 68,
+    categoria: 'ahorro',
+    titulo: 'Lista de Compras',
+    consejo:
+        'Nunca vayas al súper con hambre ni sin una lista; terminarás comprando de más.',
+  ),
+  FinancialTip(
+    id: 69,
+    categoria: 'personal',
+    titulo: 'Paga de Contado',
+    consejo:
+        'Evita los pagos a cuotas para bienes de consumo que pierden valor rápidamente.',
+  ),
+  FinancialTip(
+    id: 70,
+    categoria: 'parejas',
+    titulo: 'Dividir Gastos',
+    consejo:
+        'Si ganan diferente, dividan los gastos de forma porcentual, no en partes iguales.',
+  ),
+  FinancialTip(
+    id: 71,
+    categoria: 'ahorro',
+    titulo: 'Negocia Servicios',
+    consejo:
+        'Llama a tus proveedores de internet o seguro y pide descuentos o mejoras en tu plan.',
+  ),
+  FinancialTip(
+    id: 72,
+    categoria: 'personal',
+    titulo: 'Descuentos',
+    consejo:
+        'Usa cupones o aplicaciones de cashback para recuperar un porcentaje de tus gastos diarios.',
+  ),
+  FinancialTip(
+    id: 73,
+    categoria: 'parejas',
+    titulo: 'Prioridad de Pagos',
+    consejo:
+        'Si tienen deudas compartidas, ataquen primero la que tiene la tasa de interés más alta.',
+  ),
+  FinancialTip(
+    id: 74,
+    categoria: 'ahorro',
+    titulo: 'Ropa Inteligente',
+    consejo:
+        'Compra ropa básica y de calidad; dura más tiempo y nunca pasa de moda.',
+  ),
+  FinancialTip(
+    id: 75,
+    categoria: 'personal',
+    titulo: 'Visualiza el Retiro',
+    consejo:
+        'Entre más joven empieces a aportar para tu jubilación, menor será el esfuerzo mensual.',
+  ),
 ];
 
 // ─── Category metadata ───────────────────────────────────────────────────────
@@ -143,7 +593,7 @@ class _CatMeta {
 
 // ─── SharedPreferences key ────────────────────────────────────────────────────
 const _kLastTipDateKey = 'daily_tip_last_shown_date';
-const _kLastTipIdKey   = 'daily_tip_last_id';
+const _kLastTipIdKey = 'daily_tip_last_id';
 
 // ─── Static helper ────────────────────────────────────────────────────────────
 class DailyTipModal {
@@ -235,15 +685,19 @@ class _DailyTipDialog extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(32),
+                  ),
                 ),
                 child: Stack(
                   children: [
                     // Decorative circles
                     Positioned(
-                      top: -20, right: -20,
+                      top: -20,
+                      right: -20,
                       child: Container(
-                        width: 120, height: 120,
+                        width: 120,
+                        height: 120,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white.withValues(alpha: 0.08),
@@ -251,9 +705,11 @@ class _DailyTipDialog extends StatelessWidget {
                       ),
                     ),
                     Positioned(
-                      bottom: -30, left: -10,
+                      bottom: -30,
+                      left: -10,
                       child: Container(
-                        width: 90, height: 90,
+                        width: 90,
+                        height: 90,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white.withValues(alpha: 0.06),
@@ -270,7 +726,10 @@ class _DailyTipDialog extends StatelessWidget {
                           Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(20),
@@ -281,12 +740,17 @@ class _DailyTipDialog extends StatelessWidget {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Text('✨', style: TextStyle(fontSize: 12)),
+                                    const Text(
+                                      '✨',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
                                     const SizedBox(width: 4),
                                     Text(
                                       'Consejo del Día',
                                       style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.95),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.95,
+                                        ),
                                         fontSize: 11,
                                         fontWeight: FontWeight.w600,
                                         letterSpacing: 0.5,
@@ -297,7 +761,10 @@ class _DailyTipDialog extends StatelessWidget {
                               ),
                               const Spacer(),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(20),
@@ -316,7 +783,10 @@ class _DailyTipDialog extends StatelessWidget {
                           const SizedBox(height: 12),
                           Row(
                             children: [
-                              Text(meta.emoji, style: const TextStyle(fontSize: 28)),
+                              Text(
+                                meta.emoji,
+                                style: const TextStyle(fontSize: 28),
+                              ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
@@ -346,7 +816,10 @@ class _DailyTipDialog extends StatelessWidget {
                   children: [
                     // Category chip
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: meta.chip,
                         borderRadius: BorderRadius.circular(20),
@@ -392,7 +865,9 @@ class _DailyTipDialog extends StatelessWidget {
                             child: Text(
                               tip.consejo,
                               style: TextStyle(
-                                color: isDark ? Colors.grey[200] : const Color(0xFF1F2937),
+                                color: isDark
+                                    ? Colors.grey[200]
+                                    : const Color(0xFF1F2937),
                                 fontSize: 15,
                                 height: 1.6,
                                 fontWeight: FontWeight.w400,
@@ -410,7 +885,10 @@ class _DailyTipDialog extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: isDark
                                 ? Colors.white.withValues(alpha: 0.07)
@@ -420,7 +898,9 @@ class _DailyTipDialog extends StatelessWidget {
                           child: Text(
                             'Consejo #${tip.id} de ${kFinancialTips.length}',
                             style: TextStyle(
-                              color: isDark ? Colors.grey[500] : Colors.grey[500],
+                              color: isDark
+                                  ? Colors.grey[500]
+                                  : Colors.grey[500],
                               fontSize: 11,
                             ),
                           ),
@@ -482,8 +962,18 @@ class _DailyTipDialog extends StatelessWidget {
 
   String _dayLabel(DateTime date) {
     const months = [
-      'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-      'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
+      'Ene',
+      'Feb',
+      'Mar',
+      'Abr',
+      'May',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dic',
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }

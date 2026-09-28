@@ -17,20 +17,16 @@ import 'presentation/widgets/common/session_timeout_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   final prefs = await SharedPreferences.getInstance();
   AIConfig.dynamicApiKey = prefs.getString('gemini_api_key');
-  
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await initializeDateFormatting('es');
   AdService().initialize();
   await LocalNotificationService.init();
 
   final sharedPreferences = await SharedPreferences.getInstance();
-
-
 
   runApp(
     ProviderScope(
@@ -78,7 +74,9 @@ class _MyAppState extends ConsumerState<MyApp> {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
@@ -113,7 +111,9 @@ class _MyAppState extends ConsumerState<MyApp> {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(

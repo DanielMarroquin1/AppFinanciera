@@ -12,7 +12,7 @@ bool _isFirstSnapshot = true;
 final notificationsProvider = StreamProvider<List<NotificationModel>>((ref) {
   final user = ref.watch(authProvider).user;
   final firebaseUser = FirebaseAuth.instance.currentUser;
-  
+
   if (user == null || firebaseUser == null) {
     _isFirstSnapshot = true;
     _seenNotificationIds.clear();
@@ -25,36 +25,38 @@ final notificationsProvider = StreamProvider<List<NotificationModel>>((ref) {
       .limit(50) // Limit to the most recent 50 notifications
       .snapshots()
       .map((snapshot) {
-    if (_isFirstSnapshot) {
-      for (var doc in snapshot.docs) {
-        _seenNotificationIds.add(doc.id);
-      }
-      _isFirstSnapshot = false;
-    } else {
-      for (var change in snapshot.docChanges) {
-        if (change.type == DocumentChangeType.added) {
-          final notif = NotificationModel.fromFirestore(change.doc);
-          if (!_seenNotificationIds.contains(notif.id) && !notif.isRead) {
-            _seenNotificationIds.add(notif.id);
-            LocalNotificationService.showNotification(
-              title: notif.title,
-              body: notif.body,
-              id: notif.id.hashCode.abs() % 100000,
-            );
+        if (_isFirstSnapshot) {
+          for (var doc in snapshot.docs) {
+            _seenNotificationIds.add(doc.id);
+          }
+          _isFirstSnapshot = false;
+        } else {
+          for (var change in snapshot.docChanges) {
+            if (change.type == DocumentChangeType.added) {
+              final notif = NotificationModel.fromFirestore(change.doc);
+              if (!_seenNotificationIds.contains(notif.id) && !notif.isRead) {
+                _seenNotificationIds.add(notif.id);
+                LocalNotificationService.showNotification(
+                  title: notif.title,
+                  body: notif.body,
+                  id: notif.id.hashCode.abs() % 100000,
+                );
+              }
+            }
           }
         }
-      }
-    }
 
-    final list = snapshot.docs.map((doc) => NotificationModel.fromFirestore(doc)).toList();
-    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    return list;
-  });
+        final list = snapshot.docs
+            .map((doc) => NotificationModel.fromFirestore(doc))
+            .toList();
+        list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        return list;
+      });
 });
 
 final unreadNotificationsCountProvider = Provider<int>((ref) {
   final notificationsAsyncValue = ref.watch(notificationsProvider);
-  
+
   return notificationsAsyncValue.when(
     data: (notifications) => notifications.where((n) => !n.isRead).length,
     loading: () => 0,
@@ -71,7 +73,9 @@ class NotificationNotifier {
 
   Future<void> markAsRead(String notificationId) async {
     try {
-      await _firestore.collection('notifications').doc(notificationId).update({'isRead': true});
+      await _firestore.collection('notifications').doc(notificationId).update({
+        'isRead': true,
+      });
     } catch (e) {
       print('Error marking notification as read: $e');
     }
@@ -89,7 +93,7 @@ class NotificationNotifier {
       for (var doc in snapshot.docs) {
         batch.update(doc.reference, {'isRead': true});
       }
-      
+
       if (snapshot.docs.isNotEmpty) {
         await batch.commit();
       }

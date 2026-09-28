@@ -15,10 +15,10 @@ class RevenueCatService {
 
   Future<void> initialize() async {
     if (kIsWeb) return; // RevenueCat no soporta Web oficialmente así
-    
+
     try {
       await Purchases.setLogLevel(LogLevel.debug);
-      
+
       PurchasesConfiguration configuration;
       if (Platform.isAndroid) {
         configuration = PurchasesConfiguration(_googleApiKey);
@@ -27,7 +27,7 @@ class RevenueCatService {
       } else {
         return;
       }
-      
+
       await Purchases.configure(configuration);
       _isInitialized = true;
     } catch (e) {

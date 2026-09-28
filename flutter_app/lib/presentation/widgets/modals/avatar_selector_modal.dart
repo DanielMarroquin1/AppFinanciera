@@ -6,10 +6,10 @@ class AvatarSelectorModal extends StatefulWidget {
   final String currentAvatarId;
   final List<String> unlockedItems;
   final Function(String) onAvatarSelected;
-  
+
   const AvatarSelectorModal({
-    super.key, 
-    required this.currentAvatarId, 
+    super.key,
+    required this.currentAvatarId,
     required this.unlockedItems,
     required this.onAvatarSelected,
   });
@@ -22,7 +22,7 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
   late String selectedId;
 
   final avatars = [
-    // Free avatars 
+    // Free avatars
     {'id': '👤', 'emoji': '👤', 'isPremium': false},
     {'id': '👨', 'emoji': '👨', 'isPremium': false},
     {'id': '👩', 'emoji': '👩', 'isPremium': false},
@@ -49,7 +49,10 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
   }
 
   String _getEmoji(String id) {
-    final match = avatars.firstWhere((a) => a['id'] == id, orElse: () => {'emoji': '👤'});
+    final match = avatars.firstWhere(
+      (a) => a['id'] == id,
+      orElse: () => {'emoji': '👤'},
+    );
     return match['emoji'] as String;
   }
 
@@ -58,7 +61,9 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.8,
+      ),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1F2937) : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
@@ -71,9 +76,15 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: isDark
-                  ? const LinearGradient(colors: [Color(0xFF6D28D9), Color(0xFF1D4ED8)])
-                  : const LinearGradient(colors: [Color(0xFF9333EA), Color(0xFF2563EB)]),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                  ? const LinearGradient(
+                      colors: [Color(0xFF6D28D9), Color(0xFF1D4ED8)],
+                    )
+                  : const LinearGradient(
+                      colors: [Color(0xFF9333EA), Color(0xFF2563EB)],
+                    ),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(32),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -81,14 +92,27 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Selecciona tu Avatar 🎭', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                    Text('Personaliza tu perfil', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
+                    const Text(
+                      'Selecciona tu Avatar 🎭',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Personaliza tu perfil',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontSize: 14,
+                      ),
+                    ),
                   ],
                 ),
                 IconButton(
                   icon: const Icon(LucideIcons.x, color: Colors.white),
                   onPressed: () => Navigator.of(context).pop(),
-                )
+                ),
               ],
             ),
           ),
@@ -101,37 +125,54 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
                 children: [
                   // Selected Preview
                   Container(
-                    width: 96, height: 96,
+                    width: 96,
+                    height: 96,
                     margin: const EdgeInsets.only(bottom: 24),
                     decoration: BoxDecoration(
                       gradient: isDark
-                          ? const LinearGradient(colors: [Color(0xFF581C87), Color(0xFF1E3A8A)])
-                          : const LinearGradient(colors: [Color(0xFFF3E8FF), Color(0xFFDBEAFE)]),
+                          ? const LinearGradient(
+                              colors: [Color(0xFF581C87), Color(0xFF1E3A8A)],
+                            )
+                          : const LinearGradient(
+                              colors: [Color(0xFFF3E8FF), Color(0xFFDBEAFE)],
+                            ),
                       borderRadius: BorderRadius.circular(24),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     alignment: Alignment.center,
-                    child: Text(_getEmoji(selectedId), style: const TextStyle(fontSize: 48)),
+                    child: Text(
+                      _getEmoji(selectedId),
+                      style: const TextStyle(fontSize: 48),
+                    ),
                   ),
 
                   // Grid
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                        ),
                     itemCount: avatars.length,
                     itemBuilder: (context, index) {
                       final avatar = avatars[index];
                       final id = avatar['id'] as String;
                       final emoji = avatar['emoji'] as String;
                       final isPremium = avatar['isPremium'] as bool;
-                      
-                      final isLocked = isPremium && !widget.unlockedItems.contains(id);
-                      final isSelected = selectedId == id || selectedId == emoji;
+
+                      final isLocked =
+                          isPremium && !widget.unlockedItems.contains(id);
+                      final isSelected =
+                          selectedId == id || selectedId == emoji;
 
                       return GestureDetector(
                         onTap: () {
@@ -143,15 +184,25 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
                                 child: Container(
                                   padding: const EdgeInsets.all(24),
                                   decoration: BoxDecoration(
-                                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                    color: isDark
+                                        ? const Color(0xFF1E293B)
+                                        : Colors.white,
                                     borderRadius: BorderRadius.circular(28),
-                                    border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05)),
+                                    border: Border.all(
+                                      color: isDark
+                                          ? Colors.white.withValues(alpha: 0.1)
+                                          : Colors.black.withValues(
+                                              alpha: 0.05,
+                                            ),
+                                    ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.2),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.2,
+                                        ),
                                         blurRadius: 40,
                                         offset: const Offset(0, 10),
-                                      )
+                                      ),
                                     ],
                                   ),
                                   child: Column(
@@ -159,22 +210,45 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
                                     children: [
                                       // Icon
                                       Container(
-                                        width: 80, height: 80,
+                                        width: 80,
+                                        height: 80,
                                         decoration: BoxDecoration(
-                                          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                                          color: isDark
+                                              ? const Color(0xFF0F172A)
+                                              : const Color(0xFFF8FAFC),
                                           shape: BoxShape.circle,
-                                          border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0), width: 2),
+                                          border: Border.all(
+                                            color: isDark
+                                                ? const Color(0xFF334155)
+                                                : const Color(0xFFE2E8F0),
+                                            width: 2,
+                                          ),
                                         ),
                                         child: Stack(
                                           alignment: Alignment.center,
                                           children: [
-                                            Text(emoji, style: const TextStyle(fontSize: 40)),
+                                            Text(
+                                              emoji,
+                                              style: const TextStyle(
+                                                fontSize: 40,
+                                              ),
+                                            ),
                                             Positioned(
-                                              bottom: -2, right: -2,
+                                              bottom: -2,
+                                              right: -2,
                                               child: Container(
-                                                padding: const EdgeInsets.all(4),
-                                                decoration: const BoxDecoration(color: Color(0xFFF59E0B), shape: BoxShape.circle),
-                                                child: const Icon(LucideIcons.lock, size: 14, color: Colors.white),
+                                                padding: const EdgeInsets.all(
+                                                  4,
+                                                ),
+                                                decoration: const BoxDecoration(
+                                                  color: Color(0xFFF59E0B),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                  LucideIcons.lock,
+                                                  size: 14,
+                                                  color: Colors.white,
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -184,7 +258,9 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
                                       Text(
                                         'Avatar Premium',
                                         style: TextStyle(
-                                          color: isDark ? Colors.white : Colors.black,
+                                          color: isDark
+                                              ? Colors.white
+                                              : Colors.black,
                                           fontSize: 22,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -194,7 +270,9 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
                                         'Para lucir este increíble avatar en tu perfil, primero debes desbloquearlo en la Tienda de Recompensas.',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
-                                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                                          color: isDark
+                                              ? Colors.grey[400]
+                                              : Colors.grey[600],
                                           fontSize: 14,
                                           height: 1.4,
                                         ),
@@ -204,12 +282,27 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
                                         children: [
                                           Expanded(
                                             child: TextButton(
-                                              onPressed: () => Navigator.pop(ctx),
+                                              onPressed: () =>
+                                                  Navigator.pop(ctx),
                                               style: TextButton.styleFrom(
-                                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 16,
+                                                    ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                ),
                                               ),
-                                              child: Text('Cancelar', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontWeight: FontWeight.bold)),
+                                              child: Text(
+                                                'Cancelar',
+                                                style: TextStyle(
+                                                  color: isDark
+                                                      ? Colors.grey[400]
+                                                      : Colors.grey[500],
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                           const SizedBox(width: 12),
@@ -219,18 +312,39 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
                                               onPressed: () {
                                                 Navigator.pop(ctx);
                                                 Navigator.pop(context);
-                                                Future.delayed(const Duration(milliseconds: 100), () {
-                                                  RewardsShopModal.show(context);
-                                                });
+                                                Future.delayed(
+                                                  const Duration(
+                                                    milliseconds: 100,
+                                                  ),
+                                                  () {
+                                                    RewardsShopModal.show(
+                                                      context,
+                                                    );
+                                                  },
+                                                );
                                               },
                                               style: ElevatedButton.styleFrom(
-                                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                                backgroundColor: const Color(0xFFF59E0B),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 16,
+                                                    ),
+                                                backgroundColor: const Color(
+                                                  0xFFF59E0B,
+                                                ),
                                                 foregroundColor: Colors.white,
                                                 elevation: 0,
-                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                ),
                                               ),
-                                              child: const Text('Ir a la Tienda 🛒', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                              child: const Text(
+                                                'Ir a la Tienda 🛒',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -238,7 +352,7 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
                                     ],
                                   ),
                                 ),
-                              )
+                              ),
                             );
                           } else {
                             setState(() => selectedId = id);
@@ -247,16 +361,28 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
                         },
                         child: Container(
                           decoration: BoxDecoration(
-                            color: isSelected 
-                                ? (isDark ? const Color(0xFF581C87).withValues(alpha: 0.5) : const Color(0xFFF3E8FF))
-                                : (isLocked 
-                                    ? (isDark ? const Color(0xFF111827) : const Color(0xFFF3F4F6))
-                                    : (isDark ? const Color(0xFF374151) : Colors.white)),
+                            color: isSelected
+                                ? (isDark
+                                      ? const Color(
+                                          0xFF581C87,
+                                        ).withValues(alpha: 0.5)
+                                      : const Color(0xFFF3E8FF))
+                                : (isLocked
+                                      ? (isDark
+                                            ? const Color(0xFF111827)
+                                            : const Color(0xFFF3F4F6))
+                                      : (isDark
+                                            ? const Color(0xFF374151)
+                                            : Colors.white)),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: isSelected 
-                                  ? (isDark ? const Color(0xFF9333EA) : const Color(0xFF7E22CE))
-                                  : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
+                              color: isSelected
+                                  ? (isDark
+                                        ? const Color(0xFF9333EA)
+                                        : const Color(0xFF7E22CE))
+                                  : (isDark
+                                        ? const Color(0xFF4B5563)
+                                        : const Color(0xFFE5E7EB)),
                               width: isSelected ? 2.5 : 1,
                             ),
                           ),
@@ -266,9 +392,18 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
                             child: Stack(
                               alignment: Alignment.center,
                               children: [
-                                Text(emoji, style: const TextStyle(fontSize: 32)),
+                                Text(
+                                  emoji,
+                                  style: const TextStyle(fontSize: 32),
+                                ),
                                 if (isLocked)
-                                  Icon(LucideIcons.lock, size: 18, color: isDark ? Colors.white : Colors.black87),
+                                  Icon(
+                                    LucideIcons.lock,
+                                    size: 18,
+                                    color: isDark
+                                        ? Colors.white
+                                        : Colors.black87,
+                                  ),
                               ],
                             ),
                           ),
@@ -280,7 +415,7 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
               ),
             ),
           ),
-          
+
           // Action button
           Padding(
             padding: const EdgeInsets.all(24),
@@ -292,12 +427,17 @@ class _AvatarSelectorModalState extends State<AvatarSelectorModal> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
-                child: const Text('Confirmar Selección', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Confirmar Selección',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );

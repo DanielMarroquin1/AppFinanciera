@@ -7,7 +7,7 @@ import 'auth_provider.dart';
 
 final creditCardsProvider = StreamProvider<List<CreditCard>>((ref) {
   final authState = ref.watch(authProvider);
-  
+
   if (authState.user != null) {
     final uid = firebase_auth.FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
@@ -31,7 +31,9 @@ final creditCardsProvider = StreamProvider<List<CreditCard>>((ref) {
   return Stream.value([]);
 });
 
-final computedCreditCardsProvider = Provider<AsyncValue<List<CreditCard>>>((ref) {
+final computedCreditCardsProvider = Provider<AsyncValue<List<CreditCard>>>((
+  ref,
+) {
   final cardsAsync = ref.watch(creditCardsProvider);
   final txAsync = ref.watch(transactionsProvider);
 
@@ -79,7 +81,7 @@ class CreditCardNotifier extends Notifier<AsyncValue<void>> {
           .doc(user.uid)
           .collection('credit_cards')
           .add(card.toFirestore());
-          
+
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -92,7 +94,7 @@ class CreditCardNotifier extends Notifier<AsyncValue<void>> {
       final user = firebase_auth.FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('No user logged in');
 
-      // We only update the visual and configuration fields. 
+      // We only update the visual and configuration fields.
       // We NEVER update currentBalance during edit to avoid overwriting the computed initialBalance.
       await FirebaseFirestore.instance
           .collection('users')
@@ -107,7 +109,7 @@ class CreditCardNotifier extends Notifier<AsyncValue<void>> {
             'network': card.network,
             'color': card.color.value,
           });
-          
+
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -126,7 +128,7 @@ class CreditCardNotifier extends Notifier<AsyncValue<void>> {
           .collection('credit_cards')
           .doc(id)
           .delete();
-          
+
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -134,6 +136,7 @@ class CreditCardNotifier extends Notifier<AsyncValue<void>> {
   }
 }
 
-final creditCardControllerProvider = NotifierProvider<CreditCardNotifier, AsyncValue<void>>(() {
-  return CreditCardNotifier();
-});
+final creditCardControllerProvider =
+    NotifierProvider<CreditCardNotifier, AsyncValue<void>>(() {
+      return CreditCardNotifier();
+    });

@@ -22,52 +22,52 @@ class AppRouter {
       navigatorKey: rootNavigatorKey,
       initialLocation: '/login',
       routes: [
-
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
-      ShellRoute(
-        navigatorKey: _shellNavigatorKey,
-        builder: (context, state, child) {
-          return AppShell(child: child);
-        },
-        routes: [
-          GoRoute(
-            path: '/dashboard',
-            builder: (context, state) => const DashboardScreen(),
-          ),
-          GoRoute(
-            path: '/expenses',
-            builder: (context, state) => const ExpensesScreen(),
-          ),
-          GoRoute(
-            path: '/savings',
-            builder: (context, state) => const SavingsScreen(),
-          ),
-          GoRoute(
-            path: '/debts',
-            builder: (context, state) => const DebtsScreen(),
-          ),
-          GoRoute(
-            path: '/incomes',
-            builder: (context, state) => const IncomeScreen(),
-          ),
-          GoRoute(
-            path: '/settings',
-            builder: (context, state) => const SettingsScreen(),
-          ),
-          GoRoute(
-            path: '/what-if',
-            builder: (context, state) => const WhatIfScreen(),
-          ),
-        ],
-      ),
-      GoRoute(
-        path: '/statistics',
-        builder: (context, state) => const Scaffold(body: SafeArea(child: StatisticsScreen())),
-      ),
-    ],
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const LoginScreen(),
+        ),
+        ShellRoute(
+          navigatorKey: _shellNavigatorKey,
+          builder: (context, state, child) {
+            return AppShell(child: child);
+          },
+          routes: [
+            GoRoute(
+              path: '/dashboard',
+              builder: (context, state) => const DashboardScreen(),
+            ),
+            GoRoute(
+              path: '/expenses',
+              builder: (context, state) => const ExpensesScreen(),
+            ),
+            GoRoute(
+              path: '/savings',
+              builder: (context, state) => const SavingsScreen(),
+            ),
+            GoRoute(
+              path: '/debts',
+              builder: (context, state) => const DebtsScreen(),
+            ),
+            GoRoute(
+              path: '/incomes',
+              builder: (context, state) => const IncomeScreen(),
+            ),
+            GoRoute(
+              path: '/settings',
+              builder: (context, state) => const SettingsScreen(),
+            ),
+            GoRoute(
+              path: '/what-if',
+              builder: (context, state) => const WhatIfScreen(),
+            ),
+          ],
+        ),
+        GoRoute(
+          path: '/statistics',
+          builder: (context, state) =>
+              const Scaffold(body: SafeArea(child: StatisticsScreen())),
+        ),
+      ],
     );
   }
 }

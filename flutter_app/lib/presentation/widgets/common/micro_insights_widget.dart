@@ -49,7 +49,11 @@ class MicroInsightsSection extends ConsumerWidget {
                   ),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.auto_awesome, color: Colors.white, size: 14),
+                child: const Icon(
+                  Icons.auto_awesome,
+                  color: Colors.white,
+                  size: 14,
+                ),
               ),
               const SizedBox(width: 8),
               Text(
@@ -83,7 +87,8 @@ class MicroInsightsSection extends ConsumerWidget {
               return _InsightCard(
                 insight: insights[index],
                 isDark: isDark,
-                onDismiss: () => ref.read(aiInsightsProvider.notifier).dismissInsight(index),
+                onDismiss: () =>
+                    ref.read(aiInsightsProvider.notifier).dismissInsight(index),
               );
             },
           ),
@@ -108,16 +113,27 @@ class MicroInsightsSection extends ConsumerWidget {
               onTap: () => PremiumModal.show(context),
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E293B).withOpacity(0.9) : Colors.white.withOpacity(0.9),
+                    color: isDark
+                        ? const Color(0xFF1E293B).withOpacity(0.9)
+                        : Colors.white.withOpacity(0.9),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.5)),
+                    border: Border.all(
+                      color: const Color(0xFFF59E0B).withOpacity(0.5),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(LucideIcons.lock, color: const Color(0xFFF59E0B), size: 16),
+                      Icon(
+                        LucideIcons.lock,
+                        color: const Color(0xFFF59E0B),
+                        size: 16,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         'Insights Premium',
@@ -184,7 +200,11 @@ class _InsightCard extends StatelessWidget {
               const Spacer(),
               GestureDetector(
                 onTap: onDismiss,
-                child: Icon(Icons.close, size: 14, color: colors['textSecondary']),
+                child: Icon(
+                  Icons.close,
+                  size: 14,
+                  color: colors['textSecondary'],
+                ),
               ),
             ],
           ),
@@ -223,36 +243,60 @@ class _InsightCard extends StatelessWidget {
     switch (type) {
       case InsightType.positive:
         return {
-          'background': isDark ? const Color(0xFF052E16) : const Color(0xFFF0FDF4),
+          'background': isDark
+              ? const Color(0xFF052E16)
+              : const Color(0xFFF0FDF4),
           'border': isDark ? const Color(0xFF166534) : const Color(0xBBBBFBBB),
           'shadow': const Color(0xFF10B981).withOpacity(0.12),
-          'textPrimary': isDark ? const Color(0xFF86EFAC) : const Color(0xFF166534),
-          'textSecondary': isDark ? const Color(0xFF4ADE80) : const Color(0xFF15803D),
+          'textPrimary': isDark
+              ? const Color(0xFF86EFAC)
+              : const Color(0xFF166534),
+          'textSecondary': isDark
+              ? const Color(0xFF4ADE80)
+              : const Color(0xFF15803D),
         };
       case InsightType.warning:
         return {
-          'background': isDark ? const Color(0xFF431407) : const Color(0xFFFFF7ED),
+          'background': isDark
+              ? const Color(0xFF431407)
+              : const Color(0xFFFFF7ED),
           'border': isDark ? const Color(0xFF9A3412) : const Color(0xFFFFD7B5),
           'shadow': const Color(0xFFF97316).withOpacity(0.12),
-          'textPrimary': isDark ? const Color(0xFFFDBA74) : const Color(0xFF9A3412),
-          'textSecondary': isDark ? const Color(0xFFFB923C) : const Color(0xFFC2410C),
+          'textPrimary': isDark
+              ? const Color(0xFFFDBA74)
+              : const Color(0xFF9A3412),
+          'textSecondary': isDark
+              ? const Color(0xFFFB923C)
+              : const Color(0xFFC2410C),
         };
       case InsightType.tip:
         return {
-          'background': isDark ? const Color(0xFF1E1B4B) : const Color(0xFFF5F3FF),
+          'background': isDark
+              ? const Color(0xFF1E1B4B)
+              : const Color(0xFFF5F3FF),
           'border': isDark ? const Color(0xFF3730A3) : const Color(0xFFDDD6FE),
           'shadow': const Color(0xFF8B5CF6).withOpacity(0.12),
-          'textPrimary': isDark ? const Color(0xFFC4B5FD) : const Color(0xFF5B21B6),
-          'textSecondary': isDark ? const Color(0xFFA78BFA) : const Color(0xFF7C3AED),
+          'textPrimary': isDark
+              ? const Color(0xFFC4B5FD)
+              : const Color(0xFF5B21B6),
+          'textSecondary': isDark
+              ? const Color(0xFFA78BFA)
+              : const Color(0xFF7C3AED),
         };
       case InsightType.info:
       default:
         return {
-          'background': isDark ? const Color(0xFF0C1A2E) : const Color(0xFFEFF6FF),
+          'background': isDark
+              ? const Color(0xFF0C1A2E)
+              : const Color(0xFFEFF6FF),
           'border': isDark ? const Color(0xFF1E3A5F) : const Color(0xFFBFDBFE),
           'shadow': const Color(0xFF3B82F6).withOpacity(0.12),
-          'textPrimary': isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8),
-          'textSecondary': isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB),
+          'textPrimary': isDark
+              ? const Color(0xFF93C5FD)
+              : const Color(0xFF1D4ED8),
+          'textSecondary': isDark
+              ? const Color(0xFF60A5FA)
+              : const Color(0xFF2563EB),
         };
     }
   }
@@ -270,18 +314,22 @@ class _InsightsSkeleton extends StatefulWidget {
   State<_InsightsSkeleton> createState() => _InsightsSkeletonState();
 }
 
-class _InsightsSkeletonState extends State<_InsightsSkeleton> with SingleTickerProviderStateMixin {
+class _InsightsSkeletonState extends State<_InsightsSkeleton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   late Animation<double> _anim;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))
-      ..repeat(reverse: true);
-    _anim = Tween<double>(begin: 0.3, end: 0.7).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
-    );
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+    _anim = Tween<double>(
+      begin: 0.3,
+      end: 0.7,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -325,8 +373,16 @@ class _InsightsSkeletonState extends State<_InsightsSkeleton> with SingleTickerP
         height: 110,
         decoration: BoxDecoration(
           color: isDark
-              ? Color.lerp(const Color(0xFF1E293B), const Color(0xFF334155), _anim.value)
-              : Color.lerp(const Color(0xFFF1F5F9), const Color(0xFFE2E8F0), _anim.value),
+              ? Color.lerp(
+                  const Color(0xFF1E293B),
+                  const Color(0xFF334155),
+                  _anim.value,
+                )
+              : Color.lerp(
+                  const Color(0xFFF1F5F9),
+                  const Color(0xFFE2E8F0),
+                  _anim.value,
+                ),
           borderRadius: BorderRadius.circular(20),
         ),
         padding: const EdgeInsets.all(14),
@@ -354,8 +410,16 @@ class _InsightsSkeletonState extends State<_InsightsSkeleton> with SingleTickerP
         height: height,
         decoration: BoxDecoration(
           color: isDark
-              ? Color.lerp(const Color(0xFF334155), const Color(0xFF475569), _anim.value)
-              : Color.lerp(const Color(0xFFE2E8F0), const Color(0xFFCBD5E1), _anim.value),
+              ? Color.lerp(
+                  const Color(0xFF334155),
+                  const Color(0xFF475569),
+                  _anim.value,
+                )
+              : Color.lerp(
+                  const Color(0xFFE2E8F0),
+                  const Color(0xFFCBD5E1),
+                  _anim.value,
+                ),
           borderRadius: BorderRadius.circular(6),
         ),
       ),
@@ -372,7 +436,8 @@ class CashFlowForecastCard extends ConsumerStatefulWidget {
   const CashFlowForecastCard({super.key, required this.currencySymbol});
 
   @override
-  ConsumerState<CashFlowForecastCard> createState() => _CashFlowForecastCardState();
+  ConsumerState<CashFlowForecastCard> createState() =>
+      _CashFlowForecastCardState();
 }
 
 class _CashFlowForecastCardState extends ConsumerState<CashFlowForecastCard> {
@@ -446,7 +511,9 @@ class _CashFlowForecastCardState extends ConsumerState<CashFlowForecastCard> {
                             '${forecast.daysRemaining} días restantes',
                             style: TextStyle(
                               fontSize: 11,
-                              color: isDark ? Colors.grey[500] : Colors.grey[400],
+                              color: isDark
+                                  ? Colors.grey[500]
+                                  : Colors.grey[400],
                             ),
                           ),
                         ],
@@ -465,7 +532,10 @@ class _CashFlowForecastCardState extends ConsumerState<CashFlowForecastCard> {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: riskColors['accent']!.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(8),
@@ -496,16 +566,36 @@ class _CashFlowForecastCardState extends ConsumerState<CashFlowForecastCard> {
                 // Detalle expandible
                 if (_expanded) ...[
                   const SizedBox(height: 14),
-                  Divider(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                  Divider(
+                    color: isDark
+                        ? const Color(0xFF334155)
+                        : const Color(0xFFE2E8F0),
+                  ),
                   const SizedBox(height: 10),
-                  _forecastRow('💰 Ingresos del mes', '$sym${forecast.currentMonthIncome.toStringAsFixed(2)}', isDark, isPositive: true),
+                  _forecastRow(
+                    '💰 Ingresos del mes',
+                    '$sym${forecast.currentMonthIncome.toStringAsFixed(2)}',
+                    isDark,
+                    isPositive: true,
+                  ),
                   const SizedBox(height: 6),
-                  _forecastRow('💸 Gastos registrados', '-$sym${forecast.currentMonthExpense.toStringAsFixed(2)}', isDark),
+                  _forecastRow(
+                    '💸 Gastos registrados',
+                    '-$sym${forecast.currentMonthExpense.toStringAsFixed(2)}',
+                    isDark,
+                  ),
                   const SizedBox(height: 6),
-                  _forecastRow('🔒 Gastos fijos pendientes', '-$sym${forecast.projectedRemainingFixed.toStringAsFixed(2)}', isDark),
+                  _forecastRow(
+                    '🔒 Gastos fijos pendientes',
+                    '-$sym${forecast.projectedRemainingFixed.toStringAsFixed(2)}',
+                    isDark,
+                  ),
                   const SizedBox(height: 10),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: riskColors['accent']!.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(10),
@@ -558,16 +648,27 @@ class _CashFlowForecastCardState extends ConsumerState<CashFlowForecastCard> {
                 onTap: () => PremiumModal.show(context),
                 child: Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E293B).withOpacity(0.9) : Colors.white.withOpacity(0.9),
+                      color: isDark
+                          ? const Color(0xFF1E293B).withOpacity(0.9)
+                          : Colors.white.withOpacity(0.9),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.5)),
+                      border: Border.all(
+                        color: const Color(0xFFF59E0B).withOpacity(0.5),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(LucideIcons.lock, color: Color(0xFFF59E0B), size: 16),
+                        Icon(
+                          LucideIcons.lock,
+                          color: Color(0xFFF59E0B),
+                          size: 16,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           'Premium',
@@ -589,7 +690,12 @@ class _CashFlowForecastCardState extends ConsumerState<CashFlowForecastCard> {
     }
   }
 
-  Widget _forecastRow(String label, String value, bool isDark, {bool isPositive = false}) {
+  Widget _forecastRow(
+    String label,
+    String value,
+    bool isDark, {
+    bool isPositive = false,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -621,24 +727,45 @@ class _CashFlowForecastCardState extends ConsumerState<CashFlowForecastCard> {
   Map<String, Color?> _riskColors(String riskLevel, bool isDark) {
     switch (riskLevel) {
       case 'low':
-        return {'accent': const Color(0xFF10B981), 'border': const Color(0xFF10B981).withOpacity(0.3), 'shadow': const Color(0xFF10B981).withOpacity(0.1)};
+        return {
+          'accent': const Color(0xFF10B981),
+          'border': const Color(0xFF10B981).withOpacity(0.3),
+          'shadow': const Color(0xFF10B981).withOpacity(0.1),
+        };
       case 'medium':
-        return {'accent': const Color(0xFFF59E0B), 'border': const Color(0xFFF59E0B).withOpacity(0.3), 'shadow': const Color(0xFFF59E0B).withOpacity(0.1)};
+        return {
+          'accent': const Color(0xFFF59E0B),
+          'border': const Color(0xFFF59E0B).withOpacity(0.3),
+          'shadow': const Color(0xFFF59E0B).withOpacity(0.1),
+        };
       case 'high':
-        return {'accent': const Color(0xFFF97316), 'border': const Color(0xFFF97316).withOpacity(0.3), 'shadow': const Color(0xFFF97316).withOpacity(0.1)};
+        return {
+          'accent': const Color(0xFFF97316),
+          'border': const Color(0xFFF97316).withOpacity(0.3),
+          'shadow': const Color(0xFFF97316).withOpacity(0.1),
+        };
       case 'critical':
       default:
-        return {'accent': const Color(0xFFEF4444), 'border': const Color(0xFFEF4444).withOpacity(0.3), 'shadow': const Color(0xFFEF4444).withOpacity(0.1)};
+        return {
+          'accent': const Color(0xFFEF4444),
+          'border': const Color(0xFFEF4444).withOpacity(0.3),
+          'shadow': const Color(0xFFEF4444).withOpacity(0.1),
+        };
     }
   }
 
   String _riskLabel(String riskLevel) {
     switch (riskLevel) {
-      case 'low':     return '✅ Estable';
-      case 'medium':  return '⚡ Ajustado';
-      case 'high':    return '⚠️ En riesgo';
-      case 'critical':return '🚨 Crítico';
-      default:        return '';
+      case 'low':
+        return '✅ Estable';
+      case 'medium':
+        return '⚡ Ajustado';
+      case 'high':
+        return '⚠️ En riesgo';
+      case 'critical':
+        return '🚨 Crítico';
+      default:
+        return '';
     }
   }
 }

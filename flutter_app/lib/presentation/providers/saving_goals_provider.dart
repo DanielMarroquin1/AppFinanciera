@@ -20,11 +20,16 @@ class SavingGoalsNotifier extends AsyncNotifier<List<SavingGoal>> {
     }
 
     // Subscribe to the stream and update the state
-    _repository.getUserGoals(user.email).listen((goals) {
-      state = AsyncValue.data(goals);
-    }, onError: (e, st) {
-      state = AsyncValue.error(e, st);
-    });
+    _repository
+        .getUserGoals(user.email)
+        .listen(
+          (goals) {
+            state = AsyncValue.data(goals);
+          },
+          onError: (e, st) {
+            state = AsyncValue.error(e, st);
+          },
+        );
 
     // Return empty list initially while stream fetches data
     return [];
@@ -33,7 +38,7 @@ class SavingGoalsNotifier extends AsyncNotifier<List<SavingGoal>> {
   Future<void> addGoal(SavingGoal goal) async {
     final user = ref.read(authProvider).user;
     if (user == null) return;
-    
+
     final newGoal = goal.copyWith(userId: user.email);
     await _repository.addGoal(newGoal);
   }
@@ -45,13 +50,17 @@ class SavingGoalsNotifier extends AsyncNotifier<List<SavingGoal>> {
   Future<void> deleteGoal(String goalId) async {
     final user = ref.read(authProvider).user;
     if (user == null) return;
-    
+
     if (_repository is SavingGoalRepositoryImpl) {
-      await (_repository as SavingGoalRepositoryImpl).deleteUserGoal(user.email, goalId);
+      await (_repository as SavingGoalRepositoryImpl).deleteUserGoal(
+        user.email,
+        goalId,
+      );
     }
   }
 }
 
-final savingGoalsProvider = AsyncNotifierProvider<SavingGoalsNotifier, List<SavingGoal>>(() {
-  return SavingGoalsNotifier();
-});
+final savingGoalsProvider =
+    AsyncNotifierProvider<SavingGoalsNotifier, List<SavingGoal>>(() {
+      return SavingGoalsNotifier();
+    });

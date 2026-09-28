@@ -21,7 +21,7 @@ class LanguageModal extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final loc = ref.watch(localizationProvider);
     final user = ref.watch(authProvider).user;
-    
+
     // We get the current language from localeProvider directly to support logged-out users
     final currentLanguage = ref.watch(localeProvider);
 
@@ -35,8 +35,10 @@ class LanguageModal extends ConsumerWidget {
 
     return Container(
       padding: EdgeInsets.only(
-        left: 24, right: 24, top: 24, 
-        bottom: MediaQuery.of(context).padding.bottom + 24
+        left: 24,
+        right: 24,
+        top: 24,
+        bottom: MediaQuery.of(context).padding.bottom + 24,
       ),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1F2937) : Colors.white,
@@ -46,7 +48,7 @@ class LanguageModal extends ConsumerWidget {
             color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 40,
             offset: const Offset(0, -10),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -65,13 +67,22 @@ class LanguageModal extends ConsumerWidget {
             ),
           ),
           Text(
-            loc.get('select_language') ?? 'Seleccionar Idioma', 
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 24, color: isDark ? Colors.white : const Color(0xFF0F172A), letterSpacing: -0.5)
+            loc.get('select_language') ?? 'Seleccionar Idioma',
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 24,
+              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              letterSpacing: -0.5,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
-            loc.get('select_language_desc') ?? 'Elige el idioma de tu preferencia para la aplicación.', 
-            style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 15)
+            loc.get('select_language_desc') ??
+                'Elige el idioma de tu preferencia para la aplicación.',
+            style: TextStyle(
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+              fontSize: 15,
+            ),
           ),
           const SizedBox(height: 24),
           Flexible(
@@ -79,18 +90,26 @@ class LanguageModal extends ConsumerWidget {
               physics: const BouncingScrollPhysics(),
               child: Column(
                 children: languages.map((lang) {
-                  final isSelected = currentLanguage == lang['name'] || currentLanguage == lang['code'];
-                  
+                  final isSelected =
+                      currentLanguage == lang['name'] ||
+                      currentLanguage == lang['code'];
+
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     child: InkWell(
                       onTap: () {
                         // Update the localeProvider (persists to SharedPreferences)
-                        ref.read(localeProvider.notifier).setLanguage(lang['name']!);
-                        
+                        ref
+                            .read(localeProvider.notifier)
+                            .setLanguage(lang['name']!);
+
                         // If user is logged in, also update their profile
                         if (user != null) {
-                          ref.read(authProvider.notifier).updateProfile(user.copyWith(language: lang['name']!));
+                          ref
+                              .read(authProvider.notifier)
+                              .updateProfile(
+                                user.copyWith(language: lang['name']!),
+                              );
                         }
                         Navigator.pop(context);
                       },
@@ -100,32 +119,53 @@ class LanguageModal extends ConsumerWidget {
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? (isDark ? const Color(0xFF6366F1).withValues(alpha: 0.15) : const Color(0xFFEEF2FF))
-                              : (isDark ? const Color(0xFF374151).withValues(alpha: 0.5) : const Color(0xFFF8FAFC)),
+                              ? (isDark
+                                    ? const Color(
+                                        0xFF6366F1,
+                                      ).withValues(alpha: 0.15)
+                                    : const Color(0xFFEEF2FF))
+                              : (isDark
+                                    ? const Color(
+                                        0xFF374151,
+                                      ).withValues(alpha: 0.5)
+                                    : const Color(0xFFF8FAFC)),
                           border: Border.all(
                             color: isSelected
                                 ? const Color(0xFF6366F1)
-                                : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE2E8F0)),
+                                : (isDark
+                                      ? const Color(0xFF4B5563)
+                                      : const Color(0xFFE2E8F0)),
                             width: isSelected ? 2 : 1,
                           ),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           children: [
-                            Text(lang['flag']!, style: const TextStyle(fontSize: 28)),
+                            Text(
+                              lang['flag']!,
+                              style: const TextStyle(fontSize: 28),
+                            ),
                             const SizedBox(width: 16),
                             Expanded(
                               child: Text(
-                                lang['name']!, 
+                                lang['name']!,
                                 style: TextStyle(
-                                  color: isDark ? Colors.white : const Color(0xFF0F172A), 
-                                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF0F172A),
+                                  fontWeight: isSelected
+                                      ? FontWeight.w800
+                                      : FontWeight.w600,
                                   fontSize: 16,
-                                )
-                              )
+                                ),
+                              ),
                             ),
-                            if (isSelected) 
-                              const Icon(LucideIcons.checkCircle2, color: Color(0xFF6366F1), size: 24),
+                            if (isSelected)
+                              const Icon(
+                                LucideIcons.checkCircle2,
+                                color: Color(0xFF6366F1),
+                                size: 24,
+                              ),
                           ],
                         ),
                       ),

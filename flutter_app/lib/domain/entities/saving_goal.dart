@@ -37,7 +37,9 @@ class SavingGoal {
       currentAmount: (map['currentAmount'] ?? 0.0).toDouble(),
       icon: map['icon'] ?? '🎯',
       userId: map['userId'] ?? '',
-      colorInts: map['colorInts'] != null ? List<int>.from(map['colorInts']) : null,
+      colorInts: map['colorInts'] != null
+          ? List<int>.from(map['colorInts'])
+          : null,
     );
   }
 

@@ -45,8 +45,12 @@ class DebtModel {
       recurrenceType: data['recurrenceType'],
       recurrenceDay: data['recurrenceDay'],
       recurrenceDay2: data['recurrenceDay2'],
-      createdAt: data['createdAt'] != null ? (data['createdAt'] as Timestamp).toDate() : DateTime.now(),
-      lastProcessedDate: data['lastProcessedDate'] != null ? (data['lastProcessedDate'] as Timestamp).toDate() : null,
+      createdAt: data['createdAt'] != null
+          ? (data['createdAt'] as Timestamp).toDate()
+          : DateTime.now(),
+      lastProcessedDate: data['lastProcessedDate'] != null
+          ? (data['lastProcessedDate'] as Timestamp).toDate()
+          : null,
     );
   }
 
@@ -63,7 +67,8 @@ class DebtModel {
       if (recurrenceDay != null) 'recurrenceDay': recurrenceDay,
       if (recurrenceDay2 != null) 'recurrenceDay2': recurrenceDay2,
       'createdAt': Timestamp.fromDate(createdAt),
-      if (lastProcessedDate != null) 'lastProcessedDate': Timestamp.fromDate(lastProcessedDate!),
+      if (lastProcessedDate != null)
+        'lastProcessedDate': Timestamp.fromDate(lastProcessedDate!),
     };
   }
 

@@ -18,7 +18,7 @@ final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
 final transactionsProvider = StreamProvider<List<TransactionModel>>((ref) {
   final authState = ref.watch(authProvider);
   final repository = ref.watch(transactionRepositoryProvider);
-  
+
   if (authState.user != null) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
@@ -56,7 +56,9 @@ class TransactionNotifier extends Notifier<void> {
     _repository = ref.read(transactionRepositoryProvider);
   }
 
-  Future<BudgetAlertResult?> addTransaction(TransactionModel transaction) async {
+  Future<BudgetAlertResult?> addTransaction(
+    TransactionModel transaction,
+  ) async {
     await _repository.addTransaction(transaction);
     if (!transaction.isFixed) {
       await ref.read(authProvider.notifier).incrementStreakOnAction();
@@ -65,7 +67,9 @@ class TransactionNotifier extends Notifier<void> {
     return await _checkCategoryBudgetAlert(transaction);
   }
 
-  Future<BudgetAlertResult?> _checkCategoryBudgetAlert(TransactionModel transaction) async {
+  Future<BudgetAlertResult?> _checkCategoryBudgetAlert(
+    TransactionModel transaction,
+  ) async {
     if (transaction.type != 'expense') return null;
 
     final user = ref.read(authProvider).user;
@@ -73,12 +77,13 @@ class TransactionNotifier extends Notifier<void> {
 
     // Map subcategories to main category (e.g. transport_gas -> transport)
     final mainCategory = transaction.category.split('_')[0];
-    final budget = (user.categoryBudgets![mainCategory] as num?)?.toDouble() ?? 0.0;
+    final budget =
+        (user.categoryBudgets![mainCategory] as num?)?.toDouble() ?? 0.0;
     if (budget <= 0) return null;
 
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return null;
-    
+
     // Calculate current month's expenses locally from the current state list
     final existingTxs = ref.read(transactionsProvider).value ?? [];
     final now = DateTime.now();
@@ -99,49 +104,71 @@ class TransactionNotifier extends Notifier<void> {
 
     String getCategoryName(String catId) {
       switch (catId) {
-        case 'food': return 'Comida';
-        case 'transport': return 'Transporte';
-        case 'bills': return 'Servicios';
-        case 'home': return 'Hogar';
-        case 'entertainment': return 'Entretenimiento';
-        case 'health': return 'Salud';
-        case 'shopping': return 'Compras';
-        case 'education': return 'Educación';
-        default: return 'Otros';
+        case 'food':
+          return 'Comida';
+        case 'transport':
+          return 'Transporte';
+        case 'bills':
+          return 'Servicios';
+        case 'home':
+          return 'Hogar';
+        case 'entertainment':
+          return 'Entretenimiento';
+        case 'health':
+          return 'Salud';
+        case 'shopping':
+          return 'Compras';
+        case 'education':
+          return 'Educación';
+        default:
+          return 'Otros';
       }
     }
+
     final categoryName = getCategoryName(mainCategory);
 
     final loc = ref.read(localizationProvider);
     final translatedCategory = loc.translateCategory(categoryName);
 
     if (percentage >= 100) {
-      final notifRef = FirebaseFirestore.instance.collection('notifications').doc();
+      final notifRef = FirebaseFirestore.instance
+          .collection('notifications')
+          .doc();
       final notif = NotificationModel(
         id: notifRef.id,
         userId: uid,
         title: loc.get('notif_budget_exceeded_title'),
-        body: loc.get('notif_budget_exceeded_body').replaceAll('{cat}', translatedCategory).replaceAll('{nums}', '$totalSpent / $budget'),
+        body: loc
+            .get('notif_budget_exceeded_body')
+            .replaceAll('{cat}', translatedCategory)
+            .replaceAll('{nums}', '$totalSpent / $budget'),
         createdAt: DateTime.now(),
         isRead: false,
         type: 'expense',
         relatedId: transaction.id,
         category: mainCategory,
       );
-      await FirebaseFirestore.instance.collection('notifications').doc(notifRef.id).set(notif.toFirestore());
+      await FirebaseFirestore.instance
+          .collection('notifications')
+          .doc(notifRef.id)
+          .set(notif.toFirestore());
       LocalNotificationService.showNotification(
         title: notif.title,
         body: notif.body,
         id: notif.id.hashCode.abs() % 100000,
       );
-      
+
       if (user.email.isNotEmpty) {
         await FirebaseFirestore.instance.collection('mail').add({
           'to': user.email,
           'message': {
             'subject': loc.get('notif_budget_exceeded_title'),
-            'text': loc.get('notif_budget_exceeded_body').replaceAll('{cat}', translatedCategory).replaceAll('{nums}', '$totalSpent / $budget'),
-            'html': '<p>${loc.get('notif_budget_exceeded_body').replaceAll('{cat}', '<strong>"$translatedCategory"</strong>').replaceAll('{nums}', '$totalSpent / $budget')}</p>',
+            'text': loc
+                .get('notif_budget_exceeded_body')
+                .replaceAll('{cat}', translatedCategory)
+                .replaceAll('{nums}', '$totalSpent / $budget'),
+            'html':
+                '<p>${loc.get('notif_budget_exceeded_body').replaceAll('{cat}', '<strong>"$translatedCategory"</strong>').replaceAll('{nums}', '$totalSpent / $budget')}</p>',
           },
           'createdAt': FieldValue.serverTimestamp(),
         });
@@ -156,32 +183,44 @@ class TransactionNotifier extends Notifier<void> {
         percentage: percentage,
       );
     } else if (percentage >= 80) {
-      final notifRef = FirebaseFirestore.instance.collection('notifications').doc();
+      final notifRef = FirebaseFirestore.instance
+          .collection('notifications')
+          .doc();
       final notif = NotificationModel(
         id: notifRef.id,
         userId: uid,
         title: loc.get('notif_budget_warning_title'),
-        body: loc.get('notif_budget_warning_body').replaceAll('{cat}', translatedCategory).replaceAll('{nums}', '$totalSpent / $budget'),
+        body: loc
+            .get('notif_budget_warning_body')
+            .replaceAll('{cat}', translatedCategory)
+            .replaceAll('{nums}', '$totalSpent / $budget'),
         createdAt: DateTime.now(),
         isRead: false,
         type: 'expense',
         relatedId: transaction.id,
         category: mainCategory,
       );
-      await FirebaseFirestore.instance.collection('notifications').doc(notifRef.id).set(notif.toFirestore());
+      await FirebaseFirestore.instance
+          .collection('notifications')
+          .doc(notifRef.id)
+          .set(notif.toFirestore());
       LocalNotificationService.showNotification(
         title: notif.title,
         body: notif.body,
         id: notif.id.hashCode.abs() % 100000,
       );
-      
+
       if (user.email.isNotEmpty) {
         await FirebaseFirestore.instance.collection('mail').add({
           'to': user.email,
           'message': {
             'subject': loc.get('notif_budget_warning_title'),
-            'text': loc.get('notif_budget_warning_body').replaceAll('{cat}', translatedCategory).replaceAll('{nums}', '$totalSpent / $budget'),
-            'html': '<p>${loc.get('notif_budget_warning_body').replaceAll('{cat}', '<strong>"$translatedCategory"</strong>').replaceAll('{nums}', '$totalSpent / $budget')}</p>',
+            'text': loc
+                .get('notif_budget_warning_body')
+                .replaceAll('{cat}', translatedCategory)
+                .replaceAll('{nums}', '$totalSpent / $budget'),
+            'html':
+                '<p>${loc.get('notif_budget_warning_body').replaceAll('{cat}', '<strong>"$translatedCategory"</strong>').replaceAll('{nums}', '$totalSpent / $budget')}</p>',
           },
           'createdAt': FieldValue.serverTimestamp(),
         });
@@ -207,7 +246,9 @@ class TransactionNotifier extends Notifier<void> {
     );
   }
 
-  Future<BudgetAlertResult?> updateTransaction(TransactionModel transaction) async {
+  Future<BudgetAlertResult?> updateTransaction(
+    TransactionModel transaction,
+  ) async {
     await _repository.updateTransaction(transaction);
     return await _checkCategoryBudgetAlert(transaction);
   }
@@ -217,6 +258,8 @@ class TransactionNotifier extends Notifier<void> {
   }
 }
 
-final transactionNotifierProvider = NotifierProvider<TransactionNotifier, void>(() {
-  return TransactionNotifier();
-});
+final transactionNotifierProvider = NotifierProvider<TransactionNotifier, void>(
+  () {
+    return TransactionNotifier();
+  },
+);

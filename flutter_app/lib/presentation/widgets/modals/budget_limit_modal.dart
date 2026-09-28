@@ -8,16 +8,20 @@ import 'premium_paywall_dialog.dart';
 class BudgetLimitModal extends ConsumerStatefulWidget {
   final double initialValue;
 
-  const BudgetLimitModal({
-    super.key,
-    required this.initialValue,
-  });
+  const BudgetLimitModal({super.key, required this.initialValue});
 
-  static Future<double?> show(BuildContext context, {required double initialValue}) {
+  static Future<double?> show(
+    BuildContext context, {
+    required double initialValue,
+  }) {
     final container = ProviderScope.containerOf(context, listen: false);
     final isPremium = container.read(authProvider).user?.isPremium ?? false;
     if (!isPremium) {
-      PremiumPaywallDialog.show(context, customMessage: 'Establece un límite de presupuesto mensual personalizado con el Plan Premium.');
+      PremiumPaywallDialog.show(
+        context,
+        customMessage:
+            'Establece un límite de presupuesto mensual personalizado con el Plan Premium.',
+      );
       return Future.value(null);
     }
     return showDialog<double>(
@@ -47,9 +51,7 @@ class _BudgetLimitModalState extends ConsumerState<BudgetLimitModal> {
     final loc = ref.read(localizationProvider);
 
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
       elevation: 0,
       backgroundColor: Colors.transparent,
       child: Container(
@@ -66,8 +68,8 @@ class _BudgetLimitModalState extends ConsumerState<BudgetLimitModal> {
               color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
-            )
-          ]
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -79,12 +81,16 @@ class _BudgetLimitModalState extends ConsumerState<BudgetLimitModal> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF78350F).withValues(alpha: 0.3) : const Color(0xFFFEF3C7),
+                    color: isDark
+                        ? const Color(0xFF78350F).withValues(alpha: 0.3)
+                        : const Color(0xFFFEF3C7),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     LucideIcons.bellRing,
-                    color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
+                    color: isDark
+                        ? const Color(0xFFFBBF24)
+                        : const Color(0xFFD97706),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -113,7 +119,7 @@ class _BudgetLimitModalState extends ConsumerState<BudgetLimitModal> {
               ],
             ),
             const SizedBox(height: 24),
-            
+
             Text(
               loc.get('set_max_budget'),
               style: TextStyle(
@@ -122,7 +128,7 @@ class _BudgetLimitModalState extends ConsumerState<BudgetLimitModal> {
               ),
             ),
             const SizedBox(height: 32),
-            
+
             // Circular Dial / Velocimeter
             Center(
               child: Stack(
@@ -136,7 +142,9 @@ class _BudgetLimitModalState extends ConsumerState<BudgetLimitModal> {
                       strokeWidth: 20,
                       backgroundColor: Colors.transparent,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                        isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFFE2E8F0),
                       ),
                       strokeCap: StrokeCap.round,
                     ),
@@ -151,7 +159,9 @@ class _BudgetLimitModalState extends ConsumerState<BudgetLimitModal> {
                       valueColor: AlwaysStoppedAnimation<Color>(
                         _currentValue >= 90
                             ? const Color(0xFFEF4444)
-                            : (_currentValue >= 80 ? const Color(0xFFF59E0B) : const Color(0xFF10B981)),
+                            : (_currentValue >= 80
+                                  ? const Color(0xFFF59E0B)
+                                  : const Color(0xFF10B981)),
                       ),
                       strokeCap: StrokeCap.round,
                     ),
@@ -183,29 +193,47 @@ class _BudgetLimitModalState extends ConsumerState<BudgetLimitModal> {
               ),
             ),
             const SizedBox(height: 40),
-            
+
             // Sleek Slider
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                color: isDark
+                    ? const Color(0xFF0F172A)
+                    : const Color(0xFFF8FAFC),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0xFF334155)
+                      : const Color(0xFFE2E8F0),
+                ),
               ),
               child: SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   trackHeight: 8,
                   activeTrackColor: _currentValue >= 90
                       ? const Color(0xFFEF4444)
-                      : (_currentValue >= 80 ? const Color(0xFFF59E0B) : const Color(0xFF10B981)),
-                  inactiveTrackColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                      : (_currentValue >= 80
+                            ? const Color(0xFFF59E0B)
+                            : const Color(0xFF10B981)),
+                  inactiveTrackColor: isDark
+                      ? const Color(0xFF334155)
+                      : const Color(0xFFE2E8F0),
                   thumbColor: Colors.white,
-                  overlayColor: (_currentValue >= 90
-                          ? const Color(0xFFEF4444)
-                          : (_currentValue >= 80 ? const Color(0xFFF59E0B) : const Color(0xFF10B981)))
-                      .withValues(alpha: 0.2),
-                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 14, elevation: 4),
-                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 24),
+                  overlayColor:
+                      (_currentValue >= 90
+                              ? const Color(0xFFEF4444)
+                              : (_currentValue >= 80
+                                    ? const Color(0xFFF59E0B)
+                                    : const Color(0xFF10B981)))
+                          .withValues(alpha: 0.2),
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 14,
+                    elevation: 4,
+                  ),
+                  overlayShape: const RoundSliderOverlayShape(
+                    overlayRadius: 24,
+                  ),
                 ),
                 child: Slider(
                   value: _currentValue,
@@ -220,20 +248,32 @@ class _BudgetLimitModalState extends ConsumerState<BudgetLimitModal> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('50%', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontWeight: FontWeight.bold)),
-                  Text('100%', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontWeight: FontWeight.bold)),
+                  Text(
+                    '50%',
+                    style: TextStyle(
+                      color: isDark ? Colors.grey[500] : Colors.grey[400],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '100%',
+                    style: TextStyle(
+                      color: isDark ? Colors.grey[500] : Colors.grey[400],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 32),
-            
+
             // Action Buttons
             Row(
               children: [
@@ -262,7 +302,9 @@ class _BudgetLimitModalState extends ConsumerState<BudgetLimitModal> {
                       Navigator.of(context).pop(_currentValue);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? const Color(0xFFD97706) : const Color(0xFFF59E0B), // amber
+                      backgroundColor: isDark
+                          ? const Color(0xFFD97706)
+                          : const Color(0xFFF59E0B), // amber
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -272,9 +314,7 @@ class _BudgetLimitModalState extends ConsumerState<BudgetLimitModal> {
                     ),
                     child: Text(
                       loc.get('save'),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),

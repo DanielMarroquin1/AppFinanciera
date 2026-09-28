@@ -9,7 +9,7 @@ class User {
   final String? language;
   final String? salary;
   final String? salaryType;
-  
+
   // Rewards & Streak Fields
   final int points;
   final int currentStreak;
@@ -22,7 +22,6 @@ class User {
   final String? twoFactorPhone;
   final Map<String, double>? categoryBudgets;
   final int autoLockMinutes;
-
 
   User({
     required this.email,
@@ -96,23 +95,37 @@ class User {
     );
   }
 
-  bool get isPremium => unlockedItems.contains('premium') || unlockedItems.contains('spec1') || unlockedItems.contains('vip');
+  bool get isPremium =>
+      unlockedItems.contains('premium') ||
+      unlockedItems.contains('spec1') ||
+      unlockedItems.contains('vip');
 
   String get avatarEmoji {
     if (currentAvatar == null) return '👤';
     switch (currentAvatar) {
-      case 'avatar1': return '🦸';
-      case 'avatar2': return '🧙';
-      case 'avatar3': return '👑';
-      case 'avatar4': return '🥷';
-      case 'avatar5': return '🧑‍🚀';
-      case 'avatar6': return '💎';
-      case 'avatar7': return '🐳';
-      case 'avatar8': return '⚔️';
-      case 'avatar9': return '🐉';
-      case 'avatar10': return '🔥';
+      case 'avatar1':
+        return '🦸';
+      case 'avatar2':
+        return '🧙';
+      case 'avatar3':
+        return '👑';
+      case 'avatar4':
+        return '🥷';
+      case 'avatar5':
+        return '🧑‍🚀';
+      case 'avatar6':
+        return '💎';
+      case 'avatar7':
+        return '🐳';
+      case 'avatar8':
+        return '⚔️';
+      case 'avatar9':
+        return '🐉';
+      case 'avatar10':
+        return '🔥';
       default:
-        if (currentAvatar!.runes.isNotEmpty && currentAvatar!.runes.first > 127) {
+        if (currentAvatar!.runes.isNotEmpty &&
+            currentAvatar!.runes.first > 127) {
           return currentAvatar!;
         }
         return '👤';

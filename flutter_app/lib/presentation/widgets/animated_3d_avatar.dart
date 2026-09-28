@@ -18,7 +18,8 @@ class Animated3DAvatar extends StatefulWidget {
   State<Animated3DAvatar> createState() => _Animated3DAvatarState();
 }
 
-class _Animated3DAvatarState extends State<Animated3DAvatar> with SingleTickerProviderStateMixin {
+class _Animated3DAvatarState extends State<Animated3DAvatar>
+    with SingleTickerProviderStateMixin {
   bool _isPressed = false;
   late AnimationController _floatController;
   late Animation<double> _floatAnimation;
@@ -26,8 +27,13 @@ class _Animated3DAvatarState extends State<Animated3DAvatar> with SingleTickerPr
   @override
   void initState() {
     super.initState();
-    _floatController = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat(reverse: true);
-    _floatAnimation = Tween<double>(begin: -3.0, end: 3.0).animate(CurvedAnimation(parent: _floatController, curve: Curves.easeInOutSine));
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
+    _floatAnimation = Tween<double>(begin: -3.0, end: 3.0).animate(
+      CurvedAnimation(parent: _floatController, curve: Curves.easeInOutSine),
+    );
   }
 
   @override
@@ -67,25 +73,33 @@ class _Animated3DAvatarState extends State<Animated3DAvatar> with SingleTickerPr
                         : [Colors.white, const Color(0xFFE2E8F0)],
                   ),
                   border: Border.all(
-                    color: widget.isDark ? Colors.white.withValues(alpha: 0.15) : Colors.white,
+                    color: widget.isDark
+                        ? Colors.white.withValues(alpha: 0.15)
+                        : Colors.white,
                     width: widget.size * 0.04,
                   ),
                   boxShadow: [
                     // Sombra principal (3D flotante)
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: widget.isDark ? 0.5 : 0.15),
+                      color: Colors.black.withValues(
+                        alpha: widget.isDark ? 0.5 : 0.15,
+                      ),
                       blurRadius: _isPressed ? 8 : 20,
                       offset: Offset(0, _isPressed ? 4 : 10),
                     ),
                     // Highlight interior superior izquierdo (luz)
                     BoxShadow(
-                      color: widget.isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
+                      color: widget.isDark
+                          ? Colors.white.withValues(alpha: 0.1)
+                          : Colors.white,
                       blurRadius: 10,
                       offset: const Offset(-2, -2),
                     ),
                     // Sombra interior inferior derecha (profundidad)
                     BoxShadow(
-                      color: widget.isDark ? Colors.black.withValues(alpha: 0.5) : const Color(0xFF94A3B8).withValues(alpha: 0.4),
+                      color: widget.isDark
+                          ? Colors.black.withValues(alpha: 0.5)
+                          : const Color(0xFF94A3B8).withValues(alpha: 0.4),
                       blurRadius: 10,
                       offset: const Offset(4, 4),
                     ),
@@ -101,7 +115,7 @@ class _Animated3DAvatarState extends State<Animated3DAvatar> with SingleTickerPr
                           color: Colors.black.withValues(alpha: 0.25),
                           blurRadius: 8,
                           offset: const Offset(2, 4),
-                        )
+                        ),
                       ],
                     ),
                   ),

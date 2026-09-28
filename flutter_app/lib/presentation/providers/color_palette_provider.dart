@@ -109,14 +109,23 @@ class ColorPaletteNotifier extends Notifier<ColorPalette> {
     if (isDark) {
       // Darken colors slightly for dark mode for better contrast
       return [
-        HSLColor.fromColor(p[0]).withLightness((HSLColor.fromColor(p[0]).lightness * 0.75).clamp(0.0, 1.0)).toColor(),
-        HSLColor.fromColor(p[1]).withLightness((HSLColor.fromColor(p[1]).lightness * 0.75).clamp(0.0, 1.0)).toColor(),
+        HSLColor.fromColor(p[0])
+            .withLightness(
+              (HSLColor.fromColor(p[0]).lightness * 0.75).clamp(0.0, 1.0),
+            )
+            .toColor(),
+        HSLColor.fromColor(p[1])
+            .withLightness(
+              (HSLColor.fromColor(p[1]).lightness * 0.75).clamp(0.0, 1.0),
+            )
+            .toColor(),
       ];
     }
     return [p[0], p[1]];
   }
 }
 
-final colorPaletteProvider = NotifierProvider<ColorPaletteNotifier, ColorPalette>(() {
-  return ColorPaletteNotifier();
-});
+final colorPaletteProvider =
+    NotifierProvider<ColorPaletteNotifier, ColorPalette>(() {
+      return ColorPaletteNotifier();
+    });

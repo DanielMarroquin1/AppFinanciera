@@ -19,7 +19,8 @@ class TransactionsListModal extends ConsumerWidget {
         initialChildSize: 0.9,
         minChildSize: 0.5,
         maxChildSize: 0.95,
-        builder: (_, controller) => TransactionsListModalInternal(scrollController: controller),
+        builder: (_, controller) =>
+            TransactionsListModalInternal(scrollController: controller),
       ),
     );
   }
@@ -33,13 +34,18 @@ class TransactionsListModal extends ConsumerWidget {
 class TransactionsListModalInternal extends ConsumerStatefulWidget {
   final ScrollController scrollController;
 
-  const TransactionsListModalInternal({super.key, required this.scrollController});
+  const TransactionsListModalInternal({
+    super.key,
+    required this.scrollController,
+  });
 
   @override
-  ConsumerState<TransactionsListModalInternal> createState() => _TransactionsListModalInternalState();
+  ConsumerState<TransactionsListModalInternal> createState() =>
+      _TransactionsListModalInternalState();
 }
 
-class _TransactionsListModalInternalState extends ConsumerState<TransactionsListModalInternal> {
+class _TransactionsListModalInternalState
+    extends ConsumerState<TransactionsListModalInternal> {
   late DateTime _selectedDate;
 
   @override
@@ -50,17 +56,35 @@ class _TransactionsListModalInternalState extends ConsumerState<TransactionsList
 
   void _changeMonth(int offset) {
     setState(() {
-      _selectedDate = DateTime(_selectedDate.year, _selectedDate.month + offset, 1);
+      _selectedDate = DateTime(
+        _selectedDate.year,
+        _selectedDate.month + offset,
+        1,
+      );
     });
   }
 
   String _getCategoryEmoji(String category) {
-    if (category.runes.isNotEmpty && category.runes.first > 127) return category;
+    if (category.runes.isNotEmpty && category.runes.first > 127)
+      return category;
     const map = {
-      'food': '🍔', 'transport': '🚗', 'shopping': '🛍️', 'bills': '📱',
-      'entertainment': '🎮', 'health': '💊', 'education': '📚', 'home': '🏠', 'pets': '🐾',
-      'salary': '💼', 'freelance': '💻', 'bonus': '🎁', 'investment': '📈',
-      'sale': '🏷️', 'gift': '🎉', 'other': '💸', 'debt': '💳'
+      'food': '🍔',
+      'transport': '🚗',
+      'shopping': '🛍️',
+      'bills': '📱',
+      'entertainment': '🎮',
+      'health': '💊',
+      'education': '📚',
+      'home': '🏠',
+      'pets': '🐾',
+      'salary': '💼',
+      'freelance': '💻',
+      'bonus': '🎁',
+      'investment': '📈',
+      'sale': '🏷️',
+      'gift': '🎉',
+      'other': '💸',
+      'debt': '💳',
     };
     return map[category] ?? '💰';
   }
@@ -72,9 +96,10 @@ class _TransactionsListModalInternalState extends ConsumerState<TransactionsList
     final user = ref.watch(authProvider).user;
     final currencyCode = user?.currency;
     final loc = ref.watch(localizationProvider);
-    
+
     final monthName = DateFormat('MMMM', loc.intlLocale).format(_selectedDate);
-    final capitalizedMonth = monthName[0].toUpperCase() + monthName.substring(1);
+    final capitalizedMonth =
+        monthName[0].toUpperCase() + monthName.substring(1);
 
     return Container(
       decoration: BoxDecoration(
@@ -86,27 +111,38 @@ class _TransactionsListModalInternalState extends ConsumerState<TransactionsList
           // Handle
           Container(
             margin: const EdgeInsets.symmetric(vertical: 12),
-            height: 4, width: 40,
+            height: 4,
+            width: 40,
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(loc.get('all_transactions_title'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 20, fontWeight: FontWeight.bold)),
+                Text(
+                  loc.get('all_transactions_title'),
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 IconButton(
-                  icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                  icon: Icon(
+                    LucideIcons.x,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  ),
                   onPressed: () => Navigator.of(context).pop(),
-                )
+                ),
               ],
             ),
           ),
-          
+
           // Month/Year Selector
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -114,9 +150,16 @@ class _TransactionsListModalInternalState extends ConsumerState<TransactionsList
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  icon: Icon(LucideIcons.chevronLeft, color: isDark ? Colors.grey[400] : Colors.grey[700]),
+                  icon: Icon(
+                    LucideIcons.chevronLeft,
+                    color: isDark ? Colors.grey[400] : Colors.grey[700],
+                  ),
                   onPressed: () => _changeMonth(-1),
-                  style: IconButton.styleFrom(backgroundColor: isDark ? const Color(0xFF374151) : Colors.grey[200]),
+                  style: IconButton.styleFrom(
+                    backgroundColor: isDark
+                        ? const Color(0xFF374151)
+                        : Colors.grey[200],
+                  ),
                 ),
                 Text(
                   '$capitalizedMonth ${_selectedDate.year}',
@@ -127,9 +170,16 @@ class _TransactionsListModalInternalState extends ConsumerState<TransactionsList
                   ),
                 ),
                 IconButton(
-                  icon: Icon(LucideIcons.chevronRight, color: isDark ? Colors.grey[400] : Colors.grey[700]),
+                  icon: Icon(
+                    LucideIcons.chevronRight,
+                    color: isDark ? Colors.grey[400] : Colors.grey[700],
+                  ),
                   onPressed: () => _changeMonth(1),
-                  style: IconButton.styleFrom(backgroundColor: isDark ? const Color(0xFF374151) : Colors.grey[200]),
+                  style: IconButton.styleFrom(
+                    backgroundColor: isDark
+                        ? const Color(0xFF374151)
+                        : Colors.grey[200],
+                  ),
                 ),
               ],
             ),
@@ -140,10 +190,26 @@ class _TransactionsListModalInternalState extends ConsumerState<TransactionsList
             child: transactionsAsync.when(
               data: (transactions) {
                 if (transactions.isEmpty) {
-                  return Center(child: Text(loc.get('no_transactions_registered'), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400])));
+                  return Center(
+                    child: Text(
+                      loc.get('no_transactions_registered'),
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[500] : Colors.grey[400],
+                      ),
+                    ),
+                  );
                 }
-                
-                final sorted = transactions.where((t) => !t.isFixed && t.date.month == _selectedDate.month && t.date.year == _selectedDate.year).toList()..sort((a, b) => b.date.compareTo(a.date));
+
+                final sorted =
+                    transactions
+                        .where(
+                          (t) =>
+                              !t.isFixed &&
+                              t.date.month == _selectedDate.month &&
+                              t.date.year == _selectedDate.year,
+                        )
+                        .toList()
+                      ..sort((a, b) => b.date.compareTo(a.date));
 
                 return ListView.builder(
                   controller: widget.scrollController,
@@ -152,52 +218,110 @@ class _TransactionsListModalInternalState extends ConsumerState<TransactionsList
                   itemBuilder: (context, index) {
                     final tx = sorted[index];
                     final isIncome = tx.type == 'income';
-                    final formattedDate = DateFormat('dd MMM, yyyy - hh:mm a').format(tx.date);
+                    final formattedDate = DateFormat(
+                      'dd MMM, yyyy - hh:mm a',
+                    ).format(tx.date);
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF374151).withValues(alpha: 0.3) : Colors.white,
-                        border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6)),
+                        color: isDark
+                            ? const Color(0xFF374151).withValues(alpha: 0.3)
+                            : Colors.white,
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF374151)
+                              : const Color(0xFFF3F4F6),
+                        ),
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: [if (!isDark) BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))],
+                        boxShadow: [
+                          if (!isDark)
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                        ],
                       ),
                       child: Row(
                         children: [
                           Container(
-                            width: 48, height: 48,
+                            width: 48,
+                            height: 48,
                             decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
+                              color: isDark
+                                  ? const Color(0xFF374151)
+                                  : const Color(0xFFF9FAFB),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Center(child: Text(loc.getCategoryEmoji(tx.category), style: const TextStyle(fontSize: 24))),
+                            child: Center(
+                              child: Text(
+                                loc.getCategoryEmoji(tx.category),
+                                style: const TextStyle(fontSize: 24),
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(tx.description.isNotEmpty ? tx.description : loc.translateCategory(tx.category), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.w500)),
+                                Text(
+                                  tx.description.isNotEmpty
+                                      ? tx.description
+                                      : loc.translateCategory(tx.category),
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : Colors.black,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
                                 const SizedBox(height: 2),
                                 Row(
                                   children: [
-                                    Text(loc.translateCategory(tx.category), style: TextStyle(color: isDark ? const Color(0xFF818CF8) : const Color(0xFF4F46E5), fontSize: 12, fontWeight: FontWeight.w600)),
-                                    Expanded(child: Text(' • $formattedDate', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12), overflow: TextOverflow.ellipsis)),
+                                    Text(
+                                      loc.translateCategory(tx.category),
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? const Color(0xFF818CF8)
+                                            : const Color(0xFF4F46E5),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        ' • $formattedDate',
+                                        style: TextStyle(
+                                          color: isDark
+                                              ? Colors.grey[400]
+                                              : Colors.grey[600],
+                                          fontSize: 12,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ],
                             ),
                           ),
                           Text(
-                            isIncome ? '+${CurrencyFormatter.format(tx.amount, currencyCode)}' : '-${CurrencyFormatter.format(tx.amount, currencyCode)}', 
+                            isIncome
+                                ? '+${CurrencyFormatter.format(tx.amount, currencyCode)}'
+                                : '-${CurrencyFormatter.format(tx.amount, currencyCode)}',
                             style: TextStyle(
-                              color: isIncome 
-                                  ? (isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A))
-                                  : (isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626)), 
+                              color: isIncome
+                                  ? (isDark
+                                        ? const Color(0xFF4ADE80)
+                                        : const Color(0xFF16A34A))
+                                  : (isDark
+                                        ? const Color(0xFFF87171)
+                                        : const Color(0xFFDC2626)),
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
-                            )
+                            ),
                           ),
                         ],
                       ),
@@ -206,9 +330,10 @@ class _TransactionsListModalInternalState extends ConsumerState<TransactionsList
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => Center(child: Text(loc.get('error_loading_tx'))),
+              error: (_, __) =>
+                  Center(child: Text(loc.get('error_loading_tx'))),
             ),
-          )
+          ),
         ],
       ),
     );

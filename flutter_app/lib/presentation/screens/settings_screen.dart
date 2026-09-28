@@ -46,18 +46,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     ref.watch(colorPaletteProvider);
-    final paletteGradient = ref.read(colorPaletteProvider.notifier).getGradient(isDark);
-    
+    final paletteGradient = ref
+        .read(colorPaletteProvider.notifier)
+        .getGradient(isDark);
+
     final authState = ref.watch(authProvider);
     final user = authState.user;
     final isPremium = user?.isPremium ?? false;
-    
+
     final loc = ref.watch(localizationProvider);
     String selectedLanguage = 'Español';
-    if (loc.langCode.startsWith('en')) selectedLanguage = 'English';
-    else if (loc.langCode.startsWith('pt')) selectedLanguage = 'Português';
-    else if (loc.langCode.startsWith('fr')) selectedLanguage = 'Français';
-    else if (loc.langCode.startsWith('it')) selectedLanguage = 'Italiano';
+    if (loc.langCode.startsWith('en'))
+      selectedLanguage = 'English';
+    else if (loc.langCode.startsWith('pt'))
+      selectedLanguage = 'Português';
+    else if (loc.langCode.startsWith('fr'))
+      selectedLanguage = 'Français';
+    else if (loc.langCode.startsWith('it'))
+      selectedLanguage = 'Italiano';
     final selectedCountry = user?.country ?? 'No seleccionado';
     final selectedCurrency = user?.currency ?? 'Dólares (USD)';
 
@@ -69,365 +75,694 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Header
-            Text(
-              loc.get('settings_title'),
-              style: TextStyle(
-                fontSize: 34,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.5,
-                color: isDark ? Colors.white : Colors.black,
-              ),
-            ),
-            const SizedBox(height: 24),
-            
-            // Missing Data Banner
-            if (showBanner && user != null && !user.profileComplete)
-              Container(
-                margin: const EdgeInsets.only(bottom: 24),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFF97316), Color(0xFFEA580C)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(color: const Color(0xFFEA580C).withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))
-                  ],
+            children: [
+              // Header
+              Text(
+                loc.get('settings_title'),
+                style: TextStyle(
+                  fontSize: 34,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
+                  color: isDark ? Colors.white : Colors.black,
                 ),
-                child: Stack(
-                  children: [
-                    Positioned(
-                      top: -5, right: -5,
-                      child: IconButton(
-                        onPressed: () => setState(() => showBanner = false),
-                        icon: const Icon(LucideIcons.x, color: Colors.white70, size: 20),
-                      ),
+              ),
+              const SizedBox(height: 24),
+
+              // Missing Data Banner
+              if (showBanner && user != null && !user.profileComplete)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFF97316), Color(0xFFEA580C)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFEA580C).withValues(alpha: 0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        top: -5,
+                        right: -5,
+                        child: IconButton(
+                          onPressed: () => setState(() => showBanner = false),
+                          icon: const Icon(
+                            LucideIcons.x,
+                            color: Colors.white70,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            LucideIcons.alertCircle,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  loc.get('complete_profile'),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  loc.get('complete_profile_desc'),
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      CompleteProfileModal.show(context),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: const Color(0xFFEA580C),
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                      vertical: 12,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    loc.get('complete_now'),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+              // Profile Card
+              GestureDetector(
+                onTap: () => EditProfileModal.show(context),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isDark
+                            ? Colors.black.withValues(alpha: 0.2)
+                            : Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Animated3DAvatar(
+                        emoji: user?.avatarEmoji ?? '👤',
+                        size: 72,
+                        isDark: isDark,
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user?.name ?? 'Usuario',
+                              style: TextStyle(
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: -0.5,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              user?.email ?? 'correo@email.com',
+                              style: TextStyle(
+                                color: isDark
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
+                                fontSize: 14,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (isPremium) ...[
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(
+                                    0xFFF59E0B,
+                                  ).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: const Color(
+                                      0xFFF59E0B,
+                                    ).withValues(alpha: 0.5),
+                                  ),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      LucideIcons.crown,
+                                      color: Color(0xFFF59E0B),
+                                      size: 12,
+                                    ),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'PREMIUM',
+                                      style: TextStyle(
+                                        color: Color(0xFFF59E0B),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        LucideIcons.chevronRight,
+                        color: isDark ? Colors.grey[600] : Colors.grey[400],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Premium Banner
+              if (!isPremium) ...[
+                GestureDetector(
+                  onTap: () => PremiumModal.show(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: paletteGradient,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: paletteGradient[0].withValues(alpha: 0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Row(
                       children: [
-                        const Icon(LucideIcons.alertCircle, color: Colors.white, size: 28),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            LucideIcons.crown,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(loc.get('complete_profile'), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 6),
-                              Text(loc.get('complete_profile_desc'), style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
-                              const SizedBox(height: 16),
-                              ElevatedButton(
-                                onPressed: () => CompleteProfileModal.show(context),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: const Color(0xFFEA580C),
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              const Text(
+                                'Actualizar a Premium',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                child: Text(loc.get('complete_now'), style: const TextStyle(fontWeight: FontWeight.w800)),
-                              )
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Desbloquea todo el potencial',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  fontSize: 14,
+                                ),
+                              ),
                             ],
                           ),
-                        )
+                        ),
+                        const Icon(LucideIcons.arrowRight, color: Colors.white),
                       ],
                     ),
-                  ],
-                ),
-              ),
-
-            // Profile Card
-            GestureDetector(
-              onTap: () => EditProfileModal.show(context),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
-                    BoxShadow(
-                      color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    )
-                  ]
-                ),
-                child: Row(
-                  children: [
-                    Animated3DAvatar(
-                      emoji: user?.avatarEmoji ?? '👤',
-                      size: 72,
-                      isDark: isDark,
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user?.name ?? 'Usuario',
-                            style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: -0.5),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            user?.email ?? 'correo@email.com', 
-                            style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (isPremium) ...[
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5)),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(LucideIcons.crown, color: Color(0xFFF59E0B), size: 12),
-                                  SizedBox(width: 6),
-                                  Text('PREMIUM', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 10, fontWeight: FontWeight.w900)),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    Icon(LucideIcons.chevronRight, color: isDark ? Colors.grey[600] : Colors.grey[400]),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // Premium Banner
-            if (!isPremium) ...[
-              GestureDetector(
-                onTap: () => PremiumModal.show(context),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: paletteGradient, begin: Alignment.topLeft, end: Alignment.bottomRight),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [BoxShadow(color: paletteGradient[0].withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
-                        child: const Icon(LucideIcons.crown, color: Colors.white, size: 28),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Actualizar a Premium', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 4),
-                            Text('Desbloquea todo el potencial', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
-                          ],
-                        ),
-                      ),
-                      const Icon(LucideIcons.arrowRight, color: Colors.white),
-                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 32),
-            ],
-
-            // Sections
-            _buildSection(
-              isDark,
-              title: loc.get('general'),
-              items: [
-                _buildSettingItem(isDark, icon: LucideIcons.bell, iconBg: isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF), iconColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), title: loc.get('notifications'), subtitle: loc.get('notifications_desc'), onTap: () => _showNotificationsModal(context, isDark)),
-                _buildSettingItem(isDark, icon: LucideIcons.globe, iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE), iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), title: loc.get('language'), subtitle: selectedLanguage, onTap: () => _showLanguageModal(context, isDark)),
-                _buildSettingItem(isDark, icon: LucideIcons.mapPin, iconBg: isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7), iconColor: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A), title: loc.get('country'), subtitle: selectedCountry, onTap: () => _showCountryModal(context, isDark)),
-                _buildSettingItem(isDark, icon: LucideIcons.dollarSign, iconBg: isDark ? const Color(0xFF78350F) : const Color(0xFFFEF3C7), iconColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), title: loc.get('currency'), subtitle: selectedCurrency, onTap: () => _showCurrencyModal(context, isDark)),
-                _buildSettingItem(isDark, icon: LucideIcons.moon, iconBg: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), iconColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFF4B5563), title: loc.get('dark_theme'), subtitle: loc.get('dark_theme_desc'), hasSwitch: true),
+                const SizedBox(height: 32),
               ],
-            ),
-            const SizedBox(height: 24),
 
-            _buildSection(
-              isDark,
-              title: loc.get('security'),
-              items: [
-                _buildSettingItem(isDark, icon: LucideIcons.lock, iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE), iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), title: loc.get('change_password'), subtitle: 'Última actualización hace 3 meses', onTap: () => _showChangePasswordModal(context, isDark)),
-                _buildSettingItem(isDark, icon: LucideIcons.fingerprint, iconBg: isDark ? const Color(0xFF0284C7).withValues(alpha: 0.3) : const Color(0xFFE0F2FE), iconColor: const Color(0xFF38BDF8), title: 'Huella Digital / Face ID', subtitle: 'Acceso rápido biométrico activado', onTap: () => _showBiometricTestModal(context, isDark)),
-                _buildSettingItem(isDark, icon: LucideIcons.mic, iconBg: isDark ? const Color(0xFF8B5CF6).withValues(alpha: 0.3) : const Color(0xFFF3E8FF), iconColor: const Color(0xFF8B5CF6), title: 'Voz de la IA', subtitle: 'Personaliza cómo te habla QUIVO', onTap: () => _showAIVoiceModal(context, isDark)),
-                
-                _buildSettingItem(isDark, icon: LucideIcons.timer, iconBg: isDark ? const Color(0xFF312E81).withValues(alpha: 0.5) : const Color(0xFFE0E7FF), iconColor: const Color(0xFF818CF8), title: 'Cierre Automático (${user?.autoLockMinutes ?? 1} min)', subtitle: 'Protección de privacidad activa', onTap: () => _showTimeoutInfoModal(context, isDark)),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Presupuestos & Sincronización Section
-            _buildSection(
-              isDark,
-              title: 'Automatización & Límites',
-              items: [
-                _buildSettingItem(
-                  isDark,
-                  icon: LucideIcons.zap,
-                  iconBg: isDark ? const Color(0xFF312E81).withValues(alpha: 0.6) : const Color(0xFFE0E7FF),
-                  iconColor: const Color(0xFF6366F1),
-                  title: 'Conexión Bancaria y Siri',
-                  subtitle: 'Clasificación de gastos automática',
-                  badge: !isPremium ? 'PRO' : 'Activo',
-                  badgeColor: !isPremium ? const Color(0xFFD97706) : const Color(0xFF6366F1),
-                  onTap: () {
-                    if (!isPremium) {
-                      PremiumPaywallDialog.show(context, customMessage: 'Conecta notificaciones bancarias y atajos de voz de Siri con el Plan Premium.');
-                    } else {
-                      /* PremiumSyncHubModal removed */
-                    }
-                  },
-                ),
-                _buildSettingItem(isDark, icon: LucideIcons.pieChart, iconBg: isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF), iconColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), title: 'Presupuesto por Categoría', subtitle: 'Establece límites por rubro', badge: !isPremium ? 'PRO' : null, badgeColor: !isPremium ? const Color(0xFFD97706) : null, onTap: () => CategoryBudgetModal.show(context)),
-                _buildSettingItem(isDark, icon: LucideIcons.bellRing, iconBg: isDark ? const Color(0xFF78350F).withValues(alpha: 0.5) : const Color(0xFFFEF3C7), iconColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706), title: 'Alertas de Presupuesto', subtitle: 'Avisos al acercarte al límite', badge: !isPremium ? 'PRO' : null, badgeColor: !isPremium ? const Color(0xFFD97706) : null, onTap: () => _showBudgetAlertModal(context, isDark)),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            _buildSection(
-              isDark,
-              title: 'Apariencia',
-              isPro: true,
-              items: [
-                _buildSettingItem(isDark, icon: LucideIcons.palette, iconBg: isDark ? const Color(0xFF581C87) : const Color(0xFFF3E8FF), iconColor: isDark ? const Color(0xFFC084FC) : const Color(0xFF9333EA), title: 'Paleta de Colores', subtitle: 'Personaliza tu aplicación', onTap: () => ColorPaletteModal.show(context)),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            if (isPremium) ...[
+              // Sections
               _buildSection(
                 isDark,
-                title: 'Suscripción Premium',
+                title: loc.get('general'),
                 items: [
-                  _buildSettingItem(isDark, icon: LucideIcons.crown, iconBg: const Color(0xFFFEF3C7), iconColor: const Color(0xFFD97706), title: 'Plan Premium', subtitle: 'Próxima renovación: 24 Feb 2027', badge: 'Activo', badgeColor: const Color(0xFF10B981)),
+                  _buildSettingItem(
+                    isDark,
+                    icon: LucideIcons.bell,
+                    iconBg: isDark
+                        ? const Color(0xFF581C87)
+                        : const Color(0xFFF3E8FF),
+                    iconColor: isDark
+                        ? const Color(0xFFC084FC)
+                        : const Color(0xFF9333EA),
+                    title: loc.get('notifications'),
+                    subtitle: loc.get('notifications_desc'),
+                    onTap: () => _showNotificationsModal(context, isDark),
+                  ),
+                  _buildSettingItem(
+                    isDark,
+                    icon: LucideIcons.globe,
+                    iconBg: isDark
+                        ? const Color(0xFF1E3A8A)
+                        : const Color(0xFFDBEAFE),
+                    iconColor: isDark
+                        ? const Color(0xFF60A5FA)
+                        : const Color(0xFF2563EB),
+                    title: loc.get('language'),
+                    subtitle: selectedLanguage,
+                    onTap: () => _showLanguageModal(context, isDark),
+                  ),
+                  _buildSettingItem(
+                    isDark,
+                    icon: LucideIcons.mapPin,
+                    iconBg: isDark
+                        ? const Color(0xFF14532D)
+                        : const Color(0xFFDCFCE7),
+                    iconColor: isDark
+                        ? const Color(0xFF4ADE80)
+                        : const Color(0xFF16A34A),
+                    title: loc.get('country'),
+                    subtitle: selectedCountry,
+                    onTap: () => _showCountryModal(context, isDark),
+                  ),
+                  _buildSettingItem(
+                    isDark,
+                    icon: LucideIcons.dollarSign,
+                    iconBg: isDark
+                        ? const Color(0xFF78350F)
+                        : const Color(0xFFFEF3C7),
+                    iconColor: isDark
+                        ? const Color(0xFFFBBF24)
+                        : const Color(0xFFD97706),
+                    title: loc.get('currency'),
+                    subtitle: selectedCurrency,
+                    onTap: () => _showCurrencyModal(context, isDark),
+                  ),
+                  _buildSettingItem(
+                    isDark,
+                    icon: LucideIcons.moon,
+                    iconBg: isDark
+                        ? const Color(0xFF374151)
+                        : const Color(0xFFF3F4F6),
+                    iconColor: isDark
+                        ? const Color(0xFFFBBF24)
+                        : const Color(0xFF4B5563),
+                    title: loc.get('dark_theme'),
+                    subtitle: loc.get('dark_theme_desc'),
+                    hasSwitch: true,
+                  ),
                 ],
               ),
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () => CancelPremiumDialog.show(context),
-                child: Center(
-                  child: Text('Cancelar Suscripción', style: TextStyle(color: isDark ? Colors.redAccent : Colors.red, fontWeight: FontWeight.bold, fontSize: 15)),
-                ),
-              ),
-              const SizedBox(height: 32),
-            ],
+              const SizedBox(height: 24),
 
-            _buildSection(
-              isDark,
-              title: loc.get('help_tutorials'),
-              items: [
-                _buildSettingItem(
-                  isDark,
-                  icon: LucideIcons.lifeBuoy,
-                  iconBg: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE),
-                  iconColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB),
-                  title: loc.get('technical_support'),
-                  subtitle: loc.get('technical_support_desc'),
-                  onTap: () => TechnicalSupportModal.show(context),
-                ),
-                _buildSettingItem(
-                  isDark,
-                  icon: LucideIcons.sparkles,
-                  iconBg: isDark ? const Color(0xFF0F766E) : const Color(0xFFCCFBF1),
-                  iconColor: isDark ? const Color(0xFF2DD4BF) : const Color(0xFF0F766E),
-                  title: loc.get('tutorial_btn'),
-                  subtitle: loc.langCode.startsWith('en') ? 'Learn how to use the app' : 'Aprende a usar la app',
-                  onTap: () async {
-                    final prefs = await SharedPreferences.getInstance();
-                    await prefs.setBool('has_seen_app_tutorial', false);
-                    if (context.mounted) {
-                      context.go('/dashboard');
-                      Future.delayed(const Duration(milliseconds: 500), () {
-                        showTutorialTrigger.value = true;
-                      });
-                    }
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-
-            // Logout Button
-            InkWell(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                    title: const Text('¿Cerrar sesión?', style: TextStyle(fontWeight: FontWeight.bold)),
-                    content: Text('Tendrás que ingresar tus credenciales nuevamente para acceder a tu bóveda.', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context), 
-                        child: Text('Cancelar', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
-                      ),
-                      TextButton(
-                        onPressed: () => context.go('/login'), 
-                        child: const Text('Cerrar Sesión', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
+              _buildSection(
+                isDark,
+                title: loc.get('security'),
+                items: [
+                  _buildSettingItem(
+                    isDark,
+                    icon: LucideIcons.lock,
+                    iconBg: isDark
+                        ? const Color(0xFF1E3A8A)
+                        : const Color(0xFFDBEAFE),
+                    iconColor: isDark
+                        ? const Color(0xFF60A5FA)
+                        : const Color(0xFF2563EB),
+                    title: loc.get('change_password'),
+                    subtitle: 'Última actualización hace 3 meses',
+                    onTap: () => _showChangePasswordModal(context, isDark),
                   ),
-                );
-              },
-              borderRadius: BorderRadius.circular(20),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.redAccent.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(20),
+                  _buildSettingItem(
+                    isDark,
+                    icon: LucideIcons.fingerprint,
+                    iconBg: isDark
+                        ? const Color(0xFF0284C7).withValues(alpha: 0.3)
+                        : const Color(0xFFE0F2FE),
+                    iconColor: const Color(0xFF38BDF8),
+                    title: 'Huella Digital / Face ID',
+                    subtitle: 'Acceso rápido biométrico activado',
+                    onTap: () => _showBiometricTestModal(context, isDark),
+                  ),
+                  _buildSettingItem(
+                    isDark,
+                    icon: LucideIcons.mic,
+                    iconBg: isDark
+                        ? const Color(0xFF8B5CF6).withValues(alpha: 0.3)
+                        : const Color(0xFFF3E8FF),
+                    iconColor: const Color(0xFF8B5CF6),
+                    title: 'Voz de la IA',
+                    subtitle: 'Personaliza cómo te habla QUIVO',
+                    onTap: () => _showAIVoiceModal(context, isDark),
+                  ),
+
+                  _buildSettingItem(
+                    isDark,
+                    icon: LucideIcons.timer,
+                    iconBg: isDark
+                        ? const Color(0xFF312E81).withValues(alpha: 0.5)
+                        : const Color(0xFFE0E7FF),
+                    iconColor: const Color(0xFF818CF8),
+                    title:
+                        'Cierre Automático (${user?.autoLockMinutes ?? 1} min)',
+                    subtitle: 'Protección de privacidad activa',
+                    onTap: () => _showTimeoutInfoModal(context, isDark),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Presupuestos & Sincronización Section
+              _buildSection(
+                isDark,
+                title: 'Automatización & Límites',
+                items: [
+                  _buildSettingItem(
+                    isDark,
+                    icon: LucideIcons.zap,
+                    iconBg: isDark
+                        ? const Color(0xFF312E81).withValues(alpha: 0.6)
+                        : const Color(0xFFE0E7FF),
+                    iconColor: const Color(0xFF6366F1),
+                    title: 'Conexión Bancaria y Siri',
+                    subtitle: 'Clasificación de gastos automática',
+                    badge: !isPremium ? 'PRO' : 'Activo',
+                    badgeColor: !isPremium
+                        ? const Color(0xFFD97706)
+                        : const Color(0xFF6366F1),
+                    onTap: () {
+                      if (!isPremium) {
+                        PremiumPaywallDialog.show(
+                          context,
+                          customMessage:
+                              'Conecta notificaciones bancarias y atajos de voz de Siri con el Plan Premium.',
+                        );
+                      } else {
+                        /* PremiumSyncHubModal removed */
+                      }
+                    },
+                  ),
+                  _buildSettingItem(
+                    isDark,
+                    icon: LucideIcons.pieChart,
+                    iconBg: isDark
+                        ? const Color(0xFF581C87)
+                        : const Color(0xFFF3E8FF),
+                    iconColor: isDark
+                        ? const Color(0xFFC084FC)
+                        : const Color(0xFF9333EA),
+                    title: 'Presupuesto por Categoría',
+                    subtitle: 'Establece límites por rubro',
+                    badge: !isPremium ? 'PRO' : null,
+                    badgeColor: !isPremium ? const Color(0xFFD97706) : null,
+                    onTap: () => CategoryBudgetModal.show(context),
+                  ),
+                  _buildSettingItem(
+                    isDark,
+                    icon: LucideIcons.bellRing,
+                    iconBg: isDark
+                        ? const Color(0xFF78350F).withValues(alpha: 0.5)
+                        : const Color(0xFFFEF3C7),
+                    iconColor: isDark
+                        ? const Color(0xFFFBBF24)
+                        : const Color(0xFFD97706),
+                    title: 'Alertas de Presupuesto',
+                    subtitle: 'Avisos al acercarte al límite',
+                    badge: !isPremium ? 'PRO' : null,
+                    badgeColor: !isPremium ? const Color(0xFFD97706) : null,
+                    onTap: () => _showBudgetAlertModal(context, isDark),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              _buildSection(
+                isDark,
+                title: 'Apariencia',
+                isPro: true,
+                items: [
+                  _buildSettingItem(
+                    isDark,
+                    icon: LucideIcons.palette,
+                    iconBg: isDark
+                        ? const Color(0xFF581C87)
+                        : const Color(0xFFF3E8FF),
+                    iconColor: isDark
+                        ? const Color(0xFFC084FC)
+                        : const Color(0xFF9333EA),
+                    title: 'Paleta de Colores',
+                    subtitle: 'Personaliza tu aplicación',
+                    onTap: () => ColorPaletteModal.show(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              if (isPremium) ...[
+                _buildSection(
+                  isDark,
+                  title: 'Suscripción Premium',
+                  items: [
+                    _buildSettingItem(
+                      isDark,
+                      icon: LucideIcons.crown,
+                      iconBg: const Color(0xFFFEF3C7),
+                      iconColor: const Color(0xFFD97706),
+                      title: 'Plan Premium',
+                      subtitle: 'Próxima renovación: 24 Feb 2027',
+                      badge: 'Activo',
+                      badgeColor: const Color(0xFF10B981),
+                    ),
+                  ],
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(LucideIcons.logOut, color: isDark ? Colors.redAccent : Colors.red, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Cerrar Sesión',
+                const SizedBox(height: 16),
+                GestureDetector(
+                  onTap: () => CancelPremiumDialog.show(context),
+                  child: Center(
+                    child: Text(
+                      'Cancelar Suscripción',
                       style: TextStyle(
                         color: isDark ? Colors.redAccent : Colors.red,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+              ],
+
+              _buildSection(
+                isDark,
+                title: loc.get('help_tutorials'),
+                items: [
+                  _buildSettingItem(
+                    isDark,
+                    icon: LucideIcons.lifeBuoy,
+                    iconBg: isDark
+                        ? const Color(0xFF1E3A8A)
+                        : const Color(0xFFDBEAFE),
+                    iconColor: isDark
+                        ? const Color(0xFF60A5FA)
+                        : const Color(0xFF2563EB),
+                    title: loc.get('technical_support'),
+                    subtitle: loc.get('technical_support_desc'),
+                    onTap: () => TechnicalSupportModal.show(context),
+                  ),
+                  _buildSettingItem(
+                    isDark,
+                    icon: LucideIcons.sparkles,
+                    iconBg: isDark
+                        ? const Color(0xFF0F766E)
+                        : const Color(0xFFCCFBF1),
+                    iconColor: isDark
+                        ? const Color(0xFF2DD4BF)
+                        : const Color(0xFF0F766E),
+                    title: loc.get('tutorial_btn'),
+                    subtitle: loc.langCode.startsWith('en')
+                        ? 'Learn how to use the app'
+                        : 'Aprende a usar la app',
+                    onTap: () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool('has_seen_app_tutorial', false);
+                      if (context.mounted) {
+                        context.go('/dashboard');
+                        Future.delayed(const Duration(milliseconds: 500), () {
+                          showTutorialTrigger.value = true;
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+
+              // Logout Button
+              InkWell(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      backgroundColor: isDark
+                          ? const Color(0xFF1E293B)
+                          : Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      title: const Text(
+                        '¿Cerrar sesión?',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      content: Text(
+                        'Tendrás que ingresar tus credenciales nuevamente para acceder a tu bóveda.',
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(
+                            'Cancelar',
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => context.go('/login'),
+                          child: const Text(
+                            'Cerrar Sesión',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.redAccent.withValues(alpha: 0.1)
+                        : Colors.red.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        LucideIcons.logOut,
+                        color: isDark ? Colors.redAccent : Colors.red,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Cerrar Sesión',
+                        style: TextStyle(
+                          color: isDark ? Colors.redAccent : Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 48),
+
+              // Version Footer
+              Center(
+                child: Column(
+                  children: [
+                    const Icon(
+                      LucideIcons.fingerprint,
+                      size: 28,
+                      color: Color(0xFF6366F1),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Versión 1.2 de QUIVO',
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[500] : Colors.grey[400],
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '© 2026 Tu Ecosistema Financiero',
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[600] : Colors.grey[400],
+                        fontSize: 11,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 48),
-            
-            // Version Footer
-            Center(
-              child: Column(
-                children: [
-                  const Icon(LucideIcons.fingerprint, size: 28, color: Color(0xFF6366F1)),
-                  const SizedBox(height: 8),
-                  Text('Versión 1.2 de QUIVO', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 13, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 2),
-                  Text('© 2026 Tu Ecosistema Financiero', style: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 11)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 100),
-          ],
-        ),
+              const SizedBox(height: 100),
+            ],
+          ),
         ),
       ),
     );
@@ -437,7 +772,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // Section & Item Builders
   // ========================
 
-  Widget _buildSection(bool isDark, {required String title, required List<Widget> items, bool isPro = false}) {
+  Widget _buildSection(
+    bool isDark, {
+    required String title,
+    required List<Widget> items,
+    bool isPro = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -445,15 +785,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           padding: const EdgeInsets.only(left: 12, bottom: 8),
           child: Row(
             children: [
-              Text(title.toUpperCase(), style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
+              Text(
+                title.toUpperCase(),
+                style: TextStyle(
+                  color: isDark ? Colors.grey[500] : Colors.grey[500],
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.2,
+                ),
+              ),
               if (isPro) ...[
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: const Color(0xFFF59E0B).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(6)),
-                  child: const Text('PRO', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 9, fontWeight: FontWeight.w900)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Text(
+                    'PRO',
+                    style: TextStyle(
+                      color: Color(0xFFF59E0B),
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 ),
-              ]
+              ],
             ],
           ),
         ),
@@ -463,7 +824,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.03),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.2)
+                    : Colors.black.withValues(alpha: 0.03),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -479,7 +842,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child,
                     Padding(
                       padding: const EdgeInsets.only(left: 60),
-                      child: Divider(height: 1, color: isDark ? Colors.grey[800] : Colors.grey[100]),
+                      child: Divider(
+                        height: 1,
+                        color: isDark ? Colors.grey[800] : Colors.grey[100],
+                      ),
                     ),
                   ],
                 );
@@ -487,7 +853,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               return child;
             }).toList(),
           ),
-        )
+        ),
       ],
     );
   }
@@ -514,8 +880,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Row(
             children: [
               Container(
-                width: 38, height: 38,
-                decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(10)),
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 child: Icon(icon, color: iconColor, size: 20),
               ),
               const SizedBox(width: 14),
@@ -523,11 +893,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.w600)),
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: 2),
                     Text(
-                      subtitle, 
-                      style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 12),
+                      subtitle,
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[400] : Colors.grey[500],
+                        fontSize: 12,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -536,12 +916,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               if (badge != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: badgeColor != null ? badgeColor.withValues(alpha: 0.15) : (isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7)),
+                    color: badgeColor != null
+                        ? badgeColor.withValues(alpha: 0.15)
+                        : (isDark
+                              ? const Color(0xFF14532D)
+                              : const Color(0xFFDCFCE7)),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text(badge, style: TextStyle(color: badgeColor ?? (isDark ? const Color(0xFF86EFAC) : const Color(0xFF15803D)), fontSize: 11, fontWeight: FontWeight.bold)),
+                  child: Text(
+                    badge,
+                    style: TextStyle(
+                      color:
+                          badgeColor ??
+                          (isDark
+                              ? const Color(0xFF86EFAC)
+                              : const Color(0xFF15803D)),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 )
               else if (hasSwitch)
                 Switch(
@@ -557,7 +955,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   activeTrackColor: const Color(0xFF6366F1),
                 )
               else
-                Icon(LucideIcons.chevronRight, color: isDark ? Colors.grey[700] : Colors.grey[300], size: 20),
+                Icon(
+                  LucideIcons.chevronRight,
+                  color: isDark ? Colors.grey[700] : Colors.grey[300],
+                  size: 20,
+                ),
             ],
           ),
         ),
@@ -592,23 +994,87 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)))),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
               const SizedBox(height: 20),
-              Text('Notificaciones', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+              Text(
+                'Notificaciones',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
               const SizedBox(height: 4),
-              Text('Configura tus alertas y recordatorios', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+              Text(
+                'Configura tus alertas y recordatorios',
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
               const SizedBox(height: 24),
-              _buildSwitchItem(isDark, 'Notificaciones Push', 'Recibir alertas en tu dispositivo', pushEnabled, (v) => setModalState(() => pushEnabled = v), LucideIcons.bell),
-              _buildSwitchItem(isDark, 'Correo Electrónico', 'Resúmenes y alertas por email', emailEnabled, (v) => setModalState(() => emailEnabled = v), LucideIcons.mail),
-              _buildSwitchItem(isDark, 'Alertas de Presupuesto', 'Aviso al acercarte al límite', budgetAlerts, (v) => setModalState(() => budgetAlerts = v), LucideIcons.alertTriangle),
-              _buildSwitchItem(isDark, 'Reporte Semanal', 'Resumen semanal de tus finanzas', weeklyReport, (v) => setModalState(() => weeklyReport = v), LucideIcons.barChart2),
-              _buildSwitchItem(isDark, 'Recordatorio de Ahorro', 'Recordatorio diario para ahorrar', savingsReminder, (v) => setModalState(() => savingsReminder = v), LucideIcons.piggyBank),
-              _buildSwitchItem(isDark, 'Recordatorio Diario (Gastos)', 'Avisos a las 9am, 2pm y 7pm', dailyReminders, (v) => setModalState(() => dailyReminders = v), LucideIcons.clock),
+              _buildSwitchItem(
+                isDark,
+                'Notificaciones Push',
+                'Recibir alertas en tu dispositivo',
+                pushEnabled,
+                (v) => setModalState(() => pushEnabled = v),
+                LucideIcons.bell,
+              ),
+              _buildSwitchItem(
+                isDark,
+                'Correo Electrónico',
+                'Resúmenes y alertas por email',
+                emailEnabled,
+                (v) => setModalState(() => emailEnabled = v),
+                LucideIcons.mail,
+              ),
+              _buildSwitchItem(
+                isDark,
+                'Alertas de Presupuesto',
+                'Aviso al acercarte al límite',
+                budgetAlerts,
+                (v) => setModalState(() => budgetAlerts = v),
+                LucideIcons.alertTriangle,
+              ),
+              _buildSwitchItem(
+                isDark,
+                'Reporte Semanal',
+                'Resumen semanal de tus finanzas',
+                weeklyReport,
+                (v) => setModalState(() => weeklyReport = v),
+                LucideIcons.barChart2,
+              ),
+              _buildSwitchItem(
+                isDark,
+                'Recordatorio de Ahorro',
+                'Recordatorio diario para ahorrar',
+                savingsReminder,
+                (v) => setModalState(() => savingsReminder = v),
+                LucideIcons.piggyBank,
+              ),
+              _buildSwitchItem(
+                isDark,
+                'Recordatorio Diario (Gastos)',
+                'Avisos a las 9am, 2pm y 7pm',
+                dailyReminders,
+                (v) => setModalState(() => dailyReminders = v),
+                LucideIcons.clock,
+              ),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                                    onPressed: () {
+                  onPressed: () {
                     setState(() => notificationsEnabled = pushEnabled);
                     if (dailyReminders) {
                       LocalNotificationService.scheduleDailyTransactionReminders();
@@ -619,13 +1085,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     setState(() {});
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark ? const Color(0xFF7E22CE) : const Color(0xFF9333EA),
+                    backgroundColor: isDark
+                        ? const Color(0xFF7E22CE)
+                        : const Color(0xFF9333EA),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     elevation: 0,
                   ),
-                  child: const Text('Guardar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  child: const Text(
+                    'Guardar',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -636,26 +1109,51 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _buildSwitchItem(bool isDark, String title, String subtitle, bool value, ValueChanged<bool> onChanged, IconData icon) {
+  Widget _buildSwitchItem(
+    bool isDark,
+    String title,
+    String subtitle,
+    bool value,
+    ValueChanged<bool> onChanged,
+    IconData icon,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         children: [
           Container(
-            width: 40, height: 40,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: isDark ? Colors.grey[400] : Colors.grey[500], size: 20),
+            child: Icon(
+              icon,
+              color: isDark ? Colors.grey[400] : Colors.grey[500],
+              size: 20,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14, fontWeight: FontWeight.w500)),
-                Text(subtitle, style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 12)),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: isDark ? Colors.grey[500] : Colors.grey[500],
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ),
           ),
@@ -671,8 +1169,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   void _showLanguageModal(BuildContext context, bool isDark) {
     final loc = ref.watch(localizationProvider);
-    final currentLang = loc.langCode; final user = ref.watch(authProvider).user;
-    
+    final currentLang = loc.langCode;
+    final user = ref.watch(authProvider).user;
+
     final languages = [
       {'code': 'es', 'name': 'Español', 'flag': '🇪🇸'},
       {'code': 'en', 'name': 'English', 'flag': '🇺🇸'},
@@ -694,7 +1193,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: Column(
           children: [
             const SizedBox(height: 12),
-            Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: isDark ? Colors.grey[700] : Colors.grey[300], borderRadius: BorderRadius.circular(4)))),
+            Center(
+              child: Container(
+                width: 48,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey[700] : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
             const SizedBox(height: 24),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -705,7 +1213,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF1E293B) : Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: const Text('🗣️', style: TextStyle(fontSize: 28)),
                   ),
@@ -714,9 +1228,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(loc.get('language'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                        Text(
+                          loc.get('language'),
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text('Elige el idioma de la aplicación', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
+                        Text(
+                          'Elige el idioma de la aplicación',
+                          style: TextStyle(
+                            color: isDark ? Colors.grey[400] : Colors.grey[500],
+                            fontSize: 14,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -726,18 +1254,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 24),
             Expanded(
               child: ListView.builder(
-                padding: EdgeInsets.only(left: 24, right: 24, bottom: MediaQuery.of(context).padding.bottom + 24),
+                padding: EdgeInsets.only(
+                  left: 24,
+                  right: 24,
+                  bottom: MediaQuery.of(context).padding.bottom + 24,
+                ),
                 physics: const BouncingScrollPhysics(),
                 itemCount: languages.length,
                 itemBuilder: (context, index) {
                   final lang = languages[index];
                   final isSelected = currentLang.startsWith(lang['code']!);
-                  
+
                   return GestureDetector(
                     onTap: () {
-                      ref.read(localeProvider.notifier).setLanguage(lang['code']!); if (user != null) { ref.read(authProvider.notifier).updateProfile(user.copyWith(language: lang['name'])); }
+                      ref
+                          .read(localeProvider.notifier)
+                          .setLanguage(lang['code']!);
+                      if (user != null) {
+                        ref
+                            .read(authProvider.notifier)
+                            .updateProfile(
+                              user.copyWith(language: lang['name']),
+                            );
+                      }
                       Navigator.pop(ctx);
-                    setState(() {});
+                      setState(() {});
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
@@ -747,51 +1288,102 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       decoration: BoxDecoration(
                         gradient: isSelected
                             ? LinearGradient(
-                                colors: isDark 
-                                  ? [const Color(0xFF6366F1).withValues(alpha: 0.2), const Color(0xFF4F46E5).withValues(alpha: 0.1)]
-                                  : [const Color(0xFFE0E7FF), const Color(0xFFC7D2FE)],
+                                colors: isDark
+                                    ? [
+                                        const Color(
+                                          0xFF6366F1,
+                                        ).withValues(alpha: 0.2),
+                                        const Color(
+                                          0xFF4F46E5,
+                                        ).withValues(alpha: 0.1),
+                                      ]
+                                    : [
+                                        const Color(0xFFE0E7FF),
+                                        const Color(0xFFC7D2FE),
+                                      ],
                               )
                             : null,
-                        color: isSelected ? null : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                        color: isSelected
+                            ? null
+                            : (isDark ? const Color(0xFF1E293B) : Colors.white),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: isSelected 
-                              ? const Color(0xFF6366F1) 
-                              : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)), 
-                          width: isSelected ? 2.5 : 1
+                          color: isSelected
+                              ? const Color(0xFF6366F1)
+                              : (isDark
+                                    ? const Color(0xFF334155)
+                                    : const Color(0xFFE2E8F0)),
+                          width: isSelected ? 2.5 : 1,
                         ),
-                        boxShadow: isSelected ? [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.25), blurRadius: 15, offset: const Offset(0, 5))] : [],
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: const Color(
+                                    0xFF6366F1,
+                                  ).withValues(alpha: 0.25),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ]
+                            : [],
                       ),
                       child: Row(
                         children: [
                           Container(
-                            width: 48, height: 48,
+                            width: 48,
+                            height: 48,
                             decoration: BoxDecoration(
-                              color: isSelected ? Colors.white.withValues(alpha: isDark ? 0.1 : 0.5) : (isDark ? Colors.black.withValues(alpha: 0.2) : Colors.grey[100]),
+                              color: isSelected
+                                  ? Colors.white.withValues(
+                                      alpha: isDark ? 0.1 : 0.5,
+                                    )
+                                  : (isDark
+                                        ? Colors.black.withValues(alpha: 0.2)
+                                        : Colors.grey[100]),
                               shape: BoxShape.circle,
                             ),
-                            child: Center(child: Text(lang['flag']!, style: const TextStyle(fontSize: 28))),
+                            child: Center(
+                              child: Text(
+                                lang['flag']!,
+                                style: const TextStyle(fontSize: 28),
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: Text(
-                              lang['name']!, 
+                              lang['name']!,
                               style: TextStyle(
-                                color: isDark ? Colors.white : (isSelected ? const Color(0xFF312E81) : Colors.black), 
-                                fontSize: 17, 
-                                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                                color: isDark
+                                    ? Colors.white
+                                    : (isSelected
+                                          ? const Color(0xFF312E81)
+                                          : Colors.black),
+                                fontSize: 17,
+                                fontWeight: isSelected
+                                    ? FontWeight.w900
+                                    : FontWeight.w600,
                                 letterSpacing: -0.3,
-                              )
+                              ),
                             ),
                           ),
-                          if (isSelected) 
+                          if (isSelected)
                             Container(
                               padding: const EdgeInsets.all(6),
                               decoration: const BoxDecoration(
-                                gradient: LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)]),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xFF6366F1),
+                                    Color(0xFF4F46E5),
+                                  ],
+                                ),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(LucideIcons.check, color: Colors.white, size: 16),
+                              child: const Icon(
+                                LucideIcons.check,
+                                color: Colors.white,
+                                size: 16,
+                              ),
                             ),
                         ],
                       ),
@@ -822,7 +1414,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) => Container(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1F2937) : Colors.white,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -833,103 +1427,218 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)))),
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 20),
                 Row(
                   children: [
                     Container(
-                      width: 44, height: 44,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0xFF16A34A), Color(0xFF4ADE80)]),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF16A34A), Color(0xFF4ADE80)],
+                        ),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Icon(LucideIcons.lock, color: Colors.white, size: 24),
+                      child: const Icon(
+                        LucideIcons.lock,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(loc.get('change_password_modal_title'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                          Text(
+                            loc.get('change_password_modal_title'),
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
+                          ),
                           const SizedBox(height: 2),
-                          Text(loc.get('change_password_modal_subtitle'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13)),
+                          Text(
+                            loc.get('change_password_modal_subtitle'),
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                              fontSize: 13,
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
-                _buildPasswordField(isDark, currentPwdCtrl, loc.get('current_password') ?? 'Contraseña Actual', LucideIcons.lock, showCurrent, () => setState(() => showCurrent = !showCurrent)),
+                _buildPasswordField(
+                  isDark,
+                  currentPwdCtrl,
+                  loc.get('current_password') ?? 'Contraseña Actual',
+                  LucideIcons.lock,
+                  showCurrent,
+                  () => setState(() => showCurrent = !showCurrent),
+                ),
                 const SizedBox(height: 12),
-                _buildPasswordField(isDark, newPwdCtrl, loc.get('new_password') ?? 'Nueva Contraseña', LucideIcons.key, showNew, () => setState(() => showNew = !showNew)),
+                _buildPasswordField(
+                  isDark,
+                  newPwdCtrl,
+                  loc.get('new_password') ?? 'Nueva Contraseña',
+                  LucideIcons.key,
+                  showNew,
+                  () => setState(() => showNew = !showNew),
+                ),
                 const SizedBox(height: 12),
-                _buildPasswordField(isDark, confirmPwdCtrl, loc.get('confirm_password') ?? 'Confirmar Contraseña', LucideIcons.checkCircle, showConfirm, () => setState(() => showConfirm = !showConfirm)),
+                _buildPasswordField(
+                  isDark,
+                  confirmPwdCtrl,
+                  loc.get('confirm_password') ?? 'Confirmar Contraseña',
+                  LucideIcons.checkCircle,
+                  showConfirm,
+                  () => setState(() => showConfirm = !showConfirm),
+                ),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: isLoading ? null : () async {
-                      final currentPassword = currentPwdCtrl.text.trim();
-                      final newPassword = newPwdCtrl.text.trim();
-                      final confirmPassword = confirmPwdCtrl.text.trim();
+                    onPressed: isLoading
+                        ? null
+                        : () async {
+                            final currentPassword = currentPwdCtrl.text.trim();
+                            final newPassword = newPwdCtrl.text.trim();
+                            final confirmPassword = confirmPwdCtrl.text.trim();
 
-                      if (currentPassword.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('pwd_complete_all') ?? 'Completa todos los campos'), backgroundColor: Colors.red),
-                        );
-                        return;
-                      }
+                            if (currentPassword.isEmpty ||
+                                newPassword.isEmpty ||
+                                confirmPassword.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  dismissDirection: DismissDirection.horizontal,
+                                  content: Text(
+                                    loc.get('pwd_complete_all') ??
+                                        'Completa todos los campos',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
 
-                      if (newPassword != confirmPassword) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('pwd_mismatch') ?? 'Las contraseñas no coinciden'), backgroundColor: Colors.red),
-                        );
-                        return;
-                      }
+                            if (newPassword != confirmPassword) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  dismissDirection: DismissDirection.horizontal,
+                                  content: Text(
+                                    loc.get('pwd_mismatch') ??
+                                        'Las contraseñas no coinciden',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
 
-                      setState(() => isLoading = true);
-                      try {
-                        final user = FirebaseAuth.instance.currentUser;
-                        if (user != null && user.email != null) {
-                          final AuthCredential credential = EmailAuthProvider.credential(
-                            email: user.email!,
-                            password: currentPassword,
-                          );
-                          await user.reauthenticateWithCredential(credential);
-                          await user.updatePassword(newPassword);
+                            setState(() => isLoading = true);
+                            try {
+                              final user = FirebaseAuth.instance.currentUser;
+                              if (user != null && user.email != null) {
+                                final AuthCredential credential =
+                                    EmailAuthProvider.credential(
+                                      email: user.email!,
+                                      password: currentPassword,
+                                    );
+                                await user.reauthenticateWithCredential(
+                                  credential,
+                                );
+                                await user.updatePassword(newPassword);
 
-                          if (ctx.mounted) {
-                            Navigator.pop(ctx);
-                    setState(() {});
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(dismissDirection: DismissDirection.horizontal, content: Row(children: [const Icon(LucideIcons.checkCircle, color: Colors.white), const SizedBox(width: 12), Text(loc.get('pwd_success') ?? 'Contraseña cambiada con éxito')]),
-                                backgroundColor: const Color(0xFF16A34A),
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                            );
-                          }
-                        }
-                      } catch (e) {
-                        if (ctx.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Error al cambiar contraseña: Verifica tu contraseña actual.'), backgroundColor: Colors.red),
-                          );
-                        }
-                      } finally {
-                        if (context.mounted) setState(() => isLoading = false);
-                      }
-                    },
+                                if (ctx.mounted) {
+                                  Navigator.pop(ctx);
+                                  setState(() {});
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      dismissDirection:
+                                          DismissDirection.horizontal,
+                                      content: Row(
+                                        children: [
+                                          const Icon(
+                                            LucideIcons.checkCircle,
+                                            color: Colors.white,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Text(
+                                            loc.get('pwd_success') ??
+                                                'Contraseña cambiada con éxito',
+                                          ),
+                                        ],
+                                      ),
+                                      backgroundColor: const Color(0xFF16A34A),
+                                      behavior: SnackBarBehavior.floating,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              }
+                            } catch (e) {
+                              if (ctx.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    dismissDirection:
+                                        DismissDirection.horizontal,
+                                    content: Text(
+                                      'Error al cambiar contraseña: Verifica tu contraseña actual.',
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            } finally {
+                              if (context.mounted)
+                                setState(() => isLoading = false);
+                            }
+                          },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? const Color(0xFF16A34A) : const Color(0xFF22C55E),
+                      backgroundColor: isDark
+                          ? const Color(0xFF16A34A)
+                          : const Color(0xFF22C55E),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       elevation: 0,
                     ),
                     child: isLoading
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : Text(loc.get('change_password_modal_title'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            loc.get('change_password_modal_title'),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -939,25 +1648,46 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       final user = FirebaseAuth.instance.currentUser;
                       if (user?.email != null) {
                         try {
-                          await FirebaseAuth.instance.sendPasswordResetEmail(email: user!.email!);
+                          await FirebaseAuth.instance.sendPasswordResetEmail(
+                            email: user!.email!,
+                          );
                           if (ctx.mounted) {
                             Navigator.pop(ctx);
-                    setState(() {});
+                            setState(() {});
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('reset_link_sent')), backgroundColor: const Color(0xFF0284C7)),
+                              SnackBar(
+                                dismissDirection: DismissDirection.horizontal,
+                                content: Text(loc.get('reset_link_sent')),
+                                backgroundColor: const Color(0xFF0284C7),
+                              ),
                             );
                           }
                         } catch (e) {
                           if (ctx.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Error: $e'), backgroundColor: Colors.red),
+                              SnackBar(
+                                dismissDirection: DismissDirection.horizontal,
+                                content: Text('Error: $e'),
+                                backgroundColor: Colors.red,
+                              ),
                             );
                           }
                         }
                       }
                     },
-                    icon: const Icon(LucideIcons.mail, size: 16, color: Color(0xFF0284C7)),
-                    label: Text(loc.get('send_reset_link'), style: const TextStyle(fontSize: 13, color: Color(0xFF0284C7), fontWeight: FontWeight.w600)),
+                    icon: const Icon(
+                      LucideIcons.mail,
+                      size: 16,
+                      color: Color(0xFF0284C7),
+                    ),
+                    label: Text(
+                      loc.get('send_reset_link'),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF0284C7),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -969,33 +1699,55 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _buildPasswordField(bool isDark, TextEditingController ctrl, String hint, IconData icon, bool showText, VoidCallback onToggle) {
+  Widget _buildPasswordField(
+    bool isDark,
+    TextEditingController ctrl,
+    String hint,
+    IconData icon,
+    bool showText,
+    VoidCallback onToggle,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB),
+        ),
       ),
       child: Row(
         children: [
-          Icon(icon, color: isDark ? Colors.grey[500] : Colors.grey[400], size: 20),
+          Icon(
+            icon,
+            color: isDark ? Colors.grey[500] : Colors.grey[400],
+            size: 20,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: TextField(
               controller: ctrl,
               obscureText: !showText,
-              style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14),
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black,
+                fontSize: 14,
+              ),
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400]),
+                hintStyle: TextStyle(
+                  color: isDark ? Colors.grey[500] : Colors.grey[400],
+                ),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 14),
               ),
             ),
           ),
           IconButton(
-            icon: Icon(showText ? LucideIcons.eyeOff : LucideIcons.eye, color: isDark ? Colors.grey[400] : Colors.grey[600], size: 18),
+            icon: Icon(
+              showText ? LucideIcons.eyeOff : LucideIcons.eye,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+              size: 18,
+            ),
             onPressed: onToggle,
           ),
         ],
@@ -1020,162 +1772,366 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             final user = ref.read(authProvider).user;
 
             return Padding(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
               child: Container(
-                constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.85,
+                ),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.5),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
+                  border: Border.all(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
                 ),
                 padding: const EdgeInsets.only(
-                  left: 24, right: 24, top: 24, bottom: 24,
+                  left: 24,
+                  right: 24,
+                  top: 24,
+                  bottom: 24,
                 ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)))),
-                    const SizedBox(height: 20),
-                    Container(
-                      width: 80, height: 80,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0xFF0284C7), Color(0xFF38BDF8)]),
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [BoxShadow(color: const Color(0xFF38BDF8).withValues(alpha: 0.4), blurRadius: 16)],
-                      ),
-                      child: const Center(child: Icon(LucideIcons.fingerprint, color: Colors.white, size: 44)),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(loc.get('biometrics_modal_title'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
-                    const SizedBox(height: 8),
-                    Text(
-                      loc.get('biometrics_modal_desc'),
-                      style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: isEnabled ? const Color(0xFF10B981) : Colors.grey[400]!),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(isEnabled ? LucideIcons.shieldCheck : LucideIcons.shieldOff, color: isEnabled ? const Color(0xFF10B981) : Colors.grey[500], size: 28),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(isEnabled ? loc.get('biometrics_status_enabled') : loc.get('biometrics_status_disabled'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : Colors.black87)),
-                                const SizedBox(height: 2),
-                                Text(isEnabled ? 'Activado para inicio rápido' : 'Inactivo actualmente', style: TextStyle(color: isEnabled ? const Color(0xFF10B981) : Colors.grey[500], fontSize: 12, fontWeight: FontWeight.w600)),
-                              ],
-                            ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[400],
+                            borderRadius: BorderRadius.circular(2),
                           ),
-                          Switch(
-                            value: isEnabled,
-                            activeColor: const Color(0xFF0284C7),
-                            onChanged: (val) async {
-                              if (!val) {
-                                await BiometricService.setBiometricEnabled(false);
-                                setState(() {});
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('biometrics_status_disabled')), backgroundColor: Colors.grey[700]));
-                                }
-                              } else {
-                                if (passwordCtrl.text.trim().isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('biometrics_confirm_password_hint')), backgroundColor: Colors.amber[800]));
-                                  return;
-                                }
-                                final authSuccess = await BiometricService.authenticate(reason: loc.get('biometrics_modal_title'));
-                                if (authSuccess && user?.email != null) {
-                                  await BiometricService.setBiometricEnabled(true, user!.email!, passwordCtrl.text.trim());
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF0284C7), Color(0xFF38BDF8)],
+                          ),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(
+                                0xFF38BDF8,
+                              ).withValues(alpha: 0.4),
+                              blurRadius: 16,
+                            ),
+                          ],
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            LucideIcons.fingerprint,
+                            color: Colors.white,
+                            size: 44,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        loc.get('biometrics_modal_title'),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        loc.get('biometrics_modal_desc'),
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF0F172A)
+                              : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isEnabled
+                                ? const Color(0xFF10B981)
+                                : Colors.grey[400]!,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              isEnabled
+                                  ? LucideIcons.shieldCheck
+                                  : LucideIcons.shieldOff,
+                              color: isEnabled
+                                  ? const Color(0xFF10B981)
+                                  : Colors.grey[500],
+                              size: 28,
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    isEnabled
+                                        ? loc.get('biometrics_status_enabled')
+                                        : loc.get('biometrics_status_disabled'),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black87,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    isEnabled
+                                        ? 'Activado para inicio rápido'
+                                        : 'Inactivo actualmente',
+                                    style: TextStyle(
+                                      color: isEnabled
+                                          ? const Color(0xFF10B981)
+                                          : Colors.grey[500],
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Switch(
+                              value: isEnabled,
+                              activeColor: const Color(0xFF0284C7),
+                              onChanged: (val) async {
+                                if (!val) {
+                                  await BiometricService.setBiometricEnabled(
+                                    false,
+                                  );
                                   setState(() {});
                                   if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('biometrics_status_enabled')), backgroundColor: const Color(0xFF16A34A)));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        dismissDirection:
+                                            DismissDirection.horizontal,
+                                        content: Text(
+                                          loc.get('biometrics_status_disabled'),
+                                        ),
+                                        backgroundColor: Colors.grey[700],
+                                      ),
+                                    );
                                   }
+                                } else {
+                                  if (passwordCtrl.text.trim().isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        dismissDirection:
+                                            DismissDirection.horizontal,
+                                        content: Text(
+                                          loc.get(
+                                            'biometrics_confirm_password_hint',
+                                          ),
+                                        ),
+                                        backgroundColor: Colors.amber[800],
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  final authSuccess =
+                                      await BiometricService.authenticate(
+                                        reason: loc.get(
+                                          'biometrics_modal_title',
+                                        ),
+                                      );
+                                  if (authSuccess && user?.email != null) {
+                                    await BiometricService.setBiometricEnabled(
+                                      true,
+                                      user!.email!,
+                                      passwordCtrl.text.trim(),
+                                    );
+                                    setState(() {});
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          dismissDirection:
+                                              DismissDirection.horizontal,
+                                          content: Text(
+                                            loc.get(
+                                              'biometrics_status_enabled',
+                                            ),
+                                          ),
+                                          backgroundColor: const Color(
+                                            0xFF16A34A,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      if (!isEnabled) ...[
+                        _buildPasswordField(
+                          isDark,
+                          passwordCtrl,
+                          loc.get('biometrics_confirm_password_hint'),
+                          LucideIcons.lock,
+                          showPassword,
+                          () => setState(() => showPassword = !showPassword),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              if (passwordCtrl.text.trim().isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    dismissDirection:
+                                        DismissDirection.horizontal,
+                                    content: Text(
+                                      loc.get(
+                                        'biometrics_confirm_password_hint',
+                                      ),
+                                    ),
+                                    backgroundColor: Colors.amber[800],
+                                  ),
+                                );
+                                return;
+                              }
+                              final success =
+                                  await BiometricService.authenticate(
+                                    reason: loc.get('biometrics_modal_title'),
+                                  );
+                              if (success && user?.email != null) {
+                                await BiometricService.setBiometricEnabled(
+                                  true,
+                                  user!.email!,
+                                  passwordCtrl.text.trim(),
+                                );
+                                setState(() {});
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      dismissDirection:
+                                          DismissDirection.horizontal,
+                                      content: Text(
+                                        loc.get('biometrics_status_enabled'),
+                                      ),
+                                      backgroundColor: const Color(0xFF16A34A),
+                                    ),
+                                  );
                                 }
                               }
                             },
+                            icon: const Icon(LucideIcons.fingerprint, size: 20),
+                            label: Text(
+                              loc.get('biometrics_toggle_enable'),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0284C7),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 0,
+                            ),
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    if (!isEnabled) ...[
-                      _buildPasswordField(isDark, passwordCtrl, loc.get('biometrics_confirm_password_hint'), LucideIcons.lock, showPassword, () => setState(() => showPassword = !showPassword)),
-                      const SizedBox(height: 16),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
                       SizedBox(
                         width: double.infinity,
-                        child: ElevatedButton.icon(
+                        child: OutlinedButton.icon(
                           onPressed: () async {
-                            if (passwordCtrl.text.trim().isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('biometrics_confirm_password_hint')), backgroundColor: Colors.amber[800]));
-                              return;
-                            }
-                            final success = await BiometricService.authenticate(reason: loc.get('biometrics_modal_title'));
-                            if (success && user?.email != null) {
-                              await BiometricService.setBiometricEnabled(true, user!.email!, passwordCtrl.text.trim());
-                              setState(() {});
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(dismissDirection: DismissDirection.horizontal, content: Text(loc.get('biometrics_status_enabled')), backgroundColor: const Color(0xFF16A34A)));
-                              }
+                            final success = await BiometricService.authenticate(
+                              reason: loc.get('biometrics_modal_title'),
+                            );
+                            if (context.mounted && success) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  dismissDirection: DismissDirection.horizontal,
+                                  content: Row(
+                                    children: [
+                                      const Icon(
+                                        LucideIcons.checkCircle,
+                                        color: Colors.white,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          loc.get('biometrics_test_success'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  backgroundColor: const Color(0xFF0284C7),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                              );
                             }
                           },
                           icon: const Icon(LucideIcons.fingerprint, size: 20),
-                          label: Text(loc.get('biometrics_toggle_enable'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0284C7),
-                            foregroundColor: Colors.white,
+                          label: Text(
+                            loc.get('biometrics_test_btn'),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: isDark
+                                ? const Color(0xFF38BDF8)
+                                : const Color(0xFF0284C7),
+                            side: BorderSide(
+                              color: isDark
+                                  ? const Color(0xFF38BDF8)
+                                  : const Color(0xFF0284C7),
+                            ),
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                     ],
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          final success = await BiometricService.authenticate(reason: loc.get('biometrics_modal_title'));
-                          if (context.mounted && success) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(dismissDirection: DismissDirection.horizontal, content: Row(children: [const Icon(LucideIcons.checkCircle, color: Colors.white), const SizedBox(width: 12), Expanded(child: Text(loc.get('biometrics_test_success')))]),
-                                backgroundColor: const Color(0xFF0284C7),
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              ),
-                            );
-                          }
-                        },
-                        icon: const Icon(LucideIcons.fingerprint, size: 20),
-                        label: Text(loc.get('biometrics_test_btn'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
-                          side: BorderSide(color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+                  ),
                 ),
               ),
-            ));
+            );
           },
         ),
       ),
     );
   }
 
-  
   void _showAIVoiceModal(BuildContext context, bool isDark) async {
     final prefs = await SharedPreferences.getInstance();
     String currentVoice = prefs.getString('ai_voice_preset') ?? 'amigable';
@@ -1191,52 +2147,100 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (context, setModalState) {
           final voices = [
-            {'id': 'amigable', 'name': 'Femenina Amigable (QUIVO)', 'icon': LucideIcons.sparkles, 'desc': 'Un tono más agudo, rápido y empático.'},
-            {'id': 'profesional', 'name': 'Masculina Profesional', 'icon': LucideIcons.briefcase, 'desc': 'Un tono grave, pausado y ejecutivo.'},
-            {'id': 'neutra', 'name': 'Voz Neutra Estándar', 'icon': LucideIcons.bot, 'desc': 'El tono por defecto del sistema sin ajustes.'}
+            {
+              'id': 'amigable',
+              'name': 'Femenina Amigable (QUIVO)',
+              'icon': LucideIcons.sparkles,
+              'desc': 'Un tono más agudo, rápido y empático.',
+            },
+            {
+              'id': 'profesional',
+              'name': 'Masculina Profesional',
+              'icon': LucideIcons.briefcase,
+              'desc': 'Un tono grave, pausado y ejecutivo.',
+            },
+            {
+              'id': 'neutra',
+              'name': 'Voz Neutra Estándar',
+              'icon': LucideIcons.bot,
+              'desc': 'El tono por defecto del sistema sin ajustes.',
+            },
           ];
 
           return Container(
             padding: EdgeInsets.only(
-              left: 24, 
-              right: 24, 
-              top: 24, 
-              bottom: MediaQuery.of(context).viewInsets.bottom + 24
+              left: 24,
+              right: 24,
+              top: 24,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
             ),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(32),
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(4)))),
+                Center(
+                  child: Container(
+                    width: 48,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 24),
-                Text('Voz de IA', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                Text(
+                  'Voz de IA',
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                Text('Personaliza cómo te habla QUIVO en los ingresos por voz.', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+                Text(
+                  'Personaliza cómo te habla QUIVO en los ingresos por voz.',
+                  style: TextStyle(
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                ),
                 const SizedBox(height: 24),
                 ...voices.map((v) {
                   final isSelected = currentVoice == v['id'];
                   return GestureDetector(
                     onTap: () async {
                       setModalState(() => currentVoice = v['id'] as String);
-                      
+
                       // Setup Language and get OS voices
                       String lang = loc.intlLocale;
                       try {
-                         await TtsHelper.configureTts(flutterTts, lang);
+                        await TtsHelper.configureTts(flutterTts, lang);
                       } catch (e) {
-                         debugPrint("Error setting TTS voice: $e");
+                        debugPrint("Error setting TTS voice: $e");
                       }
-                      
+
                       // Speak greeting according to language
-                      String greeting = 'Hola, Soy Sami, tu asistente financiero';
-                      if (lang == 'en') greeting = 'Hello, I am Sami, your financial assistant';
-                      if (lang == 'fr') greeting = 'Bonjour, je suis Sami, votre assistant financier';
-                      if (lang == 'it') greeting = 'Ciao, sono Sami, il tuo assistente finanziario';
-                      if (lang == 'pt') greeting = 'Olá, eu sou Sami, seu assistente financeiro';
+                      String greeting =
+                          'Hola, Soy Sami, tu asistente financiero';
+                      if (lang == 'en')
+                        greeting = 'Hello, I am Sami, your financial assistant';
+                      if (lang == 'fr')
+                        greeting =
+                            'Bonjour, je suis Sami, votre assistant financier';
+                      if (lang == 'it')
+                        greeting =
+                            'Ciao, sono Sami, il tuo assistente finanziario';
+                      if (lang == 'pt')
+                        greeting =
+                            'Olá, eu sou Sami, seu assistente financeiro';
 
                       await flutterTts.speak(greeting);
                     },
@@ -1245,25 +2249,63 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: isSelected ? (isDark ? const Color(0xFF8B5CF6).withOpacity(0.15) : const Color(0xFFEDE9FE)) : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                        color: isSelected
+                            ? (isDark
+                                  ? const Color(0xFF8B5CF6).withOpacity(0.15)
+                                  : const Color(0xFFEDE9FE))
+                            : (isDark ? const Color(0xFF1E293B) : Colors.white),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: isSelected ? const Color(0xFF8B5CF6) : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)), width: isSelected ? 2 : 1),
+                        border: Border.all(
+                          color: isSelected
+                              ? const Color(0xFF8B5CF6)
+                              : (isDark
+                                    ? const Color(0xFF334155)
+                                    : const Color(0xFFE2E8F0)),
+                          width: isSelected ? 2 : 1,
+                        ),
                       ),
                       child: Row(
                         children: [
-                          Icon(v['icon'] as IconData, color: isSelected ? const Color(0xFF8B5CF6) : (isDark ? Colors.grey[400] : Colors.grey[600]), size: 28),
+                          Icon(
+                            v['icon'] as IconData,
+                            color: isSelected
+                                ? const Color(0xFF8B5CF6)
+                                : (isDark
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600]),
+                            size: 28,
+                          ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(v['name'] as String, style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
+                                Text(
+                                  v['name'] as String,
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : Colors.black,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                                 const SizedBox(height: 4),
-                                Text(v['desc'] as String, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                                Text(
+                                  v['desc'] as String,
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                          if (isSelected) const Icon(LucideIcons.checkCircle2, color: Color(0xFF8B5CF6)),
+                          if (isSelected)
+                            const Icon(
+                              LucideIcons.checkCircle2,
+                              color: Color(0xFF8B5CF6),
+                            ),
                         ],
                       ),
                     ),
@@ -1280,9 +2322,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     backgroundColor: const Color(0xFF8B5CF6),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                  child: const Text('Guardar y Aplicar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Guardar y Aplicar',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),
@@ -1291,7 +2338,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     );
   }
-
 
   void _showTimeoutInfoModal(BuildContext context, bool isDark) {
     final loc = ref.read(localizationProvider);
@@ -1307,7 +2353,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1F2937) : Colors.white,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border.all(color: const Color(0xFF818CF8).withValues(alpha: 0.3), width: 1.5),
+            border: Border.all(
+              color: const Color(0xFF818CF8).withValues(alpha: 0.3),
+              width: 1.5,
+            ),
           ),
           padding: const EdgeInsets.all(24),
           child: SingleChildScrollView(
@@ -1315,23 +2364,57 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)))),
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 20),
                 Container(
-                  width: 80, height: 80,
+                  width: 80,
+                  height: 80,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFF312E81), Color(0xFF6366F1)]),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF312E81), Color(0xFF6366F1)],
+                    ),
                     borderRadius: BorderRadius.circular(24),
-                    boxShadow: [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.4), blurRadius: 16)],
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.4),
+                        blurRadius: 16,
+                      ),
+                    ],
                   ),
-                  child: const Center(child: Icon(LucideIcons.timer, color: Colors.white, size: 44)),
+                  child: const Center(
+                    child: Icon(
+                      LucideIcons.timer,
+                      color: Colors.white,
+                      size: 44,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
-                Text(loc.get('auto_lock_modal_title'), style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black), textAlign: TextAlign.center),
+                Text(
+                  loc.get('auto_lock_modal_title'),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 8),
                 Text(
                   loc.get('auto_lock_modal_desc'),
-                  style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13),
+                  style: TextStyle(
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    fontSize: 13,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -1345,7 +2428,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   () async {
                     setState(() => currentMinutes = 1);
                     if (user != null) {
-                      await ref.read(authProvider.notifier).updateProfile(user.copyWith(autoLockMinutes: 1));
+                      await ref
+                          .read(authProvider.notifier)
+                          .updateProfile(user.copyWith(autoLockMinutes: 1));
                     }
                   },
                 ),
@@ -1360,7 +2445,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   () async {
                     setState(() => currentMinutes = 2);
                     if (user != null) {
-                      await ref.read(authProvider.notifier).updateProfile(user.copyWith(autoLockMinutes: 2));
+                      await ref
+                          .read(authProvider.notifier)
+                          .updateProfile(user.copyWith(autoLockMinutes: 2));
                     }
                   },
                 ),
@@ -1375,7 +2462,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   () async {
                     setState(() => currentMinutes = 5);
                     if (user != null) {
-                      await ref.read(authProvider.notifier).updateProfile(user.copyWith(autoLockMinutes: 5));
+                      await ref
+                          .read(authProvider.notifier)
+                          .updateProfile(user.copyWith(autoLockMinutes: 5));
                     }
                   },
                 ),
@@ -1386,12 +2475,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(ctx);
-                    setState(() {});
+                      setState(() {});
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(dismissDirection: DismissDirection.horizontal, content: Row(children: [const Icon(LucideIcons.checkCircle, color: Colors.white), const SizedBox(width: 12), Text('${loc.get('auto_lock_updated_snack')} $currentMinutes min')]),
+                        SnackBar(
+                          dismissDirection: DismissDirection.horizontal,
+                          content: Row(
+                            children: [
+                              const Icon(
+                                LucideIcons.checkCircle,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                '${loc.get('auto_lock_updated_snack')} $currentMinutes min',
+                              ),
+                            ],
+                          ),
                           backgroundColor: const Color(0xFF6366F1),
                           behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                       );
                     },
@@ -1399,10 +2503,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       backgroundColor: const Color(0xFF4F46E5),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       elevation: 0,
                     ),
-                    child: const Text('Confirmar y Guardar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    child: const Text(
+                      'Confirmar y Guardar',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -1414,17 +2526,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _buildAutoLockOption(bool isDark, int minutes, String label, bool isSelected, VoidCallback onTap) {
+  Widget _buildAutoLockOption(
+    bool isDark,
+    int minutes,
+    String label,
+    bool isSelected,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? (isDark ? const Color(0xFF312E81).withValues(alpha: 0.5) : const Color(0xFFEEF2FF))
+          color: isSelected
+              ? (isDark
+                    ? const Color(0xFF312E81).withValues(alpha: 0.5)
+                    : const Color(0xFFEEF2FF))
               : (isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB)),
           border: Border.all(
-            color: isSelected ? const Color(0xFF6366F1) : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
+            color: isSelected
+                ? const Color(0xFF6366F1)
+                : (isDark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB)),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(16),
@@ -1432,7 +2554,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: Row(
           children: [
             Icon(
-              isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              isSelected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
               color: isSelected ? const Color(0xFF6366F1) : Colors.grey[500],
             ),
             const SizedBox(width: 14),
@@ -1452,11 +2576,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-
   void _showBudgetAlertModal(BuildContext context, bool isDark) {
     final isPremium = ref.read(authProvider).user?.isPremium ?? false;
     if (!isPremium) {
-      PremiumPaywallDialog.show(context, customMessage: 'Establece alertas de presupuesto y recibe notificaciones antes de exceder tu límite con el Plan Premium.');
+      PremiumPaywallDialog.show(
+        context,
+        customMessage:
+            'Establece alertas de presupuesto y recibe notificaciones antes de exceder tu límite con el Plan Premium.',
+      );
       return;
     }
     final user = ref.read(authProvider).user;
@@ -1481,35 +2608,72 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             }
           }
           final calculatedLimit = (totalIncome * alertThreshold) / 100.0;
-          final isOverLimit = totalIncome > 0 && totalExpense >= calculatedLimit;
+          final isOverLimit =
+              totalIncome > 0 && totalExpense >= calculatedLimit;
 
           return Container(
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF1F2937) : Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
             ),
             padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)))),
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 20),
                 Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: isDark ? const Color(0xFF78350F).withValues(alpha: 0.3) : const Color(0xFFFEF3C7), shape: BoxShape.circle),
-                      child: Icon(LucideIcons.bellRing, color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706)),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF78350F).withValues(alpha: 0.3)
+                            : const Color(0xFFFEF3C7),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        LucideIcons.bellRing,
+                        color: isDark
+                            ? const Color(0xFFFBBF24)
+                            : const Color(0xFFD97706),
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Alertas de Presupuesto', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                          Text(
+                            'Alertas de Presupuesto',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
+                          ),
                           const SizedBox(height: 2),
-                          Text('Configura y sincroniza con tu límite de Inicio', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13)),
+                          Text(
+                            'Configura y sincroniza con tu límite de Inicio',
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                              fontSize: 13,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -1519,18 +2683,38 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF78350F).withValues(alpha: 0.3) : const Color(0xFFFEF3C7),
+                    color: isDark
+                        ? const Color(0xFF78350F).withValues(alpha: 0.3)
+                        : const Color(0xFFFEF3C7),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: isDark ? const Color(0xFF92400E) : const Color(0xFFFDE68A)),
+                    border: Border.all(
+                      color: isDark
+                          ? const Color(0xFF92400E)
+                          : const Color(0xFFFDE68A),
+                    ),
                   ),
                   child: Column(
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(LucideIcons.bellRing, color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706)),
+                          Icon(
+                            LucideIcons.bellRing,
+                            color: isDark
+                                ? const Color(0xFFFBBF24)
+                                : const Color(0xFFD97706),
+                          ),
                           const SizedBox(width: 8),
-                          Text('Alertar al ${alertThreshold.toStringAsFixed(0)}% de los ingresos', style: TextStyle(color: isDark ? const Color(0xFFFBBF24) : const Color(0xFF92400E), fontWeight: FontWeight.bold, fontSize: 16)),
+                          Text(
+                            'Alertar al ${alertThreshold.toStringAsFixed(0)}% de los ingresos',
+                            style: TextStyle(
+                              color: isDark
+                                  ? const Color(0xFFFBBF24)
+                                  : const Color(0xFF92400E),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -1539,16 +2723,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         min: 50,
                         max: 100,
                         divisions: 10,
-                        activeColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
-                        inactiveColor: isDark ? const Color(0xFF374151) : const Color(0xFFFDE68A),
+                        activeColor: isDark
+                            ? const Color(0xFFFBBF24)
+                            : const Color(0xFFD97706),
+                        inactiveColor: isDark
+                            ? const Color(0xFF374151)
+                            : const Color(0xFFFDE68A),
                         label: '${alertThreshold.toStringAsFixed(0)}%',
-                        onChanged: (v) => setModalState(() => alertThreshold = v),
+                        onChanged: (v) =>
+                            setModalState(() => alertThreshold = v),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('50% (Muy anticipado)', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
-                          Text('100% (Al tope)', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                          Text(
+                            '50% (Muy anticipado)',
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          ),
+                          Text(
+                            '100% (Al tope)',
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -1559,14 +2764,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () async {
-                      ref.read(authProvider.notifier).updateMonthlyLimit(alertThreshold);
+                      ref
+                          .read(authProvider.notifier)
+                          .updateMonthlyLimit(alertThreshold);
                       Navigator.pop(ctx);
-                    setState(() {});
+                      setState(() {});
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Alerta de presupuesto general guardada y sincronizada (${alertThreshold.toStringAsFixed(0)}%)', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                          backgroundColor: isDark ? const Color(0xFF10B981) : const Color(0xFF059669),
+                        SnackBar(
+                          dismissDirection: DismissDirection.horizontal,
+                          content: Text(
+                            'Alerta de presupuesto general guardada y sincronizada (${alertThreshold.toStringAsFixed(0)}%)',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          backgroundColor: isDark
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFF059669),
                           behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                       );
 
@@ -1574,17 +2793,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         showDialog(
                           context: context,
                           builder: (dCtx) => AlertDialog(
-                            backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                            backgroundColor: isDark
+                                ? const Color(0xFF1F2937)
+                                : Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
                             title: Row(
                               children: [
                                 Container(
                                   padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), shape: BoxShape.circle),
-                                  child: const Icon(LucideIcons.alertTriangle, color: Colors.red),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    LucideIcons.alertTriangle,
+                                    color: Colors.red,
+                                  ),
                                 ),
                                 const SizedBox(width: 16),
-                                Expanded(child: Text('¡Límite General Alcanzado!', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold))),
+                                Expanded(
+                                  child: Text(
+                                    '¡Límite General Alcanzado!',
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                             content: Column(
@@ -1592,38 +2831,84 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               children: [
                                 Text(
                                   'Has gastado el 103% de tus ingresos mensuales, superando tu límite establecido del ${alertThreshold.toInt()}%.',
-                                  style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[800], fontSize: 16),
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.grey[300]
+                                        : Colors.grey[800],
+                                    fontSize: 16,
+                                  ),
                                 ),
                                 const SizedBox(height: 16),
                                 Container(
                                   padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(16)),
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? const Color(0xFF374151)
+                                        : const Color(0xFFF3F4F6),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
                                   child: Column(
                                     children: [
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text('Presupuesto Máximo:', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
-                                          Text('$sym${calculatedLimit.toStringAsFixed(0)}', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
+                                          Text(
+                                            'Presupuesto Máximo:',
+                                            style: TextStyle(
+                                              color: isDark
+                                                  ? Colors.grey[400]
+                                                  : Colors.grey[600],
+                                            ),
+                                          ),
+                                          Text(
+                                            '$sym${calculatedLimit.toStringAsFixed(0)}',
+                                            style: TextStyle(
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         ],
                                       ),
                                       const SizedBox(height: 8),
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text('Total Gastado:', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600])),
-                                          Text('$sym${totalExpense.toStringAsFixed(0)}', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                          Text(
+                                            'Total Gastado:',
+                                            style: TextStyle(
+                                              color: isDark
+                                                  ? Colors.grey[400]
+                                                  : Colors.grey[600],
+                                            ),
+                                          ),
+                                          Text(
+                                            '$sym${totalExpense.toStringAsFixed(0)}',
+                                            style: const TextStyle(
+                                              color: Colors.red,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ],
                                   ),
-                                )
+                                ),
                               ],
                             ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(dCtx),
-                                child: const Text('Entendido', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                child: const Text(
+                                  'Entendido',
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -1631,24 +2916,44 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       }
 
                       if (user != null) {
-                        final updated = user.copyWith(monthlyLimit: alertThreshold);
-                        await ref.read(authProvider.notifier).updateProfile(updated);
+                        final updated = user.copyWith(
+                          monthlyLimit: alertThreshold,
+                        );
+                        await ref
+                            .read(authProvider.notifier)
+                            .updateProfile(updated);
                         if (!context.mounted) return;
                         Navigator.pop(ctx);
-                    setState(() {});
+                        setState(() {});
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Límite y alertas actualizados a $sym${alertThreshold.toStringAsFixed(0)}'), backgroundColor: Colors.green),
+                          SnackBar(
+                            dismissDirection: DismissDirection.horizontal,
+                            content: Text(
+                              'Límite y alertas actualizados a $sym${alertThreshold.toStringAsFixed(0)}',
+                            ),
+                            backgroundColor: Colors.green,
+                          ),
                         );
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? const Color(0xFFD97706) : const Color(0xFFF59E0B),
+                      backgroundColor: isDark
+                          ? const Color(0xFFD97706)
+                          : const Color(0xFFF59E0B),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       elevation: 0,
                     ),
-                    child: const Text('Guardar y Sincronizar Alertas', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    child: const Text(
+                      'Guardar y Sincronizar Alertas',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -1660,7 +2965,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  
   Widget _buildCancelFeature(bool isDark, String emoji, String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -1668,7 +2972,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         children: [
           Text(emoji, style: const TextStyle(fontSize: 16)),
           const SizedBox(width: 8),
-          Text(text, style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 14)),
+          Text(
+            text,
+            style: TextStyle(
+              color: isDark ? Colors.grey[300] : Colors.grey[700],
+              fontSize: 14,
+            ),
+          ),
         ],
       ),
     );
@@ -1677,27 +2987,102 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _showCountryModal(BuildContext context, bool isDark) {
     final Map<String, List<Map<String, String>>> regions = {
       'Norte': [
-        {'code': 'US', 'name': 'Estados Unidos', 'flag': '🇺🇸', 'currencyName': 'Dólares (USD)'},
-        {'code': 'MX', 'name': 'México', 'flag': '🇲🇽', 'currencyName': 'Pesos Mexicanos (MXN)'},
+        {
+          'code': 'US',
+          'name': 'Estados Unidos',
+          'flag': '🇺🇸',
+          'currencyName': 'Dólares (USD)',
+        },
+        {
+          'code': 'MX',
+          'name': 'México',
+          'flag': '🇲🇽',
+          'currencyName': 'Pesos Mexicanos (MXN)',
+        },
       ],
       'Centro': [
-        {'code': 'GT', 'name': 'Guatemala', 'flag': '🇬🇹', 'currencyName': 'Quetzales (GTQ)'},
-        {'code': 'CR', 'name': 'Costa Rica', 'flag': '🇨🇷', 'currencyName': 'Colones (CRC)'},
-        {'code': 'SV', 'name': 'El Salvador', 'flag': '🇸🇻', 'currencyName': 'Dólares (USD)'},
-        {'code': 'HN', 'name': 'Honduras', 'flag': '🇭🇳', 'currencyName': 'Lempiras (HNL)'},
-        {'code': 'NI', 'name': 'Nicaragua', 'flag': '🇳🇮', 'currencyName': 'Córdobas (NIO)'},
-        {'code': 'PA', 'name': 'Panamá', 'flag': '🇵🇦', 'currencyName': 'Balboas/Dólares (PAB/USD)'},
-        {'code': 'BZ', 'name': 'Belice', 'flag': '🇧🇿', 'currencyName': 'Dólares Beliceños (BZD)'},
+        {
+          'code': 'GT',
+          'name': 'Guatemala',
+          'flag': '🇬🇹',
+          'currencyName': 'Quetzales (GTQ)',
+        },
+        {
+          'code': 'CR',
+          'name': 'Costa Rica',
+          'flag': '🇨🇷',
+          'currencyName': 'Colones (CRC)',
+        },
+        {
+          'code': 'SV',
+          'name': 'El Salvador',
+          'flag': '🇸🇻',
+          'currencyName': 'Dólares (USD)',
+        },
+        {
+          'code': 'HN',
+          'name': 'Honduras',
+          'flag': '🇭🇳',
+          'currencyName': 'Lempiras (HNL)',
+        },
+        {
+          'code': 'NI',
+          'name': 'Nicaragua',
+          'flag': '🇳🇮',
+          'currencyName': 'Córdobas (NIO)',
+        },
+        {
+          'code': 'PA',
+          'name': 'Panamá',
+          'flag': '🇵🇦',
+          'currencyName': 'Balboas/Dólares (PAB/USD)',
+        },
+        {
+          'code': 'BZ',
+          'name': 'Belice',
+          'flag': '🇧🇿',
+          'currencyName': 'Dólares Beliceños (BZD)',
+        },
       ],
       'Sur': [
-        {'code': 'CO', 'name': 'Colombia', 'flag': '🇨🇴', 'currencyName': 'Pesos Colombianos (COP)'},
-        {'code': 'CL', 'name': 'Chile', 'flag': '🇨🇱', 'currencyName': 'Pesos Chilenos (CLP)'},
-        {'code': 'PE', 'name': 'Perú', 'flag': '🇵🇪', 'currencyName': 'Soles (PEN)'},
-        {'code': 'AR', 'name': 'Argentina', 'flag': '🇦🇷', 'currencyName': 'Pesos Argentinos (ARS)'},
+        {
+          'code': 'CO',
+          'name': 'Colombia',
+          'flag': '🇨🇴',
+          'currencyName': 'Pesos Colombianos (COP)',
+        },
+        {
+          'code': 'CL',
+          'name': 'Chile',
+          'flag': '🇨🇱',
+          'currencyName': 'Pesos Chilenos (CLP)',
+        },
+        {
+          'code': 'PE',
+          'name': 'Perú',
+          'flag': '🇵🇪',
+          'currencyName': 'Soles (PEN)',
+        },
+        {
+          'code': 'AR',
+          'name': 'Argentina',
+          'flag': '🇦🇷',
+          'currencyName': 'Pesos Argentinos (ARS)',
+        },
       ],
       'Europa': [
-        {'code': 'ES', 'name': 'España', 'flag': '🇪🇸', 'currencyName': 'Euros (EUR)'},
-        {'code': 'GB', 'name': 'Reino Unido', 'flag': '🇬🇧', 'currencyName': 'Libras (GBP)'},
+        {
+          'code': 'ES',
+          'name': 'España',
+          'flag': '🇪🇸',
+          'currencyName': 'Euros (EUR)',
+        },
+        {
+          'code': 'GB',
+          'name': 'Reino Unido',
+          'flag': '🇬🇧',
+          'currencyName': 'Libras (GBP)',
+        },
       ],
     };
 
@@ -1720,7 +3105,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Column(
             children: [
               const SizedBox(height: 12),
-              Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: isDark ? Colors.grey[700] : Colors.grey[300], borderRadius: BorderRadius.circular(4)))),
+              Center(
+                child: Container(
+                  width: 48,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.grey[700] : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
               const SizedBox(height: 24),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -1731,7 +3125,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF1E293B) : Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: const Text('🌎', style: TextStyle(fontSize: 28)),
                     ),
@@ -1740,9 +3140,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(loc.get('select_country'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                          Text(
+                            loc.get('select_country'),
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
                           const SizedBox(height: 4),
-                          Text(loc.get('select_country_desc'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
+                          Text(
+                            loc.get('select_country_desc'),
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[500],
+                              fontSize: 14,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -1750,17 +3166,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              
-              // TABS 
+
+              // TABS
               TabBar(
                 isScrollable: true,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 indicatorColor: const Color(0xFF10B981),
                 indicatorWeight: 3,
                 labelColor: const Color(0xFF10B981),
-                unselectedLabelColor: isDark ? Colors.grey[500] : Colors.grey[400],
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                tabs: regions.keys.map((r) => Tab(text: r.toUpperCase())).toList(),
+                unselectedLabelColor: isDark
+                    ? Colors.grey[500]
+                    : Colors.grey[400],
+                labelStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+                tabs: regions.keys
+                    .map((r) => Tab(text: r.toUpperCase()))
+                    .toList(),
               ),
               const SizedBox(height: 16),
 
@@ -1769,22 +3192,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   children: regions.keys.map((regionName) {
                     final countries = regions[regionName]!;
                     return ListView.builder(
-                      padding: EdgeInsets.only(left: 24, right: 24, bottom: MediaQuery.of(context).padding.bottom + 24),
+                      padding: EdgeInsets.only(
+                        left: 24,
+                        right: 24,
+                        bottom: MediaQuery.of(context).padding.bottom + 24,
+                      ),
                       physics: const BouncingScrollPhysics(),
                       itemCount: countries.length,
                       itemBuilder: (context, index) {
                         final country = countries[index];
                         final isSelected = currentCountry == country['name'];
-                        
+
                         return GestureDetector(
                           onTap: () {
                             if (user != null) {
-                              ref.read(authProvider.notifier).updateProfile(
-                                user.copyWith(country: country['name'], currency: country['currencyName'])
-                              );
+                              ref
+                                  .read(authProvider.notifier)
+                                  .updateProfile(
+                                    user.copyWith(
+                                      country: country['name'],
+                                      currency: country['currencyName'],
+                                    ),
+                                  );
                             }
                             Navigator.pop(ctx);
-                    setState(() {});
+                            setState(() {});
                           },
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 300),
@@ -1794,69 +3226,129 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             decoration: BoxDecoration(
                               gradient: isSelected
                                   ? LinearGradient(
-                                      colors: isDark 
-                                        ? [const Color(0xFF10B981).withValues(alpha: 0.2), const Color(0xFF059669).withValues(alpha: 0.1)]
-                                        : [const Color(0xFFD1FAE5), const Color(0xFFA7F3D0)],
+                                      colors: isDark
+                                          ? [
+                                              const Color(
+                                                0xFF10B981,
+                                              ).withValues(alpha: 0.2),
+                                              const Color(
+                                                0xFF059669,
+                                              ).withValues(alpha: 0.1),
+                                            ]
+                                          : [
+                                              const Color(0xFFD1FAE5),
+                                              const Color(0xFFA7F3D0),
+                                            ],
                                     )
                                   : null,
-                              color: isSelected 
+                              color: isSelected
                                   ? null
-                                  : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                                  : (isDark
+                                        ? const Color(0xFF1E293B)
+                                        : Colors.white),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: isSelected 
-                                    ? const Color(0xFF10B981) 
-                                    : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)), 
-                                width: isSelected ? 2.5 : 1
+                                color: isSelected
+                                    ? const Color(0xFF10B981)
+                                    : (isDark
+                                          ? const Color(0xFF334155)
+                                          : const Color(0xFFE2E8F0)),
+                                width: isSelected ? 2.5 : 1,
                               ),
-                              boxShadow: isSelected ? [
-                                BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.25), blurRadius: 15, offset: const Offset(0, 5))
-                              ] : [],
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(
+                                          0xFF10B981,
+                                        ).withValues(alpha: 0.25),
+                                        blurRadius: 15,
+                                        offset: const Offset(0, 5),
+                                      ),
+                                    ]
+                                  : [],
                             ),
                             child: Row(
                               children: [
                                 Container(
-                                  width: 48, height: 48,
+                                  width: 48,
+                                  height: 48,
                                   decoration: BoxDecoration(
-                                    color: isSelected ? Colors.white.withValues(alpha: isDark ? 0.1 : 0.5) : (isDark ? Colors.black.withValues(alpha: 0.2) : Colors.grey[100]),
+                                    color: isSelected
+                                        ? Colors.white.withValues(
+                                            alpha: isDark ? 0.1 : 0.5,
+                                          )
+                                        : (isDark
+                                              ? Colors.black.withValues(
+                                                  alpha: 0.2,
+                                                )
+                                              : Colors.grey[100]),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: Center(child: Text(country['flag']!, style: const TextStyle(fontSize: 28))),
+                                  child: Center(
+                                    child: Text(
+                                      country['flag']!,
+                                      style: const TextStyle(fontSize: 28),
+                                    ),
+                                  ),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        country['name']!, 
+                                        country['name']!,
                                         style: TextStyle(
-                                          color: isDark ? Colors.white : (isSelected ? const Color(0xFF064E3B) : Colors.black), 
-                                          fontSize: 17, 
-                                          fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                                          color: isDark
+                                              ? Colors.white
+                                              : (isSelected
+                                                    ? const Color(0xFF064E3B)
+                                                    : Colors.black),
+                                          fontSize: 17,
+                                          fontWeight: isSelected
+                                              ? FontWeight.w900
+                                              : FontWeight.w600,
                                           letterSpacing: -0.3,
-                                        )
+                                        ),
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        country['currencyName']!, 
+                                        country['currencyName']!,
                                         style: TextStyle(
-                                          color: isDark ? (isSelected ? const Color(0xFF6EE7B7) : Colors.grey[400]) : (isSelected ? const Color(0xFF059669) : Colors.grey[500]), 
+                                          color: isDark
+                                              ? (isSelected
+                                                    ? const Color(0xFF6EE7B7)
+                                                    : Colors.grey[400])
+                                              : (isSelected
+                                                    ? const Color(0xFF059669)
+                                                    : Colors.grey[500]),
                                           fontSize: 13,
-                                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                                        )
+                                          fontWeight: isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                if (isSelected) 
+                                if (isSelected)
                                   Container(
                                     padding: const EdgeInsets.all(6),
                                     decoration: const BoxDecoration(
-                                      gradient: LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]),
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Color(0xFF10B981),
+                                          Color(0xFF059669),
+                                        ],
+                                      ),
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(LucideIcons.check, color: Colors.white, size: 16),
+                                    child: const Icon(
+                                      LucideIcons.check,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
                                   ),
                               ],
                             ),
@@ -1881,14 +3373,44 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       {'code': 'GTQ', 'name': 'Quetzales (GTQ)', 'flag': '🇬🇹', 'symbol': 'Q'},
       {'code': 'CRC', 'name': 'Colones (CRC)', 'flag': '🇨🇷', 'symbol': '₡'},
       {'code': 'HNL', 'name': 'Lempiras (HNL)', 'flag': '🇭🇳', 'symbol': 'L'},
-      {'code': 'NIO', 'name': 'Córdobas (NIO)', 'flag': '🇳🇮', 'symbol': 'C\$'},
+      {
+        'code': 'NIO',
+        'name': 'Córdobas (NIO)',
+        'flag': '🇳🇮',
+        'symbol': 'C\$',
+      },
       {'code': 'PAB', 'name': 'Balboas (PAB)', 'flag': '🇵🇦', 'symbol': 'B/.'},
-      {'code': 'BZD', 'name': 'Dólares Beliceños (BZD)', 'flag': '🇧🇿', 'symbol': '\$'},
-      {'code': 'MXN', 'name': 'Pesos Mexicanos (MXN)', 'flag': '🇲🇽', 'symbol': '\$'},
+      {
+        'code': 'BZD',
+        'name': 'Dólares Beliceños (BZD)',
+        'flag': '🇧🇿',
+        'symbol': '\$',
+      },
+      {
+        'code': 'MXN',
+        'name': 'Pesos Mexicanos (MXN)',
+        'flag': '🇲🇽',
+        'symbol': '\$',
+      },
       {'code': 'GBP', 'name': 'Libras (GBP)', 'flag': '🇬🇧', 'symbol': '£'},
-      {'code': 'ARS', 'name': 'Pesos Argentinos (ARS)', 'flag': '🇦🇷', 'symbol': '\$'},
-      {'code': 'COP', 'name': 'Pesos Colombianos (COP)', 'flag': '🇨🇴', 'symbol': '\$'},
-      {'code': 'CLP', 'name': 'Pesos Chilenos (CLP)', 'flag': '🇨🇱', 'symbol': '\$'},
+      {
+        'code': 'ARS',
+        'name': 'Pesos Argentinos (ARS)',
+        'flag': '🇦🇷',
+        'symbol': '\$',
+      },
+      {
+        'code': 'COP',
+        'name': 'Pesos Colombianos (COP)',
+        'flag': '🇨🇴',
+        'symbol': '\$',
+      },
+      {
+        'code': 'CLP',
+        'name': 'Pesos Chilenos (CLP)',
+        'flag': '🇨🇱',
+        'symbol': '\$',
+      },
       {'code': 'PEN', 'name': 'Soles (PEN)', 'flag': '🇵🇪', 'symbol': 'S/'},
     ];
     final user = ref.watch(authProvider).user;
@@ -1908,7 +3430,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: Column(
           children: [
             const SizedBox(height: 12),
-            Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: isDark ? Colors.grey[700] : Colors.grey[300], borderRadius: BorderRadius.circular(4)))),
+            Center(
+              child: Container(
+                width: 48,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey[700] : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
             const SizedBox(height: 24),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -1919,7 +3450,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF1E293B) : Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: const Text('💰', style: TextStyle(fontSize: 28)),
                   ),
@@ -1928,9 +3465,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(loc.get('select_currency'), style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                        Text(
+                          loc.get('select_currency'),
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text('Elige la moneda de la aplicación', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[500], fontSize: 14)),
+                        Text(
+                          'Elige la moneda de la aplicación',
+                          style: TextStyle(
+                            color: isDark ? Colors.grey[400] : Colors.grey[500],
+                            fontSize: 14,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -1940,20 +3491,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 24),
             Expanded(
               child: ListView.builder(
-                padding: EdgeInsets.only(left: 24, right: 24, bottom: MediaQuery.of(context).padding.bottom + 24),
+                padding: EdgeInsets.only(
+                  left: 24,
+                  right: 24,
+                  bottom: MediaQuery.of(context).padding.bottom + 24,
+                ),
                 physics: const BouncingScrollPhysics(),
                 itemCount: currencies.length,
                 itemBuilder: (context, index) {
                   final currency = currencies[index];
-                  final isSelected = currentCurrency.contains(currency['name']!) || currentCurrency.contains(currency['code']!);
-                  
+                  final isSelected =
+                      currentCurrency.contains(currency['name']!) ||
+                      currentCurrency.contains(currency['code']!);
+
                   return GestureDetector(
                     onTap: () {
                       if (user != null) {
-                        ref.read(authProvider.notifier).updateProfile(user.copyWith(currency: currency['name']));
+                        ref
+                            .read(authProvider.notifier)
+                            .updateProfile(
+                              user.copyWith(currency: currency['name']),
+                            );
                       }
                       Navigator.pop(ctx);
-                    setState(() {});
+                      setState(() {});
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
@@ -1963,30 +3524,66 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       decoration: BoxDecoration(
                         gradient: isSelected
                             ? LinearGradient(
-                                colors: isDark 
-                                  ? [const Color(0xFFF59E0B).withValues(alpha: 0.2), const Color(0xFFD97706).withValues(alpha: 0.1)]
-                                  : [const Color(0xFFFEF3C7), const Color(0xFFFDE68A)],
+                                colors: isDark
+                                    ? [
+                                        const Color(
+                                          0xFFF59E0B,
+                                        ).withValues(alpha: 0.2),
+                                        const Color(
+                                          0xFFD97706,
+                                        ).withValues(alpha: 0.1),
+                                      ]
+                                    : [
+                                        const Color(0xFFFEF3C7),
+                                        const Color(0xFFFDE68A),
+                                      ],
                               )
                             : null,
-                        color: isSelected ? null : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                        color: isSelected
+                            ? null
+                            : (isDark ? const Color(0xFF1E293B) : Colors.white),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: isSelected 
-                              ? const Color(0xFFF59E0B) 
-                              : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)), 
-                          width: isSelected ? 2.5 : 1
+                          color: isSelected
+                              ? const Color(0xFFF59E0B)
+                              : (isDark
+                                    ? const Color(0xFF334155)
+                                    : const Color(0xFFE2E8F0)),
+                          width: isSelected ? 2.5 : 1,
                         ),
-                        boxShadow: isSelected ? [BoxShadow(color: const Color(0xFFF59E0B).withValues(alpha: 0.25), blurRadius: 15, offset: const Offset(0, 5))] : [],
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: const Color(
+                                    0xFFF59E0B,
+                                  ).withValues(alpha: 0.25),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ]
+                            : [],
                       ),
                       child: Row(
                         children: [
                           Container(
-                            width: 48, height: 48,
+                            width: 48,
+                            height: 48,
                             decoration: BoxDecoration(
-                              color: isSelected ? Colors.white.withValues(alpha: isDark ? 0.1 : 0.5) : (isDark ? Colors.black.withValues(alpha: 0.2) : Colors.grey[100]),
+                              color: isSelected
+                                  ? Colors.white.withValues(
+                                      alpha: isDark ? 0.1 : 0.5,
+                                    )
+                                  : (isDark
+                                        ? Colors.black.withValues(alpha: 0.2)
+                                        : Colors.grey[100]),
                               shape: BoxShape.circle,
                             ),
-                            child: Center(child: Text(currency['flag']!, style: const TextStyle(fontSize: 28))),
+                            child: Center(
+                              child: Text(
+                                currency['flag']!,
+                                style: const TextStyle(fontSize: 28),
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
@@ -1994,34 +3591,57 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  currency['code']!, 
+                                  currency['code']!,
                                   style: TextStyle(
-                                    color: isDark ? Colors.white : (isSelected ? const Color(0xFF78350F) : Colors.black), 
-                                    fontSize: 17, 
-                                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                                    color: isDark
+                                        ? Colors.white
+                                        : (isSelected
+                                              ? const Color(0xFF78350F)
+                                              : Colors.black),
+                                    fontSize: 17,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w900
+                                        : FontWeight.w600,
                                     letterSpacing: -0.3,
-                                  )
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  currency['name']!, 
+                                  currency['name']!,
                                   style: TextStyle(
-                                    color: isDark ? (isSelected ? const Color(0xFFFCD34D) : Colors.grey[400]) : (isSelected ? const Color(0xFFB45309) : Colors.grey[500]), 
+                                    color: isDark
+                                        ? (isSelected
+                                              ? const Color(0xFFFCD34D)
+                                              : Colors.grey[400])
+                                        : (isSelected
+                                              ? const Color(0xFFB45309)
+                                              : Colors.grey[500]),
                                     fontSize: 13,
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                                  )
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                          if (isSelected) 
+                          if (isSelected)
                             Container(
                               padding: const EdgeInsets.all(6),
                               decoration: const BoxDecoration(
-                                gradient: LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xFFF59E0B),
+                                    Color(0xFFD97706),
+                                  ],
+                                ),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(LucideIcons.check, color: Colors.white, size: 16),
+                              child: const Icon(
+                                LucideIcons.check,
+                                color: Colors.white,
+                                size: 16,
+                              ),
                             ),
                         ],
                       ),
@@ -2037,7 +3657,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showAIKeyModal(BuildContext context, bool isDark) {
-    final TextEditingController _keyController = TextEditingController(text: AIConfig.dynamicApiKey ?? '');
+    final TextEditingController _keyController = TextEditingController(
+      text: AIConfig.dynamicApiKey ?? '',
+    );
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -2054,17 +3676,44 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Center(child: Container(width: 48, height: 5, decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(4)))),
+              Center(
+                child: Container(
+                  width: 48,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
               const SizedBox(height: 24),
               Row(
                 children: [
-                  Icon(LucideIcons.brain, color: const Color(0xFF06B6D4), size: 28),
+                  Icon(
+                    LucideIcons.brain,
+                    color: const Color(0xFF06B6D4),
+                    size: 28,
+                  ),
                   const SizedBox(width: 12),
-                  Text('Motor de Inteligencia Artificial', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                  Text(
+                    'Motor de Inteligencia Artificial',
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
-              Text('Ingresa tu API Key gratuita de Google Gemini para habilitar el procesamiento de lenguaje natural avanzado. Sin esta llave, QUIVO usará un sistema básico de reconocimiento.', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 14)),
+              Text(
+                'Ingresa tu API Key gratuita de Google Gemini para habilitar el procesamiento de lenguaje natural avanzado. Sin esta llave, QUIVO usará un sistema básico de reconocimiento.',
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
               const SizedBox(height: 24),
               TextField(
                 controller: _keyController,
@@ -2072,11 +3721,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 style: TextStyle(color: isDark ? Colors.white : Colors.black),
                 decoration: InputDecoration(
                   labelText: 'Gemini API Key',
-                  labelStyle: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                  labelStyle: TextStyle(
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  ),
                   filled: true,
                   fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF06B6D4), width: 2)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF06B6D4),
+                      width: 2,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -2089,16 +3749,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   if (ctx.mounted) {
                     Navigator.pop(ctx);
                     setState(() {});
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Configuración de IA guardada. ¡Gemini activado!'), backgroundColor: Color(0xFF06B6D4)));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        dismissDirection: DismissDirection.horizontal,
+                        content: Text(
+                          'Configuración de IA guardada. ¡Gemini activado!',
+                        ),
+                        backgroundColor: Color(0xFF06B6D4),
+                      ),
+                    );
                   }
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: const Color(0xFF06B6D4),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
-                child: const Text('Conectar IA', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Conectar IA',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
@@ -2106,6 +3779,4 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     );
   }
-
-
 }

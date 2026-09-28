@@ -25,7 +25,11 @@ class BiometricService {
   }
 
   /// Guarda o elimina la preferencia y credenciales seguras
-  static Future<void> setBiometricEnabled(bool enabled, [String? email, String? password]) async {
+  static Future<void> setBiometricEnabled(
+    bool enabled, [
+    String? email,
+    String? password,
+  ]) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_biometricEnabledKey, enabled);
     if (enabled && email != null && password != null) {
@@ -57,11 +61,10 @@ class BiometricService {
       return true;
     }
     try {
-      final canCheck = await _auth.canCheckBiometrics || await _auth.isDeviceSupported();
+      final canCheck =
+          await _auth.canCheckBiometrics || await _auth.isDeviceSupported();
       if (!canCheck) return false;
-      return await _auth.authenticate(
-        localizedReason: reason,
-      );
+      return await _auth.authenticate(localizedReason: reason);
     } catch (e) {
       return false;
     }

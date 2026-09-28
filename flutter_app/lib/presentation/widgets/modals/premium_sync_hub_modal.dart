@@ -27,7 +27,8 @@ class PremiumSyncHubModal extends ConsumerStatefulWidget {
   }
 
   @override
-  ConsumerState<PremiumSyncHubModal> createState() => _PremiumSyncHubModalState();
+  ConsumerState<PremiumSyncHubModal> createState() =>
+      _PremiumSyncHubModalState();
 }
 
 class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
@@ -66,7 +67,11 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
       await _loadData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('📲 Simulacro recibido: Cargo de \$450 en Walmart con Tarjeta de Crédito. Elige a cuál TC asignarlo arriba 👆'),
+          const SnackBar(
+            dismissDirection: DismissDirection.horizontal,
+            content: Text(
+              '📲 Simulacro recibido: Cargo de \$450 en Walmart con Tarjeta de Crédito. Elige a cuál TC asignarlo arriba 👆',
+            ),
             backgroundColor: Color(0xFF6366F1),
           ),
         );
@@ -85,7 +90,11 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
       await _loadData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('📲 Simulacro recibido: Cargo Débito de \$185.50 en Oxxo. Listo para agregar a Efectivo 👆'),
+          const SnackBar(
+            dismissDirection: DismissDirection.horizontal,
+            content: Text(
+              '📲 Simulacro recibido: Cargo Débito de \$185.50 en Oxxo. Listo para agregar a Efectivo 👆',
+            ),
             backgroundColor: Color(0xFF10B981),
           ),
         );
@@ -93,7 +102,10 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
     }
   }
 
-  Future<void> _assignChargeToCard(ParsedBankCharge charge, CreditCard card) async {
+  Future<void> _assignChargeToCard(
+    ParsedBankCharge charge,
+    CreditCard card,
+  ) async {
     try {
       final user = ref.read(authProvider).user;
       if (user == null) return;
@@ -104,19 +116,26 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
         amount: charge.amount,
         type: 'expense',
         category: charge.category,
-        description: '${charge.merchant} (Cargo en TC ${charge.bankName ?? ""})',
+        description:
+            '${charge.merchant} (Cargo en TC ${charge.bankName ?? ""})',
         date: charge.date,
         isFixed: false,
         creditCardId: card.id,
       );
 
-      await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
+      await ref
+          .read(transactionNotifierProvider.notifier)
+          .addTransaction(transaction);
       await BankNotificationListenerService.removePendingCharge(charge.id);
       await _loadData();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('💳 ¡Listo! \$${charge.amount.toStringAsFixed(2)} asignado a tu tarjeta "${card.name}" (${charge.merchant})'),
+          SnackBar(
+            dismissDirection: DismissDirection.horizontal,
+            content: Text(
+              '💳 ¡Listo! \$${charge.amount.toStringAsFixed(2)} asignado a tu tarjeta "${card.name}" (${charge.merchant})',
+            ),
             backgroundColor: const Color(0xFF16A34A),
           ),
         );
@@ -137,18 +156,25 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
         amount: charge.amount,
         type: 'expense',
         category: charge.category,
-        description: '${charge.merchant} (Sincronización bancaria ${charge.bankName ?? "Débito"})',
+        description:
+            '${charge.merchant} (Sincronización bancaria ${charge.bankName ?? "Débito"})',
         date: charge.date,
         isFixed: false,
       );
 
-      await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
+      await ref
+          .read(transactionNotifierProvider.notifier)
+          .addTransaction(transaction);
       await BankNotificationListenerService.removePendingCharge(charge.id);
       await _loadData();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('💵 ¡Gasto registrado en Efectivo/Débito! \$${charge.amount.toStringAsFixed(2)} (${charge.merchant})'),
+          SnackBar(
+            dismissDirection: DismissDirection.horizontal,
+            content: Text(
+              '💵 ¡Gasto registrado en Efectivo/Débito! \$${charge.amount.toStringAsFixed(2)} (${charge.merchant})',
+            ),
             backgroundColor: const Color(0xFF16A34A),
           ),
         );
@@ -170,7 +196,9 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
 
     return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.92),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.92,
+      ),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -180,7 +208,8 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
           // Drag handle
           Container(
             margin: const EdgeInsets.symmetric(vertical: 12),
-            height: 5, width: 44,
+            height: 5,
+            width: 44,
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
               borderRadius: BorderRadius.circular(3),
@@ -196,15 +225,28 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                 Row(
                   children: [
                     Container(
-                      width: 48, height: 48,
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)]),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+                        ),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
-                          BoxShadow(color: const Color(0xFF8B5CF6).withValues(alpha: 0.35), blurRadius: 10, offset: const Offset(0, 3)),
+                          BoxShadow(
+                            color: const Color(
+                              0xFF8B5CF6,
+                            ).withValues(alpha: 0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
                         ],
                       ),
-                      child: const Icon(LucideIcons.zap, color: Colors.white, size: 24),
+                      child: const Icon(
+                        LucideIcons.zap,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Column(
@@ -212,25 +254,59 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                       children: [
                         Row(
                           children: [
-                            Text('Sincronización Inteligente', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 20, fontWeight: FontWeight.w900)),
+                            Text(
+                              'Sincronización Inteligente',
+                              style: TextStyle(
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
-                                gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFFF59E0B),
+                                    Color(0xFFD97706),
+                                  ],
+                                ),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Text('PREMIUM', style: TextStyle(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.w900)),
+                              child: const Text(
+                                'PREMIUM',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                        Text('Notificaciones en Android & Siri en iOS', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12.5)),
+                        Text(
+                          'Notificaciones en Android & Siri en iOS',
+                          style: TextStyle(
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                            fontSize: 12.5,
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 ),
                 IconButton(
-                  icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600], size: 22),
+                  icon: Icon(
+                    LucideIcons.x,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    size: 22,
+                  ),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -245,7 +321,10 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: isDark
-                      ? [const Color(0xFF78350F).withValues(alpha: 0.6), const Color(0xFF451A03).withValues(alpha: 0.6)]
+                      ? [
+                          const Color(0xFF78350F).withValues(alpha: 0.6),
+                          const Color(0xFF451A03).withValues(alpha: 0.6),
+                        ]
                       : [const Color(0xFFFEF3C7), const Color(0xFFFDE68A)],
                 ),
                 borderRadius: BorderRadius.circular(20),
@@ -253,15 +332,31 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
               ),
               child: Column(
                 children: [
-                  const Icon(LucideIcons.crown, color: Color(0xFFD97706), size: 40),
+                  const Icon(
+                    LucideIcons.crown,
+                    color: Color(0xFFD97706),
+                    size: 40,
+                  ),
                   const SizedBox(height: 12),
-                  Text('Función Exclusiva del Plan Premium', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF78350F), fontSize: 17, fontWeight: FontWeight.w900)),
-                  const SizedBox(height: 6),
-                    Text(
-                      'Conéctate en automático con tus notificaciones del teléfono para clasificar compras de TC o Débito, y agrégale gastos a Siri con tu voz en iOS.',
-                      style: TextStyle(color: isDark ? Colors.grey[300] : const Color(0xFF92400E), fontSize: 13),
-                      textAlign: TextAlign.center,
+                  Text(
+                    'Función Exclusiva del Plan Premium',
+                    style: TextStyle(
+                      color: isDark ? Colors.white : const Color(0xFF78350F),
+                      fontSize: 17,
+                      fontWeight: FontWeight.w900,
                     ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Conéctate en automático con tus notificaciones del teléfono para clasificar compras de TC o Débito, y agrégale gastos a Siri con tu voz en iOS.',
+                    style: TextStyle(
+                      color: isDark
+                          ? Colors.grey[300]
+                          : const Color(0xFF92400E),
+                      fontSize: 13,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: () {
@@ -269,12 +364,20 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                       PremiumModal.show(context);
                     },
                     icon: const Icon(LucideIcons.sparkles, size: 18),
-                    label: const Text('Desbloquear Sincronización Premium', style: TextStyle(fontWeight: FontWeight.bold)),
+                    label: const Text(
+                      'Desbloquear Sincronización Premium',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFD97706),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                   ),
                 ],
@@ -287,7 +390,10 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 8,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -298,90 +404,237 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(LucideIcons.bellRing, color: Color(0xFF6366F1), size: 18),
+                                  const Icon(
+                                    LucideIcons.bellRing,
+                                    color: Color(0xFF6366F1),
+                                    size: 18,
+                                  ),
                                   const SizedBox(width: 8),
-                                  Text('Notificaciones por Asignar (${_pendingCharges.length})', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.w800)),
+                                  Text(
+                                    'Notificaciones por Asignar (${_pendingCharges.length})',
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? Colors.white
+                                          : const Color(0xFF0F172A),
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
                                 ],
                               ),
                               TextButton(
                                 onPressed: () async {
                                   for (var c in _pendingCharges) {
-                                    await BankNotificationListenerService.removePendingCharge(c.id);
+                                    await BankNotificationListenerService.removePendingCharge(
+                                      c.id,
+                                    );
                                   }
                                   _loadData();
                                 },
-                                child: const Text('Limpiar todo', style: TextStyle(color: Colors.redAccent, fontSize: 12)),
+                                child: const Text(
+                                  'Limpiar todo',
+                                  style: TextStyle(
+                                    color: Colors.redAccent,
+                                    fontSize: 12,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 8),
                           ..._pendingCharges.map((charge) {
-                            final isCardCharge = charge.paymentMethod == 'credit_card';
+                            final isCardCharge =
+                                charge.paymentMethod == 'credit_card';
                             return Container(
                               margin: const EdgeInsets.only(bottom: 14),
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: cardBg,
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: isCardCharge ? const Color(0xFF6366F1).withValues(alpha: 0.4) : const Color(0xFF10B981).withValues(alpha: 0.4), width: 1.5),
-                                boxShadow: [if (!isDark) BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 3))],
+                                border: Border.all(
+                                  color: isCardCharge
+                                      ? const Color(
+                                          0xFF6366F1,
+                                        ).withValues(alpha: 0.4)
+                                      : const Color(
+                                          0xFF10B981,
+                                        ).withValues(alpha: 0.4),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  if (!isDark)
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.04,
+                                      ),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                ],
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 4,
+                                        ),
                                         decoration: BoxDecoration(
-                                          color: isCardCharge ? const Color(0xFF6366F1).withValues(alpha: 0.15) : const Color(0xFF10B981).withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(10),
+                                          color: isCardCharge
+                                              ? const Color(
+                                                  0xFF6366F1,
+                                                ).withValues(alpha: 0.15)
+                                              : const Color(
+                                                  0xFF10B981,
+                                                ).withValues(alpha: 0.15),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
                                         ),
                                         child: Row(
                                           children: [
-                                            Icon(isCardCharge ? LucideIcons.creditCard : LucideIcons.banknote, size: 14, color: isCardCharge ? const Color(0xFF6366F1) : const Color(0xFF10B981)),
+                                            Icon(
+                                              isCardCharge
+                                                  ? LucideIcons.creditCard
+                                                  : LucideIcons.banknote,
+                                              size: 14,
+                                              color: isCardCharge
+                                                  ? const Color(0xFF6366F1)
+                                                  : const Color(0xFF10B981),
+                                            ),
                                             const SizedBox(width: 6),
-                                            Text(isCardCharge ? 'MÉTODO: TC (Crédito)' : 'MÉTODO: TD (Débito/Efectivo)', style: TextStyle(color: isCardCharge ? const Color(0xFF6366F1) : const Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.w900)),
+                                            Text(
+                                              isCardCharge
+                                                  ? 'MÉTODO: TC (Crédito)'
+                                                  : 'MÉTODO: TD (Débito/Efectivo)',
+                                              style: TextStyle(
+                                                color: isCardCharge
+                                                    ? const Color(0xFF6366F1)
+                                                    : const Color(0xFF10B981),
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w900,
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ),
-                                      Text('MONTO: \$${charge.amount.toStringAsFixed(2)}', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.w900)),
+                                      Text(
+                                        'MONTO: \$${charge.amount.toStringAsFixed(2)}',
+                                        style: TextStyle(
+                                          color: isDark
+                                              ? Colors.white
+                                              : const Color(0xFF0F172A),
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                   const SizedBox(height: 10),
-                                  Text('LUGAR: ${charge.merchant}', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.w800)),
+                                  Text(
+                                    'LUGAR: ${charge.merchant}',
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? Colors.white
+                                          : const Color(0xFF0F172A),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
                                   const SizedBox(height: 4),
-                                  Text('Detectado: ${charge.bankName ?? "App"} • Categoría: ${charge.category}', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12)),
+                                  Text(
+                                    'Detectado: ${charge.bankName ?? "App"} • Categoría: ${charge.category}',
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                      fontSize: 12,
+                                    ),
+                                  ),
                                   const SizedBox(height: 14),
 
                                   // Selector de tarjeta si es TC o botón de efectivo si es Débito
                                   if (isCardCharge) ...[
-                                    Text('Selecciona a cuál de tus Tarjetas de Crédito agregar este cargo:', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 12.5, fontWeight: FontWeight.w700)),
+                                    Text(
+                                      'Selecciona a cuál de tus Tarjetas de Crédito agregar este cargo:',
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? Colors.grey[300]
+                                            : Colors.grey[700],
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
                                     const SizedBox(height: 8),
                                     if (cards.isEmpty)
-                                      Text('⚠️ No tienes tarjetas de crédito registradas aún en el apartado de TC.', style: TextStyle(color: Colors.orange[400], fontSize: 12))
+                                      Text(
+                                        '⚠️ No tienes tarjetas de crédito registradas aún en el apartado de TC.',
+                                        style: TextStyle(
+                                          color: Colors.orange[400],
+                                          fontSize: 12,
+                                        ),
+                                      )
                                     else
                                       Wrap(
                                         spacing: 8,
                                         runSpacing: 8,
                                         children: cards.map((card) {
                                           return InkWell(
-                                            onTap: () => _assignChargeToCard(charge, card),
-                                            borderRadius: BorderRadius.circular(12),
+                                            onTap: () => _assignChargeToCard(
+                                              charge,
+                                              card,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                             child: Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 8,
+                                                  ),
                                               decoration: BoxDecoration(
-                                                gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF3B82F6)]),
-                                                borderRadius: BorderRadius.circular(12),
-                                                boxShadow: [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.3), blurRadius: 6, offset: const Offset(0, 2))],
+                                                gradient: const LinearGradient(
+                                                  colors: [
+                                                    Color(0xFF6366F1),
+                                                    Color(0xFF3B82F6),
+                                                  ],
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: const Color(
+                                                      0xFF6366F1,
+                                                    ).withValues(alpha: 0.3),
+                                                    blurRadius: 6,
+                                                    offset: const Offset(0, 2),
+                                                  ),
+                                                ],
                                               ),
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  const Icon(LucideIcons.plusCircle, color: Colors.white, size: 14),
+                                                  const Icon(
+                                                    LucideIcons.plusCircle,
+                                                    color: Colors.white,
+                                                    size: 14,
+                                                  ),
                                                   const SizedBox(width: 6),
-                                                  Text('Agregar a "${card.name}"', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800)),
+                                                  Text(
+                                                    'Agregar a "${card.name}"',
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                    ),
+                                                  ),
                                                 ],
                                               ),
                                             ),
@@ -393,20 +646,37 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                                       children: [
                                         Expanded(
                                           child: ElevatedButton.icon(
-                                            onPressed: () => _assignChargeToCash(charge),
-                                            icon: const Icon(LucideIcons.check, size: 16),
-                                            label: const Text('Confirmar como Gasto en Efectivo', style: TextStyle(fontWeight: FontWeight.w800)),
+                                            onPressed: () =>
+                                                _assignChargeToCash(charge),
+                                            icon: const Icon(
+                                              LucideIcons.check,
+                                              size: 16,
+                                            ),
+                                            label: const Text(
+                                              'Confirmar como Gasto en Efectivo',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
                                             style: ElevatedButton.styleFrom(
-                                              backgroundColor: const Color(0xFF10B981),
+                                              backgroundColor: const Color(
+                                                0xFF10B981,
+                                              ),
                                               foregroundColor: Colors.white,
-                                              padding: const EdgeInsets.symmetric(vertical: 12),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 12,
+                                                  ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(14),
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ]
+                                  ],
                                 ],
                               ),
                             );
@@ -420,50 +690,111 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                           decoration: BoxDecoration(
                             color: cardBg,
                             borderRadius: BorderRadius.circular(22),
-                            border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFE2E8F0),
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Row(
                                       children: [
                                         Container(
                                           padding: const EdgeInsets.all(10),
-                                          decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(14)),
-                                          child: const Icon(LucideIcons.smartphone, color: Color(0xFF10B981), size: 22),
+                                          decoration: BoxDecoration(
+                                            color: const Color(
+                                              0xFF10B981,
+                                            ).withValues(alpha: 0.15),
+                                            borderRadius: BorderRadius.circular(
+                                              14,
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            LucideIcons.smartphone,
+                                            color: Color(0xFF10B981),
+                                            size: 22,
+                                          ),
                                         ),
                                         const SizedBox(width: 12),
                                         Expanded(
-                                          child: Text('Android: Lector de Notificaciones', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.w800), overflow: TextOverflow.ellipsis),
+                                          child: Text(
+                                            'Android: Lector de Notificaciones',
+                                            style: TextStyle(
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : const Color(0xFF0F172A),
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ),
                                   const SizedBox(width: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: _isAndroidPermissionGranted ? const Color(0xFF10B981).withValues(alpha: 0.15) : Colors.orange.withValues(alpha: 0.15),
+                                      color: _isAndroidPermissionGranted
+                                          ? const Color(
+                                              0xFF10B981,
+                                            ).withValues(alpha: 0.15)
+                                          : Colors.orange.withValues(
+                                              alpha: 0.15,
+                                            ),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Row(
                                       children: [
-                                        Container(width: 8, height: 8, decoration: BoxDecoration(color: _isAndroidPermissionGranted ? const Color(0xFF10B981) : Colors.orange, shape: BoxShape.circle)),
+                                        Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: BoxDecoration(
+                                            color: _isAndroidPermissionGranted
+                                                ? const Color(0xFF10B981)
+                                                : Colors.orange,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
                                         const SizedBox(width: 6),
-                                        Text(_isAndroidPermissionGranted ? 'ACTIVO' : 'PERMISO REQUERIDO', style: TextStyle(color: _isAndroidPermissionGranted ? const Color(0xFF10B981) : Colors.orange, fontSize: 11, fontWeight: FontWeight.w800)),
+                                        Text(
+                                          _isAndroidPermissionGranted
+                                              ? 'ACTIVO'
+                                              : 'PERMISO REQUERIDO',
+                                          style: TextStyle(
+                                            color: _isAndroidPermissionGranted
+                                                ? const Color(0xFF10B981)
+                                                : Colors.orange,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
                                       ],
                                     ),
-                                  )
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 12),
                               Text(
                                 'Cuando realices compras o pagos, la app leerá en tiempo real las alertas de pagos que lleguen a tu dispositivo (BBVA, Nu, BAC, etc). Clasifica en automático Débito y Crédito.',
-                                style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[600], fontSize: 13, height: 1.4),
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.grey[300]
+                                      : Colors.grey[600],
+                                  fontSize: 13,
+                                  height: 1.4,
+                                ),
                               ),
                               const SizedBox(height: 14),
                               if (!kIsWeb && Platform.isAndroid) ...[
@@ -472,38 +803,98 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                                   child: ElevatedButton.icon(
                                     onPressed: () async {
                                       await BankNotificationListenerService.requestPermission();
-                                      await Future.delayed(const Duration(seconds: 1));
+                                      await Future.delayed(
+                                        const Duration(seconds: 1),
+                                      );
                                       _loadData();
                                     },
-                                    icon: Icon(_isAndroidPermissionGranted ? LucideIcons.checkCircle : LucideIcons.shieldCheck, size: 18),
-                                    label: Text(_isAndroidPermissionGranted ? 'Permiso de Lectura Habilitado' : 'Habilitar Permiso Lector en Android', style: const TextStyle(fontWeight: FontWeight.w800)),
+                                    icon: Icon(
+                                      _isAndroidPermissionGranted
+                                          ? LucideIcons.checkCircle
+                                          : LucideIcons.shieldCheck,
+                                      size: 18,
+                                    ),
+                                    label: Text(
+                                      _isAndroidPermissionGranted
+                                          ? 'Permiso de Lectura Habilitado'
+                                          : 'Habilitar Permiso Lector en Android',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: _isAndroidPermissionGranted ? const Color(0xFF1E293B) : const Color(0xFF6366F1),
+                                      backgroundColor:
+                                          _isAndroidPermissionGranted
+                                          ? const Color(0xFF1E293B)
+                                          : const Color(0xFF6366F1),
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 13),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 13,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ] else ...[
-                                Text('ℹ️ Estás en un dispositivo iOS. La lectura directa en segundo plano se usa mediante Siri en la sección inferior.', style: TextStyle(color: Colors.grey[500], fontSize: 12.5, fontStyle: FontStyle.italic)),
+                                Text(
+                                  'ℹ️ Estás en un dispositivo iOS. La lectura directa en segundo plano se usa mediante Siri en la sección inferior.',
+                                  style: TextStyle(
+                                    color: Colors.grey[500],
+                                    fontSize: 12.5,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
                               ],
                               const SizedBox(height: 16),
-                              Divider(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                              Divider(
+                                color: isDark
+                                    ? const Color(0xFF334155)
+                                    : const Color(0xFFE2E8F0),
+                              ),
                               const SizedBox(height: 10),
-                              Text('🚀 Simuladores en vivo (Para Probar Ahora Mismo):', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 13, fontWeight: FontWeight.w800)),
+                              Text(
+                                '🚀 Simuladores en vivo (Para Probar Ahora Mismo):',
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF0F172A),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
                               const SizedBox(height: 10),
                               Row(
                                 children: [
                                   Expanded(
                                     child: OutlinedButton.icon(
                                       onPressed: _simulateCreditCardCharge,
-                                      icon: const Icon(LucideIcons.creditCard, size: 15, color: Color(0xFF6366F1)),
-                                      label: const Text('Simular Cargo TC (\$450)', style: TextStyle(color: Color(0xFF6366F1), fontSize: 11.5, fontWeight: FontWeight.w800)),
+                                      icon: const Icon(
+                                        LucideIcons.creditCard,
+                                        size: 15,
+                                        color: Color(0xFF6366F1),
+                                      ),
+                                      label: const Text(
+                                        'Simular Cargo TC (\$450)',
+                                        style: TextStyle(
+                                          color: Color(0xFF6366F1),
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
                                       style: OutlinedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(vertical: 11),
-                                        side: const BorderSide(color: Color(0xFF6366F1)),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 11,
+                                        ),
+                                        side: const BorderSide(
+                                          color: Color(0xFF6366F1),
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -511,12 +902,31 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                                   Expanded(
                                     child: OutlinedButton.icon(
                                       onPressed: _simulateDebitCharge,
-                                      icon: const Icon(LucideIcons.banknote, size: 15, color: Color(0xFF10B981)),
-                                      label: const Text('Simular Débito (\$185)', style: TextStyle(color: Color(0xFF10B981), fontSize: 11.5, fontWeight: FontWeight.w800)),
+                                      icon: const Icon(
+                                        LucideIcons.banknote,
+                                        size: 15,
+                                        color: Color(0xFF10B981),
+                                      ),
+                                      label: const Text(
+                                        'Simular Débito (\$185)',
+                                        style: TextStyle(
+                                          color: Color(0xFF10B981),
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
                                       style: OutlinedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(vertical: 11),
-                                        side: const BorderSide(color: Color(0xFF10B981)),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 11,
+                                        ),
+                                        side: const BorderSide(
+                                          color: Color(0xFF10B981),
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -533,7 +943,11 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                           decoration: BoxDecoration(
                             color: cardBg,
                             borderRadius: BorderRadius.circular(22),
-                            border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFE2E8F0),
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -542,17 +956,41 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(color: const Color(0xFF3B82F6).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(14)),
-                                    child: const Icon(LucideIcons.mic, color: Color(0xFF3B82F6), size: 22),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFF3B82F6,
+                                      ).withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    child: const Icon(
+                                      LucideIcons.mic,
+                                      color: Color(0xFF3B82F6),
+                                      size: 22,
+                                    ),
                                   ),
                                   const SizedBox(width: 12),
-                                  Text('iOS: Siri & Atajos por Voz', style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 16, fontWeight: FontWeight.w800)),
+                                  Text(
+                                    'iOS: Siri & Atajos por Voz',
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? Colors.white
+                                          : const Color(0xFF0F172A),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 12),
                               Text(
                                 'Dile a tu iPhone, iPad o Apple Watch frases como "Oye Siri, Agregar a QUIVO" para agregar al instante compras con tu tarjeta o en efectivo con tu voz.',
-                                style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[600], fontSize: 13, height: 1.4),
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.grey[300]
+                                      : Colors.grey[600],
+                                  fontSize: 13,
+                                  height: 1.4,
+                                ),
                               ),
                               const SizedBox(height: 14),
                               SizedBox(
@@ -563,38 +1001,84 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                                       context: context,
                                       builder: (context) {
                                         return AlertDialog(
-                                          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                                          title: Text('Siri: Agregar Gasto/Ingreso a QUIVO', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+                                          backgroundColor: isDark
+                                              ? const Color(0xFF1E293B)
+                                              : Colors.white,
+                                          title: Text(
+                                            'Siri: Agregar Gasto/Ingreso a QUIVO',
+                                            style: TextStyle(
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                            ),
+                                          ),
                                           content: SingleChildScrollView(
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                Text('Para que Siri funcione de fondo sin abrir la app, debes crear un Atajo (Shortcut) de Apple:', style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[700], fontSize: 13)),
+                                                Text(
+                                                  'Para que Siri funcione de fondo sin abrir la app, debes crear un Atajo (Shortcut) de Apple:',
+                                                  style: TextStyle(
+                                                    color: isDark
+                                                        ? Colors.grey[300]
+                                                        : Colors.grey[700],
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
                                                 const SizedBox(height: 12),
-                                                Text('1. Abre la app "Atajos" en tu iPhone.\n2. Crea un nuevo Atajo y llámalo "Agregar a QUIVO".\n3. Agrega la acción "Preguntar por entrada" (Texto) y pon "¿Qué y cuánto fue?".\n4. Agrega la acción "Obtener contenido de URL".\n5. En la URL pon la dirección de tu servidor y añade ?uid=${FirebaseAuth.instance.currentUser?.uid ?? "TU_UID"}&amount=100&concept=ResultadoDePasoAnterior.\n6. Cambia el método a POST.\n\nAhora solo dile a tu iPhone: "Oye Siri, Agregar a QUIVO".', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13)),
+                                                Text(
+                                                  '1. Abre la app "Atajos" en tu iPhone.\n2. Crea un nuevo Atajo y llámalo "Agregar a QUIVO".\n3. Agrega la acción "Preguntar por entrada" (Texto) y pon "¿Qué y cuánto fue?".\n4. Agrega la acción "Obtener contenido de URL".\n5. En la URL pon la dirección de tu servidor y añade ?uid=${FirebaseAuth.instance.currentUser?.uid ?? "TU_UID"}&amount=100&concept=ResultadoDePasoAnterior.\n6. Cambia el método a POST.\n\nAhora solo dile a tu iPhone: "Oye Siri, Agregar a QUIVO".',
+                                                  style: TextStyle(
+                                                    color: isDark
+                                                        ? Colors.grey[400]
+                                                        : Colors.grey[600],
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
                                                 const SizedBox(height: 12),
-                                                Text('Tu UID Premium es:\n${FirebaseAuth.instance.currentUser?.uid ?? "No disponible"}', style: TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.bold)),
+                                                Text(
+                                                  'Tu UID Premium es:\n${FirebaseAuth.instance.currentUser?.uid ?? "No disponible"}',
+                                                  style: TextStyle(
+                                                    color: Colors.amber,
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
                                               ],
                                             ),
                                           ),
                                           actions: [
                                             TextButton(
-                                              onPressed: () => Navigator.pop(context),
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
                                               child: const Text('Entendido'),
                                             ),
                                           ],
                                         );
-                                      }
+                                      },
                                     );
                                   },
-                                  icon: const Icon(LucideIcons.plusSquare, size: 18),
-                                  label: const Text('Configurar Atajo Rápido en Siri', style: TextStyle(fontWeight: FontWeight.w800)),
+                                  icon: const Icon(
+                                    LucideIcons.plusSquare,
+                                    size: 18,
+                                  ),
+                                  label: const Text(
+                                    'Configurar Atajo Rápido en Siri',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF3B82F6),
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 13),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 13,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -606,12 +1090,28 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                                     Navigator.of(context).pop();
                                     VoiceExpenseModal.show(context);
                                   },
-                                  icon: const Icon(LucideIcons.volume2, size: 17, color: Color(0xFF8B5CF6)),
-                                  label: const Text('Abrir Asistente de Voz IA (Simulador Siri)', style: TextStyle(color: Color(0xFF8B5CF6), fontWeight: FontWeight.w800)),
+                                  icon: const Icon(
+                                    LucideIcons.volume2,
+                                    size: 17,
+                                    color: Color(0xFF8B5CF6),
+                                  ),
+                                  label: const Text(
+                                    'Abrir Asistente de Voz IA (Simulador Siri)',
+                                    style: TextStyle(
+                                      color: Color(0xFF8B5CF6),
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
                                   style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    side: const BorderSide(color: Color(0xFF8B5CF6)),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                    side: const BorderSide(
+                                      color: Color(0xFF8B5CF6),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
                                   ),
                                 ),
                               ),

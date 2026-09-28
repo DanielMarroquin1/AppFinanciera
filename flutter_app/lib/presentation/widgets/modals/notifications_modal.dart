@@ -23,7 +23,8 @@ class NotificationsModal extends ConsumerWidget {
         initialChildSize: 0.85,
         minChildSize: 0.5,
         maxChildSize: 0.95,
-        builder: (_, scrollController) => _NotificationsModalInternal(scrollController: scrollController),
+        builder: (_, scrollController) =>
+            _NotificationsModalInternal(scrollController: scrollController),
       ),
     );
   }
@@ -40,21 +41,41 @@ class _NotificationsModalInternal extends ConsumerStatefulWidget {
   const _NotificationsModalInternal({required this.scrollController});
 
   @override
-  ConsumerState<_NotificationsModalInternal> createState() => _NotificationsModalInternalState();
+  ConsumerState<_NotificationsModalInternal> createState() =>
+      _NotificationsModalInternalState();
 }
 
-class _NotificationsModalInternalState extends ConsumerState<_NotificationsModalInternal> {
-  int _selectedFilter = 0; // 0: Todas, 1: Alertas/Deudas, 2: Racha/Consejos, 3: Otros
+class _NotificationsModalInternalState
+    extends ConsumerState<_NotificationsModalInternal> {
+  int _selectedFilter =
+      0; // 0: Todas, 1: Alertas/Deudas, 2: Racha/Consejos, 3: Otros
 
   String _getCategoryEmoji(String? category) {
     if (category == null || category.isEmpty) return '🔔';
-    if (category.runes.isNotEmpty && category.runes.first > 127) return category;
+    if (category.runes.isNotEmpty && category.runes.first > 127)
+      return category;
     const map = {
-      'food': '🍔', 'transport': '🚗', 'shopping': '🛍️', 'bills': '📱',
-      'entertainment': '🎮', 'health': '💊', 'education': '📚', 'home': '🏠', 'pets': '🐾',
-      'other': '💸', 'debt': '💳', 'salary': '💼', 'freelance': '💻',
-      'bonus': '🎁', 'investment': '📈', 'sale': '🏷️', 'gift': '🎉',
-      'streak': '🔥', 'alert': '⚠️', 'credit_card': '💳', 'ai': '🤖'
+      'food': '🍔',
+      'transport': '🚗',
+      'shopping': '🛍️',
+      'bills': '📱',
+      'entertainment': '🎮',
+      'health': '💊',
+      'education': '📚',
+      'home': '🏠',
+      'pets': '🐾',
+      'other': '💸',
+      'debt': '💳',
+      'salary': '💼',
+      'freelance': '💻',
+      'bonus': '🎁',
+      'investment': '📈',
+      'sale': '🏷️',
+      'gift': '🎉',
+      'streak': '🔥',
+      'alert': '⚠️',
+      'credit_card': '💳',
+      'ai': '🤖',
     };
     return map[category] ?? '🔔';
   }
@@ -91,13 +112,14 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
           // Drag handle
           Container(
             margin: const EdgeInsets.symmetric(vertical: 12),
-            height: 5, width: 44,
+            height: 5,
+            width: 44,
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
               borderRadius: BorderRadius.circular(3),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 8, 20, 12),
@@ -107,15 +129,28 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                 Row(
                   children: [
                     Container(
-                      width: 44, height: 44,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF3B82F6)]),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF6366F1), Color(0xFF3B82F6)],
+                        ),
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
-                          BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.35), blurRadius: 10, offset: const Offset(0, 3)),
+                          BoxShadow(
+                            color: const Color(
+                              0xFF6366F1,
+                            ).withValues(alpha: 0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
                         ],
                       ),
-                      child: const Icon(LucideIcons.bellRing, color: Colors.white, size: 22),
+                      child: const Icon(
+                        LucideIcons.bellRing,
+                        color: Colors.white,
+                        size: 22,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Column(
@@ -125,19 +160,38 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                           children: [
                             Text(
                               loc.get('notif_title_bar'),
-                              style: TextStyle(color: isDark ? Colors.white : const Color(0xFF0F172A), fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.3),
+                              style: TextStyle(
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.3,
+                              ),
                             ),
                             if (unreadCount > 0) ...[
                               const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
                                 decoration: BoxDecoration(
-                                  gradient: const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF2563EB)]),
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFF3B82F6),
+                                      Color(0xFF2563EB),
+                                    ],
+                                  ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
                                   '$unreadCount nuevas',
-                                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                                 ),
                               ),
                             ],
@@ -145,7 +199,10 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                         ),
                         Text(
                           'Mantén el control de tus alertas',
-                          style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12),
+                          style: TextStyle(
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
@@ -153,54 +210,100 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                 ),
                 Row(
                   children: [
-                    if (unreadCount > 0 && user != null && FirebaseAuth.instance.currentUser != null)
+                    if (unreadCount > 0 &&
+                        user != null &&
+                        FirebaseAuth.instance.currentUser != null)
                       InkWell(
-                        onTap: () => notifier.markAllAsRead(FirebaseAuth.instance.currentUser!.uid),
+                        onTap: () => notifier.markAllAsRead(
+                          FirebaseAuth.instance.currentUser!.uid,
+                        ),
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF),
+                            color: isDark
+                                ? const Color(0xFF1E293B)
+                                : const Color(0xFFEFF6FF),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFBFDBFE)),
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFBFDBFE),
+                            ),
                           ),
                           child: Text(
                             loc.get('notif_read_all'),
-                            style: TextStyle(color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), fontSize: 12, fontWeight: FontWeight.w700),
+                            style: TextStyle(
+                              color: isDark
+                                  ? const Color(0xFF60A5FA)
+                                  : const Color(0xFF2563EB),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
                     const SizedBox(width: 6),
                     IconButton(
-                      icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600], size: 22),
+                      icon: Icon(
+                        LucideIcons.x,
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        size: 22,
+                      ),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),
 
           const SizedBox(height: 10),
-          
+
           // Filter Tabs (Scrollable)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             child: Row(
               children: [
-                _buildFilterTab(isDark, 0, loc.get('notif_tab_all'), LucideIcons.layers),
+                _buildFilterTab(
+                  isDark,
+                  0,
+                  loc.get('notif_tab_all'),
+                  LucideIcons.layers,
+                ),
                 const SizedBox(width: 8),
-                _buildFilterTab(isDark, 1, loc.get('notif_tab_debts'), LucideIcons.alertTriangle),
+                _buildFilterTab(
+                  isDark,
+                  1,
+                  loc.get('notif_tab_debts'),
+                  LucideIcons.alertTriangle,
+                ),
                 const SizedBox(width: 8),
-                _buildFilterTab(isDark, 2, loc.get('notif_tab_incomes'), LucideIcons.trendingUp),
+                _buildFilterTab(
+                  isDark,
+                  2,
+                  loc.get('notif_tab_incomes'),
+                  LucideIcons.trendingUp,
+                ),
                 const SizedBox(width: 8),
-                _buildFilterTab(isDark, 3, loc.get('notif_tab_fixed'), LucideIcons.calendar),
+                _buildFilterTab(
+                  isDark,
+                  3,
+                  loc.get('notif_tab_fixed'),
+                  LucideIcons.calendar,
+                ),
               ],
             ),
           ),
           const SizedBox(height: 12),
-          Divider(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0), height: 1),
+          Divider(
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+            height: 1,
+          ),
 
           Expanded(
             child: notificationsAsync.when(
@@ -209,7 +312,10 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                 final filtered = notifications.where((n) {
                   final rawTitleLower = n.title.toLowerCase();
                   final rawBodyLower = n.body.toLowerCase();
-                  final locTitleLower = _localizeTitle(n.title, loc).toLowerCase();
+                  final locTitleLower = _localizeTitle(
+                    n.title,
+                    loc,
+                  ).toLowerCase();
                   final locBodyLower = _localizeBody(n.body, loc).toLowerCase();
                   final titleLower = '$rawTitleLower $locTitleLower';
                   final bodyLower = '$rawBodyLower $locBodyLower';
@@ -250,20 +356,19 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                         bodyLower.contains('entrata');
                   }
                   if (_selectedFilter == 3) {
-                    return n.type == 'expense' && (
-                        n.category == 'recurring' ||
-                        n.category == 'bills' ||
-                        titleLower.contains('cobro automático') ||
-                        titleLower.contains('gasto fijo') ||
-                        titleLower.contains('suscripción') ||
-                        titleLower.contains('charge') ||
-                        titleLower.contains('cobrança') ||
-                        titleLower.contains('prélèvement') ||
-                        titleLower.contains('addebito') ||
-                        bodyLower.contains('cobro') ||
-                        bodyLower.contains('charge') ||
-                        bodyLower.contains('cobrança')
-                    );
+                    return n.type == 'expense' &&
+                        (n.category == 'recurring' ||
+                            n.category == 'bills' ||
+                            titleLower.contains('cobro automático') ||
+                            titleLower.contains('gasto fijo') ||
+                            titleLower.contains('suscripción') ||
+                            titleLower.contains('charge') ||
+                            titleLower.contains('cobrança') ||
+                            titleLower.contains('prélèvement') ||
+                            titleLower.contains('addebito') ||
+                            bodyLower.contains('cobro') ||
+                            bodyLower.contains('charge') ||
+                            bodyLower.contains('cobrança'));
                   }
                   return true;
                 }).toList();
@@ -274,17 +379,37 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          width: 84, height: 84,
+                          width: 84,
+                          height: 84,
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                            color: isDark
+                                ? const Color(0xFF1E293B)
+                                : const Color(0xFFF1F5F9),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(LucideIcons.bellOff, size: 36, color: isDark ? Colors.grey[600] : Colors.grey[400]),
+                          child: Icon(
+                            LucideIcons.bellOff,
+                            size: 36,
+                            color: isDark ? Colors.grey[600] : Colors.grey[400],
+                          ),
                         ),
                         const SizedBox(height: 18),
-                        Text(loc.get('notif_empty_filter'), style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 16, fontWeight: FontWeight.w700)),
+                        Text(
+                          loc.get('notif_empty_filter'),
+                          style: TextStyle(
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                         const SizedBox(height: 6),
-                        Text('No hay alertas en esta categoría por ahora', style: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 13)),
+                        Text(
+                          'No hay alertas en esta categoría por ahora',
+                          style: TextStyle(
+                            color: isDark ? Colors.grey[600] : Colors.grey[400],
+                            fontSize: 13,
+                          ),
+                        ),
                       ],
                     ),
                   );
@@ -292,7 +417,10 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
 
                 return ListView.builder(
                   controller: widget.scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
                     final notif = filtered[index];
@@ -300,13 +428,19 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
 
                     // Color de acento de categoría
                     Color accentColor = const Color(0xFF3B82F6);
-                    if (notif.category == 'debt' || notif.category == 'credit_card' || notif.title.toLowerCase().contains('mora') || notif.title.toLowerCase().contains('vence')) {
+                    if (notif.category == 'debt' ||
+                        notif.category == 'credit_card' ||
+                        notif.title.toLowerCase().contains('mora') ||
+                        notif.title.toLowerCase().contains('vence')) {
                       accentColor = const Color(0xFFEF4444);
-                    } else if (notif.type == 'income' || notif.title.toLowerCase().contains('ingreso')) {
+                    } else if (notif.type == 'income' ||
+                        notif.title.toLowerCase().contains('ingreso')) {
                       accentColor = const Color(0xFF10B981);
-                    } else if (notif.category == 'streak' || notif.title.toLowerCase().contains('racha')) {
+                    } else if (notif.category == 'streak' ||
+                        notif.title.toLowerCase().contains('racha')) {
                       accentColor = const Color(0xFFF59E0B);
-                    } else if (notif.category == 'ai' || notif.title.toLowerCase().contains('ia')) {
+                    } else if (notif.category == 'ai' ||
+                        notif.title.toLowerCase().contains('ia')) {
                       accentColor = const Color(0xFF8B5CF6);
                     }
 
@@ -324,9 +458,20 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: const [
-                            Icon(LucideIcons.trash2, color: Colors.white, size: 20),
+                            Icon(
+                              LucideIcons.trash2,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                             SizedBox(width: 8),
-                            Text('Eliminar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13)),
+                            Text(
+                              'Eliminar',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -335,24 +480,37 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                       },
                       child: GestureDetector(
                         onTap: () {
-                          _onNotificationTap(context, notif, isUnread, notifier);
+                          _onNotificationTap(
+                            context,
+                            notif,
+                            isUnread,
+                            notifier,
+                          );
                         },
                         child: Container(
                           margin: const EdgeInsets.only(bottom: 14),
                           decoration: BoxDecoration(
-                            color: isUnread 
-                                ? (isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF))
+                            color: isUnread
+                                ? (isDark
+                                      ? const Color(0xFF1E293B)
+                                      : const Color(0xFFEFF6FF))
                                 : cardBgColor,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: isUnread 
+                              color: isUnread
                                   ? accentColor.withValues(alpha: 0.5)
-                                  : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                                  : (isDark
+                                        ? const Color(0xFF334155)
+                                        : const Color(0xFFE2E8F0)),
                               width: isUnread ? 1.5 : 1.0,
                             ),
                             boxShadow: [
                               if (!isDark)
-                                BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 3)),
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.04),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 3),
+                                ),
                             ],
                           ),
                           child: ClipRRect(
@@ -362,78 +520,177 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   // Barra lateral de acento de color
-                                  Container(
-                                    width: 5,
-                                    color: accentColor,
-                                  ),
+                                  Container(width: 5, color: accentColor),
                                   Expanded(
                                     child: Padding(
                                       padding: const EdgeInsets.all(16),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Container(
-                                                width: 44, height: 44,
+                                                width: 44,
+                                                height: 44,
                                                 decoration: BoxDecoration(
-                                                  color: accentColor.withValues(alpha: isDark ? 0.2 : 0.12),
-                                                  borderRadius: BorderRadius.circular(14),
+                                                  color: accentColor.withValues(
+                                                    alpha: isDark ? 0.2 : 0.12,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(14),
                                                 ),
-                                                child: Center(child: Text(_getCategoryEmoji(notif.category), style: const TextStyle(fontSize: 22))),
+                                                child: Center(
+                                                  child: Text(
+                                                    _getCategoryEmoji(
+                                                      notif.category,
+                                                    ),
+                                                    style: const TextStyle(
+                                                      fontSize: 22,
+                                                    ),
+                                                  ),
+                                                ),
                                               ),
                                               const SizedBox(width: 14),
                                               Expanded(
                                                 child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
                                                       children: [
                                                         Expanded(
                                                           child: Text(
-                                                            _localizeTitle(notif.title, loc), 
+                                                            _localizeTitle(
+                                                              notif.title,
+                                                              loc,
+                                                            ),
                                                             style: TextStyle(
-                                                              color: isDark ? Colors.white : const Color(0xFF0F172A), 
-                                                              fontSize: 15, 
-                                                              fontWeight: isUnread ? FontWeight.w900 : FontWeight.w700,
-                                                            )
+                                                              color: isDark
+                                                                  ? Colors.white
+                                                                  : const Color(
+                                                                      0xFF0F172A,
+                                                                    ),
+                                                              fontSize: 15,
+                                                              fontWeight:
+                                                                  isUnread
+                                                                  ? FontWeight
+                                                                        .w900
+                                                                  : FontWeight
+                                                                        .w700,
+                                                            ),
                                                           ),
                                                         ),
                                                         if (isUnread)
                                                           Container(
-                                                            margin: const EdgeInsets.only(left: 8),
-                                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                            margin:
+                                                                const EdgeInsets.only(
+                                                                  left: 8,
+                                                                ),
+                                                            padding:
+                                                                const EdgeInsets.symmetric(
+                                                                  horizontal: 8,
+                                                                  vertical: 4,
+                                                                ),
                                                             decoration: BoxDecoration(
-                                                              color: accentColor.withValues(alpha: 0.15),
-                                                              borderRadius: BorderRadius.circular(12),
-                                                              border: Border.all(color: accentColor.withValues(alpha: 0.3)),
+                                                              color: accentColor
+                                                                  .withValues(
+                                                                    alpha: 0.15,
+                                                                  ),
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    12,
+                                                                  ),
+                                                              border: Border.all(
+                                                                color: accentColor
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.3,
+                                                                    ),
+                                                              ),
                                                             ),
                                                             child: Row(
-                                                              mainAxisSize: MainAxisSize.min,
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
                                                               children: [
-                                                                Container(width: 6, height: 6, decoration: BoxDecoration(color: accentColor, shape: BoxShape.circle)),
-                                                                const SizedBox(width: 4),
-                                                                Text('NUEVA', style: TextStyle(color: accentColor, fontSize: 9, fontWeight: FontWeight.w900)),
+                                                                Container(
+                                                                  width: 6,
+                                                                  height: 6,
+                                                                  decoration: BoxDecoration(
+                                                                    color:
+                                                                        accentColor,
+                                                                    shape: BoxShape
+                                                                        .circle,
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(
+                                                                  width: 4,
+                                                                ),
+                                                                Text(
+                                                                  'NUEVA',
+                                                                  style: TextStyle(
+                                                                    color:
+                                                                        accentColor,
+                                                                    fontSize: 9,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w900,
+                                                                  ),
+                                                                ),
                                                               ],
                                                             ),
-                                                          )
+                                                          ),
                                                       ],
                                                     ),
                                                     const SizedBox(height: 6),
                                                     Text(
-                                                      _localizeBody(notif.body, loc),
-                                                      style: TextStyle(color: isDark ? Colors.grey[300] : Colors.grey[600], fontSize: 13, height: 1.3),
+                                                      _localizeBody(
+                                                        notif.body,
+                                                        loc,
+                                                      ),
+                                                      style: TextStyle(
+                                                        color: isDark
+                                                            ? Colors.grey[300]
+                                                            : Colors.grey[600],
+                                                        fontSize: 13,
+                                                        height: 1.3,
+                                                      ),
                                                     ),
                                                     const SizedBox(height: 10),
                                                     Row(
                                                       children: [
-                                                        Icon(LucideIcons.clock, size: 12, color: isDark ? Colors.grey[500] : Colors.grey[400]),
-                                                        const SizedBox(width: 5),
+                                                        Icon(
+                                                          LucideIcons.clock,
+                                                          size: 12,
+                                                          color: isDark
+                                                              ? Colors.grey[500]
+                                                              : Colors
+                                                                    .grey[400],
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 5,
+                                                        ),
                                                         Text(
-                                                          _formatTimeAgo(notif.createdAt, loc),
-                                                          style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 11.5, fontWeight: FontWeight.w600),
+                                                          _formatTimeAgo(
+                                                            notif.createdAt,
+                                                            loc,
+                                                          ),
+                                                          style: TextStyle(
+                                                            color: isDark
+                                                                ? Colors
+                                                                      .grey[500]
+                                                                : Colors
+                                                                      .grey[400],
+                                                            fontSize: 11.5,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                          ),
                                                         ),
                                                       ],
                                                     ),
@@ -442,33 +699,82 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
                                               ),
                                             ],
                                           ),
-                                          
+
                                           // Smart Action Pill
                                           const SizedBox(height: 14),
                                           Row(
-                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
                                             children: [
                                               InkWell(
                                                 onTap: () {
-                                                  _onNotificationTap(context, notif, isUnread, notifier);
+                                                  _onNotificationTap(
+                                                    context,
+                                                    notif,
+                                                    isUnread,
+                                                    notifier,
+                                                  );
                                                 },
-                                                borderRadius: BorderRadius.circular(12),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
                                                 child: Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 14,
+                                                        vertical: 7,
+                                                      ),
                                                   decoration: BoxDecoration(
-                                                    color: accentColor.withValues(alpha: isDark ? 0.25 : 0.1),
-                                                    borderRadius: BorderRadius.circular(12),
-                                                    border: Border.all(color: accentColor.withValues(alpha: 0.3)),
+                                                    color: accentColor
+                                                        .withValues(
+                                                          alpha: isDark
+                                                              ? 0.25
+                                                              : 0.1,
+                                                        ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                    border: Border.all(
+                                                      color: accentColor
+                                                          .withValues(
+                                                            alpha: 0.3,
+                                                          ),
+                                                    ),
                                                   ),
                                                   child: Row(
-                                                    mainAxisSize: MainAxisSize.min,
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
                                                     children: [
                                                       Text(
-                                                        _getSmartActionLabel(notif.category, notif.title, loc),
-                                                        style: TextStyle(color: isDark ? accentColor.withValues(alpha: 0.9) : accentColor, fontSize: 12, fontWeight: FontWeight.w800),
+                                                        _getSmartActionLabel(
+                                                          notif.category,
+                                                          notif.title,
+                                                          loc,
+                                                        ),
+                                                        style: TextStyle(
+                                                          color: isDark
+                                                              ? accentColor
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.9,
+                                                                    )
+                                                              : accentColor,
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                        ),
                                                       ),
                                                       const SizedBox(width: 5),
-                                                      Icon(LucideIcons.arrowRight, size: 13, color: isDark ? accentColor.withValues(alpha: 0.9) : accentColor),
+                                                      Icon(
+                                                        LucideIcons.arrowRight,
+                                                        size: 13,
+                                                        color: isDark
+                                                            ? accentColor
+                                                                  .withValues(
+                                                                    alpha: 0.9,
+                                                                  )
+                                                            : accentColor,
+                                                      ),
                                                     ],
                                                   ),
                                                 ),
@@ -492,7 +798,7 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (err, _) => Center(child: Text('Error: $err')),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -508,21 +814,47 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 9),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          gradient: isSelected ? const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF3B82F6)]) : null,
-          color: isSelected ? null : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+          gradient: isSelected
+              ? const LinearGradient(
+                  colors: [Color(0xFF6366F1), Color(0xFF3B82F6)],
+                )
+              : null,
+          color: isSelected
+              ? null
+              : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: isSelected ? const Color(0xFF6366F1) : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))),
-          boxShadow: isSelected ? [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))] : [],
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF6366F1)
+                : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: isSelected ? Colors.white : (isDark ? Colors.grey[400] : Colors.grey[600])),
+            Icon(
+              icon,
+              size: 14,
+              color: isSelected
+                  ? Colors.white
+                  : (isDark ? Colors.grey[400] : Colors.grey[600]),
+            ),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : (isDark ? Colors.grey[300] : Colors.grey[700]),
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? Colors.grey[300] : Colors.grey[700]),
                 fontSize: 12.5,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
               ),
@@ -533,42 +865,90 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
     );
   }
 
-  String _getSmartActionLabel(String? category, String title, AppLocalizations loc) {
+  String _getSmartActionLabel(
+    String? category,
+    String title,
+    AppLocalizations loc,
+  ) {
     final t = title.toLowerCase();
-    if (category == 'debt' || category == 'credit_card' || t.contains('sobregiro') || t.contains('tarjeta') || t.contains('mora') || t.contains('corte') || t.contains('vence') || t.contains('pago') || t.contains('abono') || t.contains('cuota')) {
+    if (category == 'debt' ||
+        category == 'credit_card' ||
+        t.contains('sobregiro') ||
+        t.contains('tarjeta') ||
+        t.contains('mora') ||
+        t.contains('corte') ||
+        t.contains('vence') ||
+        t.contains('pago') ||
+        t.contains('abono') ||
+        t.contains('cuota')) {
       return loc.get('notif_action_card');
     }
     if (category == 'streak' || t.contains('racha')) {
       return loc.get('notif_action_streak');
     }
-    if (category == 'alert' || t.contains('alerta') || t.contains('presupuesto')) {
+    if (category == 'alert' ||
+        t.contains('alerta') ||
+        t.contains('presupuesto')) {
       return loc.get('notif_action_alert');
     }
-    if (category == 'ai' || t.contains('ia') || t.contains('consejo') || t.contains('tip') || t.contains('asesor')) {
+    if (category == 'ai' ||
+        t.contains('ia') ||
+        t.contains('consejo') ||
+        t.contains('tip') ||
+        t.contains('asesor')) {
       return loc.get('notif_action_ai');
     }
     return loc.get('notif_action_view');
   }
 
-  void _onNotificationTap(BuildContext context, dynamic notif, bool isUnread, dynamic notifier) {
+  void _onNotificationTap(
+    BuildContext context,
+    dynamic notif,
+    bool isUnread,
+    dynamic notifier,
+  ) {
     if (isUnread) notifier.markAsRead(notif.id);
     Navigator.of(context).pop();
     _handleSmartAction(context, notif.category, notif.title);
   }
 
-  void _handleSmartAction(BuildContext context, String? category, String title) {
+  void _handleSmartAction(
+    BuildContext context,
+    String? category,
+    String title,
+  ) {
     final t = title.toLowerCase();
-    if (category == 'debt' || category == 'credit_card' || t.contains('sobregiro') || t.contains('tarjeta') || t.contains('mora') || t.contains('corte') || t.contains('vence') || t.contains('pago') || t.contains('abono') || t.contains('cuota')) {
+    if (category == 'debt' ||
+        category == 'credit_card' ||
+        t.contains('sobregiro') ||
+        t.contains('tarjeta') ||
+        t.contains('mora') ||
+        t.contains('corte') ||
+        t.contains('vence') ||
+        t.contains('pago') ||
+        t.contains('abono') ||
+        t.contains('cuota')) {
       CreditCardsModal.show(context);
     } else if (category == 'streak' || t.contains('racha')) {
       final user = ref.read(authProvider).user;
       final now = DateTime.now();
-      final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+      final todayStr =
+          "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
       final isActiveToday = user?.lastActiveDate == todayStr;
-      StreakModal.show(context, streak: user?.currentStreak ?? 0, isActiveToday: isActiveToday);
-    } else if (category == 'ai' || t.contains('ia') || t.contains('consejo') || t.contains('tip') || t.contains('asesor')) {
+      StreakModal.show(
+        context,
+        streak: user?.currentStreak ?? 0,
+        isActiveToday: isActiveToday,
+      );
+    } else if (category == 'ai' ||
+        t.contains('ia') ||
+        t.contains('consejo') ||
+        t.contains('tip') ||
+        t.contains('asesor')) {
       AIChatModal.show(context);
-    } else if (category == 'alert' || t.contains('alerta') || t.contains('presupuesto')) {
+    } else if (category == 'alert' ||
+        t.contains('alerta') ||
+        t.contains('presupuesto')) {
       TransactionsListModal.show(context);
     } else {
       TransactionsListModal.show(context);
@@ -577,50 +957,68 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
 
   String _formatTimeAgo(DateTime date, AppLocalizations loc) {
     final diff = DateTime.now().difference(date);
-    if (diff.inDays > 0) return loc.get('time_ago_d').replaceAll('{n}', '${diff.inDays}');
-    if (diff.inHours > 0) return loc.get('time_ago_h').replaceAll('{n}', '${diff.inHours}');
-    if (diff.inMinutes > 0) return loc.get('time_ago_m').replaceAll('{n}', '${diff.inMinutes}');
+    if (diff.inDays > 0)
+      return loc.get('time_ago_d').replaceAll('{n}', '${diff.inDays}');
+    if (diff.inHours > 0)
+      return loc.get('time_ago_h').replaceAll('{n}', '${diff.inHours}');
+    if (diff.inMinutes > 0)
+      return loc.get('time_ago_m').replaceAll('{n}', '${diff.inMinutes}');
     return loc.get('time_ago_now');
   }
 
   String _localizeTitle(String rawTitle, AppLocalizations loc) {
-    if (rawTitle == 'Ingreso Automático' || rawTitle == 'Automatic Income') return loc.get('notif_auto_income_title');
-    if (rawTitle == 'Cobro Automático' || rawTitle == 'Automatic Charge') return loc.get('notif_auto_charge_title');
-    if (rawTitle == 'Pago Automático de Deuda' || rawTitle == 'Automatic Debt Payment') return loc.get('notif_auto_debt_title');
-    if (rawTitle.contains('Presupuesto Agotado') || rawTitle.contains('Budget Exceeded')) return loc.get('notif_budget_exceeded_title');
-    if (rawTitle.contains('Presupuesto al 80%') || rawTitle.contains('Budget at 80%')) return loc.get('notif_budget_warning_title');
-    
-    if (rawTitle.contains('Corte en 2 días:') || rawTitle.contains('Statement closing in 2 days:')) {
+    if (rawTitle == 'Ingreso Automático' || rawTitle == 'Automatic Income')
+      return loc.get('notif_auto_income_title');
+    if (rawTitle == 'Cobro Automático' || rawTitle == 'Automatic Charge')
+      return loc.get('notif_auto_charge_title');
+    if (rawTitle == 'Pago Automático de Deuda' ||
+        rawTitle == 'Automatic Debt Payment')
+      return loc.get('notif_auto_debt_title');
+    if (rawTitle.contains('Presupuesto Agotado') ||
+        rawTitle.contains('Budget Exceeded'))
+      return loc.get('notif_budget_exceeded_title');
+    if (rawTitle.contains('Presupuesto al 80%') ||
+        rawTitle.contains('Budget at 80%'))
+      return loc.get('notif_budget_warning_title');
+
+    if (rawTitle.contains('Corte en 2 días:') ||
+        rawTitle.contains('Statement closing in 2 days:')) {
       final parts = rawTitle.split(':');
       final name = parts.length > 1 ? parts.sublist(1).join(':').trim() : '';
       return loc.get('notif_cut_2_days_title').replaceAll('{name}', name);
     }
-    if (rawTitle.contains('Mañana es el corte:') || rawTitle.contains('Statement closes tomorrow:')) {
+    if (rawTitle.contains('Mañana es el corte:') ||
+        rawTitle.contains('Statement closes tomorrow:')) {
       final parts = rawTitle.split(':');
       final name = parts.length > 1 ? parts.sublist(1).join(':').trim() : '';
       return loc.get('notif_cut_1_day_title').replaceAll('{name}', name);
     }
-    if (rawTitle.contains('Hoy corta tu tarjeta:') || rawTitle.contains('Statement closes today:')) {
+    if (rawTitle.contains('Hoy corta tu tarjeta:') ||
+        rawTitle.contains('Statement closes today:')) {
       final parts = rawTitle.split(':');
       final name = parts.length > 1 ? parts.sublist(1).join(':').trim() : '';
       return loc.get('notif_cut_today_title').replaceAll('{name}', name);
     }
-    if (rawTitle.contains('Pago de tarjeta en 2 días:') || rawTitle.contains('Card payment due in 2 days:')) {
+    if (rawTitle.contains('Pago de tarjeta en 2 días:') ||
+        rawTitle.contains('Card payment due in 2 days:')) {
       final parts = rawTitle.split(':');
       final name = parts.length > 1 ? parts.sublist(1).join(':').trim() : '';
       return loc.get('notif_pay_2_days_title').replaceAll('{name}', name);
     }
-    if (rawTitle.contains('Mañana vence tu tarjeta:') || rawTitle.contains('Card payment due tomorrow:')) {
+    if (rawTitle.contains('Mañana vence tu tarjeta:') ||
+        rawTitle.contains('Card payment due tomorrow:')) {
       final parts = rawTitle.split(':');
       final name = parts.length > 1 ? parts.sublist(1).join(':').trim() : '';
       return loc.get('notif_pay_1_day_title').replaceAll('{name}', name);
     }
-    if (rawTitle.contains('HOY vence tu tarjeta:') || rawTitle.contains('Card payment due TODAY:')) {
+    if (rawTitle.contains('HOY vence tu tarjeta:') ||
+        rawTitle.contains('Card payment due TODAY:')) {
       final parts = rawTitle.split(':');
       final name = parts.length > 1 ? parts.sublist(1).join(':').trim() : '';
       return loc.get('notif_pay_today_title').replaceAll('{name}', name);
     }
-    if (rawTitle.contains('TARJETA EN MORA:') || rawTitle.contains('OVERDUE CARD:')) {
+    if (rawTitle.contains('TARJETA EN MORA:') ||
+        rawTitle.contains('OVERDUE CARD:')) {
       final parts = rawTitle.split(':');
       final name = parts.length > 1 ? parts.sublist(1).join(':').trim() : '';
       return loc.get('notif_overdue_title').replaceAll('{name}', name);
@@ -635,67 +1033,122 @@ class _NotificationsModalInternalState extends ConsumerState<_NotificationsModal
       final desc = rawBody.substring(firstQuote + 1, secondQuote);
       final afterQuote = rawBody.substring(secondQuote + 1);
       final amountMatch = RegExp(r'([\d,]+\.?\d*)').firstMatch(afterQuote);
-      final amount = amountMatch != null ? afterQuote.substring(amountMatch.start).trim().replaceAll('.', '') : '';
-      
-      if (rawBody.contains('Se ha registrado') || rawBody.contains('has been recorded')) {
-        return loc.get('notif_auto_income_body').replaceAll('{desc}', desc).replaceAll('{amount}', afterQuote.trim().replaceAll('por un monto de ', '').replaceAll('for the amount of ', '').replaceAll('.', ''));
+      final amount = amountMatch != null
+          ? afterQuote.substring(amountMatch.start).trim().replaceAll('.', '')
+          : '';
+
+      if (rawBody.contains('Se ha registrado') ||
+          rawBody.contains('has been recorded')) {
+        return loc
+            .get('notif_auto_income_body')
+            .replaceAll('{desc}', desc)
+            .replaceAll(
+              '{amount}',
+              afterQuote
+                  .trim()
+                  .replaceAll('por un monto de ', '')
+                  .replaceAll('for the amount of ', '')
+                  .replaceAll('.', ''),
+            );
       }
-      if (rawBody.contains('Se ha cobrado la cuota') || rawBody.contains('The installment for')) {
-        return loc.get('notif_auto_debt_body').replaceAll('{desc}', desc).replaceAll('{amount}', afterQuote.trim().replaceAll('por un monto de ', '').replaceAll('has been charged for ', '').replaceAll('.', ''));
+      if (rawBody.contains('Se ha cobrado la cuota') ||
+          rawBody.contains('The installment for')) {
+        return loc
+            .get('notif_auto_debt_body')
+            .replaceAll('{desc}', desc)
+            .replaceAll(
+              '{amount}',
+              afterQuote
+                  .trim()
+                  .replaceAll('por un monto de ', '')
+                  .replaceAll('has been charged for ', '')
+                  .replaceAll('.', ''),
+            );
       }
-      if (rawBody.contains('presupuesto para la categoría') || rawBody.contains('budget for category')) {
-        final nums = afterQuote.contains('(') ? afterQuote.substring(afterQuote.indexOf('(')).replaceAll('.', '') : '';
+      if (rawBody.contains('presupuesto para la categoría') ||
+          rawBody.contains('budget for category')) {
+        final nums = afterQuote.contains('(')
+            ? afterQuote.substring(afterQuote.indexOf('(')).replaceAll('.', '')
+            : '';
         if (rawBody.contains('100%')) {
-          return loc.get('notif_budget_exceeded_body').replaceAll('{cat}', loc.translateCategory(desc)).replaceAll('{nums}', nums);
+          return loc
+              .get('notif_budget_exceeded_body')
+              .replaceAll('{cat}', loc.translateCategory(desc))
+              .replaceAll('{nums}', nums);
         }
-        return loc.get('notif_budget_warning_body').replaceAll('{cat}', loc.translateCategory(desc)).replaceAll('{nums}', nums);
+        return loc
+            .get('notif_budget_warning_body')
+            .replaceAll('{cat}', loc.translateCategory(desc))
+            .replaceAll('{nums}', nums);
       }
     }
 
-    if (rawBody.contains('realiza su corte el día') || rawBody.contains('statement closes on day')) {
+    if (rawBody.contains('realiza su corte el día') ||
+        rawBody.contains('statement closes on day')) {
       final dayMatch = RegExp(r'(\d+)').firstMatch(rawBody);
       final day = dayMatch?.group(1) ?? '';
       return loc.get('notif_cut_2_days_body').replaceAll('{day}', day);
     }
-    if (rawBody.contains('es la fecha de corte') || rawBody.contains('is the closing date')) {
+    if (rawBody.contains('es la fecha de corte') ||
+        rawBody.contains('is the closing date')) {
       final dayMatch = RegExp(r'(\d+)').firstMatch(rawBody);
       final day = dayMatch?.group(1) ?? '';
       return loc.get('notif_cut_1_day_body').replaceAll('{day}', day);
     }
-    if (rawBody.contains('Hoy cierra tu ciclo de facturación') || rawBody.contains('billing cycle closes today')) {
+    if (rawBody.contains('Hoy cierra tu ciclo de facturación') ||
+        rawBody.contains('billing cycle closes today')) {
       return loc.get('notif_cut_today_body');
     }
-    if (rawBody.contains('Faltan 2 días para el pago') || rawBody.contains('2 days remaining to pay')) {
+    if (rawBody.contains('Faltan 2 días para el pago') ||
+        rawBody.contains('2 days remaining to pay')) {
       final dayMatch = RegExp(r'Día (\d+)|Day (\d+)').firstMatch(rawBody);
       final day = dayMatch?.group(1) ?? dayMatch?.group(2) ?? '';
       final balIndex = rawBody.indexOf(':');
-      final bal = balIndex != -1 ? rawBody.substring(balIndex + 1).trim().replaceAll('.', '') : '';
-      return loc.get('notif_pay_2_days_body').replaceAll('{day}', day).replaceAll('{bal}', bal);
+      final bal = balIndex != -1
+          ? rawBody.substring(balIndex + 1).trim().replaceAll('.', '')
+          : '';
+      return loc
+          .get('notif_pay_2_days_body')
+          .replaceAll('{day}', day)
+          .replaceAll('{bal}', bal);
     }
-    if (rawBody.contains('fecha límite para pagar tu tarjeta sin intereses') || rawBody.contains('deadline to pay your card without interest')) {
+    if (rawBody.contains('fecha límite para pagar tu tarjeta sin intereses') ||
+        rawBody.contains('deadline to pay your card without interest')) {
       final dayMatch = RegExp(r'(\d+)').firstMatch(rawBody);
       final day = dayMatch?.group(1) ?? '';
       return loc.get('notif_pay_1_day_body').replaceAll('{day}', day);
     }
-    if (rawBody.contains('día límite de pago para') || rawBody.contains('payment deadline for')) {
+    if (rawBody.contains('día límite de pago para') ||
+        rawBody.contains('payment deadline for')) {
       final parts = rawBody.split('!');
-      final namePart = parts.first.replaceAll('¡Hoy es el día límite de pago para ', '').replaceAll('Today is the payment deadline for ', '').trim();
+      final namePart = parts.first
+          .replaceAll('¡Hoy es el día límite de pago para ', '')
+          .replaceAll('Today is the payment deadline for ', '')
+          .trim();
       final balIndex = rawBody.indexOf(':');
-      final bal = balIndex != -1 ? rawBody.substring(balIndex + 1).split('.').first.trim() : '';
-      return loc.get('notif_pay_today_body').replaceAll('{name}', namePart).replaceAll('{bal}', bal);
+      final bal = balIndex != -1
+          ? rawBody.substring(balIndex + 1).split('.').first.trim()
+          : '';
+      return loc
+          .get('notif_pay_today_body')
+          .replaceAll('{name}', namePart)
+          .replaceAll('{bal}', bal);
     }
-    if (rawBody.contains('Tu tarjeta venció el día') || rawBody.contains('Your card was due on day')) {
+    if (rawBody.contains('Tu tarjeta venció el día') ||
+        rawBody.contains('Your card was due on day')) {
       final dayMatch = RegExp(r'(\d+)').firstMatch(rawBody);
       final day = dayMatch?.group(1) ?? '';
       final balMatch = RegExp(r'de (\$.*?)\.|of (\$.*?)\.').firstMatch(rawBody);
       final bal = balMatch?.group(1) ?? balMatch?.group(2) ?? '';
-      return loc.get('notif_overdue_body').replaceAll('{day}', day).replaceAll('{bal}', bal);
+      return loc
+          .get('notif_overdue_body')
+          .replaceAll('{day}', day)
+          .replaceAll('{bal}', bal);
     }
 
     return rawBody;
   }
 }
-
 
 class AnimatedNotificationItem extends StatefulWidget {
   final dynamic notif;
@@ -726,17 +1179,19 @@ class AnimatedNotificationItem extends StatefulWidget {
   });
 
   @override
-  State<AnimatedNotificationItem> createState() => _AnimatedNotificationItemState();
+  State<AnimatedNotificationItem> createState() =>
+      _AnimatedNotificationItemState();
 }
 
-class _AnimatedNotificationItemState extends State<AnimatedNotificationItem> with TickerProviderStateMixin {
+class _AnimatedNotificationItemState extends State<AnimatedNotificationItem>
+    with TickerProviderStateMixin {
   late AnimationController _pressController;
   late Animation<double> _scaleAnimation;
-  
+
   late AnimationController _entranceController;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
-  
+
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
@@ -744,19 +1199,38 @@ class _AnimatedNotificationItemState extends State<AnimatedNotificationItem> wit
   void initState() {
     super.initState();
     // Press Bounce
-    _pressController = AnimationController(vsync: this, duration: const Duration(milliseconds: 150));
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.92).animate(CurvedAnimation(parent: _pressController, curve: Curves.easeInOut));
-    
+    _pressController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.92).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
+    );
+
     // Entrance Slide
-    _entranceController = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
-    _slideAnimation = Tween<Offset>(begin: const Offset(0.5, 0.0), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _entranceController, curve: Curves.easeOutCubic));
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0)
-        .animate(CurvedAnimation(parent: _entranceController, curve: Curves.easeIn));
-        
+    _entranceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0.5, 0.0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _entranceController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _entranceController, curve: Curves.easeIn),
+    );
+
     // Unread Pulse Dot
-    _pulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000))..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
 
     Future.delayed(Duration(milliseconds: 50 * (widget.index % 15)), () {
       if (mounted) _entranceController.forward();
@@ -774,13 +1248,17 @@ class _AnimatedNotificationItemState extends State<AnimatedNotificationItem> wit
   @override
   Widget build(BuildContext context) {
     // Beautiful dynamic background color
-    final bgColor = widget.isDark 
+    final bgColor = widget.isDark
         ? (widget.isUnread ? const Color(0xFF1E293B) : const Color(0xFF0F172A))
         : (widget.isUnread ? Colors.white : const Color(0xFFF8FAFC));
-        
-    final borderColor = widget.isDark 
-        ? (widget.isUnread ? widget.accentColor.withValues(alpha: 0.4) : const Color(0xFF334155))
-        : (widget.isUnread ? widget.accentColor.withValues(alpha: 0.3) : const Color(0xFFE2E8F0));
+
+    final borderColor = widget.isDark
+        ? (widget.isUnread
+              ? widget.accentColor.withValues(alpha: 0.4)
+              : const Color(0xFF334155))
+        : (widget.isUnread
+              ? widget.accentColor.withValues(alpha: 0.3)
+              : const Color(0xFFE2E8F0));
 
     return FadeTransition(
       opacity: _fadeAnimation,
@@ -814,18 +1292,30 @@ class _AnimatedNotificationItemState extends State<AnimatedNotificationItem> wit
             onTapCancel: () => _pressController.reverse(),
             child: AnimatedBuilder(
               animation: _scaleAnimation,
-              builder: (context, child) => Transform.scale(scale: _scaleAnimation.value, child: child),
+              builder: (context, child) =>
+                  Transform.scale(scale: _scaleAnimation.value, child: child),
               child: Container(
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   color: bgColor,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: borderColor, width: widget.isUnread ? 1.5 : 1.0),
+                  border: Border.all(
+                    color: borderColor,
+                    width: widget.isUnread ? 1.5 : 1.0,
+                  ),
                   boxShadow: [
                     if (!widget.isDark)
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 5)),
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
                     if (widget.isDark && widget.isUnread)
-                      BoxShadow(color: widget.accentColor.withValues(alpha: 0.15), blurRadius: 20, offset: const Offset(0, 4)),
+                      BoxShadow(
+                        color: widget.accentColor.withValues(alpha: 0.15),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      ),
                   ],
                 ),
                 child: ClipRRect(
@@ -846,7 +1336,7 @@ class _AnimatedNotificationItemState extends State<AnimatedNotificationItem> wit
                             ),
                           ),
                         ),
-                      
+
                       Padding(
                         padding: const EdgeInsets.all(20),
                         child: Row(
@@ -857,35 +1347,55 @@ class _AnimatedNotificationItemState extends State<AnimatedNotificationItem> wit
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: [widget.accentColor, HSLColor.fromColor(widget.accentColor).withLightness(0.3).toColor()],
+                                  colors: [
+                                    widget.accentColor,
+                                    HSLColor.fromColor(
+                                      widget.accentColor,
+                                    ).withLightness(0.3).toColor(),
+                                  ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
                                 shape: BoxShape.circle,
                                 boxShadow: [
-                                  BoxShadow(color: widget.accentColor.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3)),
+                                  BoxShadow(
+                                    color: widget.accentColor.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
+                                  ),
                                 ],
                               ),
-                              child: Icon(LucideIcons.bell, color: Colors.white, size: 22),
+                              child: Icon(
+                                LucideIcons.bell,
+                                color: Colors.white,
+                                size: 22,
+                              ),
                             ),
                             const SizedBox(width: 16),
-                            
+
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Expanded(
                                         child: Text(
                                           widget.localizedTitle,
                                           style: TextStyle(
-                                            color: widget.isDark ? Colors.white : Colors.black87,
+                                            color: widget.isDark
+                                                ? Colors.white
+                                                : Colors.black87,
                                             fontSize: 15,
-                                            fontWeight: widget.isUnread ? FontWeight.w900 : FontWeight.w700,
+                                            fontWeight: widget.isUnread
+                                                ? FontWeight.w900
+                                                : FontWeight.w700,
                                             letterSpacing: -0.3,
-                                          )
+                                          ),
                                         ),
                                       ),
                                       if (widget.isUnread)
@@ -894,60 +1404,111 @@ class _AnimatedNotificationItemState extends State<AnimatedNotificationItem> wit
                                           builder: (context, child) => Opacity(
                                             opacity: _pulseAnimation.value,
                                             child: Container(
-                                              margin: const EdgeInsets.only(left: 8, top: 4),
+                                              margin: const EdgeInsets.only(
+                                                left: 8,
+                                                top: 4,
+                                              ),
                                               width: 10,
                                               height: 10,
                                               decoration: BoxDecoration(
                                                 color: widget.accentColor,
                                                 shape: BoxShape.circle,
-                                                boxShadow: [BoxShadow(color: widget.accentColor, blurRadius: 4)],
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: widget.accentColor,
+                                                    blurRadius: 4,
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                           ),
-                                        )
+                                        ),
                                     ],
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
                                     widget.localizedBody,
-                                    style: TextStyle(color: widget.isDark ? Colors.grey[300] : Colors.grey[600], fontSize: 13, height: 1.4),
+                                    style: TextStyle(
+                                      color: widget.isDark
+                                          ? Colors.grey[300]
+                                          : Colors.grey[600],
+                                      fontSize: 13,
+                                      height: 1.4,
+                                    ),
                                   ),
                                   const SizedBox(height: 12),
                                   Row(
                                     children: [
-                                      Icon(LucideIcons.clock, size: 12, color: widget.isDark ? Colors.grey[500] : Colors.grey[400]),
+                                      Icon(
+                                        LucideIcons.clock,
+                                        size: 12,
+                                        color: widget.isDark
+                                            ? Colors.grey[500]
+                                            : Colors.grey[400],
+                                      ),
                                       const SizedBox(width: 4),
                                       Text(
                                         widget.timeAgo,
-                                        style: TextStyle(color: widget.isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 11, fontWeight: FontWeight.w600),
+                                        style: TextStyle(
+                                          color: widget.isDark
+                                              ? Colors.grey[500]
+                                              : Colors.grey[400],
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ],
                                   ),
-                                  
+
                                   // Full-width Smart Action Pill if unread
-                                  if (widget.smartActionLabel.isNotEmpty && widget.isUnread) ...[
+                                  if (widget.smartActionLabel.isNotEmpty &&
+                                      widget.isUnread) ...[
                                     const SizedBox(height: 16),
                                     Container(
                                       width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 10,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: widget.accentColor.withValues(alpha: widget.isDark ? 0.2 : 0.1),
+                                        color: widget.accentColor.withValues(
+                                          alpha: widget.isDark ? 0.2 : 0.1,
+                                        ),
                                         borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: widget.accentColor.withValues(alpha: 0.3)),
+                                        border: Border.all(
+                                          color: widget.accentColor.withValues(
+                                            alpha: 0.3,
+                                          ),
+                                        ),
                                       ),
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Text(
                                             widget.smartActionLabel,
-                                            style: TextStyle(color: widget.isDark ? widget.accentColor.withValues(alpha: 0.9) : widget.accentColor, fontSize: 12, fontWeight: FontWeight.w800),
+                                            style: TextStyle(
+                                              color: widget.isDark
+                                                  ? widget.accentColor
+                                                        .withValues(alpha: 0.9)
+                                                  : widget.accentColor,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w800,
+                                            ),
                                           ),
                                           const SizedBox(width: 6),
-                                          Icon(LucideIcons.arrowRight, size: 14, color: widget.isDark ? widget.accentColor.withValues(alpha: 0.9) : widget.accentColor),
+                                          Icon(
+                                            LucideIcons.arrowRight,
+                                            size: 14,
+                                            color: widget.isDark
+                                                ? widget.accentColor.withValues(
+                                                    alpha: 0.9,
+                                                  )
+                                                : widget.accentColor,
+                                          ),
                                         ],
                                       ),
                                     ),
-                                  ]
+                                  ],
                                 ],
                               ),
                             ),

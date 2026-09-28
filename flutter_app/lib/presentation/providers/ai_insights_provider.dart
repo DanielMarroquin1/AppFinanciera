@@ -110,7 +110,9 @@ class AIInsightsNotifier extends Notifier<AIInsightsState> {
   /// Busca posibles cobros duplicados recientes.
   List<TransactionModel> checkDuplicates() {
     final transactions = ref.read(transactionsProvider).value ?? [];
-    return AIAnalysisService.detectDuplicateRecurring(transactions: transactions);
+    return AIAnalysisService.detectDuplicateRecurring(
+      transactions: transactions,
+    );
   }
 
   /// Sugiere una categoría para una transacción dado su descripción.
@@ -135,9 +137,10 @@ class AIInsightsNotifier extends Notifier<AIInsightsState> {
 // PROVIDERS PÚBLICOS
 // ─────────────────────────────────────────────────────────────────────────────
 
-final aiInsightsProvider = NotifierProvider<AIInsightsNotifier, AIInsightsState>(() {
-  return AIInsightsNotifier();
-});
+final aiInsightsProvider =
+    NotifierProvider<AIInsightsNotifier, AIInsightsState>(() {
+      return AIInsightsNotifier();
+    });
 
 /// Provider derivado — solo el forecast de fin de mes
 final cashFlowForecastProvider = Provider<CashFlowForecast?>((ref) {

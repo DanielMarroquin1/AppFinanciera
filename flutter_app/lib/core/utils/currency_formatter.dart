@@ -4,7 +4,7 @@ class CurrencyFormatter {
   static String format(double amount, String? currencyCode) {
     String symbol = '\$';
     String locale = 'en_US';
-    
+
     if (currencyCode != null) {
       final codeUpper = currencyCode.toUpperCase();
       if (codeUpper.contains('EUR')) {
@@ -75,7 +75,7 @@ class CurrencyFormatter {
       symbol: '',
       customPattern: '#,##0.00',
     );
-    
+
     return '$symbol ${formatter.format(amount).trim()}';
   }
 
@@ -97,9 +97,13 @@ class CurrencyFormatter {
       if (codeUpper.contains('PAB')) return 'B/.';
       if (codeUpper.contains('CRC')) return '₡';
       if (codeUpper.contains('DOP')) return 'RD\$';
-      if (codeUpper.contains('MXN') || codeUpper.contains('ARS') || codeUpper.contains('COP') || codeUpper.contains('CLP') || codeUpper.contains('USD')) return '\$';
+      if (codeUpper.contains('MXN') ||
+          codeUpper.contains('ARS') ||
+          codeUpper.contains('COP') ||
+          codeUpper.contains('CLP') ||
+          codeUpper.contains('USD'))
+        return '\$';
     }
     return '\$';
   }
 }
-

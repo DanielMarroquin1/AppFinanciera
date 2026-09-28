@@ -73,7 +73,10 @@ class _AddFundsModalState extends ConsumerState<AddFundsModal> {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(LucideIcons.x, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                  icon: Icon(
+                    LucideIcons.x,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  ),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -81,12 +84,17 @@ class _AddFundsModalState extends ConsumerState<AddFundsModal> {
             const SizedBox(height: 8),
             Text(
               'Progreso actual: $sym${widget.goal.currentAmount.toStringAsFixed(2)} / $sym${widget.goal.targetAmount.toStringAsFixed(2)}',
-              style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12),
+              style: TextStyle(
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                fontSize: 12,
+              ),
             ),
             const SizedBox(height: 24),
             TextField(
               controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               autofocus: true,
               style: TextStyle(
                 fontSize: 24,
@@ -96,11 +104,19 @@ class _AddFundsModalState extends ConsumerState<AddFundsModal> {
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 prefixText: '$sym ',
-                prefixStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF10B981)),
+                prefixStyle: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF10B981),
+                ),
                 hintText: '0.00',
-                hintStyle: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400]),
+                hintStyle: TextStyle(
+                  color: isDark ? Colors.grey[600] : Colors.grey[400],
+                ),
                 filled: true,
-                fillColor: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
+                fillColor: isDark
+                    ? const Color(0xFF374151)
+                    : const Color(0xFFF3F4F6),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
@@ -117,10 +133,13 @@ class _AddFundsModalState extends ConsumerState<AddFundsModal> {
                         final updatedGoal = widget.goal.copyWith(
                           currentAmount: widget.goal.currentAmount + amount,
                         );
-                        await ref.read(savingGoalsProvider.notifier).updateGoal(updatedGoal);
-                        
+                        await ref
+                            .read(savingGoalsProvider.notifier)
+                            .updateGoal(updatedGoal);
+
                         // Deduct from balance
-                        final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+                        final uid =
+                            FirebaseAuth.instance.currentUser?.uid ?? '';
                         final deductionTx = t.TransactionModel(
                           id: DateTime.now().millisecondsSinceEpoch.toString(),
                           userId: uid,
@@ -131,9 +150,12 @@ class _AddFundsModalState extends ConsumerState<AddFundsModal> {
                           date: DateTime.now(),
                           isFixed: false,
                         );
-                        await ref.read(transactionNotifierProvider.notifier).addTransaction(deductionTx);
+                        await ref
+                            .read(transactionNotifierProvider.notifier)
+                            .addTransaction(deductionTx);
                         if (mounted) {
-                          final isPremium = ref.read(authProvider).user?.isPremium ?? false;
+                          final isPremium =
+                              ref.read(authProvider).user?.isPremium ?? false;
                           await AdService().registerActionAndShowInterstitial(
                             context,
                             isPremium,
@@ -145,7 +167,11 @@ class _AddFundsModalState extends ConsumerState<AddFundsModal> {
                       } catch (e) {
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(dismissDirection: DismissDirection.horizontal, content: Text('Error al guardar: $e'), backgroundColor: Colors.red),
+                            SnackBar(
+                              dismissDirection: DismissDirection.horizontal,
+                              content: Text('Error al guardar: $e'),
+                              backgroundColor: Colors.red,
+                            ),
                           );
                         }
                       } finally {
@@ -155,13 +181,30 @@ class _AddFundsModalState extends ConsumerState<AddFundsModal> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: isDark ? const Color(0xFF374151) : const Color(0xFFD1D5DB),
+                disabledBackgroundColor: isDark
+                    ? const Color(0xFF374151)
+                    : const Color(0xFFD1D5DB),
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: _isLoading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Confirmar Ahorro', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      'Confirmar Ahorro',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
             ),
           ],
         ),

@@ -3,7 +3,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 class RecurrenceSelectorWidget extends StatelessWidget {
   final bool isDark;
-  final String? recurrenceType; // 'monthly', 'bimonthly', 'weekly', null if unselected
+  final String?
+  recurrenceType; // 'monthly', 'bimonthly', 'weekly', null if unselected
   final int recurrenceDay;
   final int? recurrenceDay2;
   final ValueChanged<String> onTypeChanged;
@@ -75,10 +76,14 @@ class RecurrenceSelectorWidget extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF374151).withValues(alpha: 0.6) : const Color(0xFFF8FAFC),
+              color: isDark
+                  ? const Color(0xFF374151).withValues(alpha: 0.6)
+                  : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isDark ? const Color(0xFF4B5563) : const Color(0xFFE2E8F0),
+                color: isDark
+                    ? const Color(0xFF4B5563)
+                    : const Color(0xFFE2E8F0),
               ),
             ),
             child: Column(
@@ -103,8 +108,8 @@ class RecurrenceSelectorWidget extends StatelessWidget {
   }) {
     final isSelected = recurrenceType == type;
     return GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => onTypeChanged(type),
+      behavior: HitTestBehavior.opaque,
+      onTap: () => onTypeChanged(type),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
@@ -116,7 +121,9 @@ class RecurrenceSelectorWidget extends StatelessWidget {
                   end: Alignment.bottomRight,
                 )
               : null,
-          color: isSelected ? null : (isDark ? const Color(0xFF1F2937) : Colors.white),
+          color: isSelected
+              ? null
+              : (isDark ? const Color(0xFF1F2937) : Colors.white),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
@@ -130,7 +137,7 @@ class RecurrenceSelectorWidget extends StatelessWidget {
                     color: activeColor.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ]
               : null,
         ),
@@ -140,13 +147,17 @@ class RecurrenceSelectorWidget extends StatelessWidget {
             Icon(
               icon,
               size: 22,
-              color: isSelected ? Colors.white : (isDark ? Colors.grey[300] : Colors.grey[700]),
+              color: isSelected
+                  ? Colors.white
+                  : (isDark ? Colors.grey[300] : Colors.grey[700]),
             ),
             const SizedBox(height: 6),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : (isDark ? Colors.white : Colors.black),
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? Colors.white : Colors.black),
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
               ),
@@ -155,7 +166,9 @@ class RecurrenceSelectorWidget extends StatelessWidget {
             Text(
               sublabel,
               style: TextStyle(
-                color: isSelected ? Colors.white.withValues(alpha: 0.8) : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                color: isSelected
+                    ? Colors.white.withValues(alpha: 0.8)
+                    : (isDark ? Colors.grey[400] : Colors.grey[600]),
                 fontSize: 10,
               ),
             ),
@@ -227,7 +240,10 @@ class RecurrenceSelectorWidget extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: isSelected
                       ? LinearGradient(
-                          colors: [activeColor, activeColor.withValues(alpha: 0.8)],
+                          colors: [
+                            activeColor,
+                            activeColor.withValues(alpha: 0.8),
+                          ],
                         )
                       : null,
                   color: isSelected
@@ -237,7 +253,9 @@ class RecurrenceSelectorWidget extends StatelessWidget {
                   border: Border.all(
                     color: isSelected
                         ? Colors.transparent
-                        : (isDark ? const Color(0xFF4B5563) : const Color(0xFFCBD5E1)),
+                        : (isDark
+                              ? const Color(0xFF4B5563)
+                              : const Color(0xFFCBD5E1)),
                     width: 1,
                   ),
                   boxShadow: isSelected
@@ -246,7 +264,7 @@ class RecurrenceSelectorWidget extends StatelessWidget {
                             color: activeColor.withValues(alpha: 0.4),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
-                          )
+                          ),
                         ]
                       : null,
                 ),
@@ -257,7 +275,9 @@ class RecurrenceSelectorWidget extends StatelessWidget {
                     color: isSelected
                         ? Colors.white
                         : (isDark ? Colors.grey[200] : Colors.grey[800]),
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                     fontSize: 13,
                   ),
                 ),
@@ -380,8 +400,8 @@ class RecurrenceSelectorWidget extends StatelessWidget {
               final day = minDay + index;
               final isSelected = day == selectedDay;
               return GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => onChanged(day),
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onChanged(day),
                 child: Container(
                   width: 32,
                   height: 32,
@@ -389,7 +409,9 @@ class RecurrenceSelectorWidget extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isSelected
                         ? activeColor
-                        : (isDark ? const Color(0xFF374151) : const Color(0xFFF1F5F9)),
+                        : (isDark
+                              ? const Color(0xFF374151)
+                              : const Color(0xFFF1F5F9)),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -398,7 +420,9 @@ class RecurrenceSelectorWidget extends StatelessWidget {
                       color: isSelected
                           ? Colors.white
                           : (isDark ? Colors.grey[300] : Colors.grey[700]),
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                       fontSize: 12,
                     ),
                   ),
@@ -469,7 +493,10 @@ class RecurrenceSelectorWidget extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: isSelected
                       ? LinearGradient(
-                          colors: [activeColor, activeColor.withValues(alpha: 0.8)],
+                          colors: [
+                            activeColor,
+                            activeColor.withValues(alpha: 0.8),
+                          ],
                         )
                       : null,
                   color: isSelected
@@ -479,7 +506,9 @@ class RecurrenceSelectorWidget extends StatelessWidget {
                   border: Border.all(
                     color: isSelected
                         ? Colors.transparent
-                        : (isDark ? const Color(0xFF4B5563) : const Color(0xFFCBD5E1)),
+                        : (isDark
+                              ? const Color(0xFF4B5563)
+                              : const Color(0xFFCBD5E1)),
                     width: 1,
                   ),
                   boxShadow: isSelected
@@ -488,7 +517,7 @@ class RecurrenceSelectorWidget extends StatelessWidget {
                             color: activeColor.withValues(alpha: 0.4),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
-                          )
+                          ),
                         ]
                       : null,
                 ),
@@ -498,7 +527,9 @@ class RecurrenceSelectorWidget extends StatelessWidget {
                     color: isSelected
                         ? Colors.white
                         : (isDark ? Colors.grey[200] : Colors.grey[800]),
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                     fontSize: 12,
                   ),
                 ),

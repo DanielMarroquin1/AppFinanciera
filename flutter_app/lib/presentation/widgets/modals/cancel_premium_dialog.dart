@@ -19,9 +19,18 @@ class CancelPremiumDialog extends ConsumerStatefulWidget {
       pageBuilder: (context, anim1, anim2) => const CancelPremiumDialog(),
       transitionBuilder: (context, anim1, anim2, child) {
         return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10 * anim1.value, sigmaY: 10 * anim1.value),
+          filter: ImageFilter.blur(
+            sigmaX: 10 * anim1.value,
+            sigmaY: 10 * anim1.value,
+          ),
           child: SlideTransition(
-            position: Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
+            position:
+                Tween<Offset>(
+                  begin: const Offset(0, 0.1),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic),
+                ),
             child: FadeTransition(opacity: anim1, child: child),
           ),
         );
@@ -30,10 +39,12 @@ class CancelPremiumDialog extends ConsumerStatefulWidget {
   }
 
   @override
-  ConsumerState<CancelPremiumDialog> createState() => _CancelPremiumDialogState();
+  ConsumerState<CancelPremiumDialog> createState() =>
+      _CancelPremiumDialogState();
 }
 
-class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with TickerProviderStateMixin {
+class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog>
+    with TickerProviderStateMixin {
   late AnimationController _shakeCtrl;
   late AnimationController _glowCtrl;
   double _cancelProgress = 0.0;
@@ -42,8 +53,14 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with 
   @override
   void initState() {
     super.initState();
-    _shakeCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 800))..repeat(reverse: true);
-    _glowCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))..repeat(reverse: true);
+    _shakeCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..repeat(reverse: true);
+    _glowCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
   }
 
   @override
@@ -62,7 +79,7 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with 
     await ref.read(authProvider.notifier).cancelSubscription();
     if (mounted) {
       HapticFeedback.heavyImpact();
-                            setState(() => _isCanceled = true);
+      setState(() => _isCanceled = true);
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted && Navigator.canPop(context)) {
           Navigator.pop(context);
@@ -121,7 +138,9 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with 
                 duration: const Duration(milliseconds: 600),
                 switchInCurve: Curves.easeOutCubic,
                 switchOutCurve: Curves.easeInCubic,
-                child: _isCanceled ? _buildCanceledView(isDark) : _buildMainView(isDark),
+                child: _isCanceled
+                    ? _buildCanceledView(isDark)
+                    : _buildMainView(isDark),
               ),
             ],
           ),
@@ -155,15 +174,22 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with 
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: const Color(0xFFEF4444).withOpacity(0.1),
-                    border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.3), width: 2),
+                    border: Border.all(
+                      color: const Color(0xFFEF4444).withOpacity(0.3),
+                      width: 2,
+                    ),
                   ),
                 ),
-                const Icon(LucideIcons.heartCrack, color: Color(0xFFEF4444), size: 40),
+                const Icon(
+                  LucideIcons.heartCrack,
+                  color: Color(0xFFEF4444),
+                  size: 40,
+                ),
               ],
             ),
           ),
           const SizedBox(height: 24),
-          
+
           Text(
             '¡No te vayas!',
             style: TextStyle(
@@ -189,18 +215,36 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with 
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B).withOpacity(0.5) : const Color(0xFFF1F5F9),
+              color: isDark
+                  ? const Color(0xFF1E293B).withOpacity(0.5)
+                  : const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(24),
             ),
             child: Column(
               children: [
-                _buildLostFeature(LucideIcons.bot, 'Amigo Financiero SAMI con IA', isDark),
+                _buildLostFeature(
+                  LucideIcons.bot,
+                  'Amigo Financiero SAMI con IA',
+                  isDark,
+                ),
                 const Divider(height: 16, color: Colors.transparent),
-                _buildLostFeature(LucideIcons.sparkles, 'Temas y Personalización Total', isDark),
+                _buildLostFeature(
+                  LucideIcons.sparkles,
+                  'Temas y Personalización Total',
+                  isDark,
+                ),
                 const Divider(height: 16, color: Colors.transparent),
-                _buildLostFeature(LucideIcons.pieChart, 'Reportes Detallados', isDark),
+                _buildLostFeature(
+                  LucideIcons.pieChart,
+                  'Reportes Detallados',
+                  isDark,
+                ),
                 const Divider(height: 16, color: Colors.transparent),
-                _buildLostFeature(LucideIcons.lineChart, 'Proyecciones Mensuales', isDark),
+                _buildLostFeature(
+                  LucideIcons.lineChart,
+                  'Proyecciones Mensuales',
+                  isDark,
+                ),
               ],
             ),
           ),
@@ -222,16 +266,23 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with 
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF3B82F6).withOpacity(0.3 + (_glowCtrl.value * 0.2)),
+                        color: const Color(
+                          0xFF3B82F6,
+                        ).withOpacity(0.3 + (_glowCtrl.value * 0.2)),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
-                      )
+                      ),
                     ],
                   ),
                   child: const Center(
                     child: Text(
                       'MANTENER SUSCRIPCIÓN PREMIUM',
-                      style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1.0),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.0,
+                      ),
                     ),
                   ),
                 );
@@ -255,27 +306,41 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with 
         mainAxisSize: MainAxisSize.min,
         children: [
           ScaleTransition(
-            scale: Tween<double>(begin: 0.5, end: 1.0).animate(CurvedAnimation(parent: _shakeCtrl, curve: Curves.elasticOut)),
+            scale: Tween<double>(begin: 0.5, end: 1.0).animate(
+              CurvedAnimation(parent: _shakeCtrl, curve: Curves.elasticOut),
+            ),
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.grey.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(LucideIcons.frown, color: Colors.grey, size: 60),
+              child: const Icon(
+                LucideIcons.frown,
+                color: Colors.grey,
+                size: 60,
+              ),
             ),
           ),
           const SizedBox(height: 32),
           Text(
             'Suscripción Cancelada',
             textAlign: TextAlign.center,
-            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 26, fontWeight: FontWeight.w900),
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black,
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
             'Lamentamos verte partir. Siempre podrás volver a suscribirte cuando quieras.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 16, height: 1.5),
+            style: TextStyle(
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+              fontSize: 16,
+              height: 1.5,
+            ),
           ),
         ],
       ),
@@ -290,9 +355,15 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with 
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF0F172A) : Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+            border: Border.all(
+              color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+            ),
           ),
-          child: Icon(icon, size: 16, color: isDark ? Colors.grey[400] : Colors.grey[700]),
+          child: Icon(
+            icon,
+            size: 16,
+            color: isDark ? Colors.grey[400] : Colors.grey[700],
+          ),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -317,7 +388,9 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with 
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+        ),
       ),
       child: Stack(
         children: [
@@ -326,18 +399,26 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with 
               opacity: 1.0 - (_cancelProgress * 2).clamp(0.0, 1.0),
               child: Text(
                 'Desliza para cancelar',
-                style: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[500], fontSize: 13, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: isDark ? Colors.grey[600] : Colors.grey[500],
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
           Positioned(
-            left: 4 + (_cancelProgress * (_getModalWidth(context) - 60 - 30 - 30)),
+            left:
+                4 +
+                (_cancelProgress * (_getModalWidth(context) - 60 - 30 - 30)),
             top: 4,
             bottom: 4,
             child: GestureDetector(
               onPanUpdate: (details) {
                 setState(() {
-                  _cancelProgress += details.delta.dx / (_getModalWidth(context) - 60 - 30 - 30);
+                  _cancelProgress +=
+                      details.delta.dx /
+                      (_getModalWidth(context) - 60 - 30 - 30);
                   _cancelProgress = _cancelProgress.clamp(0.0, 1.0);
                 });
               },
@@ -355,10 +436,17 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog> with 
                   color: const Color(0xFFEF4444),
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
-                    BoxShadow(color: const Color(0xFFEF4444).withOpacity(0.3), blurRadius: 8),
+                    BoxShadow(
+                      color: const Color(0xFFEF4444).withOpacity(0.3),
+                      blurRadius: 8,
+                    ),
                   ],
                 ),
-                child: const Icon(LucideIcons.chevronRight, color: Colors.white, size: 20),
+                child: const Icon(
+                  LucideIcons.chevronRight,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ),
           ),

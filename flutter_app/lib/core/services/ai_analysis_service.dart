@@ -19,10 +19,14 @@ class AIAnalysisService {
     return _model!;
   }
 
-  static Future<TransactionModel?> analyzeVoiceTransaction(String text, String userId) async {
+  static Future<TransactionModel?> analyzeVoiceTransaction(
+    String text,
+    String userId,
+  ) async {
     if (AIConfig.apiKey.isEmpty) return null;
-    
-    final prompt = '''
+
+    final prompt =
+        '''
 Analyze this voice command for an expense or income: "$text"
 User ID: $userId
 
@@ -38,13 +42,15 @@ Output STRICT JSON:
 
     try {
       final model = _getModel();
-      final response = await model.generateContent([Content.text(prompt)]).timeout(const Duration(seconds: 10));
+      final response = await model
+          .generateContent([Content.text(prompt)])
+          .timeout(const Duration(seconds: 10));
       final respText = response.text?.trim() ?? '{}';
       final cleaned = respText.replaceAll(RegExp(r'```json|```'), '').trim();
       final map = jsonDecode(cleaned);
-      
+
       if (map['amount'] == null) return null;
-      
+
       return TransactionModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         amount: double.parse(map['amount'].toString()),
@@ -83,10 +89,14 @@ Output STRICT JSON:
     final category = newTransaction.category.split('_')[0];
 
     // Obtener transacciones históricas de la misma categoría (excluyendo la nueva)
-    final historicalSame = historicalTransactions.where((t) =>
-        t.type == 'expense' &&
-        t.category.split('_')[0] == category &&
-        t.id != newTransaction.id).toList();
+    final historicalSame = historicalTransactions
+        .where(
+          (t) =>
+              t.type == 'expense' &&
+              t.category.split('_')[0] == category &&
+              t.id != newTransaction.id,
+        )
+        .toList();
 
     if (historicalSame.length < 3) {
       // Insuficiente historial para detectar anomalías
@@ -102,11 +112,17 @@ Output STRICT JSON:
     final average = amounts.reduce((a, b) => a + b) / amounts.length;
 
     // Calcular desviación estándar para un análisis más robusto
-    final variance = amounts.map((a) => (a - average) * (a - average)).reduce((a, b) => a + b) / amounts.length;
+    final variance =
+        amounts
+            .map((a) => (a - average) * (a - average))
+            .reduce((a, b) => a + b) /
+        amounts.length;
     final stdDev = variance > 0 ? variance : 1.0;
 
     final deviationFactor = average > 0 ? newTransaction.amount / average : 1.0;
-    final zScore = stdDev > 0 ? (newTransaction.amount - average) / stdDev : 0.0;
+    final zScore = stdDev > 0
+        ? (newTransaction.amount - average) / stdDev
+        : 0.0;
 
     // Umbral: >2.5x el promedio O z-score > 2 se considera anómalo
     final isAnomalous = deviationFactor > 2.5 || zScore > 2.0;
@@ -125,7 +141,8 @@ Output STRICT JSON:
       isAnomalous: true,
       categoryAverage: average,
       deviationFactor: deviationFactor,
-      message: '⚠️ Este gasto en $categoryLabel (${deviationFactor.toStringAsFixed(1)}x tu promedio de \$${average.toStringAsFixed(2)}) es inusualmente alto.',
+      message:
+          '⚠️ Este gasto en $categoryLabel (${deviationFactor.toStringAsFixed(1)}x tu promedio de \$${average.toStringAsFixed(2)}) es inusualmente alto.',
     );
   }
 
@@ -135,21 +152,28 @@ Output STRICT JSON:
     int lookbackDays = 7,
   }) {
     final now = DateTime.now();
-    final recentWindow = transactions.where((t) =>
-        t.type == 'expense' &&
-        now.difference(t.date).inDays <= lookbackDays).toList();
+    final recentWindow = transactions
+        .where(
+          (t) =>
+              t.type == 'expense' &&
+              now.difference(t.date).inDays <= lookbackDays,
+        )
+        .toList();
 
     // Agrupar por descripción normalizada
     final Map<String, List<TransactionModel>> grouped = {};
     for (final tx in recentWindow) {
-      final key = '${tx.description.toLowerCase().trim()}_${tx.amount.toStringAsFixed(0)}';
+      final key =
+          '${tx.description.toLowerCase().trim()}_${tx.amount.toStringAsFixed(0)}';
       grouped.putIfAbsent(key, () => []).add(tx);
     }
 
     final duplicates = <TransactionModel>[];
     for (final group in grouped.values) {
       if (group.length > 1) {
-        duplicates.addAll(group.skip(1)); // Reportar duplicados (el primero es el original)
+        duplicates.addAll(
+          group.skip(1),
+        ); // Reportar duplicados (el primero es el original)
       }
     }
     return duplicates;
@@ -171,8 +195,9 @@ Output STRICT JSON:
     final daysPassed = now.day;
 
     // Ingresos y gastos del mes actual
-    final currentMonthTx = transactions.where((t) =>
-        t.date.year == now.year && t.date.month == now.month).toList();
+    final currentMonthTx = transactions
+        .where((t) => t.date.year == now.year && t.date.month == now.month)
+        .toList();
 
     final currentIncome = currentMonthTx
         .where((t) => t.type == 'income')
@@ -183,14 +208,21 @@ Output STRICT JSON:
         .fold(0.0, (sum, t) => sum + t.amount);
 
     // Gastos fijos pendientes (gastos recurrentes no cobrados este mes aún)
-    final fixedPendingExpenses = transactions.where((t) =>
-        t.type == 'expense' &&
-        t.isFixed &&
-        t.recurrenceType == 'monthly' &&
-        t.recurrenceDay != null &&
-        t.recurrenceDay! > now.day).toList();
+    final fixedPendingExpenses = transactions
+        .where(
+          (t) =>
+              t.type == 'expense' &&
+              t.isFixed &&
+              t.recurrenceType == 'monthly' &&
+              t.recurrenceDay != null &&
+              t.recurrenceDay! > now.day,
+        )
+        .toList();
 
-    final projectedRemainingFixed = fixedPendingExpenses.fold(0.0, (sum, t) => sum + t.amount);
+    final projectedRemainingFixed = fixedPendingExpenses.fold(
+      0.0,
+      (sum, t) => sum + t.amount,
+    );
 
     // Proyectar gastos variables: tasa diaria × días restantes
     final dailyVariableRate = daysPassed > 0
@@ -201,14 +233,17 @@ Output STRICT JSON:
     // Ingresos pendientes del mes (salario declarado si no se ha registrado aún)
     double pendingIncome = 0.0;
     if (currentIncome == 0 && salary != null) {
-      final salaryAmount = double.tryParse(salary.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
+      final salaryAmount =
+          double.tryParse(salary.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
       pendingIncome = salaryAmount;
     }
 
-    final projectedEndBalance = currentIncome + pendingIncome
-        - currentExpense
-        - projectedRemainingFixed
-        - projectedVariableRemaining;
+    final projectedEndBalance =
+        currentIncome +
+        pendingIncome -
+        currentExpense -
+        projectedRemainingFixed -
+        projectedVariableRemaining;
 
     final savingsCapacity = projectedEndBalance;
 
@@ -255,7 +290,8 @@ Output STRICT JSON:
 
     try {
       final model = _getModel();
-      final prompt = '''
+      final prompt =
+          '''
 Categoriza esta transacción financiera en UNA de las siguientes categorías:
 food, transport, bills, shopping, entertainment, health, home, education, salary, freelance, investments, other
 
@@ -269,12 +305,25 @@ Ejemplos:
 - "Rappi Pizza" -> food
 ''';
 
-      final response = await model.generateContent(
-        [Content.text(prompt)],
-      ).timeout(const Duration(seconds: AIConfig.apiTimeoutSeconds));
+      final response = await model
+          .generateContent([Content.text(prompt)])
+          .timeout(const Duration(seconds: AIConfig.apiTimeoutSeconds));
 
       final suggested = response.text?.trim().toLowerCase() ?? 'other';
-      final validCategories = ['food', 'transport', 'bills', 'shopping', 'entertainment', 'health', 'home', 'education', 'salary', 'freelance', 'investments', 'other'];
+      final validCategories = [
+        'food',
+        'transport',
+        'bills',
+        'shopping',
+        'entertainment',
+        'health',
+        'home',
+        'education',
+        'salary',
+        'freelance',
+        'investments',
+        'other',
+      ];
       return validCategories.contains(suggested) ? suggested : 'other';
     } catch (_) {
       return 'other';
@@ -284,14 +333,140 @@ Ejemplos:
   // Heurística local para categorización sin IA (más rápida)
   static String? _localCategorize(String desc) {
     final rules = {
-      'food': ['pizza', 'burger', 'taco', 'comida', 'restaurante', 'sushi', 'rappi', 'uber eats', 'doordash', 'grubhub', 'mcdonalds', 'kfc', 'subway', 'dominos', 'starbucks', 'café', 'cafe', 'coffee', 'panadería', 'panaderia', 'supermercado', 'super', 'walmart', 'chedraui', 'soriana', 'mercado'],
-      'transport': ['uber', 'lyft', 'taxi', 'gasolinera', 'gasolina', 'gas station', 'metro', 'autobus', 'autobús', 'bus', 'parkimetro', 'estacionamiento', 'parking', 'peaje', 'toll', 'transporte'],
-      'bills': ['telmex', 'totalplay', 'megacable', 'izzi', 'telcel', 'at&t', 'movistar', 'cfe', 'conagua', 'electricidad', 'internet', 'renta', 'renta mensual', 'netflix', 'spotify', 'amazon prime', 'disney', 'youtube premium'],
-      'shopping': ['amazon', 'mercado libre', 'shein', 'zara', 'h&m', 'liverpool', 'sears', 'falabella', 'tienda', 'compra', 'ropa'],
-      'health': ['farmacia', 'pharmacy', 'doctor', 'médico', 'medico', 'hospital', 'clínica', 'clinica', 'dentista', 'laboratorio', 'ginecólogo', 'optometría', 'gym', 'gimnasio'],
-      'entertainment': ['cine', 'cinema', 'teatro', 'concierto', 'videojuego', 'xbox', 'playstation', 'steam', 'twitch', 'bar', 'antro', 'discoteca', 'fiesta', 'tickets'],
-      'home': ['ikea', 'home depot', 'ferretería', 'ferreteria', 'decoración', 'decoracion', 'plomero', 'electricista', 'mantenimiento'],
-      'education': ['colegio', 'escuela', 'universidad', 'curso', 'udemy', 'coursera', 'libros', 'librerías', 'libreria', 'tutoría'],
+      'food': [
+        'pizza',
+        'burger',
+        'taco',
+        'comida',
+        'restaurante',
+        'sushi',
+        'rappi',
+        'uber eats',
+        'doordash',
+        'grubhub',
+        'mcdonalds',
+        'kfc',
+        'subway',
+        'dominos',
+        'starbucks',
+        'café',
+        'cafe',
+        'coffee',
+        'panadería',
+        'panaderia',
+        'supermercado',
+        'super',
+        'walmart',
+        'chedraui',
+        'soriana',
+        'mercado',
+      ],
+      'transport': [
+        'uber',
+        'lyft',
+        'taxi',
+        'gasolinera',
+        'gasolina',
+        'gas station',
+        'metro',
+        'autobus',
+        'autobús',
+        'bus',
+        'parkimetro',
+        'estacionamiento',
+        'parking',
+        'peaje',
+        'toll',
+        'transporte',
+      ],
+      'bills': [
+        'telmex',
+        'totalplay',
+        'megacable',
+        'izzi',
+        'telcel',
+        'at&t',
+        'movistar',
+        'cfe',
+        'conagua',
+        'electricidad',
+        'internet',
+        'renta',
+        'renta mensual',
+        'netflix',
+        'spotify',
+        'amazon prime',
+        'disney',
+        'youtube premium',
+      ],
+      'shopping': [
+        'amazon',
+        'mercado libre',
+        'shein',
+        'zara',
+        'h&m',
+        'liverpool',
+        'sears',
+        'falabella',
+        'tienda',
+        'compra',
+        'ropa',
+      ],
+      'health': [
+        'farmacia',
+        'pharmacy',
+        'doctor',
+        'médico',
+        'medico',
+        'hospital',
+        'clínica',
+        'clinica',
+        'dentista',
+        'laboratorio',
+        'ginecólogo',
+        'optometría',
+        'gym',
+        'gimnasio',
+      ],
+      'entertainment': [
+        'cine',
+        'cinema',
+        'teatro',
+        'concierto',
+        'videojuego',
+        'xbox',
+        'playstation',
+        'steam',
+        'twitch',
+        'bar',
+        'antro',
+        'discoteca',
+        'fiesta',
+        'tickets',
+      ],
+      'home': [
+        'ikea',
+        'home depot',
+        'ferretería',
+        'ferreteria',
+        'decoración',
+        'decoracion',
+        'plomero',
+        'electricista',
+        'mantenimiento',
+      ],
+      'education': [
+        'colegio',
+        'escuela',
+        'universidad',
+        'curso',
+        'udemy',
+        'coursera',
+        'libros',
+        'librerías',
+        'libreria',
+        'tutoría',
+      ],
     };
 
     for (final entry in rules.entries) {
@@ -322,8 +497,13 @@ Ejemplos:
       if (remaining <= 0) continue; // Meta ya completada
 
       // Calcular cuota mensual sugerida con capacidad de ahorro actual
-      final suggestedMonthly = (monthlySavingsCapacity * 0.3).clamp(0.0, remaining);
-      final monthsNeeded = suggestedMonthly > 0 ? (remaining / suggestedMonthly).ceil() : null;
+      final suggestedMonthly = (monthlySavingsCapacity * 0.3).clamp(
+        0.0,
+        remaining,
+      );
+      final monthsNeeded = suggestedMonthly > 0
+          ? (remaining / suggestedMonthly).ceil()
+          : null;
 
       recommendations.add({
         'goalId': goal.id,
@@ -331,8 +511,12 @@ Ejemplos:
         'remaining': remaining,
         'suggestedMonthly': suggestedMonthly,
         'monthsToComplete': monthsNeeded,
-        'progressPercent': goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount * 100).clamp(0.0, 100.0) : 0.0,
-        'status': goal.currentAmount / goal.targetAmount < 0.1 ? 'critical' : 'on_track',
+        'progressPercent': goal.targetAmount > 0
+            ? (goal.currentAmount / goal.targetAmount * 100).clamp(0.0, 100.0)
+            : 0.0,
+        'status': goal.currentAmount / goal.targetAmount < 0.1
+            ? 'critical'
+            : 'on_track',
       });
     }
 
@@ -381,12 +565,17 @@ Ejemplos:
     final insights = <MicroInsight>[];
 
     // Semana actual (últimos 7 días) vs semana anterior (8-14 días atrás)
-    final thisWeek = transactions.where((t) =>
-        t.type == 'expense' && now.difference(t.date).inDays < 7).toList();
-    final lastWeek = transactions.where((t) =>
-        t.type == 'expense' &&
-        now.difference(t.date).inDays >= 7 &&
-        now.difference(t.date).inDays < 14).toList();
+    final thisWeek = transactions
+        .where((t) => t.type == 'expense' && now.difference(t.date).inDays < 7)
+        .toList();
+    final lastWeek = transactions
+        .where(
+          (t) =>
+              t.type == 'expense' &&
+              now.difference(t.date).inDays >= 7 &&
+              now.difference(t.date).inDays < 14,
+        )
+        .toList();
 
     final thisWeekTotal = thisWeek.fold(0.0, (s, t) => s + t.amount);
     final lastWeekTotal = lastWeek.fold(0.0, (s, t) => s + t.amount);
@@ -395,21 +584,27 @@ Ejemplos:
     if (lastWeekTotal > 0 && thisWeekTotal > 0) {
       final pct = ((thisWeekTotal - lastWeekTotal) / lastWeekTotal * 100).abs();
       if (thisWeekTotal < lastWeekTotal) {
-        insights.add(MicroInsight(
-          emoji: '🎉',
-          title: '¡Semana más económica!',
-          body: 'Gastaste un ${pct.toStringAsFixed(0)}% menos que la semana pasada. ¡Excelente control!',
-          type: InsightType.positive,
-          generatedAt: now,
-        ));
+        insights.add(
+          MicroInsight(
+            emoji: '🎉',
+            title: '¡Semana más económica!',
+            body:
+                'Gastaste un ${pct.toStringAsFixed(0)}% menos que la semana pasada. ¡Excelente control!',
+            type: InsightType.positive,
+            generatedAt: now,
+          ),
+        );
       } else if (pct > 20) {
-        insights.add(MicroInsight(
-          emoji: '⚠️',
-          title: 'Semana con más gastos',
-          body: 'Tus gastos subieron un ${pct.toStringAsFixed(0)}% vs. la semana pasada. Revisa en qué categoría está el aumento.',
-          type: InsightType.warning,
-          generatedAt: now,
-        ));
+        insights.add(
+          MicroInsight(
+            emoji: '⚠️',
+            title: 'Semana con más gastos',
+            body:
+                'Tus gastos subieron un ${pct.toStringAsFixed(0)}% vs. la semana pasada. Revisa en qué categoría está el aumento.',
+            type: InsightType.warning,
+            generatedAt: now,
+          ),
+        );
       }
     }
 
@@ -421,15 +616,20 @@ Ejemplos:
         byCat[cat] = (byCat[cat] ?? 0) + t.amount;
       }
       if (byCat.isNotEmpty) {
-        final topCat = byCat.entries.reduce((a, b) => a.value > b.value ? a : b);
+        final topCat = byCat.entries.reduce(
+          (a, b) => a.value > b.value ? a : b,
+        );
         final label = _categoryLabel(topCat.key);
-        insights.add(MicroInsight(
-          emoji: _categoryEmoji(topCat.key),
-          title: 'Tu mayor gasto: $label',
-          body: 'Esta semana gastaste \$${ topCat.value.toStringAsFixed(2)} en $label.',
-          type: InsightType.info,
-          generatedAt: now,
-        ));
+        insights.add(
+          MicroInsight(
+            emoji: _categoryEmoji(topCat.key),
+            title: 'Tu mayor gasto: $label',
+            body:
+                'Esta semana gastaste \$${topCat.value.toStringAsFixed(2)} en $label.',
+            type: InsightType.info,
+            generatedAt: now,
+          ),
+        );
       }
     }
 
@@ -440,13 +640,16 @@ Ejemplos:
           .reduce((a, b) => a.date.isAfter(b.date) ? a : b);
       final daysSince = now.difference(lastExpense.date).inDays;
       if (daysSince >= 2) {
-        insights.add(MicroInsight(
-          emoji: '🧘',
-          title: '$daysSince días sin gastos',
-          body: '¡Llevas $daysSince días sin registrar gastos! Tu fondo de ahorro agradece la pausa.',
-          type: InsightType.positive,
-          generatedAt: now,
-        ));
+        insights.add(
+          MicroInsight(
+            emoji: '🧘',
+            title: '$daysSince días sin gastos',
+            body:
+                '¡Llevas $daysSince días sin registrar gastos! Tu fondo de ahorro agradece la pausa.',
+            type: InsightType.positive,
+            generatedAt: now,
+          ),
+        );
       }
     }
 
@@ -462,12 +665,17 @@ Ejemplos:
     final now = DateTime.now();
 
     // Construir contexto compacto para minimizar tokens
-    final thisWeek = transactions.where((t) =>
-        t.type == 'expense' && now.difference(t.date).inDays < 7).toList();
-    final lastWeek = transactions.where((t) =>
-        t.type == 'expense' &&
-        now.difference(t.date).inDays >= 7 &&
-        now.difference(t.date).inDays < 14).toList();
+    final thisWeek = transactions
+        .where((t) => t.type == 'expense' && now.difference(t.date).inDays < 7)
+        .toList();
+    final lastWeek = transactions
+        .where(
+          (t) =>
+              t.type == 'expense' &&
+              now.difference(t.date).inDays >= 7 &&
+              now.difference(t.date).inDays < 14,
+        )
+        .toList();
 
     final Map<String, double> thisWeekByCat = {};
     final Map<String, double> lastWeekByCat = {};
@@ -480,10 +688,15 @@ Ejemplos:
       lastWeekByCat[cat] = (lastWeekByCat[cat] ?? 0) + t.amount;
     }
 
-    final thisWeekSummary = thisWeekByCat.entries.map((e) => '${e.key}: \$${e.value.toStringAsFixed(2)}').join(', ');
-    final lastWeekSummary = lastWeekByCat.entries.map((e) => '${e.key}: \$${e.value.toStringAsFixed(2)}').join(', ');
+    final thisWeekSummary = thisWeekByCat.entries
+        .map((e) => '${e.key}: \$${e.value.toStringAsFixed(2)}')
+        .join(', ');
+    final lastWeekSummary = lastWeekByCat.entries
+        .map((e) => '${e.key}: \$${e.value.toStringAsFixed(2)}')
+        .join(', ');
 
-    final prompt = '''
+    final prompt =
+        '''
 Genera exactamente 2 micro-insights financieros personalizados para un usuario.
 Moneda: $currency
 Idioma de respuesta: $language
@@ -508,9 +721,9 @@ Reglas:
 ''';
 
     final model = _getModel();
-    final response = await model.generateContent(
-      [Content.text(prompt)],
-    ).timeout(const Duration(seconds: 15)); // Timeout corto para insights
+    final response = await model
+        .generateContent([Content.text(prompt)])
+        .timeout(const Duration(seconds: 15)); // Timeout corto para insights
 
     final text = response.text?.trim() ?? '[]';
 
@@ -518,7 +731,9 @@ Reglas:
     final cleaned = text.replaceAll(RegExp(r'```json|```'), '').trim();
 
     final List<dynamic> jsonList = jsonDecode(cleaned);
-    return jsonList.map((item) => MicroInsight.fromJson(item as Map<String, dynamic>)).toList();
+    return jsonList
+        .map((item) => MicroInsight.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -527,19 +742,36 @@ Reglas:
 
   static String _categoryLabel(String category) {
     const labels = {
-      'food': 'Comida', 'transport': 'Transporte', 'bills': 'Servicios',
-      'shopping': 'Compras', 'entertainment': 'Entretenimiento', 'health': 'Salud',
-      'home': 'Hogar', 'education': 'Educación', 'other': 'Otros',
-      'salary': 'Salario', 'freelance': 'Freelance', 'investments': 'Inversiones',
+      'food': 'Comida',
+      'transport': 'Transporte',
+      'bills': 'Servicios',
+      'shopping': 'Compras',
+      'entertainment': 'Entretenimiento',
+      'health': 'Salud',
+      'home': 'Hogar',
+      'education': 'Educación',
+      'other': 'Otros',
+      'salary': 'Salario',
+      'freelance': 'Freelance',
+      'investments': 'Inversiones',
     };
     return labels[category] ?? category;
   }
 
   static String _categoryEmoji(String category) {
     const emojis = {
-      'food': '🍔', 'transport': '🚗', 'bills': '📱', 'shopping': '🛍️',
-      'entertainment': '🎬', 'health': '💊', 'home': '🏠', 'education': '📚',
-      'salary': '💰', 'freelance': '💻', 'investments': '📈', 'other': '📌',
+      'food': '🍔',
+      'transport': '🚗',
+      'bills': '📱',
+      'shopping': '🛍️',
+      'entertainment': '🎬',
+      'health': '💊',
+      'home': '🏠',
+      'education': '📚',
+      'salary': '💰',
+      'freelance': '💻',
+      'investments': '📈',
+      'other': '📌',
     };
     return emojis[category] ?? '💡';
   }

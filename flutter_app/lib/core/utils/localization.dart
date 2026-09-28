@@ -14,7 +14,9 @@ class LocaleNotifier extends Notifier<String> {
   }
 }
 
-final localeProvider = NotifierProvider<LocaleNotifier, String>(LocaleNotifier.new);
+final localeProvider = NotifierProvider<LocaleNotifier, String>(
+  LocaleNotifier.new,
+);
 
 final localizationProvider = Provider<AppLocalizations>((ref) {
   final langCode = ref.watch(localeProvider);
@@ -84,7 +86,8 @@ class AppLocalizations {
       'settings_subtitle': 'Personaliza tu experiencia',
       'edit_profile': 'Editar Perfil',
       'premium_upgrade': 'Actualizar a Premium',
-      'premium_desc': 'Desbloquea todas las funciones: sin anuncios, reportes avanzados, sincronización en la nube y más.',
+      'premium_desc':
+          'Desbloquea todas las funciones: sin anuncios, reportes avanzados, sincronización en la nube y más.',
       'see_plans': 'Ver Planes',
       'general': 'General',
       'notifications': 'Notificaciones',
@@ -133,14 +136,15 @@ class AppLocalizations {
       'next_renewal': 'Próxima renovación: 24 Feb 2027',
       'active_badge': 'Activo',
       'cancel_subscription': 'Cancelar Suscripción',
-            'help_tutorials': 'Soporte Técnico',
+      'help_tutorials': 'Soporte Técnico',
       'technical_support': 'Soporte Técnico',
       'technical_support_desc': 'Contacta a un agente para resolver problemas',
       'tutorial_btn': 'Ver Tutorial de la App',
       'app_tour': 'Recorrido por la Aplicación',
       'app_tour_desc': 'Guía rápida de finanzas e IA para nuevos usuarios',
       'logout_confirm_title': '¿Cerrar sesión?',
-      'logout_confirm_desc': 'Tendrás que ingresar tus credenciales nuevamente.',
+      'logout_confirm_desc':
+          'Tendrás que ingresar tus credenciales nuevamente.',
       'notifications_subtitle': 'Configura tus alertas y recordatorios',
       'push_notifs': 'Notificaciones Push',
       'push_notifs_desc': 'Recibir alertas en tu dispositivo',
@@ -151,7 +155,8 @@ class AppLocalizations {
       'savings_reminder_notif': 'Recordatorio de Ahorro',
       'savings_reminder_notif_desc': 'Recordatorio diario para ahorrar',
       'change_password_modal_title': 'Cambiar Contraseña',
-      'change_password_modal_subtitle': 'Actualiza tu contraseña periódicamente',
+      'change_password_modal_subtitle':
+          'Actualiza tu contraseña periódicamente',
       'current_password': 'Contraseña Actual',
       'new_password': 'Nueva Contraseña',
       'confirm_password': 'Confirmar Contraseña',
@@ -174,9 +179,10 @@ class AppLocalizations {
       'select_currency_desc': 'Elige la moneda de la aplicación',
       'select_country': 'Seleccionar País',
       'select_country_desc': 'Elige tu país de residencia',
-      
+
       'complete_profile': '¡Completa tu perfil!',
-      'complete_profile_desc': 'Necesitamos algunos datos para personalizar tu experiencia y ayudarte a ahorrar:',
+      'complete_profile_desc':
+          'Necesitamos algunos datos para personalizar tu experiencia y ayudarte a ahorrar:',
       'country': 'País',
       'salary': 'Salario',
       'complete_now': 'Completar Ahora',
@@ -227,10 +233,12 @@ class AppLocalizations {
       'no_income_yet': 'Sin ingresos registrados aún',
       'expenses_by_category': 'Gastos por Categoría',
       'of_your_income': 'de tus ingresos',
-      'voice_ask_payment_method': '¿Este gasto se realizó con Tarjeta de Crédito o en Efectivo?',
+      'voice_ask_payment_method':
+          '¿Este gasto se realizó con Tarjeta de Crédito o en Efectivo?',
       'voice_listening': 'Te estoy escuchando...',
       'voice_tap_to_speak': 'Toca para hablar',
-      'voice_help_text': 'Dime tu gasto o ingreso:\n"Gasté 50 en almuerzo"\n"Me pagaron 5000 de salario"',
+      'voice_help_text':
+          'Dime tu gasto o ingreso:\n"Gasté 50 en almuerzo"\n"Me pagaron 5000 de salario"',
       'voice_analyzing': 'Analizando tu voz...',
       'voice_confirm_expense': 'Confirmar Gasto',
       'voice_confirm_income': 'Confirmar Ingreso',
@@ -246,7 +254,8 @@ class AppLocalizations {
       'voice_success_expense': '¡Gasto registrado!',
       'voice_success_income': '¡Ingreso registrado!',
       'voice_accept': 'Aceptar',
-      'voice_no_amount': 'No pude detectar una cantidad válida en: "{text}". Intenta de nuevo diciendo el número.',
+      'voice_no_amount':
+          'No pude detectar una cantidad válida en: "{text}". Intenta de nuevo diciendo el número.',
       'voice_paying_card_or_cash': '¿Tarjeta o Efectivo?',
       'voice_answer_mic': 'Responde hablando para completar el registro...',
       'dashboard_income': 'Ingresos',
@@ -265,10 +274,13 @@ class AppLocalizations {
       'badge_supreme_collector_desc': 'Adquiere 5 ítems o temas exclusivos',
       'badge_financial_mind': 'Mente Financiera',
       'badge_financial_mind_desc': 'Acumula 100 puntos de experiencia',
-      'ai_assistant_subtitle': 'Descubre cómo invertir tu dinero basado en tu negocio 💰',
-      'what_if_subtitle': 'Simula variaciones en tus ingresos, gastos o deudas y QUIVO predecirá tu salud financiera.',
+      'ai_assistant_subtitle':
+          'Descubre cómo invertir tu dinero basado en tu negocio 💰',
+      'what_if_subtitle':
+          'Simula variaciones en tus ingresos, gastos o deudas y QUIVO predecirá tu salud financiera.',
       'rewards_shop_subtitle': 'Canjea tus puntos ganados',
-      'rewards_shop_desc': 'Desbloquea avatares exclusivos, temas personalizados y consejos VIP para potenciar tus finanzas.',
+      'rewards_shop_desc':
+          'Desbloquea avatares exclusivos, temas personalizados y consejos VIP para potenciar tus finanzas.',
       'rewards_shop_avatars': 'Avatares',
       'rewards_shop_themes': 'Temas',
       'rewards_shop_tips': 'Consejos Pro',
@@ -277,7 +289,8 @@ class AppLocalizations {
       'total_saved': 'Total Ahorrado',
       'savings_month_progress': '+12% este mes',
       'savings_guide_plan': 'Plan de Ahorro con Guía',
-      'savings_guide_desc': 'Descubre cómo ahorrar más y alcanzar tus metas más rápido',
+      'savings_guide_desc':
+          'Descubre cómo ahorrar más y alcanzar tus metas más rápido',
       'view_guide': 'Ver Guía',
       'add_new_goal': 'Agregar Nueva Meta',
       'my_saving_goals': 'Mis Metas de Ahorro',
@@ -295,7 +308,8 @@ class AppLocalizations {
       'what_if_title': 'Simulador "What If?" AI',
       'what_if_tab_controls': 'Controles',
       'what_if_tab_free': 'Escenario Libre',
-      'what_if_initial_desc': 'Ajusta los controles de simulación arriba y presiona "Solicitar Diagnóstico a QUIVO" para evaluar tu escenario financiero hipotético.',
+      'what_if_initial_desc':
+          'Ajusta los controles de simulación arriba y presiona "Solicitar Diagnóstico a QUIVO" para evaluar tu escenario financiero hipotético.',
       'what_if_chart_title': 'Proyección Flujo de Caja (6 Meses)',
       'what_if_panel_title': 'Panel de Simulación ⚙️',
       'what_if_additional_expense': 'Gasto Mensual Adicional',
@@ -304,33 +318,45 @@ class AppLocalizations {
       'what_if_request_diagnosis': 'Solicitar Diagnóstico a QUIVO',
       'what_if_diagnosis_title': 'Plan Diagnóstico QUIVO 🧠',
       'what_if_desc_title': '¿Qué pasaría si...?',
-      'what_if_desc_subtitle': 'Describe cualquier escenario financiero y la IA analizará cómo afectaría tus finanzas actuales.',
+      'what_if_desc_subtitle':
+          'Describe cualquier escenario financiero y la IA analizará cómo afectaría tus finanzas actuales.',
       'what_if_describe_scenario': 'Describe tu escenario',
-      'what_if_placeholder': 'Ej: ¿Qué pasaría si me compro una laptop de 10,000 en 6 cuotas? ¿Puedo permitírmelo?',
-      'what_if_input_hint': 'Incluye montos, plazos y detalles para un mejor análisis',
+      'what_if_placeholder':
+          'Ej: ¿Qué pasaría si me compro una laptop de 10,000 en 6 cuotas? ¿Puedo permitírmelo?',
+      'what_if_input_hint':
+          'Incluye montos, plazos y detalles para un mejor análisis',
       'what_if_analyzing': 'Analizando escenario...',
       'what_if_analyze_btn': 'Analizar Escenario con IA',
       'what_if_analysis_result': 'Análisis de Escenario 🔮',
-      'what_if_empty_state': 'Escribe un escenario arriba o selecciona uno de los ejemplos para ver el análisis de la IA',
+      'what_if_empty_state':
+          'Escribe un escenario arriba o selecciona uno de los ejemplos para ver el análisis de la IA',
       'what_if_risk_low': 'Bajo',
       'what_if_risk_moderate': 'Moderado ⚠️',
       'what_if_risk_critical': 'Crítico 🚨',
       'what_if_chip_laptop_title': 'Comprar laptop en cuotas',
-      'what_if_chip_laptop_query': '¿Qué pasaría si me compro una laptop de 10000 en 6 cuotas mensuales?',
+      'what_if_chip_laptop_query':
+          '¿Qué pasaría si me compro una laptop de 10000 en 6 cuotas mensuales?',
       'what_if_chip_car_title': 'Comprar carro',
-      'what_if_chip_car_query': '¿Qué pasaría si compro un carro de 80000 con un enganche de 20000 y financiamiento a 48 meses?',
+      'what_if_chip_car_query':
+          '¿Qué pasaría si compro un carro de 80000 con un enganche de 20000 y financiamiento a 48 meses?',
       'what_if_chip_salary_title': 'Aumento de salario',
-      'what_if_chip_salary_query': '¿Qué pasaría si mi salario aumenta un 20% a partir del próximo mes?',
+      'what_if_chip_salary_query':
+          '¿Qué pasaría si mi salario aumenta un 20% a partir del próximo mes?',
       'what_if_chip_rent_title': 'Alquilar departamento',
-      'what_if_chip_rent_query': '¿Qué pasaría si me mudo a un departamento con renta de 3500 mensuales?',
+      'what_if_chip_rent_query':
+          '¿Qué pasaría si me mudo a un departamento con renta de 3500 mensuales?',
       'what_if_chip_save_title': 'Ahorrar mensualmente',
-      'what_if_chip_save_query': '¿Qué pasaría si empiezo a ahorrar 1500 al mes durante 12 meses?',
+      'what_if_chip_save_query':
+          '¿Qué pasaría si empiezo a ahorrar 1500 al mes durante 12 meses?',
       'what_if_chip_phone_title': 'Comprar teléfono',
-      'what_if_chip_phone_query': '¿Qué pasaría si me compro un iPhone de 8000 en 12 cuotas?',
+      'what_if_chip_phone_query':
+          '¿Qué pasaría si me compro un iPhone de 8000 en 12 cuotas?',
       'what_if_chip_masters_title': 'Estudiar maestría',
-      'what_if_chip_masters_query': '¿Qué pasaría si empiezo una maestría que cuesta 5000 al mes durante 24 meses?',
+      'what_if_chip_masters_query':
+          '¿Qué pasaría si empiezo una maestría que cuesta 5000 al mes durante 24 meses?',
       'what_if_chip_job_title': 'Perder empleo',
-      'what_if_chip_job_query': '¿Qué pasaría si pierdo mi empleo y me quedo sin ingresos durante 3 meses?',
+      'what_if_chip_job_query':
+          '¿Qué pasaría si pierdo mi empleo y me quedo sin ingresos durante 3 meses?',
       'error_analyzing_scenario': 'Error al analizar el escenario',
       'error_obtaining_diagnosis': 'Error al obtener diagnóstico de QUIVO',
       // Notifications Modal
@@ -352,33 +378,46 @@ class AppLocalizations {
       'time_ago_now': 'Justo ahora',
       // Dynamic Notifications & Alerts
       'notif_auto_income_title': 'Ingreso Automático',
-      'notif_auto_income_body': 'Se ha registrado "{desc}" por un monto de {amount}.',
+      'notif_auto_income_body':
+          'Se ha registrado "{desc}" por un monto de {amount}.',
       'notif_auto_charge_title': 'Cobro Automático',
       'notif_auto_debt_title': 'Pago Automático de Deuda',
-      'notif_auto_debt_body': 'Se ha cobrado la cuota de "{desc}" por un monto de {amount}.',
+      'notif_auto_debt_body':
+          'Se ha cobrado la cuota de "{desc}" por un monto de {amount}.',
       'notif_cut_2_days_title': '⚠️ Corte en 2 días: {name}',
-      'notif_cut_2_days_body': 'Tu tarjeta realiza su corte el día {day}. Prepárate para revisar tu estado de cuenta del ciclo.',
+      'notif_cut_2_days_body':
+          'Tu tarjeta realiza su corte el día {day}. Prepárate para revisar tu estado de cuenta del ciclo.',
       'notif_cut_1_day_title': '⏳ Mañana es el corte: {name}',
-      'notif_cut_1_day_body': 'Mañana día {day} es la fecha de corte de tu tarjeta de crédito.',
+      'notif_cut_1_day_body':
+          'Mañana día {day} es la fecha de corte de tu tarjeta de crédito.',
       'notif_cut_today_title': '📊 Hoy corta tu tarjeta: {name}',
-      'notif_cut_today_body': 'Hoy cierra tu ciclo de facturación. Revisa tus movimientos para conocer el saldo del periodo.',
+      'notif_cut_today_body':
+          'Hoy cierra tu ciclo de facturación. Revisa tus movimientos para conocer el saldo del periodo.',
       'notif_pay_2_days_title': '⚠️ Pago de tarjeta en 2 días: {name}',
-      'notif_pay_2_days_body': 'Faltan 2 días para el pago de tu tarjeta (Día {day}). Saldo estimado: {bal}.',
+      'notif_pay_2_days_body':
+          'Faltan 2 días para el pago de tu tarjeta (Día {day}). Saldo estimado: {bal}.',
       'notif_pay_1_day_title': '⏰ Mañana vence tu tarjeta: {name}',
-      'notif_pay_1_day_body': 'Mañana día {day} es la fecha límite para pagar tu tarjeta sin intereses.',
+      'notif_pay_1_day_body':
+          'Mañana día {day} es la fecha límite para pagar tu tarjeta sin intereses.',
       'notif_pay_today_title': '🚨 HOY vence tu tarjeta: {name}',
-      'notif_pay_today_body': '¡Hoy es el día límite de pago para {name}! Saldo actual: {bal}. Abona hoy para evitar recargos.',
+      'notif_pay_today_body':
+          '¡Hoy es el día límite de pago para {name}! Saldo actual: {bal}. Abona hoy para evitar recargos.',
       'notif_overdue_title': '💥 TARJETA EN MORA: {name}',
-      'notif_overdue_body': 'Tu tarjeta venció el día {day} y aún presenta un saldo pendiente de {bal}. ¡Abona cuanto antes para detener intereses moratorios!',
+      'notif_overdue_body':
+          'Tu tarjeta venció el día {day} y aún presenta un saldo pendiente de {bal}. ¡Abona cuanto antes para detener intereses moratorios!',
       'notif_budget_exceeded_title': 'Presupuesto Agotado 🚨',
-      'notif_budget_exceeded_body': 'Has alcanzado el 100% de tu presupuesto para la categoría "{cat}" ({nums}).',
+      'notif_budget_exceeded_body':
+          'Has alcanzado el 100% de tu presupuesto para la categoría "{cat}" ({nums}).',
       'notif_budget_warning_title': 'Presupuesto al 80% ⚠️',
-      'notif_budget_warning_body': 'Has usado más del 80% de tu presupuesto para la categoría "{cat}" ({nums}).',
+      'notif_budget_warning_body':
+          'Has usado más del 80% de tu presupuesto para la categoría "{cat}" ({nums}).',
       // Dashboard Streak Prompt & Tx Empty/Payment States
       'streak_prompt_frozen_title': '❄️ ¡RACHA CONGELADA (24H EXTRAS)!',
       'streak_prompt_risk_title': '🔥 ¡TU RACHA ESTÁ EN RIESGO!',
-      'streak_prompt_frozen_desc': 'Tu racha está protegida hoy gracias a tu Escudo de la Tienda. Registra un movimiento para descongelarla y sumar a tu progreso.',
-      'streak_prompt_risk_desc': 'Registra al menos un gasto o ingreso hoy para activar tu fuego y sumar +50 pts.',
+      'streak_prompt_frozen_desc':
+          'Tu racha está protegida hoy gracias a tu Escudo de la Tienda. Registra un movimiento para descongelarla y sumar a tu progreso.',
+      'streak_prompt_risk_desc':
+          'Registra al menos un gasto o ingreso hoy para activar tu fuego y sumar +50 pts.',
       'tx_empty_recent': 'No hay transacciones aún',
       'tx_payment_cc': 'Tarjeta de Crédito',
       'tx_payment_pay': 'Pago a Tarjeta',
@@ -407,12 +446,16 @@ class AppLocalizations {
       'shop_btn_redeem': 'CANJEAR RECOMPENSA POR {cost} PTS',
       'shop_reward_active': '¡RECOMPENSA ACTIVA!',
       'shop_got_it_btn': 'Entendido • ¡Aprovechar Recompensa!',
-      'shop_snack_avatar_unlocked': '⚡ Avatar desbloqueado. Puedes equiparlo desde Editar Perfil.',
-      'shop_snack_shield_active': '❄️ ESCUDO ACTIVO: Tu racha está automáticamente protegida si olvidas entrar por 1 día completo (48h de gracia en total).',
+      'shop_snack_avatar_unlocked':
+          '⚡ Avatar desbloqueado. Puedes equiparlo desde Editar Perfil.',
+      'shop_snack_shield_active':
+          '❄️ ESCUDO ACTIVO: Tu racha está automáticamente protegida si olvidas entrar por 1 día completo (48h de gracia en total).',
       'shop_snack_style_active': '✨ Estilo activado: {name}',
-      'shop_snack_avatar_success': '🎉 Avatar desbloqueado. Puedes equiparlo desde Editar Perfil.',
+      'shop_snack_avatar_success':
+          '🎉 Avatar desbloqueado. Puedes equiparlo desde Editar Perfil.',
       'shop_snack_redeem_success': '🎉 ¡Canje exitoso! Desbloqueaste: {name}',
-      'shop_snack_missing_pts': '🔒 Faltan {missing} puntos para desbloquear esta recompensa.',
+      'shop_snack_missing_pts':
+          '🔒 Faltan {missing} puntos para desbloquear esta recompensa.',
       // Store Items - Avatars
       'item_avatar1_name': 'Superhéroe Financiero',
       'item_avatar1_desc': 'Protector indiscutible de tu presupuesto diario',
@@ -423,7 +466,8 @@ class AppLocalizations {
       'item_avatar4_name': 'Ninja de las Finanzas',
       'item_avatar4_desc': 'Recorta gastos innecesarios en absoluto silencio',
       'item_avatar5_name': 'Inversionista Espacial',
-      'item_avatar5_desc': 'Lleva tus portafolios e inversiones hasta la Luna 🚀',
+      'item_avatar5_desc':
+          'Lleva tus portafolios e inversiones hasta la Luna 🚀',
       'item_avatar6_name': 'Magnate de Diamantes',
       'item_avatar6_desc': 'Para quienes tienen manos de diamante y visión',
       'item_avatar7_name': 'Ballena del Mercado',
@@ -433,7 +477,8 @@ class AppLocalizations {
       'item_avatar9_name': 'Dragón de Oro',
       'item_avatar9_desc': 'Guardián mitológico de tu riqueza ancestral',
       'item_avatar10_name': 'Leyenda Financiera AI',
-      'item_avatar10_desc': 'El avatar definitivo del dominio e inteligencia financiera',
+      'item_avatar10_desc':
+          'El avatar definitivo del dominio e inteligencia financiera',
       // Store Items - Themes
       'item_theme1_name': 'Océano Profundo',
       'item_theme1_desc': 'Tonos relajantes azules y turquesa del mar pacífico',
@@ -446,18 +491,21 @@ class AppLocalizations {
       'item_theme5_name': 'Amatista Real',
       'item_theme5_desc': 'Elegancia morada y destellos de índigo imperial',
       'item_theme6_name': 'Obsidiana Oscura',
-      'item_theme6_desc': 'Minimalismo absoluto en tonos grafito, plomo y plata',
+      'item_theme6_desc':
+          'Minimalismo absoluto en tonos grafito, plomo y plata',
       'item_theme7_name': 'Llama Solar',
       'item_theme7_desc': 'Energía desbordante en carmesí y oro ardiente',
       'item_theme8_name': 'Sakura Japonés',
-      'item_theme8_desc': 'Delicadeza floral en tonos flor de cerezo primaveral',
+      'item_theme8_desc':
+          'Delicadeza floral en tonos flor de cerezo primaveral',
       // Store Items - Specials
       'item_spec1_name': 'Prueba Premium 7 Días',
       'item_spec1_desc': 'Acceso ilimitado a herramientas pro por 1 semana',
       'item_spec2_name': 'Escudo Congelador de Racha',
       'item_spec2_desc': 'Protege tu racha diaria si olvidas entrar un día',
       'item_spec3_name': 'Asesor AI VIP x 1 Mes',
-      'item_spec3_desc': 'Consultas avanzadas ilimitadas con inteligencia artificial',
+      'item_spec3_desc':
+          'Consultas avanzadas ilimitadas con inteligencia artificial',
       'item_spec4_name': 'Insignia Dorada de Mecenas',
       'item_spec4_desc': 'Destaca tu perfil en el podio con un marco dorado',
       // Streak Modal
@@ -467,22 +515,30 @@ class AppLocalizations {
       'streak_badge_pending': '🔥 RACHA PENDIENTE DE ACTIVAR',
       'streak_sub_frozen': 'días de racha (Protegida por Escudo Congelador)',
       'streak_sub_zero': 'días de racha (Llama Apagada estilo Duolingo)',
-      'streak_sub_one': 'día de racha (¡1 día más para encender llama permanente!)',
+      'streak_sub_one':
+          'día de racha (¡1 día más para encender llama permanente!)',
       'streak_sub_multi': 'días de racha acumulada',
       'streak_title_zero': 'REGLA ESTILO DUOLINGO',
       'streak_title_pending': '¿CÓMO ACTIVAR TU RACHA?',
-      'streak_desc_zero': 'Cuando tu racha está en 0, la llama aparece fría en gris. Registra una transacción hoy para encender el fuego naranja de tu racha. ¡Además cuentas con 48h de gracia y puedes protegerla en la Tienda!',
-      'streak_desc_pending': 'Para encender el fuego y no perder tu progreso, registra al menos un nuevo gasto o ingreso hoy. Si olvidas un día, tu racha se congela por 24h extras (48h en total).',
+      'streak_desc_zero':
+          'Cuando tu racha está en 0, la llama aparece fría en gris. Registra una transacción hoy para encender el fuego naranja de tu racha. ¡Además cuentas con 48h de gracia y puedes protegerla en la Tienda!',
+      'streak_desc_pending':
+          'Para encender el fuego y no perder tu progreso, registra al menos un nuevo gasto o ingreso hoy. Si olvidas un día, tu racha se congela por 24h extras (48h en total).',
       'streak_days_frozen': 'días de racha (Protegida por Escudo Congelador)',
       'streak_days_zero': 'días de racha (Llama Apagada estilo Duolingo)',
-      'streak_days_one': 'día de racha (¡1 día más para encender llama permanente!)',
+      'streak_days_one':
+          'día de racha (¡1 día más para encender llama permanente!)',
       'streak_days_many': 'días de racha acumulada',
-      'streak_desc_frozen': 'Tu racha está congelada y a salvo hoy gracias a tu Escudo Congelador. Registra un ingreso o gasto para salvarla y sumar un día más.',
-      'streak_desc_active': '¡Excelente! Has encendido tu llama de hoy. Regresa mañana y registra un movimiento para mantener tu racha viva.',
+      'streak_desc_frozen':
+          'Tu racha está congelada y a salvo hoy gracias a tu Escudo Congelador. Registra un ingreso o gasto para salvarla y sumar un día más.',
+      'streak_desc_active':
+          '¡Excelente! Has encendido tu llama de hoy. Regresa mañana y registra un movimiento para mantener tu racha viva.',
       'streak_duo_title': 'REGLA ESTILO DUOLINGO',
       'streak_how_title': '¿CÓMO ACTIVAR TU RACHA?',
-      'streak_duo_desc': 'Cuando tu racha está en 0, la llama aparece fría en gris. Registra una transacción hoy y mañana seguidos para encender el fuego naranja de tu racha. ¡Además cuentas con 48h de gracia y puedes protegerla en la Tienda!',
-      'streak_how_desc': 'Para encender el fuego y no perder tu progreso, registra al menos un nuevo gasto o ingreso. Si olvidas un día, tu racha se congela por 24h extras (48h en total).',
+      'streak_duo_desc':
+          'Cuando tu racha está en 0, la llama aparece fría en gris. Registra una transacción hoy y mañana seguidos para encender el fuego naranja de tu racha. ¡Además cuentas con 48h de gracia y puedes protegerla en la Tienda!',
+      'streak_how_desc':
+          'Para encender el fuego y no perder tu progreso, registra al menos un nuevo gasto o ingreso. Si olvidas un día, tu racha se congela por 24h extras (48h en total).',
       'streak_day': 'Día',
       'streak_pts': 'pts',
       'streak_day_lbl': 'Día {n}',
@@ -518,17 +574,21 @@ class AppLocalizations {
       'cc_pay_min': 'Pago Mínimo (5%)',
       'cc_pay_half': 'Abonar 50%',
       'cc_pay_total': 'Deuda Total (100%)',
-      'cc_err_amount_excess': 'El monto a pagar no puede ser mayor a tu deuda actual.',
+      'cc_err_amount_excess':
+          'El monto a pagar no puede ser mayor a tu deuda actual.',
       'cc_snack_paid': 'Abono registrado exitosamente 🎉',
       'cc_confirm_pay': 'Confirmar Abono',
       'send_reset_link': 'O envíame un enlace de restablecimiento al correo',
-      'reset_link_sent': 'Enlace de restablecimiento enviado a tu correo. Revisa tu bandeja de entrada.',
+      'reset_link_sent':
+          'Enlace de restablecimiento enviado a tu correo. Revisa tu bandeja de entrada.',
       'two_factor_title': 'Autenticación de Dos Factores',
-      'two_factor_modal_desc': 'Añade una capa extra de seguridad. Elige recibir tu código de verificación por correo electrónico o SMS.',
+      'two_factor_modal_desc':
+          'Añade una capa extra de seguridad. Elige recibir tu código de verificación por correo electrónico o SMS.',
       'two_factor_active_status': '2FA Activo y Protegiendo tu Cuenta',
       'two_factor_method_label': 'Método actual:',
       'two_factor_disable_btn': 'Desactivar 2FA',
-      'two_factor_disabled_snack': 'Autenticación de dos factores desactivada correctamente',
+      'two_factor_disabled_snack':
+          'Autenticación de dos factores desactivada correctamente',
       'two_factor_select_method': 'Selecciona el método de verificación:',
       'two_factor_email_title': 'Correo Electrónico',
       'two_factor_email_subtitle': 'Código enviado al correo registrado',
@@ -539,18 +599,23 @@ class AppLocalizations {
       'two_factor_enter_code': 'Ingresa el código de 6 dígitos enviado a ',
       'two_factor_verify_btn': 'Verificar y Activar 2FA',
       'two_factor_enabled_snack': '¡2FA activado correctamente!',
-      'two_factor_wrong_code': 'Código incorrecto. Verifica el código e intenta de nuevo.',
+      'two_factor_wrong_code':
+          'Código incorrecto. Verifica el código e intenta de nuevo.',
       'biometrics_modal_title': 'Huella Digital / Face ID',
-      'biometrics_modal_desc': 'Inicia sesión de forma instantánea y segura sin digitar tu contraseña cada vez.',
+      'biometrics_modal_desc':
+          'Inicia sesión de forma instantánea y segura sin digitar tu contraseña cada vez.',
       'biometrics_status_enabled': 'Acceso Biométrico Activado',
       'biometrics_status_disabled': 'Acceso Biométrico Desactivado',
       'biometrics_toggle_enable': 'Activar Acceso con Huella / Face ID',
       'biometrics_toggle_disable': 'Desactivar Acceso Biométrico',
-      'biometrics_confirm_password_hint': 'Confirma tu contraseña actual para habilitar',
+      'biometrics_confirm_password_hint':
+          'Confirma tu contraseña actual para habilitar',
       'biometrics_test_btn': 'Probar Sensor Biométrico',
-      'biometrics_test_success': '¡Identificación biométrica verificada con éxito!',
+      'biometrics_test_success':
+          '¡Identificación biométrica verificada con éxito!',
       'auto_lock_modal_title': 'Tiempo de Cierre Automático',
-      'auto_lock_modal_desc': 'Selecciona cuánto tiempo puede permanecer inactiva la aplicación antes de cerrar tu sesión automáticamente para proteger tu privacidad.',
+      'auto_lock_modal_desc':
+          'Selecciona cuánto tiempo puede permanecer inactiva la aplicación antes de cerrar tu sesión automáticamente para proteger tu privacidad.',
       'auto_lock_1min': '1 minuto (Recomendado para máxima privacidad)',
       'auto_lock_2min': '2 minutos (Equilibrio de seguridad y comodidad)',
       'auto_lock_5min': '5 minutos (Mayor comodidad durante uso activo)',
@@ -603,7 +668,8 @@ class AppLocalizations {
       'settings_subtitle': 'Customize your experience',
       'edit_profile': 'Edit Profile',
       'premium_upgrade': 'Upgrade to Premium',
-      'premium_desc': 'Unlock all features: ad-free, advanced reports, cloud sync, and more.',
+      'premium_desc':
+          'Unlock all features: ad-free, advanced reports, cloud sync, and more.',
       'see_plans': 'View Plans',
       'general': 'General',
       'notifications': 'Notifications',
@@ -652,7 +718,7 @@ class AppLocalizations {
       'next_renewal': 'Next renewal: Feb 24, 2027',
       'active_badge': 'Active',
       'cancel_subscription': 'Cancel Subscription',
-            'help_tutorials': 'Technical Support',
+      'help_tutorials': 'Technical Support',
       'technical_support': 'Technical Support',
       'technical_support_desc': 'Contact an agent to resolve issues',
       'tutorial_btn': 'View App Tutorial',
@@ -693,9 +759,10 @@ class AppLocalizations {
       'select_currency_desc': 'Choose the application currency',
       'select_country': 'Select Country',
       'select_country_desc': 'Choose your country of residence',
-      
+
       'complete_profile': 'Complete your profile!',
-      'complete_profile_desc': 'We need some data to customize your experience and help you save:',
+      'complete_profile_desc':
+          'We need some data to customize your experience and help you save:',
       'country': 'Country',
       'salary': 'Salary',
       'complete_now': 'Complete Now',
@@ -746,10 +813,12 @@ class AppLocalizations {
       'no_income_yet': 'No income registered yet',
       'expenses_by_category': 'Expenses by Category',
       'of_your_income': 'of your income',
-      'voice_ask_payment_method': 'Was this expense made with a Credit Card or Cash?',
+      'voice_ask_payment_method':
+          'Was this expense made with a Credit Card or Cash?',
       'voice_listening': 'I am listening...',
       'voice_tap_to_speak': 'Tap to speak',
-      'voice_help_text': 'Tell me your expense or income:\n"I spent 50 on lunch"\n"They paid me 5000 salary"',
+      'voice_help_text':
+          'Tell me your expense or income:\n"I spent 50 on lunch"\n"They paid me 5000 salary"',
       'voice_analyzing': 'Analyzing your voice...',
       'voice_confirm_expense': 'Confirm Expense',
       'voice_confirm_income': 'Confirm Income',
@@ -765,7 +834,8 @@ class AppLocalizations {
       'voice_success_expense': 'Expense registered successfully!',
       'voice_success_income': 'Income registered successfully!',
       'voice_accept': 'Accept',
-      'voice_no_amount': 'Could not detect a valid amount in: "{text}". Please try again saying the number.',
+      'voice_no_amount':
+          'Could not detect a valid amount in: "{text}". Please try again saying the number.',
       'voice_paying_card_or_cash': 'Card or Cash?',
       'voice_answer_mic': 'Answer speaking to complete registration...',
       'dashboard_income': 'Income',
@@ -784,10 +854,13 @@ class AppLocalizations {
       'badge_supreme_collector_desc': 'Acquire 5 exclusive items or themes',
       'badge_financial_mind': 'Financial Mind',
       'badge_financial_mind_desc': 'Accumulate 100 experience points',
-      'ai_assistant_subtitle': 'Discover how to invest your money based on your business 💰',
-      'what_if_subtitle': 'Simulate variations in your income, expenses or debts and QUIVO will predict your financial health.',
+      'ai_assistant_subtitle':
+          'Discover how to invest your money based on your business 💰',
+      'what_if_subtitle':
+          'Simulate variations in your income, expenses or debts and QUIVO will predict your financial health.',
       'rewards_shop_subtitle': 'Redeem your earned points',
-      'rewards_shop_desc': 'Unlock exclusive avatars, custom themes and VIP tips to boost your finances.',
+      'rewards_shop_desc':
+          'Unlock exclusive avatars, custom themes and VIP tips to boost your finances.',
       'rewards_shop_avatars': 'Avatars',
       'rewards_shop_themes': 'Themes',
       'rewards_shop_tips': 'Pro Tips',
@@ -796,7 +869,8 @@ class AppLocalizations {
       'total_saved': 'Total Saved',
       'savings_month_progress': '+12% this month',
       'savings_guide_plan': 'Guided Savings Plan',
-      'savings_guide_desc': 'Discover how to save more and reach your goals faster',
+      'savings_guide_desc':
+          'Discover how to save more and reach your goals faster',
       'view_guide': 'View Guide',
       'add_new_goal': 'Add New Goal',
       'my_saving_goals': 'My Saving Goals',
@@ -814,7 +888,8 @@ class AppLocalizations {
       'what_if_title': 'AI "What If?" Simulator',
       'what_if_tab_controls': 'Controls',
       'what_if_tab_free': 'Free Scenario',
-      'what_if_initial_desc': 'Adjust the simulation controls above and press "Request Diagnosis from QUIVO" to evaluate your hypothetical financial scenario.',
+      'what_if_initial_desc':
+          'Adjust the simulation controls above and press "Request Diagnosis from QUIVO" to evaluate your hypothetical financial scenario.',
       'what_if_chart_title': 'Cash Flow Projection (6 Months)',
       'what_if_panel_title': 'Simulation Panel ⚙️',
       'what_if_additional_expense': 'Additional Monthly Expense',
@@ -823,33 +898,45 @@ class AppLocalizations {
       'what_if_request_diagnosis': 'Request Diagnosis from QUIVO',
       'what_if_diagnosis_title': 'QUIVO Diagnosis Plan 🧠',
       'what_if_desc_title': 'What would happen if...?',
-      'what_if_desc_subtitle': 'Describe any financial scenario and the AI will analyze how it would affect your current finances.',
+      'what_if_desc_subtitle':
+          'Describe any financial scenario and the AI will analyze how it would affect your current finances.',
       'what_if_describe_scenario': 'Describe your scenario',
-      'what_if_placeholder': 'e.g. What would happen if I buy a 10,000 laptop in 6 installments? Can I afford it?',
-      'what_if_input_hint': 'Include amounts, terms and details for a better analysis',
+      'what_if_placeholder':
+          'e.g. What would happen if I buy a 10,000 laptop in 6 installments? Can I afford it?',
+      'what_if_input_hint':
+          'Include amounts, terms and details for a better analysis',
       'what_if_analyzing': 'Analyzing scenario...',
       'what_if_analyze_btn': 'Analyze Scenario with AI',
       'what_if_analysis_result': 'Scenario Analysis 🔮',
-      'what_if_empty_state': 'Write a scenario above or select one of the examples to see the AI analysis',
+      'what_if_empty_state':
+          'Write a scenario above or select one of the examples to see the AI analysis',
       'what_if_risk_low': 'Low',
       'what_if_risk_moderate': 'Moderate ⚠️',
       'what_if_risk_critical': 'Critical 🚨',
       'what_if_chip_laptop_title': 'Buy laptop in installments',
-      'what_if_chip_laptop_query': 'What would happen if I buy a 10000 laptop in 6 monthly installments?',
+      'what_if_chip_laptop_query':
+          'What would happen if I buy a 10000 laptop in 6 monthly installments?',
       'what_if_chip_car_title': 'Buy car',
-      'what_if_chip_car_query': 'What would happen if I buy an 80000 car with a 20000 down payment and 48-month financing?',
+      'what_if_chip_car_query':
+          'What would happen if I buy an 80000 car with a 20000 down payment and 48-month financing?',
       'what_if_chip_salary_title': 'Salary increase',
-      'what_if_chip_salary_query': 'What would happen if my salary increases by 20% starting next month?',
+      'what_if_chip_salary_query':
+          'What would happen if my salary increases by 20% starting next month?',
       'what_if_chip_rent_title': 'Rent apartment',
-      'what_if_chip_rent_query': 'What would happen if I move to an apartment with rent of 3500 monthly?',
+      'what_if_chip_rent_query':
+          'What would happen if I move to an apartment with rent of 3500 monthly?',
       'what_if_chip_save_title': 'Save monthly',
-      'what_if_chip_save_query': 'What would happen if I start saving 1500 a month for 12 months?',
+      'what_if_chip_save_query':
+          'What would happen if I start saving 1500 a month for 12 months?',
       'what_if_chip_phone_title': 'Buy phone',
-      'what_if_chip_phone_query': 'What would happen if I buy an 8000 iPhone in 12 installments?',
+      'what_if_chip_phone_query':
+          'What would happen if I buy an 8000 iPhone in 12 installments?',
       'what_if_chip_masters_title': 'Study master\'s degree',
-      'what_if_chip_masters_query': 'What would happen if I start a master\'s degree that costs 5000 a month for 24 months?',
+      'what_if_chip_masters_query':
+          'What would happen if I start a master\'s degree that costs 5000 a month for 24 months?',
       'what_if_chip_job_title': 'Lose job',
-      'what_if_chip_job_query': 'What would happen if I lose my job and am left without income for 3 months?',
+      'what_if_chip_job_query':
+          'What would happen if I lose my job and am left without income for 3 months?',
       'error_analyzing_scenario': 'Error analyzing scenario',
       'error_obtaining_diagnosis': 'Error obtaining diagnosis from QUIVO',
       // Notifications Modal
@@ -871,33 +958,46 @@ class AppLocalizations {
       'time_ago_now': 'Just now',
       // Dynamic Notifications & Alerts
       'notif_auto_income_title': 'Automatic Income',
-      'notif_auto_income_body': '"{desc}" has been recorded for the amount of {amount}.',
+      'notif_auto_income_body':
+          '"{desc}" has been recorded for the amount of {amount}.',
       'notif_auto_charge_title': 'Automatic Charge',
       'notif_auto_debt_title': 'Automatic Debt Payment',
-      'notif_auto_debt_body': 'The installment for "{desc}" has been charged for {amount}.',
+      'notif_auto_debt_body':
+          'The installment for "{desc}" has been charged for {amount}.',
       'notif_cut_2_days_title': '⚠️ Statement closing in 2 days: {name}',
-      'notif_cut_2_days_body': 'Your credit card statement closes on day {day}. Get ready to review your billing cycle.',
+      'notif_cut_2_days_body':
+          'Your credit card statement closes on day {day}. Get ready to review your billing cycle.',
       'notif_cut_1_day_title': '⏳ Statement closes tomorrow: {name}',
-      'notif_cut_1_day_body': 'Tomorrow, day {day}, is the closing date for your credit card statement.',
+      'notif_cut_1_day_body':
+          'Tomorrow, day {day}, is the closing date for your credit card statement.',
       'notif_cut_today_title': '📊 Statement closes today: {name}',
-      'notif_cut_today_body': 'Your billing cycle closes today. Check your transactions to see your balance for this period.',
+      'notif_cut_today_body':
+          'Your billing cycle closes today. Check your transactions to see your balance for this period.',
       'notif_pay_2_days_title': '⚠️ Card payment due in 2 days: {name}',
-      'notif_pay_2_days_body': '2 days remaining to pay your card (Day {day}). Estimated balance: {bal}.',
+      'notif_pay_2_days_body':
+          '2 days remaining to pay your card (Day {day}). Estimated balance: {bal}.',
       'notif_pay_1_day_title': '⏰ Card payment due tomorrow: {name}',
-      'notif_pay_1_day_body': 'Tomorrow, day {day}, is the deadline to pay your card without interest.',
+      'notif_pay_1_day_body':
+          'Tomorrow, day {day}, is the deadline to pay your card without interest.',
       'notif_pay_today_title': '🚨 Card payment due TODAY: {name}',
-      'notif_pay_today_body': 'Today is the payment deadline for {name}! Current balance: {bal}. Pay today to avoid late fees.',
+      'notif_pay_today_body':
+          'Today is the payment deadline for {name}! Current balance: {bal}. Pay today to avoid late fees.',
       'notif_overdue_title': '💥 OVERDUE CARD: {name}',
-      'notif_overdue_body': 'Your card was due on day {day} and still has a pending balance of {bal}. Pay as soon as possible to stop late interest!',
+      'notif_overdue_body':
+          'Your card was due on day {day} and still has a pending balance of {bal}. Pay as soon as possible to stop late interest!',
       'notif_budget_exceeded_title': 'Budget Exceeded 🚨',
-      'notif_budget_exceeded_body': 'You have reached 100% of your budget for category "{cat}" ({nums}).',
+      'notif_budget_exceeded_body':
+          'You have reached 100% of your budget for category "{cat}" ({nums}).',
       'notif_budget_warning_title': 'Budget at 80% ⚠️',
-      'notif_budget_warning_body': 'You have used over 80% of your budget for category "{cat}" ({nums}).',
+      'notif_budget_warning_body':
+          'You have used over 80% of your budget for category "{cat}" ({nums}).',
       // Dashboard Streak Prompt & Tx Empty/Payment States
       'streak_prompt_frozen_title': '❄️ STREAK FROZEN (24H EXTRA)!',
       'streak_prompt_risk_title': '🔥 YOUR STREAK IS AT RISK!',
-      'streak_prompt_frozen_desc': 'Your streak is protected today thanks to your Shop Shield. Record a transaction to unfreeze it and continue your progress.',
-      'streak_prompt_risk_desc': 'Record at least one expense or income today to ignite your flame and earn +50 pts.',
+      'streak_prompt_frozen_desc':
+          'Your streak is protected today thanks to your Shop Shield. Record a transaction to unfreeze it and continue your progress.',
+      'streak_prompt_risk_desc':
+          'Record at least one expense or income today to ignite your flame and earn +50 pts.',
       'tx_empty_recent': 'No transactions yet',
       'tx_payment_cc': 'Credit Card',
       'tx_payment_pay': 'Card Payment',
@@ -926,12 +1026,17 @@ class AppLocalizations {
       'shop_btn_redeem': 'REDEEM REWARD FOR {cost} PTS',
       'shop_reward_active': 'REWARD ACTIVE!',
       'shop_got_it_btn': 'Got it • Enjoy Reward!',
-      'shop_snack_avatar_unlocked': '⚡ Avatar unlocked. You can equip it from Edit Profile.',
-      'shop_snack_shield_active': '❄️ SHIELD ACTIVE: Your streak is automatically protected if you forget to log in for 1 full day (48h total grace).',
+      'shop_snack_avatar_unlocked':
+          '⚡ Avatar unlocked. You can equip it from Edit Profile.',
+      'shop_snack_shield_active':
+          '❄️ SHIELD ACTIVE: Your streak is automatically protected if you forget to log in for 1 full day (48h total grace).',
       'shop_snack_style_active': '✨ Style activated: {name}',
-      'shop_snack_avatar_success': '🎉 Avatar unlocked. You can equip it from Edit Profile.',
-      'shop_snack_redeem_success': '🎉 Redemption successful! You unlocked: {name}',
-      'shop_snack_missing_pts': '🔒 You need {missing} more points to unlock this reward.',
+      'shop_snack_avatar_success':
+          '🎉 Avatar unlocked. You can equip it from Edit Profile.',
+      'shop_snack_redeem_success':
+          '🎉 Redemption successful! You unlocked: {name}',
+      'shop_snack_missing_pts':
+          '🔒 You need {missing} more points to unlock this reward.',
       // Store Items - Avatars
       'item_avatar1_name': 'Financial Superhero',
       'item_avatar1_desc': 'Undisputed protector of your daily budget',
@@ -942,7 +1047,8 @@ class AppLocalizations {
       'item_avatar4_name': 'Financial Ninja',
       'item_avatar4_desc': 'Slash unnecessary expenses in absolute silence',
       'item_avatar5_name': 'Space Investor',
-      'item_avatar5_desc': 'Take your portfolios and investments to the Moon 🚀',
+      'item_avatar5_desc':
+          'Take your portfolios and investments to the Moon 🚀',
       'item_avatar6_name': 'Diamond Tycoon',
       'item_avatar6_desc': 'For those with diamond hands and long-term vision',
       'item_avatar7_name': 'Market Whale',
@@ -952,20 +1058,24 @@ class AppLocalizations {
       'item_avatar9_name': 'Golden Dragon',
       'item_avatar9_desc': 'Mythical guardian of your ancestral wealth',
       'item_avatar10_name': 'AI Financial Legend',
-      'item_avatar10_desc': 'The ultimate avatar of mastery and financial intelligence',
+      'item_avatar10_desc':
+          'The ultimate avatar of mastery and financial intelligence',
       // Store Items - Themes
       'item_theme1_name': 'Deep Ocean',
-      'item_theme1_desc': 'Soothing blue and turquoise tones of the pacific sea',
+      'item_theme1_desc':
+          'Soothing blue and turquoise tones of the pacific sea',
       'item_theme2_name': 'Golden Sunset',
       'item_theme2_desc': 'Vibrant warm tones of orange, pink, and amber',
       'item_theme3_name': 'Cyberpunk Neon',
-      'item_theme3_desc': 'Futuristic lights of magenta, purple, and intense cyan',
+      'item_theme3_desc':
+          'Futuristic lights of magenta, purple, and intense cyan',
       'item_theme4_name': 'Emerald Forest',
       'item_theme4_desc': 'Harmony, serenity, and natural green tranquility',
       'item_theme5_name': 'Royal Amethyst',
       'item_theme5_desc': 'Purple elegance and sparkles of imperial indigo',
       'item_theme6_name': 'Dark Obsidian',
-      'item_theme6_desc': 'Absolute minimalism in graphite, lead, and silver tones',
+      'item_theme6_desc':
+          'Absolute minimalism in graphite, lead, and silver tones',
       'item_theme7_name': 'Solar Flare',
       'item_theme7_desc': 'Overflowing energy in crimson and burning gold',
       'item_theme8_name': 'Japanese Sakura',
@@ -974,11 +1084,14 @@ class AppLocalizations {
       'item_spec1_name': '7-Day Premium Trial',
       'item_spec1_desc': 'Unlimited access to pro tools for 1 week',
       'item_spec2_name': 'Streak Freeze Shield',
-      'item_spec2_desc': 'Protect your daily streak if you forget to log in for a day',
+      'item_spec2_desc':
+          'Protect your daily streak if you forget to log in for a day',
       'item_spec3_name': 'VIP AI Advisor x 1 Month',
-      'item_spec3_desc': 'Unlimited advanced queries with artificial intelligence',
+      'item_spec3_desc':
+          'Unlimited advanced queries with artificial intelligence',
       'item_spec4_name': 'Patron Golden Badge',
-      'item_spec4_desc': 'Highlight your profile on the podium with a golden frame',
+      'item_spec4_desc':
+          'Highlight your profile on the podium with a golden frame',
       // Streak Modal
       'streak_pending_badge': 'STREAK PENDING ACTIVATION',
       'streak_badge_frozen': '❄️ FREEZE SHIELD ACTIVE',
@@ -990,18 +1103,24 @@ class AppLocalizations {
       'streak_sub_multi': 'accumulated streak days',
       'streak_title_zero': 'DUOLINGO STYLE RULE',
       'streak_title_pending': 'HOW TO ACTIVATE YOUR STREAK?',
-      'streak_desc_zero': 'When your streak is at 0, the flame appears cold in gray. Log a transaction today to ignite the orange fire of your streak. Plus, you have a 48h grace period and can protect it in the Shop!',
-      'streak_desc_pending': 'To light the fire and not lose your progress, log at least one new expense or income today. If you forget one day, your streak freezes for an extra 24h (48h total).',
+      'streak_desc_zero':
+          'When your streak is at 0, the flame appears cold in gray. Log a transaction today to ignite the orange fire of your streak. Plus, you have a 48h grace period and can protect it in the Shop!',
+      'streak_desc_pending':
+          'To light the fire and not lose your progress, log at least one new expense or income today. If you forget one day, your streak freezes for an extra 24h (48h total).',
       'streak_days_frozen': 'streak days (Protected by Freeze Shield)',
       'streak_days_zero': 'streak days (Duolingo style Cold Flame)',
       'streak_days_one': 'streak day (1 more day to light a permanent flame!)',
       'streak_days_many': 'accumulated streak days',
-      'streak_desc_frozen': 'Your streak is frozen and safe today thanks to your Freeze Shield. Log an income or expense to save it and add another day.',
-      'streak_desc_active': 'Excellent! You have lit your flame today. Return tomorrow and log a transaction to keep your streak alive.',
+      'streak_desc_frozen':
+          'Your streak is frozen and safe today thanks to your Freeze Shield. Log an income or expense to save it and add another day.',
+      'streak_desc_active':
+          'Excellent! You have lit your flame today. Return tomorrow and log a transaction to keep your streak alive.',
       'streak_duo_title': 'DUOLINGO STYLE RULE',
       'streak_how_title': 'HOW TO ACTIVATE YOUR STREAK?',
-      'streak_duo_desc': 'When your streak is at 0, the flame appears cold in gray. Log a transaction today and tomorrow right away to ignite the orange fire of your streak. Plus, you have a 48h grace period and can protect it in the Shop!',
-      'streak_how_desc': 'To light the fire and not lose your progress, log at least one new expense or income. If you forget one day, your streak freezes for an extra 24h (48h total).',
+      'streak_duo_desc':
+          'When your streak is at 0, the flame appears cold in gray. Log a transaction today and tomorrow right away to ignite the orange fire of your streak. Plus, you have a 48h grace period and can protect it in the Shop!',
+      'streak_how_desc':
+          'To light the fire and not lose your progress, log at least one new expense or income. If you forget one day, your streak freezes for an extra 24h (48h total).',
       'streak_day': 'Day',
       'streak_pts': 'pts',
       'streak_day_lbl': 'Day {n}',
@@ -1013,7 +1132,8 @@ class AppLocalizations {
       'cc_tap_hint': '👆 Tap the selected card to view its full details',
       'cc_overdrawn': 'CARD OVERDRAWN',
       'cc_near_limit': 'NEAR CREDIT LIMIT',
-      'cc_overdrawn_desc': 'You have exceeded the assigned credit limit for this card.',
+      'cc_overdrawn_desc':
+          'You have exceeded the assigned credit limit for this card.',
       'cc_near_limit_desc': 'You have used over 90% of your credit limit.',
       'cc_edit_card': 'Edit Card',
       'cc_delete_card': 'Delete Card',
@@ -1037,17 +1157,20 @@ class AppLocalizations {
       'cc_pay_min': 'Minimum Payment (5%)',
       'cc_pay_half': 'Pay 50%',
       'cc_pay_total': 'Total Debt (100%)',
-      'cc_err_amount_excess': 'The payment amount cannot exceed your current debt.',
+      'cc_err_amount_excess':
+          'The payment amount cannot exceed your current debt.',
       'cc_snack_paid': 'Payment recorded successfully 🎉',
       'cc_confirm_pay': 'Confirm Payment',
       'send_reset_link': 'Or send a password reset link to my email',
       'reset_link_sent': 'Reset link sent to your email. Check your inbox.',
       'two_factor_title': 'Two-Factor Authentication',
-      'two_factor_modal_desc': 'Add an extra layer of security. Choose to receive your verification code by email or SMS.',
+      'two_factor_modal_desc':
+          'Add an extra layer of security. Choose to receive your verification code by email or SMS.',
       'two_factor_active_status': '2FA Active and Protecting Your Account',
       'two_factor_method_label': 'Current method:',
       'two_factor_disable_btn': 'Disable 2FA',
-      'two_factor_disabled_snack': 'Two-factor authentication disabled successfully',
+      'two_factor_disabled_snack':
+          'Two-factor authentication disabled successfully',
       'two_factor_select_method': 'Select verification method:',
       'two_factor_email_title': 'Email Address',
       'two_factor_email_subtitle': 'Code sent to registered email',
@@ -1060,16 +1183,20 @@ class AppLocalizations {
       'two_factor_enabled_snack': '2FA enabled successfully!',
       'two_factor_wrong_code': 'Incorrect code. Please verify and try again.',
       'biometrics_modal_title': 'Fingerprint / Face ID',
-      'biometrics_modal_desc': 'Log in instantly and securely without typing your password every time.',
+      'biometrics_modal_desc':
+          'Log in instantly and securely without typing your password every time.',
       'biometrics_status_enabled': 'Biometric Access Enabled',
       'biometrics_status_disabled': 'Biometric Access Disabled',
       'biometrics_toggle_enable': 'Enable Fingerprint / Face ID Access',
       'biometrics_toggle_disable': 'Disable Biometric Access',
-      'biometrics_confirm_password_hint': 'Confirm your current password to enable',
+      'biometrics_confirm_password_hint':
+          'Confirm your current password to enable',
       'biometrics_test_btn': 'Test Biometric Sensor',
-      'biometrics_test_success': 'Biometric identification verified successfully!',
+      'biometrics_test_success':
+          'Biometric identification verified successfully!',
       'auto_lock_modal_title': 'Auto-Lock Timeout',
-      'auto_lock_modal_desc': 'Select how long the app can remain inactive before automatically closing your session to protect your privacy.',
+      'auto_lock_modal_desc':
+          'Select how long the app can remain inactive before automatically closing your session to protect your privacy.',
       'auto_lock_1min': '1 minute (Recommended for maximum privacy)',
       'auto_lock_2min': '2 minutes (Balance of security and comfort)',
       'auto_lock_5min': '5 minutes (Greater comfort during active use)',
@@ -1122,7 +1249,8 @@ class AppLocalizations {
       'settings_subtitle': 'Personalize sua experiência',
       'edit_profile': 'Editar Perfil',
       'premium_upgrade': 'Atualizar para Premium',
-      'premium_desc': 'Desbloqueie todos os recursos: sem anúncios, relatórios avançados, sincronização em nuvem e mais.',
+      'premium_desc':
+          'Desbloqueie todos os recursos: sem anúncios, relatórios avançados, sincronização em nuvem e mais.',
       'see_plans': 'Ver Planos',
       'general': 'Geral',
       'notifications': 'Notificações',
@@ -1171,14 +1299,15 @@ class AppLocalizations {
       'next_renewal': 'Próxima renovação: 24 Fev 2027',
       'active_badge': 'Ativo',
       'cancel_subscription': 'Cancelar Assinatura',
-            'help_tutorials': 'Suporte Técnico',
+      'help_tutorials': 'Suporte Técnico',
       'technical_support': 'Suporte Técnico',
       'technical_support_desc': 'Contate um agente para resolver problemas',
       'tutorial_btn': 'Ver Tutorial do App',
       'app_tour': 'Passeio pelo Aplicativo',
       'app_tour_desc': 'Guia rápido de finanças e IA para novos usuários',
       'logout_confirm_title': 'Sair da conta?',
-      'logout_confirm_desc': 'Você precisará inserir suas credenciais novamente.',
+      'logout_confirm_desc':
+          'Você precisará inserir suas credenciais novamente.',
       'notifications_subtitle': 'Configure seus alertas e lembretes',
       'push_notifs': 'Notificações Push',
       'push_notifs_desc': 'Receber alertas no seu dispositivo',
@@ -1212,9 +1341,10 @@ class AppLocalizations {
       'select_currency_desc': 'Escolha a moeda do aplicativo',
       'select_country': 'Selecionar País',
       'select_country_desc': 'Escolha seu país de residência',
-      
+
       'complete_profile': 'Complete seu perfil!',
-      'complete_profile_desc': 'Precisamos de alguns dados para personalizar sua experiência e ajudá-lo a economizar:',
+      'complete_profile_desc':
+          'Precisamos de alguns dados para personalizar sua experiência e ajudá-lo a economizar:',
       'country': 'País',
       'salary': 'Salário',
       'complete_now': 'Completar Agora',
@@ -1265,10 +1395,12 @@ class AppLocalizations {
       'no_income_yet': 'Nenhuma renda registrada ainda',
       'expenses_by_category': 'Despesas por Categoria',
       'of_your_income': 'da sua renda',
-      'voice_ask_payment_method': 'Esta despesa foi feita com Cartão de Crédito ou Dinheiro?',
+      'voice_ask_payment_method':
+          'Esta despesa foi feita com Cartão de Crédito ou Dinheiro?',
       'voice_listening': 'Estou ouvindo...',
       'voice_tap_to_speak': 'Toque para falar',
-      'voice_help_text': 'Diga seu gasto ou renda:\n"Gastei 50 no almoço"\n"Recebi 5000 de salário"',
+      'voice_help_text':
+          'Diga seu gasto ou renda:\n"Gastei 50 no almoço"\n"Recebi 5000 de salário"',
       'voice_analyzing': 'Analisando sua voz...',
       'voice_confirm_expense': 'Confirmar Despesa',
       'voice_confirm_income': 'Confirmar Receita',
@@ -1284,7 +1416,8 @@ class AppLocalizations {
       'voice_success_expense': 'Despesa registrada com sucesso!',
       'voice_success_income': 'Receita registrada com sucesso!',
       'voice_accept': 'Aceitar',
-      'voice_no_amount': 'Não foi possível detectar um valor válido em: "{text}". Tente falar o número novamente.',
+      'voice_no_amount':
+          'Não foi possível detectar um valor válido em: "{text}". Tente falar o número novamente.',
       'voice_paying_card_or_cash': 'Cartão ou Dinheiro?',
       'voice_answer_mic': 'Responda falando para concluir o registro...',
       'dashboard_income': 'Receitas',
@@ -1303,10 +1436,13 @@ class AppLocalizations {
       'badge_supreme_collector_desc': 'Adquira 5 itens ou temas exclusivos',
       'badge_financial_mind': 'Mente Financeira',
       'badge_financial_mind_desc': 'Acumule 100 pontos de experiência',
-      'ai_assistant_subtitle': 'Descubra como investir seu dinheiro com base no seu negócio 💰',
-      'what_if_subtitle': 'Simule variações em suas receitas, despesas ou dívidas e QUIVO preverá sua saúde financeira.',
+      'ai_assistant_subtitle':
+          'Descubra como investir seu dinheiro com base no seu negócio 💰',
+      'what_if_subtitle':
+          'Simule variações em suas receitas, despesas ou dívidas e QUIVO preverá sua saúde financeira.',
       'rewards_shop_subtitle': 'Resgate seus pontos ganhos',
-      'rewards_shop_desc': 'Desbloqueie avatares exclusivos, temas personalizados e dicas VIP para impulsionar suas finanças.',
+      'rewards_shop_desc':
+          'Desbloqueie avatares exclusivos, temas personalizados e dicas VIP para impulsionar suas finanças.',
       'rewards_shop_avatars': 'Avatares',
       'rewards_shop_themes': 'Temas',
       'rewards_shop_tips': 'Dicas Pro',
@@ -1315,7 +1451,8 @@ class AppLocalizations {
       'total_saved': 'Total Economizado',
       'savings_month_progress': '+12% este mês',
       'savings_guide_plan': 'Plano de Poupança Guiado',
-      'savings_guide_desc': 'Descubra como economizar mais e alcançar suas metas mais rápido',
+      'savings_guide_desc':
+          'Descubra como economizar mais e alcançar suas metas mais rápido',
       'view_guide': 'Ver Guia',
       'add_new_goal': 'Adicionar Nova Meta',
       'my_saving_goals': 'Minhas Metas de Poupança',
@@ -1333,7 +1470,8 @@ class AppLocalizations {
       'what_if_title': 'Simulador AI "What If?"',
       'what_if_tab_controls': 'Controles',
       'what_if_tab_free': 'Cenário Livre',
-      'what_if_initial_desc': 'Ajuste os controles de simulação acima e pressione "Solicitar Diagnóstico ao QUIVO" para avaliar seu cenário financeiro hipotético.',
+      'what_if_initial_desc':
+          'Ajuste os controles de simulação acima e pressione "Solicitar Diagnóstico ao QUIVO" para avaliar seu cenário financeiro hipotético.',
       'what_if_chart_title': 'Projeção de Fluxo de Caixa (6 Meses)',
       'what_if_panel_title': 'Painel de Simulação ⚙️',
       'what_if_additional_expense': 'Despesa Mensal Adicional',
@@ -1342,33 +1480,45 @@ class AppLocalizations {
       'what_if_request_diagnosis': 'Solicitar Diagnóstico ao QUIVO',
       'what_if_diagnosis_title': 'Plano de Diagnóstico QUIVO 🧠',
       'what_if_desc_title': 'O que aconteceria se...?',
-      'what_if_desc_subtitle': 'Descreva qualquer cenário financeiro e a IA analisará como isso afetaria suas finanças atuais.',
+      'what_if_desc_subtitle':
+          'Descreva qualquer cenário financeiro e a IA analisará como isso afetaria suas finanças atuais.',
       'what_if_describe_scenario': 'Descreva seu cenário',
-      'what_if_placeholder': 'Ex: O que aconteceria se eu comprasse um laptop de 10.000 em 6 parcelas? Posso pagar?',
-      'what_if_input_hint': 'Inclua valores, prazos e detalhes para uma melhor análise',
+      'what_if_placeholder':
+          'Ex: O que aconteceria se eu comprasse um laptop de 10.000 em 6 parcelas? Posso pagar?',
+      'what_if_input_hint':
+          'Inclua valores, prazos e detalhes para uma melhor análise',
       'what_if_analyzing': 'Analisando cenário...',
       'what_if_analyze_btn': 'Analisar Cenário com IA',
       'what_if_analysis_result': 'Análise de Cenário 🔮',
-      'what_if_empty_state': 'Escreva um cenário acima ou selecione um dos exemplos para ver a análise da IA',
+      'what_if_empty_state':
+          'Escreva um cenário acima ou selecione um dos exemplos para ver a análise da IA',
       'what_if_risk_low': 'Baixo',
       'what_if_risk_moderate': 'Moderado ⚠️',
       'what_if_risk_critical': 'Crítico 🚨',
       'what_if_chip_laptop_title': 'Comprar laptop parcelado',
-      'what_if_chip_laptop_query': 'O que aconteceria se eu comprasse um laptop de 10000 em 6 parcelas mensais?',
+      'what_if_chip_laptop_query':
+          'O que aconteceria se eu comprasse um laptop de 10000 em 6 parcelas mensais?',
       'what_if_chip_car_title': 'Comprar carro',
-      'what_if_chip_car_query': 'O que aconteceria se eu comprasse um carro de 80000 com uma entrada de 20000 e financiamento em 48 meses?',
+      'what_if_chip_car_query':
+          'O que aconteceria se eu comprasse um carro de 80000 com uma entrada de 20000 e financiamento em 48 meses?',
       'what_if_chip_salary_title': 'Aumento de salário',
-      'what_if_chip_salary_query': 'O que aconteceria se meu salário aumentasse 20% a partir do próximo mês?',
+      'what_if_chip_salary_query':
+          'O que aconteceria se meu salário aumentasse 20% a partir do próximo mês?',
       'what_if_chip_rent_title': 'Alugar apartamento',
-      'what_if_chip_rent_query': 'O que aconteceria se eu me mudasse para um apartamento com aluguel de 3500 mensais?',
+      'what_if_chip_rent_query':
+          'O que aconteceria se eu me mudasse para um apartamento com aluguel de 3500 mensais?',
       'what_if_chip_save_title': 'Economizar mensalmente',
-      'what_if_chip_save_query': 'O que aconteceria se eu começasse a economizar 1500 por mês durante 12 meses?',
+      'what_if_chip_save_query':
+          'O que aconteceria se eu começasse a economizar 1500 por mês durante 12 meses?',
       'what_if_chip_phone_title': 'Comprar telefone',
-      'what_if_chip_phone_query': 'O que aconteceria se eu comprasse um iPhone de 8000 em 12 parcelas?',
+      'what_if_chip_phone_query':
+          'O que aconteceria se eu comprasse um iPhone de 8000 em 12 parcelas?',
       'what_if_chip_masters_title': 'Estudar mestrado',
-      'what_if_chip_masters_query': 'O que aconteceria se eu começasse um mestrado que custa 5000 por mês durante 24 meses?',
+      'what_if_chip_masters_query':
+          'O que aconteceria se eu começasse um mestrado que custa 5000 por mês durante 24 meses?',
       'what_if_chip_job_title': 'Perder emprego',
-      'what_if_chip_job_query': 'O que aconteceria se eu perdesse o emprego e ficasse sem renda por 3 meses?',
+      'what_if_chip_job_query':
+          'O que aconteceria se eu perdesse o emprego e ficasse sem renda por 3 meses?',
       'error_analyzing_scenario': 'Erro ao analisar cenário',
       'error_obtaining_diagnosis': 'Erro ao obter diagnóstico do QUIVO',
       // Notifications Modal
@@ -1393,30 +1543,42 @@ class AppLocalizations {
       'notif_auto_income_body': '"{desc}" foi registrada no valor de {amount}.',
       'notif_auto_charge_title': 'Cobrança Automática',
       'notif_auto_debt_title': 'Pagamento Automático de Dívida',
-      'notif_auto_debt_body': 'A parcela de "{desc}" foi cobrada no valor de {amount}.',
+      'notif_auto_debt_body':
+          'A parcela de "{desc}" foi cobrada no valor de {amount}.',
       'notif_cut_2_days_title': '⚠️ Fechamento em 2 dias: {name}',
-      'notif_cut_2_days_body': 'Sua fatura fecha no dia {day}. Prepare-se para conferir seu extrato do ciclo.',
+      'notif_cut_2_days_body':
+          'Sua fatura fecha no dia {day}. Prepare-se para conferir seu extrato do ciclo.',
       'notif_cut_1_day_title': '⏳ Fechamento amanhã: {name}',
-      'notif_cut_1_day_body': 'Amanhã, dia {day}, é a data de fechamento da sua fatura do cartão de crédito.',
+      'notif_cut_1_day_body':
+          'Amanhã, dia {day}, é a data de fechamento da sua fatura do cartão de crédito.',
       'notif_cut_today_title': '📊 Fatura fecha hoje: {name}',
-      'notif_cut_today_body': 'Seu ciclo de faturamento fecha hoje. Verifique suas transações para saber o saldo do período.',
+      'notif_cut_today_body':
+          'Seu ciclo de faturamento fecha hoje. Verifique suas transações para saber o saldo do período.',
       'notif_pay_2_days_title': '⚠️ Pagamento do cartão em 2 dias: {name}',
-      'notif_pay_2_days_body': 'Faltam 2 dias para o pagamento do seu cartão (Dia {day}). Saldo estimado: {bal}.',
+      'notif_pay_2_days_body':
+          'Faltam 2 dias para o pagamento do seu cartão (Dia {day}). Saldo estimado: {bal}.',
       'notif_pay_1_day_title': '⏰ Vencimento do cartão amanhã: {name}',
-      'notif_pay_1_day_body': 'Amanhã, dia {day}, é a data limite para pagar seu cartão sem juros.',
+      'notif_pay_1_day_body':
+          'Amanhã, dia {day}, é a data limite para pagar seu cartão sem juros.',
       'notif_pay_today_title': '🚨 Cartão vence HOJE: {name}',
-      'notif_pay_today_body': 'Hoje é o dia limite de pagamento para {name}! Saldo atual: {bal}. Pague hoje para evitar encargos.',
+      'notif_pay_today_body':
+          'Hoje é o dia limite de pagamento para {name}! Saldo atual: {bal}. Pague hoje para evitar encargos.',
       'notif_overdue_title': '💥 CARTÃO EM ATRASO: {name}',
-      'notif_overdue_body': 'Seu cartão venceu no dia {day} e ainda tem um saldo pendente de {bal}. Pague o quanto antes para parar os juros!',
+      'notif_overdue_body':
+          'Seu cartão venceu no dia {day} e ainda tem um saldo pendente de {bal}. Pague o quanto antes para parar os juros!',
       'notif_budget_exceeded_title': 'Orçamento Esgotado 🚨',
-      'notif_budget_exceeded_body': 'Você atingiu 100% do seu orçamento para a categoria "{cat}" ({nums}).',
+      'notif_budget_exceeded_body':
+          'Você atingiu 100% do seu orçamento para a categoria "{cat}" ({nums}).',
       'notif_budget_warning_title': 'Orçamento em 80% ⚠️',
-      'notif_budget_warning_body': 'Você usou mais de 80% do seu orçamento para a categoria "{cat}" ({nums}).',
+      'notif_budget_warning_body':
+          'Você usou mais de 80% do seu orçamento para a categoria "{cat}" ({nums}).',
       // Dashboard Streak Prompt & Tx Empty/Payment States
       'streak_prompt_frozen_title': '❄️ OFENSIVA CONGELADA (24H EXTRAS)!',
       'streak_prompt_risk_title': '🔥 SUA OFENSIVA ESTÁ EM RISCO!',
-      'streak_prompt_frozen_desc': 'Sua ofensiva está protegida hoje graças ao seu Escudo da Loja. Registre uma transação para descongelar e continuar seu progresso.',
-      'streak_prompt_risk_desc': 'Registre pelo menos uma despesa ou receita hoje para acender sua chama e ganhar +50 pts.',
+      'streak_prompt_frozen_desc':
+          'Sua ofensiva está protegida hoje graças ao seu Escudo da Loja. Registre uma transação para descongelar e continuar seu progresso.',
+      'streak_prompt_risk_desc':
+          'Registre pelo menos uma despesa ou receita hoje para acender sua chama e ganhar +50 pts.',
       'tx_empty_recent': 'Nenhuma transação ainda',
       'tx_payment_cc': 'Cartão de Crédito',
       'tx_payment_pay': 'Pagamento de Cartão',
@@ -1445,12 +1607,17 @@ class AppLocalizations {
       'shop_btn_redeem': 'RESGATAR RECOMPENSA POR {cost} PTS',
       'shop_reward_active': 'RECOMPENSA ATIVA!',
       'shop_got_it_btn': 'Entendido • Aproveitar Recompensa!',
-      'shop_snack_avatar_unlocked': '⚡ Avatar desbloqueado. Você pode equipá-lo em Editar Perfil.',
-      'shop_snack_shield_active': '❄️ ESCUDO ATIVO: Sua ofensiva está protegida se você esquecer de entrar por 1 dia (48h de carência no total).',
+      'shop_snack_avatar_unlocked':
+          '⚡ Avatar desbloqueado. Você pode equipá-lo em Editar Perfil.',
+      'shop_snack_shield_active':
+          '❄️ ESCUDO ATIVO: Sua ofensiva está protegida se você esquecer de entrar por 1 dia (48h de carência no total).',
       'shop_snack_style_active': '✨ Estilo ativado: {name}',
-      'shop_snack_avatar_success': '🎉 Avatar desbloqueado. Você pode equipá-lo em Editar Perfil.',
-      'shop_snack_redeem_success': '🎉 Resgate bem-sucedido! Você desbloqueou: {name}',
-      'shop_snack_missing_pts': '🔒 Faltam {missing} pontos para desbloquear esta recompensa.',
+      'shop_snack_avatar_success':
+          '🎉 Avatar desbloqueado. Você pode equipá-lo em Editar Perfil.',
+      'shop_snack_redeem_success':
+          '🎉 Resgate bem-sucedido! Você desbloqueou: {name}',
+      'shop_snack_missing_pts':
+          '🔒 Faltam {missing} pontos para desbloquear esta recompensa.',
       // Store Items - Avatars
       'item_avatar1_name': 'Super-herói Financeiro',
       'item_avatar1_desc': 'Protetor indiscutível do seu orçamento diário',
@@ -1463,7 +1630,8 @@ class AppLocalizations {
       'item_avatar5_name': 'Investidor Espacial',
       'item_avatar5_desc': 'Leve seus portfólios e investimentos até a Lua 🚀',
       'item_avatar6_name': 'Magnata de Diamante',
-      'item_avatar6_desc': 'Para quem tem mãos de diamante e visão de longo prazo',
+      'item_avatar6_desc':
+          'Para quem tem mãos de diamante e visão de longo prazo',
       'item_avatar7_name': 'Baleia do Mercado',
       'item_avatar7_desc': 'Domínio absoluto do mercado e liquidez massiva',
       'item_avatar8_name': 'Samurai Disciplinado',
@@ -1471,7 +1639,8 @@ class AppLocalizations {
       'item_avatar9_name': 'Dragão Dourado',
       'item_avatar9_desc': 'Guardião mitológico da sua riqueza ancestral',
       'item_avatar10_name': 'Lenda Financeira IA',
-      'item_avatar10_desc': 'O avatar definitivo de domínio e inteligência financeira',
+      'item_avatar10_desc':
+          'O avatar definitivo de domínio e inteligência financeira',
       // Store Items - Themes
       'item_theme1_name': 'Oceano Profundo',
       'item_theme1_desc': 'Tons relaxantes de azul e turquesa do mar pacífico',
@@ -1484,18 +1653,22 @@ class AppLocalizations {
       'item_theme5_name': 'Ametista Real',
       'item_theme5_desc': 'Elegância roxa e brilhos de índigo imperial',
       'item_theme6_name': 'Obsidiana Escura',
-      'item_theme6_desc': 'Minimalismo absoluto em tons de grafite, chumbo e prata',
+      'item_theme6_desc':
+          'Minimalismo absoluto em tons de grafite, chumbo e prata',
       'item_theme7_name': 'Chama Solar',
       'item_theme7_desc': 'Energia transbordante em carmesim e ouro ardente',
       'item_theme8_name': 'Sakura Japonês',
-      'item_theme8_desc': 'Delicadeza floral em tons de flor de cerejeira primaveral',
+      'item_theme8_desc':
+          'Delicadeza floral em tons de flor de cerejeira primaveral',
       // Store Items - Specials
       'item_spec1_name': 'Teste Premium 7 Dias',
       'item_spec1_desc': 'Acesso ilimitado a ferramentas pro por 1 semana',
       'item_spec2_name': 'Escudo Congelador de Ofensiva',
-      'item_spec2_desc': 'Proteja sua ofensiva diária se esquecer de entrar um dia',
+      'item_spec2_desc':
+          'Proteja sua ofensiva diária se esquecer de entrar um dia',
       'item_spec3_name': 'Consultor IA VIP x 1 Mês',
-      'item_spec3_desc': 'Consultas avançadas ilimitadas com inteligência artificial',
+      'item_spec3_desc':
+          'Consultas avançadas ilimitadas com inteligência artificial',
       'item_spec4_name': 'Emblema Dourado de Patrono',
       'item_spec4_desc': 'Destaque seu perfil no pódio com uma moldura dourada',
       // Streak Modal
@@ -1505,22 +1678,31 @@ class AppLocalizations {
       'streak_badge_pending': '🔥 OFENSIVA PENDENTE DE ATIVAÇÃO',
       'streak_sub_frozen': 'dias de ofensiva (Protegida por Escudo Congelador)',
       'streak_sub_zero': 'dias de ofensiva (Chama Fria estilo Duolingo)',
-      'streak_sub_one': 'dia de ofensiva (Mais 1 dia para acender a chama permanente!)',
+      'streak_sub_one':
+          'dia de ofensiva (Mais 1 dia para acender a chama permanente!)',
       'streak_sub_multi': 'dias de ofensiva acumulada',
       'streak_title_zero': 'REGRA ESTILO DUOLINGO',
       'streak_title_pending': 'COMO ATIVAR SUA OFENSIVA?',
-      'streak_desc_zero': 'Quando sua ofensiva está em 0, a chama aparece fria em cinza. Registre uma transação hoje para acender o fogo laranja da sua ofensiva. Além disso, você tem 48h de carência e pode protegê-la na Loja!',
-      'streak_desc_pending': 'Para acender o fogo e não perder seu progresso, registre pelo menos uma nova despesa ou receita hoje. Se esquecer um dia, sua ofensiva congela por 24h extras (48h no total).',
-      'streak_days_frozen': 'dias de ofensiva (Protegida por Escudo Congelador)',
+      'streak_desc_zero':
+          'Quando sua ofensiva está em 0, a chama aparece fria em cinza. Registre uma transação hoje para acender o fogo laranja da sua ofensiva. Além disso, você tem 48h de carência e pode protegê-la na Loja!',
+      'streak_desc_pending':
+          'Para acender o fogo e não perder seu progresso, registre pelo menos uma nova despesa ou receita hoje. Se esquecer um dia, sua ofensiva congela por 24h extras (48h no total).',
+      'streak_days_frozen':
+          'dias de ofensiva (Protegida por Escudo Congelador)',
       'streak_days_zero': 'dias de ofensiva (Chama Fria estilo Duolingo)',
-      'streak_days_one': 'dia de ofensiva (Mais 1 dia para acender a chama permanente!)',
+      'streak_days_one':
+          'dia de ofensiva (Mais 1 dia para acender a chama permanente!)',
       'streak_days_many': 'dias de ofensiva acumulada',
-      'streak_desc_frozen': 'Sua ofensiva está congelada e segura hoje graças ao seu Escudo Congelador. Registre uma receita ou despesa para salvá-la e adicionar mais um dia.',
-      'streak_desc_active': 'Excelente! Você acendeu sua chama de hoje. Volte amanhã e registre uma transação para manter sua ofensiva viva.',
+      'streak_desc_frozen':
+          'Sua ofensiva está congelada e segura hoje graças ao seu Escudo Congelador. Registre uma receita ou despesa para salvá-la e adicionar mais um dia.',
+      'streak_desc_active':
+          'Excelente! Você acendeu sua chama de hoje. Volte amanhã e registre uma transação para manter sua ofensiva viva.',
       'streak_duo_title': 'REGRA ESTILO DUOLINGO',
       'streak_how_title': 'COMO ATIVAR SUA OFENSIVA?',
-      'streak_duo_desc': 'Quando sua ofensiva está em 0, a chama aparece fria em cinza. Registre uma transação hoje e amanhã imediatamente para acender o fogo laranja da sua ofensiva. Além disso, você tem 48h de carência e pode protegê-la na Loja!',
-      'streak_how_desc': 'Para acender o fogo e não perder seu progresso, registre pelo menos uma nova despesa ou receita. Se esquecer um dia, sua ofensiva congela por 24h extras (48h no total).',
+      'streak_duo_desc':
+          'Quando sua ofensiva está em 0, a chama aparece fria em cinza. Registre uma transação hoje e amanhã imediatamente para acender o fogo laranja da sua ofensiva. Além disso, você tem 48h de carência e pode protegê-la na Loja!',
+      'streak_how_desc':
+          'Para acender o fogo e não perder seu progresso, registre pelo menos uma nova despesa ou receita. Se esquecer um dia, sua ofensiva congela por 24h extras (48h no total).',
       'streak_day': 'Dia',
       'streak_pts': 'pts',
       'streak_day_lbl': 'Dia {n}',
@@ -1532,7 +1714,8 @@ class AppLocalizations {
       'cc_tap_hint': '👆 Toque no cartão selecionado para ver os detalhes',
       'cc_overdrawn': 'CARTÃO COM LIMITE EXCEDIDO',
       'cc_near_limit': 'PERTO DO LIMITE',
-      'cc_overdrawn_desc': 'Você excedeu o limite de crédito atribuído a este cartão.',
+      'cc_overdrawn_desc':
+          'Você excedeu o limite de crédito atribuído a este cartão.',
       'cc_near_limit_desc': 'Você usou mais de 90% do seu limite de crédito.',
       'cc_edit_card': 'Editar Cartão',
       'cc_delete_card': 'Excluir Cartão',
@@ -1556,17 +1739,21 @@ class AppLocalizations {
       'cc_pay_min': 'Pagamento Mínimo (5%)',
       'cc_pay_half': 'Pagar 50%',
       'cc_pay_total': 'Dívida Total (100%)',
-      'cc_err_amount_excess': 'O valor a pagar não pode ser maior que sua dívida atual.',
+      'cc_err_amount_excess':
+          'O valor a pagar não pode ser maior que sua dívida atual.',
       'cc_snack_paid': 'Pagamento registrado com sucesso 🎉',
       'cc_confirm_pay': 'Confirmar Pagamento',
       'send_reset_link': 'Ou envie um link de redefinição para meu e-mail',
-      'reset_link_sent': 'Link de redefinição enviado. Verifique sua caixa de entrada.',
+      'reset_link_sent':
+          'Link de redefinição enviado. Verifique sua caixa de entrada.',
       'two_factor_title': 'Autenticação de Dois Fatores',
-      'two_factor_modal_desc': 'Adicione uma camada extra de segurança. Escolha receber seu código por e-mail ou SMS.',
+      'two_factor_modal_desc':
+          'Adicione uma camada extra de segurança. Escolha receber seu código por e-mail ou SMS.',
       'two_factor_active_status': '2FA Ativo e Protegendo Sua Conta',
       'two_factor_method_label': 'Método atual:',
       'two_factor_disable_btn': 'Desativar 2FA',
-      'two_factor_disabled_snack': 'Autenticação de dois fatores desativada com sucesso',
+      'two_factor_disabled_snack':
+          'Autenticação de dois fatores desativada com sucesso',
       'two_factor_select_method': 'Selecione o método de verificação:',
       'two_factor_email_title': 'E-mail',
       'two_factor_email_subtitle': 'Código enviado ao e-mail cadastrado',
@@ -1579,16 +1766,21 @@ class AppLocalizations {
       'two_factor_enabled_snack': '2FA ativado com sucesso!',
       'two_factor_wrong_code': 'Código incorreto. Verifique e tente novamente.',
       'biometrics_modal_title': 'Impressão Digital / Face ID',
-      'biometrics_modal_desc': 'Faça login de forma instantânea e segura sem digitar sua senha sempre.',
+      'biometrics_modal_desc':
+          'Faça login de forma instantânea e segura sem digitar sua senha sempre.',
       'biometrics_status_enabled': 'Acesso Biométrico Ativado',
       'biometrics_status_disabled': 'Acesso Biométrico Desativado',
-      'biometrics_toggle_enable': 'Ativar Acesso com Impressão Digital / Face ID',
+      'biometrics_toggle_enable':
+          'Ativar Acesso com Impressão Digital / Face ID',
       'biometrics_toggle_disable': 'Desativar Acesso Biométrico',
-      'biometrics_confirm_password_hint': 'Confirme sua senha atual para ativar',
+      'biometrics_confirm_password_hint':
+          'Confirme sua senha atual para ativar',
       'biometrics_test_btn': 'Testar Sensor Biométrico',
-      'biometrics_test_success': 'Identificação biométrica verificada com sucesso!',
+      'biometrics_test_success':
+          'Identificação biométrica verificada com sucesso!',
       'auto_lock_modal_title': 'Tempo de Bloqueio Automático',
-      'auto_lock_modal_desc': 'Selecione quanto tempo o aplicativo pode permanecer inativo antes de fechar sua sessão automaticamente para proteger sua privacidade.',
+      'auto_lock_modal_desc':
+          'Selecione quanto tempo o aplicativo pode permanecer inativo antes de fechar sua sessão automaticamente para proteger sua privacidade.',
       'auto_lock_1min': '1 minuto (Recomendado para máxima privacidade)',
       'auto_lock_2min': '2 minutos (Equilíbrio entre segurança e conveniência)',
       'auto_lock_5min': '5 minutos (Maior conveniência durante uso ativo)',
@@ -1604,7 +1796,8 @@ class AppLocalizations {
       'pdf_total_expenses': 'DÉPENSES TOTALES',
       'pdf_net_balance': 'SOLDE NET',
       'pdf_expenses_breakdown': 'RÉPARTITION DES DÉPENSES PAR CATÉGORIE',
-      'pdf_no_transactions': 'Aucune transaction enregistrée pendant cette période.',
+      'pdf_no_transactions':
+          'Aucune transaction enregistrée pendant cette période.',
       'pdf_no_description': 'Aucune description',
       'pdf_income_type': 'Revenu',
       'pdf_expense_type': 'Dépense',
@@ -1627,7 +1820,8 @@ class AppLocalizations {
       'got_it': 'Compris',
       'limit_set': 'Limite fixée :',
       'badge_first_tx': 'Le Début',
-      'badge_first_tx_desc': 'Enregistrez votre première transaction financière.',
+      'badge_first_tx_desc':
+          'Enregistrez votre première transaction financière.',
       'badge_night_owl': 'Oiseau de Nuit',
       'badge_night_owl_desc': 'Activez le thème sombre pour la première fois.',
       'badge_visionary': 'Visionnaire',
@@ -1641,7 +1835,8 @@ class AppLocalizations {
       'settings_subtitle': 'Personnalisez votre expérience',
       'edit_profile': 'Modifier le Profil',
       'premium_upgrade': 'Passer à Premium',
-      'premium_desc': 'Débloquez toutes les fonctionnalités : sans publicité, rapports avancés, synchronisation dans le cloud, etc.',
+      'premium_desc':
+          'Débloquez toutes les fonctionnalités : sans publicité, rapports avancés, synchronisation dans le cloud, etc.',
       'see_plans': 'Voir les Forfaits',
       'general': 'Général',
       'notifications': 'Notifications',
@@ -1690,12 +1885,14 @@ class AppLocalizations {
       'next_renewal': 'Prochain renouvellement : 24 fév. 2027',
       'active_badge': 'Actif',
       'cancel_subscription': 'Résilier l\'abonnement',
-            'help_tutorials': 'Support Technique',
+      'help_tutorials': 'Support Technique',
       'technical_support': 'Support Technique',
-      'technical_support_desc': 'Contactez un agent pour résoudre les problèmes',
+      'technical_support_desc':
+          'Contactez un agent pour résoudre les problèmes',
       'tutorial_btn': 'Voir le Tutoriel de l\'App',
       'app_tour': 'Visite de l\'application',
-      'app_tour_desc': 'Guide rapide finance & IA pour les nouveaux utilisateurs',
+      'app_tour_desc':
+          'Guide rapide finance & IA pour les nouveaux utilisateurs',
       'logout_confirm_title': 'Se déconnecter ?',
       'logout_confirm_desc': 'Vous devrez saisir à nouveau vos identifiants.',
       'notifications_subtitle': 'Configurez vos alertes et rappels',
@@ -1708,12 +1905,14 @@ class AppLocalizations {
       'savings_reminder_notif': 'Rappel d\'épargne',
       'savings_reminder_notif_desc': 'Rappel quotidien pour économiser',
       'change_password_modal_title': 'Changer le mot de passe',
-      'change_password_modal_subtitle': 'Mettez à jour votre mot de passe régulièrement',
+      'change_password_modal_subtitle':
+          'Mettez à jour votre mot de passe régulièrement',
       'current_password': 'Mot de passe actuel',
       'new_password': 'Nouveau mot de passe',
       'confirm_password': 'Confirmer le mot de passe',
       'pwd_complete_all': 'Veuillez remplir tous les champs',
-      'pwd_mismatch': 'Le nouveau mot de passe et la confirmation ne correspondent pas',
+      'pwd_mismatch':
+          'Le nouveau mot de passe et la confirmation ne correspondent pas',
       'pwd_success': 'Mot de passe mis à jour avec succès !',
       'version_text': 'Version 2.5.0',
       'not_selected': 'Non sélectionné',
@@ -1731,9 +1930,10 @@ class AppLocalizations {
       'select_currency_desc': 'Choisissez la devise de l\'application',
       'select_country': 'Choisir le Pays',
       'select_country_desc': 'Choisissez votre pays de résidence',
-      
+
       'complete_profile': 'Complétez votre profil !',
-      'complete_profile_desc': 'Nous avons besoin de quelques données pour personnaliser votre expérience et vous aider à économiser :',
+      'complete_profile_desc':
+          'Nous avons besoin de quelques données pour personnaliser votre expérience et vous aider à économiser :',
       'country': 'Pays',
       'salary': 'Salaire',
       'complete_now': 'Compléter Maintenant',
@@ -1784,10 +1984,12 @@ class AppLocalizations {
       'no_income_yet': 'Aucun revenu enregistré pour le moment',
       'expenses_by_category': 'Dépenses par Catégorie',
       'of_your_income': 'de vos revenus',
-      'voice_ask_payment_method': 'Cette dépense a-t-elle été effectuée par Carte de Crédit ou en Espèces ?',
+      'voice_ask_payment_method':
+          'Cette dépense a-t-elle été effectuée par Carte de Crédit ou en Espèces ?',
       'voice_listening': "Je vous écoute...",
       'voice_tap_to_speak': 'Appuyer pour parler',
-      'voice_help_text': 'Dites votre dépense ou revenu :\n"J\'ai dépensé 50 pour le déjeuner"\n"Ils m\'ont payé 5000 de salaire"',
+      'voice_help_text':
+          'Dites votre dépense ou revenu :\n"J\'ai dépensé 50 pour le déjeuner"\n"Ils m\'ont payé 5000 de salaire"',
       'voice_analyzing': 'Analyse de votre voix...',
       'voice_confirm_expense': 'Confirmer la Dépense',
       'voice_confirm_income': 'Confirmer le Revenu',
@@ -1803,9 +2005,11 @@ class AppLocalizations {
       'voice_success_expense': 'Dépense enregistrée avec succès !',
       'voice_success_income': 'Revenu enregistré avec succès !',
       'voice_accept': 'Accepter',
-      'voice_no_amount': 'Impossible de détecter un montant valide dans : "{text}". Veuillez réessayer en disant le nombre.',
+      'voice_no_amount':
+          'Impossible de détecter un montant valide dans : "{text}". Veuillez réessayer en disant le nombre.',
       'voice_paying_card_or_cash': 'Carte ou Espèces ?',
-      'voice_answer_mic': 'Répondez en parlant pour terminer l\'enregistrement...',
+      'voice_answer_mic':
+          'Répondez en parlant pour terminer l\'enregistrement...',
       'dashboard_income': 'Revenus',
       'dashboard_expenses': 'Dépenses',
       'dashboard_debts': 'Dettes',
@@ -1817,15 +2021,19 @@ class AppLocalizations {
       'badge_habit_master': 'Maître de l\'Habitude',
       'badge_habit_master_desc': '30 jours ininterrompus dans l\'application',
       'badge_vip_shopper': 'Acheteur VIP',
-      'badge_vip_shopper_desc': 'Échangez votre premier article dans la boutique',
+      'badge_vip_shopper_desc':
+          'Échangez votre premier article dans la boutique',
       'badge_supreme_collector': 'Collectionneur Suprême',
       'badge_supreme_collector_desc': 'Acquérez 5 articles ou thèmes exclusifs',
       'badge_financial_mind': 'Esprit Financier',
       'badge_financial_mind_desc': 'Cumulez 100 points d\'expérience',
-      'ai_assistant_subtitle': 'Découvrez comment investir votre argent en fonction de votre entreprise 💰',
-      'what_if_subtitle': 'Simulez les variations de vos revenus, dépenses ou dettes et QUIVO prédira votre santé financière.',
+      'ai_assistant_subtitle':
+          'Découvrez comment investir votre argent en fonction de votre entreprise 💰',
+      'what_if_subtitle':
+          'Simulez les variations de vos revenus, dépenses ou dettes et QUIVO prédira votre santé financière.',
       'rewards_shop_subtitle': 'Échangez vos points gagnés',
-      'rewards_shop_desc': 'Débloquez des avatars exclusifs, des thèmes personnalisés et des conseils VIP pour booster vos finances.',
+      'rewards_shop_desc':
+          'Débloquez des avatars exclusifs, des thèmes personnalisés et des conseils VIP pour booster vos finances.',
       'rewards_shop_avatars': 'Avatars',
       'rewards_shop_themes': 'Thèmes',
       'rewards_shop_tips': 'Conseils Pro',
@@ -1834,7 +2042,8 @@ class AppLocalizations {
       'total_saved': 'Total Épargné',
       'savings_month_progress': '+12% ce mois-ci',
       'savings_guide_plan': 'Plan d\'Épargne Guidé',
-      'savings_guide_desc': 'Découvrez comment épargner plus et atteindre vos objectifs plus rapidement',
+      'savings_guide_desc':
+          'Découvrez comment épargner plus et atteindre vos objectifs plus rapidement',
       'view_guide': 'Voir le Guide',
       'add_new_goal': 'Ajouter un Objectif',
       'my_saving_goals': 'Mes Objectifs d\'Épargne',
@@ -1843,7 +2052,8 @@ class AppLocalizations {
       'completed': 'terminé',
       'add_funds': 'Ajouter des fonds',
       'error_loading_savings': 'Erreur lors du chargement de l\'épargne',
-      'error_loading_goals': 'Erreur lors du chargement des objectifs d\'épargne',
+      'error_loading_goals':
+          'Erreur lors du chargement des objectifs d\'épargne',
       'quick_actions_new_goal': 'Nouvel Objectif d\'Épargne',
       'quick_actions_rewards_shop': 'Boutique de Récompenses',
       'quick_actions_footer': 'Sélectionnez une action pour continuer',
@@ -1852,7 +2062,8 @@ class AppLocalizations {
       'what_if_title': 'Simulateur IA "What If?"',
       'what_if_tab_controls': 'Contrôles',
       'what_if_tab_free': 'Scénario Libre',
-      'what_if_initial_desc': 'Ajustez les contrôles de simulation ci-dessus et appuyez sur "Demander un diagnostic à QUIVO" pour évaluer votre scénario financier hypothétique.',
+      'what_if_initial_desc':
+          'Ajustez les contrôles de simulation ci-dessus et appuyez sur "Demander un diagnostic à QUIVO" pour évaluer votre scénario financier hypothétique.',
       'what_if_chart_title': 'Projection des flux de trésorerie (6 mois)',
       'what_if_panel_title': 'Panneau de Simulation ⚙️',
       'what_if_additional_expense': 'Dépense Mensuelle Supplémentaire',
@@ -1861,35 +2072,49 @@ class AppLocalizations {
       'what_if_request_diagnosis': 'Demander un Diagnostic à QUIVO',
       'what_if_diagnosis_title': 'Plan de Diagnostic QUIVO 🧠',
       'what_if_desc_title': 'Que se passerait-il si...?',
-      'what_if_desc_subtitle': 'Décrivez n\'importe quel scénario financier et l\'IA analysera comment il affecterait vos finances actuelles.',
+      'what_if_desc_subtitle':
+          'Décrivez n\'importe quel scénario financier et l\'IA analysera comment il affecterait vos finances actuelles.',
       'what_if_describe_scenario': 'Décrivez votre scénario',
-      'what_if_placeholder': 'Ex: Que se passerait-il si j\'achetais un ordinateur portable à 10 000 en 6 mensualités ? Puis-je me le permettre ?',
-      'what_if_input_hint': 'Incluez les montants, les délais et les détails pour une meilleure analyse',
+      'what_if_placeholder':
+          'Ex: Que se passerait-il si j\'achetais un ordinateur portable à 10 000 en 6 mensualités ? Puis-je me le permettre ?',
+      'what_if_input_hint':
+          'Incluez les montants, les délais et les détails pour une meilleure analyse',
       'what_if_analyzing': 'Analyse du scénario...',
       'what_if_analyze_btn': 'Analyser le Scénario avec l\'IA',
       'what_if_analysis_result': 'Analyse du Scénario 🔮',
-      'what_if_empty_state': 'Écrivez un scénario ci-dessus ou sélectionnez l\'un des exemples pour voir l\'analyse de l\'IA',
+      'what_if_empty_state':
+          'Écrivez un scénario ci-dessus ou sélectionnez l\'un des exemples pour voir l\'analyse de l\'IA',
       'what_if_risk_low': 'Faible',
       'what_if_risk_moderate': 'Modéré ⚠️',
       'what_if_risk_critical': 'Critique 🚨',
-      'what_if_chip_laptop_title': 'Acheter un ordinateur portable à tempérament',
-      'what_if_chip_laptop_query': 'Que se passerait-il si j\'achetais un ordinateur portable de 10000 en 6 mensualités ?',
+      'what_if_chip_laptop_title':
+          'Acheter un ordinateur portable à tempérament',
+      'what_if_chip_laptop_query':
+          'Que se passerait-il si j\'achetais un ordinateur portable de 10000 en 6 mensualités ?',
       'what_if_chip_car_title': 'Acheter une voiture',
-      'what_if_chip_car_query': 'Que se passerait-il si j\'achetais une voiture de 80000 avec un acompte de 20000 et un financement sur 48 mois ?',
+      'what_if_chip_car_query':
+          'Que se passerait-il si j\'achetais une voiture de 80000 avec un acompte de 20000 et un financement sur 48 mois ?',
       'what_if_chip_salary_title': 'Augmentation de salaire',
-      'what_if_chip_salary_query': 'Que se passerait-il si mon salaire augmentait de 20% à partir du mois prochain ?',
+      'what_if_chip_salary_query':
+          'Que se passerait-il si mon salaire augmentait de 20% à partir du mois prochain ?',
       'what_if_chip_rent_title': 'Louer un appartement',
-      'what_if_chip_rent_query': 'Que se passerait-il si je déménageais dans un appartement avec un loyer mensuel de 3500 ?',
+      'what_if_chip_rent_query':
+          'Que se passerait-il si je déménageais dans un appartement avec un loyer mensuel de 3500 ?',
       'what_if_chip_save_title': 'Épargner mensuellement',
-      'what_if_chip_save_query': 'Que se passerait-il si je commençais à épargner 1500 par mois pendant 12 mois ?',
+      'what_if_chip_save_query':
+          'Que se passerait-il si je commençais à épargner 1500 par mois pendant 12 mois ?',
       'what_if_chip_phone_title': 'Acheter un téléphone',
-      'what_if_chip_phone_query': 'Que se passerait-il si j\'achetais un iPhone de 8000 en 12 mensualités ?',
+      'what_if_chip_phone_query':
+          'Que se passerait-il si j\'achetais un iPhone de 8000 en 12 mensualités ?',
       'what_if_chip_masters_title': 'Faire un master',
-      'what_if_chip_masters_query': 'Que se passerait-il si je commençais un master qui coûte 5000 par mois pendant 24 mois ?',
+      'what_if_chip_masters_query':
+          'Que se passerait-il si je commençais un master qui coûte 5000 par mois pendant 24 mois ?',
       'what_if_chip_job_title': 'Perder son emploi',
-      'what_if_chip_job_query': 'Que se passerait-il si je perdais mon emploi et me retrouvais sans revenu pendant 3 mois ?',
+      'what_if_chip_job_query':
+          'Que se passerait-il si je perdais mon emploi et me retrouvais sans revenu pendant 3 mois ?',
       'error_analyzing_scenario': 'Erreur lors de l\'analyse du scénario',
-      'error_obtaining_diagnosis': 'Erreur lors de l\'obtention du diagnostic de QUIVO',
+      'error_obtaining_diagnosis':
+          'Erreur lors de l\'obtention du diagnostic de QUIVO',
       // Notifications Modal
       'notif_title_bar': 'Notifications',
       'notif_read_all': 'Tout lire',
@@ -1909,33 +2134,46 @@ class AppLocalizations {
       'time_ago_now': 'À l\'instant',
       // Dynamic Notifications & Alerts
       'notif_auto_income_title': 'Revenu Automatique',
-      'notif_auto_income_body': '"{desc}" a été enregistré pour un montant de {amount}.',
+      'notif_auto_income_body':
+          '"{desc}" a été enregistré pour un montant de {amount}.',
       'notif_auto_charge_title': 'Prélèvement Automatique',
       'notif_auto_debt_title': 'Paiement Automatique de Dette',
-      'notif_auto_debt_body': 'La mensualité de "{desc}" a été prélevée pour un montant de {amount}.',
+      'notif_auto_debt_body':
+          'La mensualité de "{desc}" a été prélevée pour un montant de {amount}.',
       'notif_cut_2_days_title': '⚠️ Clôture dans 2 jours : {name}',
-      'notif_cut_2_days_body': 'Le relevé de votre carte se clôture le jour {day}. Préparez-vous à vérifier votre cycle.',
+      'notif_cut_2_days_body':
+          'Le relevé de votre carte se clôture le jour {day}. Préparez-vous à vérifier votre cycle.',
       'notif_cut_1_day_title': '⏳ Clôture demain : {name}',
-      'notif_cut_1_day_body': 'Demain, jour {day}, est la date de clôture de votre carte de crédit.',
+      'notif_cut_1_day_body':
+          'Demain, jour {day}, est la date de clôture de votre carte de crédit.',
       'notif_cut_today_title': '📊 Clôture du relevé aujourd\'hui : {name}',
-      'notif_cut_today_body': 'Votre cycle de facturation se clôture aujourd\'hui. Vérifiez vos mouvements pour connaître le solde.',
+      'notif_cut_today_body':
+          'Votre cycle de facturation se clôture aujourd\'hui. Vérifiez vos mouvements pour connaître le solde.',
       'notif_pay_2_days_title': '⚠️ Paiement de la carte dans 2 jours : {name}',
-      'notif_pay_2_days_body': 'Il reste 2 jours pour le paiement de votre carte (Jour {day}). Solde estimé : {bal}.',
+      'notif_pay_2_days_body':
+          'Il reste 2 jours pour le paiement de votre carte (Jour {day}). Solde estimé : {bal}.',
       'notif_pay_1_day_title': '⏰ Échéance de la carte demain : {name}',
-      'notif_pay_1_day_body': 'Demain, jour {day}, est la date limite pour payer votre carte sans intérêts.',
+      'notif_pay_1_day_body':
+          'Demain, jour {day}, est la date limite pour payer votre carte sans intérêts.',
       'notif_pay_today_title': '🚨 Échéance de la carte AUJOURD\'HUI : {name}',
-      'notif_pay_today_body': 'Aujourd\'hui est la date limite de paiement pour {name} ! Solde actuel : {bal}. Payez aujourd\'hui pour éviter les pénalités.',
+      'notif_pay_today_body':
+          'Aujourd\'hui est la date limite de paiement pour {name} ! Solde actuel : {bal}. Payez aujourd\'hui pour éviter les pénalités.',
       'notif_overdue_title': '💥 CARTE EN RETARD : {name}',
-      'notif_overdue_body': 'Votre carte est arrivée à échéance le jour {day} et présente toujours un solde de {bal}. Payez vite pour arrêter les intérêts moratoires !',
+      'notif_overdue_body':
+          'Votre carte est arrivée à échéance le jour {day} et présente toujours un solde de {bal}. Payez vite pour arrêter les intérêts moratoires !',
       'notif_budget_exceeded_title': 'Budget Épuisé 🚨',
-      'notif_budget_exceeded_body': 'Vous avez atteint 100% de votre budget pour la catégorie "{cat}" ({nums}).',
+      'notif_budget_exceeded_body':
+          'Vous avez atteint 100% de votre budget pour la catégorie "{cat}" ({nums}).',
       'notif_budget_warning_title': 'Budget à 80% ⚠️',
-      'notif_budget_warning_body': 'Vous avez utilisé plus de 80% de votre budget pour la catégorie "{cat}" ({nums}).',
+      'notif_budget_warning_body':
+          'Vous avez utilisé plus de 80% de votre budget pour la catégorie "{cat}" ({nums}).',
       // Dashboard Streak Prompt & Tx Empty/Payment States
       'streak_prompt_frozen_title': '❄️ SÉRIE GELÉE (24H SUPPLÉMENTAIRES) !',
       'streak_prompt_risk_title': '🔥 VOTRE SÉRIE EST EN DANGER !',
-      'streak_prompt_frozen_desc': 'Votre série est protégée aujourd\'hui grâce à votre Bouclier de la Boutique. Enregistrez une transaction pour la débloquer et progresser.',
-      'streak_prompt_risk_desc': 'Enregistrez au moins une dépense ou un revenu aujourd\'hui pour allumer votre flamme et gagner +50 pts.',
+      'streak_prompt_frozen_desc':
+          'Votre série est protégée aujourd\'hui grâce à votre Bouclier de la Boutique. Enregistrez une transaction pour la débloquer et progresser.',
+      'streak_prompt_risk_desc':
+          'Enregistrez au moins une dépense ou un revenu aujourd\'hui pour allumer votre flamme et gagner +50 pts.',
       'tx_empty_recent': 'Aucune transaction pour le moment',
       'tx_payment_cc': 'Carte de Crédit',
       'tx_payment_pay': 'Paiement de Carte',
@@ -1943,7 +2181,8 @@ class AppLocalizations {
       'tx_load_err': 'Erreur lors du chargement des transactions',
       // Rewards Shop Modal
       'shop_title': 'BOUTIQUE DE RÉCOMPENSES VIP',
-      'shop_subtitle_main': 'Échangez vos points contre des avantages et un style unique',
+      'shop_subtitle_main':
+          'Échangez vos points contre des avantages et un style unique',
       'shop_points_avail': 'Vos points disponibles',
       'shop_pts': 'PTS',
       'shop_tab_all': '🔥 Tout',
@@ -1953,7 +2192,8 @@ class AppLocalizations {
       'shop_cat_avatars_title': 'Avatars exclusifs 🦸‍♂️',
       'shop_cat_avatars_sub': 'Personnalisez votre identité sur la plateforme',
       'shop_cat_themes_title': '🎨 Palettes de couleurs VIP',
-      'shop_cat_themes_sub': 'Illuminez et personnalisez votre interface financière',
+      'shop_cat_themes_sub':
+          'Illuminez et personnalisez votre interface financière',
       'shop_cat_specials_title': '⚡ Avantages et spéciaux',
       'shop_cat_specials_sub': 'Pouvoirs uniques et protection de vos mesures',
       'shop_badge_equipped': 'ÉQUIPÉ 🌟',
@@ -1964,12 +2204,17 @@ class AppLocalizations {
       'shop_btn_redeem': 'ÉCHANGER LA RÉCOMPENSE POUR {cost} PTS',
       'shop_reward_active': 'RÉCOMPENSE ACTIVE!',
       'shop_got_it_btn': 'Compris • Profitez-en!',
-      'shop_snack_avatar_unlocked': '⚡ Avatar déverrouillé. Vous pouvez l\'équiper depuis Modifier le profil.',
-      'shop_snack_shield_active': '❄️ BOUCLIER ACTIF: Votre série est protégée si vous oubliez de vous connecter pendant 1 jour (48h de grâce).',
+      'shop_snack_avatar_unlocked':
+          '⚡ Avatar déverrouillé. Vous pouvez l\'équiper depuis Modifier le profil.',
+      'shop_snack_shield_active':
+          '❄️ BOUCLIER ACTIF: Votre série est protégée si vous oubliez de vous connecter pendant 1 jour (48h de grâce).',
       'shop_snack_style_active': '✨ Style activé: {name}',
-      'shop_snack_avatar_success': '🎉 Avatar déverrouillé. Vous pouvez l\'équiper depuis Modifier le profil.',
-      'shop_snack_redeem_success': '🎉 Échange réussi! Vous avez déverrouillé: {name}',
-      'shop_snack_missing_pts': '🔒 Il vous manque {missing} points pour déverrouiller cette récompense.',
+      'shop_snack_avatar_success':
+          '🎉 Avatar déverrouillé. Vous pouvez l\'équiper depuis Modifier le profil.',
+      'shop_snack_redeem_success':
+          '🎉 Échange réussi! Vous avez déverrouillé: {name}',
+      'shop_snack_missing_pts':
+          '🔒 Il vous manque {missing} points pour déverrouiller cette récompense.',
       // Store Items - Avatars
       'item_avatar1_name': 'Super-héros Financier',
       'item_avatar1_desc': 'Protecteur incontesté de votre budget quotidien',
@@ -1980,65 +2225,86 @@ class AppLocalizations {
       'item_avatar4_name': 'Ninja des Finances',
       'item_avatar4_desc': 'Supprimez les dépenses inutiles en silence absolu',
       'item_avatar5_name': 'Investisseur Spatial',
-      'item_avatar5_desc': 'Emmenez vos portefeuilles et investissements sur la Lune 🚀',
+      'item_avatar5_desc':
+          'Emmenez vos portefeuilles et investissements sur la Lune 🚀',
       'item_avatar6_name': 'Magnat de Diamant',
-      'item_avatar6_desc': 'Pour ceux qui ont des mains de diamant et une vision à long terme',
+      'item_avatar6_desc':
+          'Pour ceux qui ont des mains de diamant et une vision à long terme',
       'item_avatar7_name': 'Baleine du Marché',
       'item_avatar7_desc': 'Domination absolue du marché et liquidité massive',
       'item_avatar8_name': 'Samouraï Discipliné',
-      'item_avatar8_desc': 'Honneur et contrôle impeccable de chaque transaction',
+      'item_avatar8_desc':
+          'Honneur et contrôle impeccable de chaque transaction',
       'item_avatar9_name': 'Dragon d\'Or',
       'item_avatar9_desc': 'Gardien mythologique de votre richesse ancestrale',
       'item_avatar10_name': 'Légende Financière IA',
-      'item_avatar10_desc': 'L\'avatar ultime de la maîtrise et de l\'intelligence financière',
+      'item_avatar10_desc':
+          'L\'avatar ultime de la maîtrise et de l\'intelligence financière',
       // Store Items - Themes
       'item_theme1_name': 'Océan Profond',
-      'item_theme1_desc': 'Tons apaisants bleus et turquoise de la mer pacifique',
+      'item_theme1_desc':
+          'Tons apaisants bleus et turquoise de la mer pacifique',
       'item_theme2_name': 'Coucher de Soleil Doré',
-      'item_theme2_desc': 'Tons chauds et vibrants d\'orange, de rose et d\'ambre',
+      'item_theme2_desc':
+          'Tons chauds et vibrants d\'orange, de rose et d\'ambre',
       'item_theme3_name': 'Cyberpunk Néon',
-      'item_theme3_desc': 'Lumières futuristes de magenta, de violet et de cyan intense',
+      'item_theme3_desc':
+          'Lumières futuristes de magenta, de violet et de cyan intense',
       'item_theme4_name': 'Forêt Émeraude',
       'item_theme4_desc': 'Harmonie, sérénité et tranquillité verte naturelle',
       'item_theme5_name': 'Améthyste Royale',
       'item_theme5_desc': 'Élégance violette et éclats d\'indigo impérial',
       'item_theme6_name': 'Obsidienne Sombre',
-      'item_theme6_desc': 'Minimalisme absolu dans des tons de graphite, de plomb et d\'argent',
+      'item_theme6_desc':
+          'Minimalisme absolu dans des tons de graphite, de plomb et d\'argent',
       'item_theme7_name': 'Éruption Solaire',
       'item_theme7_desc': 'Énergie débordante en cramoisi et or ardent',
       'item_theme8_name': 'Sakura Japonais',
-      'item_theme8_desc': 'Délicatesse florale dans les tons de fleurs de cerisier printanières',
+      'item_theme8_desc':
+          'Délicatesse florale dans les tons de fleurs de cerisier printanières',
       // Store Items - Specials
       'item_spec1_name': 'Essai Premium 7 Jours',
-      'item_spec1_desc': 'Accès illimité aux outils professionnels pendant 1 semaine',
+      'item_spec1_desc':
+          'Accès illimité aux outils professionnels pendant 1 semaine',
       'item_spec2_name': 'Bouclier de Gel de Série',
-      'item_spec2_desc': 'Protégez votre série quotidienne si vous oubliez de vous connecter un jour',
+      'item_spec2_desc':
+          'Protégez votre série quotidienne si vous oubliez de vous connecter un jour',
       'item_spec3_name': 'Conseiller IA VIP x 1 Mois',
-      'item_spec3_desc': 'Requêtes avancées illimitées avec intelligence artificielle',
+      'item_spec3_desc':
+          'Requêtes avancées illimitées avec intelligence artificielle',
       'item_spec4_name': 'Insigne Doré de Mécène',
-      'item_spec4_desc': 'Mettez en valeur votre profil sur le podium avec un cadre doré',
+      'item_spec4_desc':
+          'Mettez en valeur votre profil sur le podium avec un cadre doré',
       // Streak Modal
       'streak_pending_badge': 'SÉRIE EN ATTENTE D\'ACTIVATION',
       'streak_days_frozen': 'jours de série (Protégée par Bouclier de Gel)',
       'streak_days_zero': 'jours de série (Flamme froide style Duolingo)',
-      'streak_days_one': 'jour de série (Plus qu\'1 jour pour allumer la flamme permanente!)',
+      'streak_days_one':
+          'jour de série (Plus qu\'1 jour pour allumer la flamme permanente!)',
       'streak_days_many': 'jours de série accumulés',
-      'streak_desc_frozen': 'Votre série est gelée et en sécurité aujourd\'hui grâce à votre Bouclier de Gel. Enregistrez un revenu ou une dépense pour la sauver et ajouter un jour supplémentaire.',
-      'streak_desc_active': 'Excellent! Vous avez allumé votre flamme aujourd\'hui. Revenez demain et enregistrez une transaction pour garder votre série active.',
+      'streak_desc_frozen':
+          'Votre série est gelée et en sécurité aujourd\'hui grâce à votre Bouclier de Gel. Enregistrez un revenu ou une dépense pour la sauver et ajouter un jour supplémentaire.',
+      'streak_desc_active':
+          'Excellent! Vous avez allumé votre flamme aujourd\'hui. Revenez demain et enregistrez une transaction pour garder votre série active.',
       'streak_duo_title': 'RÈGLE STYLE DUOLINGO',
       'streak_how_title': 'COMMENT ACTIVER VOTRE SÉRIE?',
-      'streak_duo_desc': 'Lorsque votre série est à 0, la flamme apparaît froide en gris. Enregistrez une transaction aujourd\'hui et demain pour allumer le feu orange de votre série. De plus, vous disposez de 48h de grâce et pouvez la protéger dans la Boutique!',
-      'streak_how_desc': 'Pour allumer le feu et ne pas perdre votre progression, enregistrez au moins une nouvelle dépense ou un revenu. Si vous oubliez un jour, votre série gèle pendant 24h supplémentaires (48h au total).',
+      'streak_duo_desc':
+          'Lorsque votre série est à 0, la flamme apparaît froide en gris. Enregistrez une transaction aujourd\'hui et demain pour allumer le feu orange de votre série. De plus, vous disposez de 48h de grâce et pouvez la protéger dans la Boutique!',
+      'streak_how_desc':
+          'Pour allumer le feu et ne pas perdre votre progression, enregistrez au moins une nouvelle dépense ou un revenu. Si vous oubliez un jour, votre série gèle pendant 24h supplémentaires (48h au total).',
       'streak_day_lbl': 'Jour {n}',
       'streak_btn_great': 'SUPER, CONTINUEZ ASSEZ!',
       'streak_btn_register': 'ENREGISTRER DÉPENSE (+50 PTS)',
       'streak_btn_close': 'Fermer pour le moment',
       // Credit Cards Modal
-      'cc_tap_hint': '👆 Appuyez sur la carte sélectionnée pour voir les détails',
+      'cc_tap_hint':
+          '👆 Appuyez sur la carte sélectionnée pour voir les détails',
       'cc_overdrawn': 'CARTE DÉPASSÉE',
       'cc_near_limit': 'PROCHE DU PLAFOND',
-      'cc_overdrawn_desc': 'Vous avez dépassé le plafond de crédit attribué à cette carte.',
-      'cc_near_limit_desc': 'Vous avez utilisé plus de 90 % de votre plafond de crédit.',
+      'cc_overdrawn_desc':
+          'Vous avez dépassé le plafond de crédit attribué à cette carte.',
+      'cc_near_limit_desc':
+          'Vous avez utilisé plus de 90 % de votre plafond de crédit.',
       'cc_edit_card': 'Modifier la Carte',
       'cc_delete_card': 'Supprimer la Carte',
       'cc_current_debt': 'DETTE ACTUELLE',
@@ -2061,17 +2327,21 @@ class AppLocalizations {
       'cc_pay_min': 'Paiement Minimum (5 %)',
       'cc_pay_half': 'Payer 50 %',
       'cc_pay_total': 'Dette Totale (100 %)',
-      'cc_err_amount_excess': 'Le montant à payer ne peut pas dépasser votre dette actuelle.',
+      'cc_err_amount_excess':
+          'Le montant à payer ne peut pas dépasser votre dette actuelle.',
       'cc_snack_paid': 'Paiement enregistré avec succès 🎉',
       'cc_confirm_pay': 'Confirmer le Paiement',
       'send_reset_link': 'Ou envoyez un lien de réinitialisation à mon e-mail',
-      'reset_link_sent': 'Lien de réinitialisation envoyé. Vérifiez votre boîte de réception.',
+      'reset_link_sent':
+          'Lien de réinitialisation envoyé. Vérifiez votre boîte de réception.',
       'two_factor_title': 'Authentification à Deux Facteurs',
-      'two_factor_modal_desc': 'Ajoutez une couche de sécurité supplémentaire. Choisissez de recevoir votre code par e-mail ou SMS.',
+      'two_factor_modal_desc':
+          'Ajoutez une couche de sécurité supplémentaire. Choisissez de recevoir votre code par e-mail ou SMS.',
       'two_factor_active_status': '2FA Actif et Protégeant Votre Compte',
       'two_factor_method_label': 'Méthode actuelle :',
       'two_factor_disable_btn': 'Désactiver 2FA',
-      'two_factor_disabled_snack': 'Authentification à deux facteurs désactivée avec succès',
+      'two_factor_disabled_snack':
+          'Authentification à deux facteurs désactivée avec succès',
       'two_factor_select_method': 'Sélectionnez la méthode de vérification :',
       'two_factor_email_title': 'Adresse E-mail',
       'two_factor_email_subtitle': 'Code envoyé à l\'e-mail enregistré',
@@ -2082,21 +2352,28 @@ class AppLocalizations {
       'two_factor_enter_code': 'Saisissez le code à 6 chiffres envoyé à ',
       'two_factor_verify_btn': 'Vérifier et Activer 2FA',
       'two_factor_enabled_snack': '2FA activé avec succès !',
-      'two_factor_wrong_code': 'Code incorrect. Veuillez vérifier et réessayer.',
+      'two_factor_wrong_code':
+          'Code incorrect. Veuillez vérifier et réessayer.',
       'biometrics_modal_title': 'Empreinte / Face ID',
-      'biometrics_modal_desc': 'Connectez-vous instantanément et en toute sécurité sans saisir votre mot de passe à chaque fois.',
+      'biometrics_modal_desc':
+          'Connectez-vous instantanément et en toute sécurité sans saisir votre mot de passe à chaque fois.',
       'biometrics_status_enabled': 'Accès Biométrique Activé',
       'biometrics_status_disabled': 'Accès Biométrique Désactivé',
       'biometrics_toggle_enable': 'Activer l\'accès Empreinte / Face ID',
       'biometrics_toggle_disable': 'Désactiver l\'accès Biométrique',
-      'biometrics_confirm_password_hint': 'Confirmez votre mot de passe actuel pour activer',
+      'biometrics_confirm_password_hint':
+          'Confirmez votre mot de passe actuel pour activer',
       'biometrics_test_btn': 'Tester le Capteur Biométrique',
-      'biometrics_test_success': 'Identification biométrique vérifiée avec succès !',
+      'biometrics_test_success':
+          'Identification biométrique vérifiée avec succès !',
       'auto_lock_modal_title': 'Délai de Verrouillage Auto',
-      'auto_lock_modal_desc': 'Sélectionnez combien de temps l\'application peut rester inactive avant de fermer automatiquement votre session pour protéger votre confidentialité.',
-      'auto_lock_1min': '1 minute (Recommandé pour une confidentialité maximale)',
+      'auto_lock_modal_desc':
+          'Sélectionnez combien de temps l\'application peut rester inactive avant de fermer automatiquement votre session pour protéger votre confidentialité.',
+      'auto_lock_1min':
+          '1 minute (Recommandé pour une confidentialité maximale)',
       'auto_lock_2min': '2 minutes (Équilibre entre sécurité et confort)',
-      'auto_lock_5min': '5 minutes (Plus grand confort lors d\'une utilisation active)',
+      'auto_lock_5min':
+          '5 minutes (Plus grand confort lors d\'une utilisation active)',
       'auto_lock_updated_snack': 'Verrouillage auto mis à jour à ',
     },
     'it': {
@@ -2109,7 +2386,8 @@ class AppLocalizations {
       'pdf_total_expenses': 'SPESE TOTALI',
       'pdf_net_balance': 'SALDO NETTO',
       'pdf_expenses_breakdown': 'RIPARTIZIONE DELLE SPESE PER CATEGORIA',
-      'pdf_no_transactions': 'Nessuna transazione registrata in questo periodo.',
+      'pdf_no_transactions':
+          'Nessuna transazione registrata in questo periodo.',
       'pdf_no_description': 'Nessuna descrizione',
       'pdf_income_type': 'Reddito',
       'pdf_expense_type': 'Spesa',
@@ -2146,7 +2424,8 @@ class AppLocalizations {
       'settings_subtitle': 'Personalizza la tua esperienza',
       'edit_profile': 'Modifica Profilo',
       'premium_upgrade': 'Passa a Premium',
-      'premium_desc': 'Sblocca tutte le funzioni: senza pubblicità, report avanzati, sincronizzazione cloud e altro.',
+      'premium_desc':
+          'Sblocca tutte le funzioni: senza pubblicità, report avanzati, sincronizzazione cloud e altro.',
       'see_plans': 'Vedi Piani',
       'general': 'Generale',
       'notifications': 'Notifiche',
@@ -2195,7 +2474,7 @@ class AppLocalizations {
       'next_renewal': 'Prossimo rinnovo: 24 Feb 2027',
       'active_badge': 'Attivo',
       'cancel_subscription': 'Annulla Abbonamento',
-            'help_tutorials': 'Supporto Tecnico',
+      'help_tutorials': 'Supporto Tecnico',
       'technical_support': 'Supporto Tecnico',
       'technical_support_desc': 'Contatta un agente per risolvere problemi',
       'tutorial_btn': 'Vedi Tutorial App',
@@ -2213,7 +2492,8 @@ class AppLocalizations {
       'savings_reminder_notif': 'Promemoria Risparmio',
       'savings_reminder_notif_desc': 'Promemoria quotidiano per risparmiare',
       'change_password_modal_title': 'Cambia Password',
-      'change_password_modal_subtitle': 'Aggiorna periodicamente la tua password',
+      'change_password_modal_subtitle':
+          'Aggiorna periodicamente la tua password',
       'current_password': 'Password Attuale',
       'new_password': 'Nuova Password',
       'confirm_password': 'Conferma Password',
@@ -2236,9 +2516,10 @@ class AppLocalizations {
       'select_currency_desc': 'Scegli la valuta dell\'applicazione',
       'select_country': 'Seleziona Paese',
       'select_country_desc': 'Scegli il tuo paese di residenza',
-      
+
       'complete_profile': 'Completa il tuo profilo!',
-      'complete_profile_desc': 'Abbiamo bisogno di alcuni dati per personalizzare la tua esperienza e aiutarti a risparmiare:',
+      'complete_profile_desc':
+          'Abbiamo bisogno di alcuni dati per personalizzare la tua esperienza e aiutarti a risparmiare:',
       'country': 'Paese',
       'salary': 'Stipendio',
       'complete_now': 'Completa Ora',
@@ -2289,10 +2570,12 @@ class AppLocalizations {
       'no_income_yet': 'Nessun reddito registrato ancora',
       'expenses_by_category': 'Spese per Categoria',
       'of_your_income': 'del tuo reddito',
-      'voice_ask_payment_method': 'Questa spesa è stata effettuata con Carta di Credito o in Contanti?',
+      'voice_ask_payment_method':
+          'Questa spesa è stata effettuata con Carta di Credito o in Contanti?',
       'voice_listening': 'Ti sto ascoltando...',
       'voice_tap_to_speak': 'Tocca per parlare',
-      'voice_help_text': 'Dimmi la tua spesa o entrate:\n"Ho speso 50 per il pranzo"\n"Mi hanno pagato 5000 di stipendio"',
+      'voice_help_text':
+          'Dimmi la tua spesa o entrate:\n"Ho speso 50 per il pranzo"\n"Mi hanno pagato 5000 di stipendio"',
       'voice_analyzing': 'Analisi della tua voce...',
       'voice_confirm_expense': 'Conferma Spesa',
       'voice_confirm_income': 'Conferma Entrata',
@@ -2308,9 +2591,11 @@ class AppLocalizations {
       'voice_success_expense': 'Spesa registrata con successo!',
       'voice_success_income': 'Entrata registrata con successo!',
       'voice_accept': 'Accetta',
-      'voice_no_amount': 'Impossibile rilevare un importo valido in: "{text}". Riprova dicendo il numero.',
+      'voice_no_amount':
+          'Impossibile rilevare un importo valido in: "{text}". Riprova dicendo il numero.',
       'voice_paying_card_or_cash': 'Carta o Contanti?',
-      'voice_answer_mic': 'Rispondi parlando per completare la registrazione...',
+      'voice_answer_mic':
+          'Rispondi parlando per completare la registrazione...',
       'dashboard_income': 'Entrate',
       'dashboard_expenses': 'Spese',
       'dashboard_debts': 'Debiti',
@@ -2327,10 +2612,13 @@ class AppLocalizations {
       'badge_supreme_collector_desc': 'Acquista 5 articoli o temi esclusivi',
       'badge_financial_mind': 'Mente Finanziaria',
       'badge_financial_mind_desc': 'Accumula 100 punti esperienza',
-      'ai_assistant_subtitle': 'Scopri come investire i tuoi soldi in base alla tua attività 💰',
-      'what_if_subtitle': 'Simula le variazioni di entrate, spese o debiti e QUIVO prevederà la tua salute finanziaria.',
+      'ai_assistant_subtitle':
+          'Scopri come investire i tuoi soldi in base alla tua attività 💰',
+      'what_if_subtitle':
+          'Simula le variazioni di entrate, spese o debiti e QUIVO prevederà la tua salute finanziaria.',
       'rewards_shop_subtitle': 'Riscatta i punti guadagnati',
-      'rewards_shop_desc': 'Sblocca avatar esclusivi, temi personalizzati e consigli VIP per potenziare le tue finanze.',
+      'rewards_shop_desc':
+          'Sblocca avatar esclusivi, temi personalizzati e consigli VIP per potenziare le tue finanze.',
       'rewards_shop_avatars': 'Avatar',
       'rewards_shop_themes': 'Temi',
       'rewards_shop_tips': 'Consigli Pro',
@@ -2339,7 +2627,8 @@ class AppLocalizations {
       'total_saved': 'Totale Risparmiato',
       'savings_month_progress': '+12% questo mese',
       'savings_guide_plan': 'Piano di Risparmio Guidato',
-      'savings_guide_desc': 'Scopri come risparmiare di più e raggiungere i tuoi obiettivi più velocemente',
+      'savings_guide_desc':
+          'Scopri come risparmiare di più e raggiungere i tuoi obiettivi più velocemente',
       'view_guide': 'Vedi Guida',
       'add_new_goal': 'Aggiungi Nuovo Obiettivo',
       'my_saving_goals': 'I Miei Obiettivi di Risparmio',
@@ -2357,7 +2646,8 @@ class AppLocalizations {
       'what_if_title': 'Simulatore AI "What If?"',
       'what_if_tab_controls': 'Controlli',
       'what_if_tab_free': 'Scenario Libero',
-      'what_if_initial_desc': 'Regola i controlli di simulazione sopra e premi "Richiedi Diagnosi a QUIVO" per valutare il tuo scenario finanziario ipotetico.',
+      'what_if_initial_desc':
+          'Regola i controlli di simulazione sopra e premi "Richiedi Diagnosi a QUIVO" per valutare il tuo scenario finanziario ipotetico.',
       'what_if_chart_title': 'Proiezione del Flusso di Cassa (6 Mesi)',
       'what_if_panel_title': 'Pannello di Simulazione ⚙️',
       'what_if_additional_expense': 'Spesa Mensile Aggiuntiva',
@@ -2366,33 +2656,45 @@ class AppLocalizations {
       'what_if_request_diagnosis': 'Richiedi Diagnosi a QUIVO',
       'what_if_diagnosis_title': 'Piano Diagnostico QUIVO 🧠',
       'what_if_desc_title': 'Cosa succederebbe se...?',
-      'what_if_desc_subtitle': 'Descrivi qualsiasi scenario finanziario e l\'IA analizzerà come influenzerebbe le tue finanze attuali.',
+      'what_if_desc_subtitle':
+          'Descrivi qualsiasi scenario finanziario e l\'IA analizzerà come influenzerebbe le tue finanze attuali.',
       'what_if_describe_scenario': 'Descrivi il tuo scenario',
-      'what_if_placeholder': 'Es: Cosa succederebbe se acquistassi un laptop da 10.000 in 6 rate? Posso permettermelo?',
-      'what_if_input_hint': 'Includi importi, scadenze e dettagli per una migliore analisi',
+      'what_if_placeholder':
+          'Es: Cosa succederebbe se acquistassi un laptop da 10.000 in 6 rate? Posso permettermelo?',
+      'what_if_input_hint':
+          'Includi importi, scadenze e dettagli per una migliore analisi',
       'what_if_analyzing': 'Analisi dello scenario...',
       'what_if_analyze_btn': 'Analizza Scenario con IA',
       'what_if_analysis_result': 'Analisi dello Scenario 🔮',
-      'what_if_empty_state': 'Scrivi uno scenario sopra o seleziona uno degli esempi per vedere l\'analisi dell\'IA',
+      'what_if_empty_state':
+          'Scrivi uno scenario sopra o seleziona uno degli esempi per vedere l\'analisi dell\'IA',
       'what_if_risk_low': 'Basso',
       'what_if_risk_moderate': 'Moderato ⚠️',
       'what_if_risk_critical': 'Critico 🚨',
       'what_if_chip_laptop_title': 'Acquista laptop a rate',
-      'what_if_chip_laptop_query': 'Cosa succederebbe se acquistassi un laptop da 10000 in 6 rate mensili?',
+      'what_if_chip_laptop_query':
+          'Cosa succederebbe se acquistassi un laptop da 10000 in 6 rate mensili?',
       'what_if_chip_car_title': 'Acquista auto',
-      'what_if_chip_car_query': 'Cosa succederebbe se acquistassi un\'auto da 80000 con un acconto di 20000 e un finanziamento a 48 mesi?',
+      'what_if_chip_car_query':
+          'Cosa succederebbe se acquistassi un\'auto da 80000 con un acconto di 20000 e un finanziamento a 48 mesi?',
       'what_if_chip_salary_title': 'Aumento di stipendio',
-      'what_if_chip_salary_query': 'Cosa succederebbe se il mio stipendio aumentasse del 20% a partire dal mese prossimo?',
+      'what_if_chip_salary_query':
+          'Cosa succederebbe se il mio stipendio aumentasse del 20% a partire dal mese prossimo?',
       'what_if_chip_rent_title': 'Affitta appartamento',
-      'what_if_chip_rent_query': 'Cosa succederebbe se mi trasferissi in un appartamento con un affitto mensile di 3500?',
+      'what_if_chip_rent_query':
+          'Cosa succederebbe se mi trasferissi in un appartamento con un affitto mensile di 3500?',
       'what_if_chip_save_title': 'Risparmia mensilmente',
-      'what_if_chip_save_query': 'Cosa succederebbe se iniziassi a risparmiare 1500 al mese per 12 mesi?',
+      'what_if_chip_save_query':
+          'Cosa succederebbe se iniziassi a risparmiare 1500 al mese per 12 mesi?',
       'what_if_chip_phone_title': 'Acquista telefono',
-      'what_if_chip_phone_query': 'Cosa succederebbe se acquistassi un iPhone da 8000 in 12 rate?',
+      'what_if_chip_phone_query':
+          'Cosa succederebbe se acquistassi un iPhone da 8000 in 12 rate?',
       'what_if_chip_masters_title': 'Studia per un master',
-      'what_if_chip_masters_query': 'Cosa succederebbe se iniziassi un master che costa 5000 al mese per 24 mesi?',
+      'what_if_chip_masters_query':
+          'Cosa succederebbe se iniziassi un master che costa 5000 al mese per 24 mesi?',
       'what_if_chip_job_title': 'Perdi il lavoro',
-      'what_if_chip_job_query': 'Cosa succerebbe se perdessi il lavoro e rimanessi senza entrate per 3 mesi?',
+      'what_if_chip_job_query':
+          'Cosa succerebbe se perdessi il lavoro e rimanessi senza entrate per 3 mesi?',
       'error_analyzing_scenario': 'Errore durante l\'analisi dello scenario',
       'error_obtaining_diagnosis': 'Errore nell\'ottenere la diagnosi da QUIVO',
       // Notifications Modal
@@ -2414,33 +2716,46 @@ class AppLocalizations {
       'time_ago_now': 'Proprio ora',
       // Dynamic Notifications & Alerts
       'notif_auto_income_title': 'Entrata Automatica',
-      'notif_auto_income_body': '"{desc}" è stato registrato per l\'importo di {amount}.',
+      'notif_auto_income_body':
+          '"{desc}" è stato registrato per l\'importo di {amount}.',
       'notif_auto_charge_title': 'Addebito Automatico',
       'notif_auto_debt_title': 'Pagamento Automatico Debito',
-      'notif_auto_debt_body': 'La rata di "{desc}" è stata addebitata per l\'importo di {amount}.',
+      'notif_auto_debt_body':
+          'La rata di "{desc}" è stata addebitata per l\'importo di {amount}.',
       'notif_cut_2_days_title': '⚠️ Chiusura in 2 giorni: {name}',
-      'notif_cut_2_days_body': 'L\'estratto conto chiude il giorno {day}. Preparati a controllare il ciclo di fatturazione.',
+      'notif_cut_2_days_body':
+          'L\'estratto conto chiude il giorno {day}. Preparati a controllare il ciclo di fatturazione.',
       'notif_cut_1_day_title': '⏳ Chiusura domani: {name}',
-      'notif_cut_1_day_body': 'Domani, giorno {day}, è la data di chiusura dell\'estratto conto della tua carta.',
+      'notif_cut_1_day_body':
+          'Domani, giorno {day}, è la data di chiusura dell\'estratto conto della tua carta.',
       'notif_cut_today_title': '📊 Chiusura estratto conto oggi: {name}',
-      'notif_cut_today_body': 'Il tuo ciclo di fatturazione chiude oggi. Controlla i tuoi movimenti per conoscere il saldo.',
+      'notif_cut_today_body':
+          'Il tuo ciclo di fatturazione chiude oggi. Controlla i tuoi movimenti per conoscere il saldo.',
       'notif_pay_2_days_title': '⚠️ Pagamento carta in 2 giorni: {name}',
-      'notif_pay_2_days_body': 'Mancano 2 giorni al pagamento della tua carta (Giorno {day}). Saldo stimato: {bal}.',
+      'notif_pay_2_days_body':
+          'Mancano 2 giorni al pagamento della tua carta (Giorno {day}). Saldo stimato: {bal}.',
       'notif_pay_1_day_title': '⏰ Scadenza carta domani: {name}',
-      'notif_pay_1_day_body': 'Domani, giorno {day}, è la data limite per pagare la tua carta senza interessi.',
+      'notif_pay_1_day_body':
+          'Domani, giorno {day}, è la data limite per pagare la tua carta senza interessi.',
       'notif_pay_today_title': '🚨 Scadenza carta OGGI: {name}',
-      'notif_pay_today_body': 'Oggi è l\'ultimo giorno di pagamento per {name}! Saldo attuale: {bal}. Paga oggi per evitare sovrattasse.',
+      'notif_pay_today_body':
+          'Oggi è l\'ultimo giorno di pagamento per {name}! Saldo attuale: {bal}. Paga oggi per evitare sovrattasse.',
       'notif_overdue_title': '💥 CARTA IN RITARDO: {name}',
-      'notif_overdue_body': 'La tua carta è scaduta il giorno {day} e presenta un saldo in sospeso di {bal}. Paga subito per bloccare gli interessi di mora!',
+      'notif_overdue_body':
+          'La tua carta è scaduta il giorno {day} e presenta un saldo in sospeso di {bal}. Paga subito per bloccare gli interessi di mora!',
       'notif_budget_exceeded_title': 'Budget Esaurito 🚨',
-      'notif_budget_exceeded_body': 'Hai raggiunto il 100% del tuo budget per la categoria "{cat}" ({nums}).',
+      'notif_budget_exceeded_body':
+          'Hai raggiunto il 100% del tuo budget per la categoria "{cat}" ({nums}).',
       'notif_budget_warning_title': 'Budget all\'80% ⚠️',
-      'notif_budget_warning_body': 'Hai superato l\'80% del tuo budget per la categoria "{cat}" ({nums}).',
+      'notif_budget_warning_body':
+          'Hai superato l\'80% del tuo budget per la categoria "{cat}" ({nums}).',
       // Dashboard Streak Prompt & Tx Empty/Payment States
       'streak_prompt_frozen_title': '❄️ SERIE CONGELATA (24 ORE EXTRA)!',
       'streak_prompt_risk_title': '🔥 LA TUA SERIE È A RISCHIO!',
-      'streak_prompt_frozen_desc': 'La tua serie è protetta oggi grazie allo Scudo del Negozio. Registra un movimento per sbloccarla e continuare a progredire.',
-      'streak_prompt_risk_desc': 'Registra almeno una spesa o entrata oggi per accendere la tua fiamma e guadagnare +50 pt.',
+      'streak_prompt_frozen_desc':
+          'La tua serie è protetta oggi grazie allo Scudo del Negozio. Registra un movimento per sbloccarla e continuare a progredire.',
+      'streak_prompt_risk_desc':
+          'Registra almeno una spesa o entrata oggi per accendere la tua fiamma e guadagnare +50 pt.',
       'tx_empty_recent': 'Nessun movimento ancora',
       'tx_payment_cc': 'Carta di Credito',
       'tx_payment_pay': 'Pagamento Carta',
@@ -2448,7 +2763,8 @@ class AppLocalizations {
       'tx_load_err': 'Errore nel caricamento dei movimenti',
       // Rewards Shop Modal
       'shop_title': 'NEGOZIO PREMI VIP',
-      'shop_subtitle_main': 'Riscatta i tuoi punti per vantaggi e uno stile unico',
+      'shop_subtitle_main':
+          'Riscatta i tuoi punti per vantaggi e uno stile unico',
       'shop_points_avail': 'I tuoi punti disponibili',
       'shop_pts': 'PT',
       'shop_tab_all': '🔥 Tutto',
@@ -2458,7 +2774,8 @@ class AppLocalizations {
       'shop_cat_avatars_title': 'Avatar Esclusivi 🦸‍♂️',
       'shop_cat_avatars_sub': 'Personalizza la tua identità sulla piattaforma',
       'shop_cat_themes_title': '🎨 Tavolozze Colori VIP',
-      'shop_cat_themes_sub': 'Illumina e personalizza la tua interfaccia finanziaria',
+      'shop_cat_themes_sub':
+          'Illumina e personalizza la tua interfaccia finanziaria',
       'shop_cat_specials_title': '⚡ Vantaggi e Speciali',
       'shop_cat_specials_sub': 'Poteri unici e protezione per le tue metriche',
       'shop_badge_equipped': 'EQUIPAGGIATO 🌟',
@@ -2469,12 +2786,17 @@ class AppLocalizations {
       'shop_btn_redeem': 'RISCATTA PREMIO PER {cost} PT',
       'shop_reward_active': 'PREMIO ATTIVO!',
       'shop_got_it_btn': 'Capito • Goditi il premio!',
-      'shop_snack_avatar_unlocked': '⚡ Avatar sbloccato. Puoi equipaggiarlo da Modifica Profilo.',
-      'shop_snack_shield_active': '❄️ SCUDO ATTIVO: La tua serie è protetta se dimentichi di accedere per 1 giorno (48h totali di grazia).',
+      'shop_snack_avatar_unlocked':
+          '⚡ Avatar sbloccato. Puoi equipaggiarlo da Modifica Profilo.',
+      'shop_snack_shield_active':
+          '❄️ SCUDO ATTIVO: La tua serie è protetta se dimentichi di accedere per 1 giorno (48h totali di grazia).',
       'shop_snack_style_active': '✨ Stile attivato: {name}',
-      'shop_snack_avatar_success': '🎉 Avatar sbloccato. Puoi equipaggiarlo da Modifica Profilo.',
-      'shop_snack_redeem_success': '🎉 Riscatto riuscito! Hai sbloccato: {name}',
-      'shop_snack_missing_pts': '🔒 Ti mancano {missing} punti per sbloccare questo premio.',
+      'shop_snack_avatar_success':
+          '🎉 Avatar sbloccato. Puoi equipaggiarlo da Modifica Profilo.',
+      'shop_snack_redeem_success':
+          '🎉 Riscatto riuscito! Hai sbloccato: {name}',
+      'shop_snack_missing_pts':
+          '🔒 Ti mancano {missing} punti per sbloccare questo premio.',
       // Store Items - Avatars
       'item_avatar1_name': 'Supereroe Finanziario',
       'item_avatar1_desc': 'Protettore indiscusso del tuo budget quotidiano',
@@ -2485,17 +2807,21 @@ class AppLocalizations {
       'item_avatar4_name': 'Ninja delle Finanze',
       'item_avatar4_desc': 'Taglia le spese inutili in assoluto silenzio',
       'item_avatar5_name': 'Investitore Spaziale',
-      'item_avatar5_desc': 'Porta i tuoi portafogli e investimenti sulla Luna 🚀',
+      'item_avatar5_desc':
+          'Porta i tuoi portafogli e investimenti sulla Luna 🚀',
       'item_avatar6_name': 'Magnate dei Diamanti',
-      'item_avatar6_desc': 'Per chi ha mani di diamante e visione a lungo termine',
+      'item_avatar6_desc':
+          'Per chi ha mani di diamante e visione a lungo termine',
       'item_avatar7_name': 'Balena del Mercato',
       'item_avatar7_desc': 'Dominio assoluto del mercato e liquidità massiccia',
       'item_avatar8_name': 'Samurai Disciplinato',
       'item_avatar8_desc': 'Onore e controllo impeccabile di ogni transazione',
       'item_avatar9_name': 'Drago d\'Oro',
-      'item_avatar9_desc': 'Guardiano mitologico della tua ricchezza ancestrale',
+      'item_avatar9_desc':
+          'Guardiano mitologico della tua ricchezza ancestrale',
       'item_avatar10_name': 'Leggenda Finanziaria IA',
-      'item_avatar10_desc': 'L\'avatar definitivo di maestria e intelligenza finanziaria',
+      'item_avatar10_desc':
+          'L\'avatar definitivo di maestria e intelligenza finanziaria',
       // Store Items - Themes
       'item_theme1_name': 'Oceano Profondo',
       'item_theme1_desc': 'Toni rilassanti blu e turchese del mare pacifico',
@@ -2508,42 +2834,56 @@ class AppLocalizations {
       'item_theme5_name': 'Ametista Reale',
       'item_theme5_desc': 'Eleganza viola e scintille di indaco imperiale',
       'item_theme6_name': 'Ossidiana Scura',
-      'item_theme6_desc': 'Minimalismo assoluto nei toni di grafite, piombo e argento',
+      'item_theme6_desc':
+          'Minimalismo assoluto nei toni di grafite, piombo e argento',
       'item_theme7_name': 'Brillamento Solare',
       'item_theme7_desc': 'Energia traboccante in cremisi e oro ardente',
       'item_theme8_name': 'Sakura Giapponese',
-      'item_theme8_desc': 'Delicatezza floreale nei toni dei fiori di ciliegio primaverili',
+      'item_theme8_desc':
+          'Delicatezza floreale nei toni dei fiori di ciliegio primaverili',
       // Store Items - Specials
       'item_spec1_name': 'Prova Premium 7 Giorni',
-      'item_spec1_desc': 'Accesso illimitato agli strumenti pro per 1 settimana',
+      'item_spec1_desc':
+          'Accesso illimitato agli strumenti pro per 1 settimana',
       'item_spec2_name': 'Scudo Congelamento Serie',
-      'item_spec2_desc': 'Proteggi la tua serie quotidiana se dimentichi di accedere un giorno',
+      'item_spec2_desc':
+          'Proteggi la tua serie quotidiana se dimentichi di accedere un giorno',
       'item_spec3_name': 'Consulente IA VIP x 1 Mese',
-      'item_spec3_desc': 'Richieste avanzate illimitate con intelligenza artificiale',
+      'item_spec3_desc':
+          'Richieste avanzate illimitate con intelligenza artificiale',
       'item_spec4_name': 'Distintivo Dorato di Mecenate',
-      'item_spec4_desc': 'Metti in risalto il tuo profilo sul podio con una cornice dorata',
+      'item_spec4_desc':
+          'Metti in risalto il tuo profilo sul podio con una cornice dorata',
       // Streak Modal
       'streak_pending_badge': 'SERIE IN ATTESA DI ATTIVAZIONE',
       'streak_days_frozen': 'giorni di serie (Protetta da Scudo Congelamento)',
       'streak_days_zero': 'giorni di serie (Fiamma fredda stile Duolingo)',
-      'streak_days_one': 'giorno di serie (Ancora 1 giorno per accendere la fiamma permanente!)',
+      'streak_days_one':
+          'giorno di serie (Ancora 1 giorno per accendere la fiamma permanente!)',
       'streak_days_many': 'giorni di serie accumulata',
-      'streak_desc_frozen': 'La tua serie è congelata e al sicuro oggi grazie al tuo Scudo Congelamento. Registra un\'entrata o un\'uscita per salvarla e aggiungere un altro giorno.',
-      'streak_desc_active': 'Eccellente! Hai acceso la tua fiamma oggi. Torna domani e registra una transazione per mantenere viva la tua serie.',
+      'streak_desc_frozen':
+          'La tua serie è congelata e al sicuro oggi grazie al tuo Scudo Congelamento. Registra un\'entrata o un\'uscita per salvarla e aggiungere un altro giorno.',
+      'streak_desc_active':
+          'Eccellente! Hai acceso la tua fiamma oggi. Torna domani e registra una transazione per mantenere viva la tua serie.',
       'streak_duo_title': 'REGOLA STILE DUOLINGO',
       'streak_how_title': 'COME ATTIVARE LA TUA SERIE?',
-      'streak_duo_desc': 'Quando la tua serie è a 0, la fiamma appare fredda in grigio. Registra una transazione oggi e domani per accendere il fuoco arancione della tua serie. Inoltre, hai 48h di grazia e puoi proteggerla nel Negozio!',
-      'streak_how_desc': 'Per accendere il fuoco e non perdere i tuoi progressi, registra almeno una nuova spesa o entrata. Se dimentichi un giorno, la tua serie si congela per 24h extra (48h totali).',
+      'streak_duo_desc':
+          'Quando la tua serie è a 0, la fiamma appare fredda in grigio. Registra una transazione oggi e domani per accendere il fuoco arancione della tua serie. Inoltre, hai 48h di grazia e puoi proteggerla nel Negozio!',
+      'streak_how_desc':
+          'Per accendere il fuoco e non perdere i tuoi progressi, registra almeno una nuova spesa o entrata. Se dimentichi un giorno, la tua serie si congela per 24h extra (48h totali).',
       'streak_day_lbl': 'Giorno {n}',
       'streak_btn_great': 'FANTASTICO, CONTINUA COSÌ!',
       'streak_btn_register': 'REGISTRA SPESA ORA (+50 PT)',
       'streak_btn_close': 'Chiudi per ora',
       // Credit Cards Modal
-      'cc_tap_hint': '👆 Tocca la carta selezionata per visualizzare i dettagli',
+      'cc_tap_hint':
+          '👆 Tocca la carta selezionata per visualizzare i dettagli',
       'cc_overdrawn': 'CARTA SCOPERTA',
       'cc_near_limit': 'VICINO AL LIMITE',
-      'cc_overdrawn_desc': 'Hai superato il limite di credito assegnato per questa carta.',
-      'cc_near_limit_desc': 'Hai utilizzato oltre il 90% del tuo limite di credito.',
+      'cc_overdrawn_desc':
+          'Hai superato il limite di credito assegnato per questa carta.',
+      'cc_near_limit_desc':
+          'Hai utilizzato oltre il 90% del tuo limite di credito.',
       'cc_edit_card': 'Modifica Carta',
       'cc_delete_card': 'Elimina Carta',
       'cc_current_debt': 'DEBITO ATTUALE',
@@ -2566,17 +2906,21 @@ class AppLocalizations {
       'cc_pay_min': 'Pagamento Minimo (5%)',
       'cc_pay_half': 'Paga 50%',
       'cc_pay_total': 'Debito Totale (100%)',
-      'cc_err_amount_excess': 'L\'importo da pagare non può superare il debito attuale.',
+      'cc_err_amount_excess':
+          'L\'importo da pagare non può superare il debito attuale.',
       'cc_snack_paid': 'Pagamento registrato con successo 🎉',
       'cc_confirm_pay': 'Conferma Pagamento',
       'send_reset_link': 'Oppure invia un link di ripristino alla mia email',
-      'reset_link_sent': 'Link di ripristino inviato. Controlla la tua casella di posta.',
+      'reset_link_sent':
+          'Link di ripristino inviato. Controlla la tua casella di posta.',
       'two_factor_title': 'Autenticazione a Due Fattori',
-      'two_factor_modal_desc': 'Aggiungi un livello di sicurezza extra. Scegli di ricevere il codice via email o SMS.',
+      'two_factor_modal_desc':
+          'Aggiungi un livello di sicurezza extra. Scegli di ricevere il codice via email o SMS.',
       'two_factor_active_status': '2FA Attivo e Protegge il Tuo Account',
       'two_factor_method_label': 'Metodo attuale:',
       'two_factor_disable_btn': 'Disattiva 2FA',
-      'two_factor_disabled_snack': 'Autenticazione a due fattori disattivata con successo',
+      'two_factor_disabled_snack':
+          'Autenticazione a due fattori disattivata con successo',
       'two_factor_select_method': 'Seleziona il metodo di verifica:',
       'two_factor_email_title': 'Indirizzo Email',
       'two_factor_email_subtitle': 'Codice inviato all\'email registrata',
@@ -2589,41 +2933,99 @@ class AppLocalizations {
       'two_factor_enabled_snack': '2FA attivato con successo!',
       'two_factor_wrong_code': 'Codice errato. Verifica e riprova.',
       'biometrics_modal_title': 'Impronta Digitale / Face ID',
-      'biometrics_modal_desc': 'Accedi istantaneamente e in modo sicuro senza digitare ogni volta la password.',
+      'biometrics_modal_desc':
+          'Accedi istantaneamente e in modo sicuro senza digitare ogni volta la password.',
       'biometrics_status_enabled': 'Accesso Biometrico Attivato',
       'biometrics_status_disabled': 'Accesso Biometrico Disattivato',
       'biometrics_toggle_enable': 'Attiva Accesso con Impronta / Face ID',
       'biometrics_toggle_disable': 'Disattiva Accesso Biometrico',
-      'biometrics_confirm_password_hint': 'Conferma la tua password attuale per attivare',
+      'biometrics_confirm_password_hint':
+          'Conferma la tua password attuale per attivare',
       'biometrics_test_btn': 'Testa Sensore Biometrico',
-      'biometrics_test_success': 'Identificazione biometrica verificata con successo!',
+      'biometrics_test_success':
+          'Identificazione biometrica verificata con successo!',
       'auto_lock_modal_title': 'Tempo di Blocco Automatico',
-      'auto_lock_modal_desc': 'Seleziona per quanto tempo l\'app può rimanere inattiva prima di chiudere automaticamente la sessione per proteggere la tua privacy.',
+      'auto_lock_modal_desc':
+          'Seleziona per quanto tempo l\'app può rimanere inattiva prima di chiudere automaticamente la sessione per proteggere la tua privacy.',
       'auto_lock_1min': '1 minuto (Consigliato per la massima privacy)',
       'auto_lock_2min': '2 minuti (Equilibrio tra sicurezza e comodità)',
       'auto_lock_5min': '5 minuti (Maggiore comodità durante l\'uso attivo)',
       'auto_lock_updated_snack': 'Blocco automatico aggiornato a ',
-    }
+    },
   };
 
   String get(String key) {
     String mappedCode = intlLocale;
-    final val = _localizedValues[mappedCode]?[key] ?? _localizedValues['es']?[key];
+    final val =
+        _localizedValues[mappedCode]?[key] ?? _localizedValues['es']?[key];
     if (val != null) return val;
     return _fallbackTranslate(key, mappedCode);
   }
 
-  String formatRecurrenceDay(String? recurrenceType, int? recurrenceDay, [int? recurrenceDay2]) {
+  String formatRecurrenceDay(
+    String? recurrenceType,
+    int? recurrenceDay, [
+    int? recurrenceDay2,
+  ]) {
     final lang = intlLocale;
     final day1 = recurrenceDay ?? 1;
     final day2 = recurrenceDay2 ?? 30;
     if (recurrenceType == 'weekly') {
       final idx = day1.clamp(1, 7);
-      if (lang == 'en') return ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][idx];
-      if (lang == 'pt') return ['', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'][idx];
-      if (lang == 'fr') return ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'][idx];
-      if (lang == 'it') return ['', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'][idx];
-      return ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'][idx];
+      if (lang == 'en')
+        return [
+          '',
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
+        ][idx];
+      if (lang == 'pt')
+        return [
+          '',
+          'Segunda-feira',
+          'Terça-feira',
+          'Quarta-feira',
+          'Quinta-feira',
+          'Sexta-feira',
+          'Sábado',
+          'Domingo',
+        ][idx];
+      if (lang == 'fr')
+        return [
+          '',
+          'Lundi',
+          'Mardi',
+          'Mercredi',
+          'Jeudi',
+          'Vendredi',
+          'Samedi',
+          'Dimanche',
+        ][idx];
+      if (lang == 'it')
+        return [
+          '',
+          'Lunedì',
+          'Martedì',
+          'Mercoledì',
+          'Giovedì',
+          'Venerdì',
+          'Sabato',
+          'Domenica',
+        ][idx];
+      return [
+        '',
+        'Lunes',
+        'Martes',
+        'Miércoles',
+        'Jueves',
+        'Viernes',
+        'Sábado',
+        'Domingo',
+      ][idx];
     }
     if (recurrenceType == 'bimonthly') {
       if (lang == 'en') return 'Days $day1 & $day2';
@@ -2639,19 +3041,32 @@ class AppLocalizations {
     return 'Día $day1 de cada mes';
   }
 
-  String formatRecurrenceSubtitle(String? recurrenceType, int? recurrenceDay, [int? recurrenceDay2]) {
+  String formatRecurrenceSubtitle(
+    String? recurrenceType,
+    int? recurrenceDay, [
+    int? recurrenceDay2,
+  ]) {
     final lang = intlLocale;
     final day1 = recurrenceDay ?? 1;
     final day2 = recurrenceDay2 ?? 30;
-    final freq = get(recurrenceType == 'weekly' ? 'weekly' : (recurrenceType == 'bimonthly' ? 'bimonthly' : 'monthly'));
+    final freq = get(
+      recurrenceType == 'weekly'
+          ? 'weekly'
+          : (recurrenceType == 'bimonthly' ? 'bimonthly' : 'monthly'),
+    );
     if (recurrenceType == 'weekly') {
       final idx = day1.clamp(1, 7);
       String shortDay;
-      if (lang == 'en') shortDay = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx];
-      else if (lang == 'pt') shortDay = ['', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][idx];
-      else if (lang == 'fr') shortDay = ['', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'][idx];
-      else if (lang == 'it') shortDay = ['', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'][idx];
-      else shortDay = ['', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'][idx];
+      if (lang == 'en')
+        shortDay = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx];
+      else if (lang == 'pt')
+        shortDay = ['', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][idx];
+      else if (lang == 'fr')
+        shortDay = ['', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'][idx];
+      else if (lang == 'it')
+        shortDay = ['', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'][idx];
+      else
+        shortDay = ['', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'][idx];
       return '$shortDay • $freq';
     }
     if (recurrenceType == 'bimonthly') {
@@ -2669,20 +3084,69 @@ class AppLocalizations {
   }
 
   String getCategoryEmoji(String category) {
-    if (category.runes.isNotEmpty && category.runes.first > 127 && category.length <= 4) return category;
+    if (category.runes.isNotEmpty &&
+        category.runes.first > 127 &&
+        category.length <= 4)
+      return category;
     final clean = category.toLowerCase().trim();
     const map = {
-      'food': '🍔', 'food_grocery': '🛒', 'food_restaurant': '🍽️', 'food_coffee': '☕', 'food_delivery': '🛵',
-      'transport': '🚗', 'transport_gas': '⛽', 'transport_public': '🚌', 'transport_taxi': '🚕', 'transport_flight': '✈️',
-      'bills': '📱', 'bills_water': '💧', 'bills_electricity': '⚡', 'bills_internet': '🌐', 'bills_gas': '🔥',
-      'shopping': '🛍️', 'shopping_clothes': '👕', 'shopping_electronics': '💻', 'shopping_gifts': '🎁',
-      'entertainment': '🎮', 'entertainment_movies': '🍿', 'entertainment_music': '🎵', 'entertainment_sports': '⚽', 'entertainment_subscriptions': '📺',
-      'health': '💊', 'health_doctor': '👨‍⚕️', 'health_pharmacy': '🏥', 'health_gym': '🏋️',
-      'home': '🏠', 'home_rent': '🏢', 'home_maintenance': '🔧', 'home_furniture': '🛋️',
-      'education': '📚', 'education_tuition': '🎓', 'education_books': '📖', 'education_courses': '🖥️',
-      'other': '💸', 'salary': '💼', 'freelance': '💻', 'investments': '📈', 'investment': '📈', 'dividends': '💸', 'bonus': '🎁', 'sale': '🏷️', 'business': '🏢',
-      'gifts': '🎁', 'gift': '🎉', 'car': '🚗', 'rent': '🏠', 'alquiler de casa': '🏠', 'credit_card': '💳',
-      'subscription': '📺', 'loan': '🏦', 'streak': '🔥', 'alert': '⚠️', 'ai': '🤖', 'debt': '💳',
+      'food': '🍔',
+      'food_grocery': '🛒',
+      'food_restaurant': '🍽️',
+      'food_coffee': '☕',
+      'food_delivery': '🛵',
+      'transport': '🚗',
+      'transport_gas': '⛽',
+      'transport_public': '🚌',
+      'transport_taxi': '🚕',
+      'transport_flight': '✈️',
+      'bills': '📱',
+      'bills_water': '💧',
+      'bills_electricity': '⚡',
+      'bills_internet': '🌐',
+      'bills_gas': '🔥',
+      'shopping': '🛍️',
+      'shopping_clothes': '👕',
+      'shopping_electronics': '💻',
+      'shopping_gifts': '🎁',
+      'entertainment': '🎮',
+      'entertainment_movies': '🍿',
+      'entertainment_music': '🎵',
+      'entertainment_sports': '⚽',
+      'entertainment_subscriptions': '📺',
+      'health': '💊',
+      'health_doctor': '👨‍⚕️',
+      'health_pharmacy': '🏥',
+      'health_gym': '🏋️',
+      'home': '🏠',
+      'home_rent': '🏢',
+      'home_maintenance': '🔧',
+      'home_furniture': '🛋️',
+      'education': '📚',
+      'education_tuition': '🎓',
+      'education_books': '📖',
+      'education_courses': '🖥️',
+      'other': '💸',
+      'salary': '💼',
+      'freelance': '💻',
+      'investments': '📈',
+      'investment': '📈',
+      'dividends': '💸',
+      'bonus': '🎁',
+      'sale': '🏷️',
+      'business': '🏢',
+      'gifts': '🎁',
+      'gift': '🎉',
+      'car': '🚗',
+      'rent': '🏠',
+      'alquiler de casa': '🏠',
+      'credit_card': '💳',
+      'subscription': '📺',
+      'loan': '🏦',
+      'streak': '🔥',
+      'alert': '⚠️',
+      'ai': '🤖',
+      'debt': '💳',
     };
     if (map.containsKey(clean)) return map[clean]!;
     final mainCat = clean.split('_')[0];
@@ -2690,7 +3154,8 @@ class AppLocalizations {
   }
 
   String translateCategory(String code) {
-    if (code.runes.isNotEmpty && code.runes.first > 127 && code.length <= 4) return code;
+    if (code.runes.isNotEmpty && code.runes.first > 127 && code.length <= 4)
+      return code;
     final clean = code.toLowerCase().trim();
     String mappedCode = intlLocale;
 

@@ -1463,27 +1463,11 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                             onAdClosed: () {
                               if (mounted) {
                                 Navigator.of(context).pop();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    dismissDirection:
-                                        DismissDirection.horizontal,
-                                    content: Text(
-                                      widget.existingTransaction != null
-                                          ? 'Gasto actualizado'
-                                          : loc.get('expense_added'),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    backgroundColor: isDark
-                                        ? const Color(0xFF991B1B)
-                                        : const Color(0xFFDC2626),
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                  ),
+                                CustomSnackBar.showSuccess(
+                                  context,
+                                  widget.existingTransaction != null
+                                      ? 'Gasto actualizado'
+                                      : loc.get('expense_added'),
                                 );
                               }
                             },
@@ -1547,23 +1531,10 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                               );
                             } else if (alert.status ==
                                 BudgetAlertStatus.nearLimit) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  dismissDirection: DismissDirection.horizontal,
-                                  content: Text(
-                                    '⚠️ ¡Cuidado! Has consumido el ${alert.percentage.toStringAsFixed(0)}% del presupuesto mensual para "${alert.categoryName}" '
-                                    '($sym${alert.totalSpent.toStringAsFixed(0)} / $sym${alert.budgetLimit.toStringAsFixed(0)})',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  backgroundColor: Colors.orange[800],
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                ),
+                              CustomSnackBar.showWarning(
+                                context,
+                                '¡Cuidado! Has consumido el ${alert.percentage.toStringAsFixed(0)}% del presupuesto mensual para "${alert.categoryName}" '
+                                '($sym${alert.totalSpent.toStringAsFixed(0)} / $sym${alert.budgetLimit.toStringAsFixed(0)})',
                               );
                             }
                           }

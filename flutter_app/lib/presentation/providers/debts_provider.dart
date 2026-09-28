@@ -13,7 +13,7 @@ final debtRepositoryProvider = Provider<DebtRepository>((ref) {
 final debtsProvider = StreamProvider<List<DebtModel>>((ref) {
   final authState = ref.watch(authProvider);
   final repository = ref.watch(debtRepositoryProvider);
-  
+
   if (authState.user != null) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {

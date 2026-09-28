@@ -23,7 +23,7 @@ Estrategias de Ahorro:
 1. Págate a ti mismo primero: Ahorra una parte de tu ingreso antes de pagar cualquier otra cosa.
 2. Automatiza el ahorro: Configura transferencias automáticas a tu cuenta de ahorros el día de pago.
 3. Evita las compras por impulso: Aplica la regla de las 24 horas (o 30 días) antes de hacer compras no esenciales.
-'''
+''',
   };
 
   /// Busca en la base de conocimientos usando palabras clave del prompt
@@ -33,8 +33,10 @@ Estrategias de Ahorro:
 
     _knowledgeBase.forEach((keyword, content) {
       // Búsqueda simple de palabras clave (simulando búsqueda vectorial)
-      if (lowercasePrompt.contains(keyword) || 
-          (keyword == 'ahorro' && (lowercasePrompt.contains('ahorrar') || lowercasePrompt.contains('plan de ahorro')))) {
+      if (lowercasePrompt.contains(keyword) ||
+          (keyword == 'ahorro' &&
+              (lowercasePrompt.contains('ahorrar') ||
+                  lowercasePrompt.contains('plan de ahorro')))) {
         relevantSnippets.add(content);
       }
     });

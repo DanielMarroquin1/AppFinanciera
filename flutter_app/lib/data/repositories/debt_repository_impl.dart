@@ -12,10 +12,12 @@ class DebtRepositoryImpl implements DebtRepository {
         .where('userId', isEqualTo: userId)
         .snapshots()
         .map((snapshot) {
-      final list = snapshot.docs.map((doc) => DebtModel.fromFirestore(doc)).toList();
-      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      return list;
-    });
+          final list = snapshot.docs
+              .map((doc) => DebtModel.fromFirestore(doc))
+              .toList();
+          list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return list;
+        });
   }
 
   @override
@@ -25,7 +27,10 @@ class DebtRepositoryImpl implements DebtRepository {
 
   @override
   Future<void> updateDebt(DebtModel debt) async {
-    await _firestore.collection('debts').doc(debt.id).update(debt.toFirestore());
+    await _firestore
+        .collection('debts')
+        .doc(debt.id)
+        .update(debt.toFirestore());
   }
 
   @override

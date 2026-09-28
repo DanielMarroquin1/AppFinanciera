@@ -20,9 +20,18 @@ class PremiumModal extends ConsumerStatefulWidget {
       pageBuilder: (context, anim1, anim2) => const PremiumModal(),
       transitionBuilder: (context, anim1, anim2, child) {
         return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10 * anim1.value, sigmaY: 10 * anim1.value),
+          filter: ImageFilter.blur(
+            sigmaX: 10 * anim1.value,
+            sigmaY: 10 * anim1.value,
+          ),
           child: SlideTransition(
-            position: Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
+            position:
+                Tween<Offset>(
+                  begin: const Offset(0, 0.1),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic),
+                ),
             child: FadeTransition(opacity: anim1, child: child),
           ),
         );
@@ -34,27 +43,52 @@ class PremiumModal extends ConsumerStatefulWidget {
   ConsumerState<PremiumModal> createState() => _PremiumModalState();
 }
 
-class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProviderStateMixin {
+class _PremiumModalState extends ConsumerState<PremiumModal>
+    with TickerProviderStateMixin {
   late AnimationController _glowCtrl;
   late AnimationController _bounceCtrl;
   late ConfettiController _confettiController;
-  
+
   double _unlockProgress = 0.0;
   bool _isSuccess = false;
 
   final features = [
-    {'icon': LucideIcons.bot, 'title': 'Amigo Financiero SAMI', 'desc': 'Asistente IA personalizado'},
-    {'icon': LucideIcons.sparkles, 'title': 'Personalización Total', 'desc': 'Temas y colores exclusivos'},
-    {'icon': LucideIcons.pieChart, 'title': 'Reportes Detallados', 'desc': 'Análisis profundo de gastos'},
-    {'icon': LucideIcons.lineChart, 'title': 'Proyecciones Mensuales', 'desc': 'Predicciones inteligentes a fin de mes'},
+    {
+      'icon': LucideIcons.bot,
+      'title': 'Amigo Financiero SAMI',
+      'desc': 'Asistente IA personalizado',
+    },
+    {
+      'icon': LucideIcons.sparkles,
+      'title': 'Personalización Total',
+      'desc': 'Temas y colores exclusivos',
+    },
+    {
+      'icon': LucideIcons.pieChart,
+      'title': 'Reportes Detallados',
+      'desc': 'Análisis profundo de gastos',
+    },
+    {
+      'icon': LucideIcons.lineChart,
+      'title': 'Proyecciones Mensuales',
+      'desc': 'Predicciones inteligentes a fin de mes',
+    },
   ];
 
   @override
   void initState() {
     super.initState();
-    _glowCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))..repeat(reverse: true);
-    _bounceCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000))..repeat(reverse: true);
-    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    _glowCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+    _bounceCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 3),
+    );
   }
 
   @override
@@ -102,7 +136,11 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProvider
                 color: isDark ? const Color(0xFF0F172A) : Colors.white,
                 borderRadius: BorderRadius.circular(40),
                 boxShadow: [
-                  BoxShadow(color: const Color(0xFFF59E0B).withOpacity(0.2), blurRadius: 50, spreadRadius: -10),
+                  BoxShadow(
+                    color: const Color(0xFFF59E0B).withOpacity(0.2),
+                    blurRadius: 50,
+                    spreadRadius: -10,
+                  ),
                 ],
                 border: Border.all(color: const Color(0xFF1E293B), width: 1),
               ),
@@ -120,7 +158,10 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProvider
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
-                            colors: [const Color(0xFFF59E0B).withOpacity(0.15), Colors.transparent],
+                            colors: [
+                              const Color(0xFFF59E0B).withOpacity(0.15),
+                              Colors.transparent,
+                            ],
                           ),
                         ),
                       ),
@@ -129,12 +170,14 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProvider
 
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 500),
-                    child: _isSuccess ? _buildSuccessView(isDark) : _buildMainView(context, isDark, isPremium),
+                    child: _isSuccess
+                        ? _buildSuccessView(isDark)
+                        : _buildMainView(context, isDark, isPremium),
                   ),
                 ],
               ),
             ),
-            
+
             // Confetti Layer
             Positioned(
               top: -50,
@@ -146,7 +189,12 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProvider
                 emissionFrequency: 0.05,
                 numberOfParticles: 20,
                 gravity: 0.2,
-                colors: const [Colors.amber, Colors.orange, Colors.yellow, Colors.redAccent],
+                colors: const [
+                  Colors.amber,
+                  Colors.orange,
+                  Colors.yellow,
+                  Colors.redAccent,
+                ],
               ),
             ),
           ],
@@ -168,46 +216,108 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProvider
             alignment: Alignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                  color: isDark
+                      ? const Color(0xFF1E293B)
+                      : const Color(0xFFF8FAFC),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.3), width: 2),
+                  border: Border.all(
+                    color: const Color(0xFFF59E0B).withOpacity(0.3),
+                    width: 2,
+                  ),
                 ),
                 child: Column(
                   children: [
-                    Text('QUIVO Premium', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 22, fontWeight: FontWeight.w900)),
+                    Text(
+                      'QUIVO Premium',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.baseline,
                       textBaseline: TextBaseline.alphabetic,
                       children: [
-                        const Text('\$0.99', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 40, fontWeight: FontWeight.w900, letterSpacing: -1)),
-                        Text('/mes', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 16, fontWeight: FontWeight.bold)),
+                        const Text(
+                          '\$0.99',
+                          style: TextStyle(
+                            color: Color(0xFFF59E0B),
+                            fontSize: 40,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -1,
+                          ),
+                        ),
+                        Text(
+                          '/mes',
+                          style: TextStyle(
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text('Antes \$1.99', style: TextStyle(color: isDark ? Colors.grey[600] : Colors.grey[400], fontSize: 14, fontWeight: FontWeight.w600, decoration: TextDecoration.lineThrough)),
+                    Text(
+                      'Antes \$1.99',
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[600] : Colors.grey[400],
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              
+
               Positioned(
                 top: -15,
                 right: -10,
                 child: ScaleTransition(
-                  scale: Tween<double>(begin: 0.95, end: 1.05).animate(CurvedAnimation(parent: _bounceCtrl, curve: Curves.easeInOut)),
+                  scale: Tween<double>(begin: 0.95, end: 1.05).animate(
+                    CurvedAnimation(
+                      parent: _bounceCtrl,
+                      curve: Curves.easeInOut,
+                    ),
+                  ),
                   child: RotationTransition(
                     turns: const AlwaysStoppedAnimation(8 / 360),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0xFFEF4444), Color(0xFFDC2626)]),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))],
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
                       ),
-                      child: const Text('-50% DTO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5)),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.red.withOpacity(0.4),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Text(
+                        '-50% DTO',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 13,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -219,15 +329,23 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProvider
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B).withOpacity(0.5) : const Color(0xFFF1F5F9),
+              color: isDark
+                  ? const Color(0xFF1E293B).withOpacity(0.5)
+                  : const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(24),
             ),
             child: Column(
               children: [
                 for (int i = 0; i < features.length; i++) ...[
-                  _buildFeatureRow(features[i]['icon'] as IconData, features[i]['title'] as String, features[i]['desc'] as String, isDark),
-                  if (i < features.length - 1) const Divider(height: 20, color: Colors.transparent),
-                ]
+                  _buildFeatureRow(
+                    features[i]['icon'] as IconData,
+                    features[i]['title'] as String,
+                    features[i]['desc'] as String,
+                    isDark,
+                  ),
+                  if (i < features.length - 1)
+                    const Divider(height: 20, color: Colors.transparent),
+                ],
               ],
             ),
           ),
@@ -242,12 +360,30 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProvider
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                    ),
                     borderRadius: BorderRadius.circular(24),
-                    boxShadow: [BoxShadow(color: const Color(0xFFF59E0B).withOpacity(0.3 + (_glowCtrl.value * 0.2)), blurRadius: 20, offset: const Offset(0, 8))],
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(
+                          0xFFF59E0B,
+                        ).withOpacity(0.3 + (_glowCtrl.value * 0.2)),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
                   child: const Center(
-                    child: Text('SUSCRIBIRSE AHORA', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1.0)),
+                    child: Text(
+                      'SUSCRIBIRSE AHORA',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
                   ),
                 );
               },
@@ -260,7 +396,10 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProvider
               padding: const EdgeInsets.symmetric(vertical: 20),
               decoration: BoxDecoration(
                 color: Colors.green.withOpacity(0.1),
-                border: Border.all(color: Colors.green.withOpacity(0.5), width: 2),
+                border: Border.all(
+                  color: Colors.green.withOpacity(0.5),
+                  width: 2,
+                ),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: const Row(
@@ -268,7 +407,14 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProvider
                 children: [
                   Icon(LucideIcons.checkCircle2, color: Colors.green),
                   SizedBox(width: 8),
-                  Text('Suscripción Activa', style: TextStyle(color: Colors.green, fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    'Suscripción Activa',
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -276,7 +422,14 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProvider
           const SizedBox(height: 16),
           GestureDetector(
             onTap: () => Navigator.pop(context),
-            child: Text(isPremium ? 'Cerrar' : 'Quizás más tarde', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[400], fontSize: 14, fontWeight: FontWeight.w600)),
+            child: Text(
+              isPremium ? 'Cerrar' : 'Quizás más tarde',
+              style: TextStyle(
+                color: isDark ? Colors.grey[500] : Colors.grey[400],
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
@@ -291,7 +444,9 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProvider
         mainAxisSize: MainAxisSize.min,
         children: [
           ScaleTransition(
-            scale: Tween<double>(begin: 0.5, end: 1.0).animate(CurvedAnimation(parent: _bounceCtrl, curve: Curves.elasticOut)),
+            scale: Tween<double>(begin: 0.5, end: 1.0).animate(
+              CurvedAnimation(parent: _bounceCtrl, curve: Curves.elasticOut),
+            ),
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
@@ -299,31 +454,51 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProvider
                 shape: BoxShape.circle,
                 border: Border.all(color: const Color(0xFFF59E0B), width: 4),
               ),
-              child: const Icon(LucideIcons.crown, color: Color(0xFFF59E0B), size: 60),
+              child: const Icon(
+                LucideIcons.crown,
+                color: Color(0xFFF59E0B),
+                size: 60,
+              ),
             ),
           ),
           const SizedBox(height: 32),
           Text(
             '¡Felicidades!',
-            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 32, fontWeight: FontWeight.w900),
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black,
+              fontSize: 32,
+              fontWeight: FontWeight.w900,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
             'Ahora eres Premium. Disfruta de todos tus nuevos beneficios financieros.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 16, height: 1.5),
+            style: TextStyle(
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+              fontSize: 16,
+              height: 1.5,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFeatureRow(IconData icon, String title, String desc, bool isDark) {
+  Widget _buildFeatureRow(
+    IconData icon,
+    String title,
+    String desc,
+    bool isDark,
+  ) {
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: const Color(0xFFF59E0B).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF59E0B).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Icon(icon, size: 20, color: const Color(0xFFF59E0B)),
         ),
         const SizedBox(width: 16),
@@ -331,9 +506,23 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProvider
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 14, fontWeight: FontWeight.w800)),
+              Text(
+                title,
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(desc, style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w500)),
+              Text(
+                desc,
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
         ),
@@ -347,24 +536,36 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProvider
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+        ),
       ),
       child: Stack(
         children: [
           Center(
             child: Opacity(
               opacity: 1.0 - (_unlockProgress * 2).clamp(0.0, 1.0),
-              child: Text('Desliza para ser Premium', style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w700)),
+              child: Text(
+                'Desliza para ser Premium',
+                style: TextStyle(
+                  color: isDark ? Colors.grey[500] : Colors.grey[600],
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
           Positioned(
-            left: 4 + (_unlockProgress * (_getModalWidth(context) - 48 - 48 - 8)),
+            left:
+                4 + (_unlockProgress * (_getModalWidth(context) - 48 - 48 - 8)),
             top: 4,
             bottom: 4,
             child: GestureDetector(
               onPanUpdate: (details) {
                 setState(() {
-                  _unlockProgress += details.delta.dx / (_getModalWidth(context) - 48 - 48 - 8);
+                  _unlockProgress +=
+                      details.delta.dx /
+                      (_getModalWidth(context) - 48 - 48 - 8);
                   _unlockProgress = _unlockProgress.clamp(0.0, 1.0);
                 });
               },
@@ -381,9 +582,18 @@ class _PremiumModalState extends ConsumerState<PremiumModal> with TickerProvider
                 decoration: BoxDecoration(
                   color: const Color(0xFFF59E0B),
                   borderRadius: BorderRadius.circular(24),
-                  boxShadow: [BoxShadow(color: const Color(0xFFF59E0B).withOpacity(0.3), blurRadius: 8)],
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFF59E0B).withOpacity(0.3),
+                      blurRadius: 8,
+                    ),
+                  ],
                 ),
-                child: const Icon(LucideIcons.chevronRight, color: Colors.white, size: 20),
+                child: const Icon(
+                  LucideIcons.chevronRight,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ),
           ),

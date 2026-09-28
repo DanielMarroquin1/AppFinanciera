@@ -11,7 +11,8 @@ class SessionTimeoutManager extends ConsumerStatefulWidget {
   const SessionTimeoutManager({super.key, required this.child});
 
   @override
-  ConsumerState<SessionTimeoutManager> createState() => _SessionTimeoutManagerState();
+  ConsumerState<SessionTimeoutManager> createState() =>
+      _SessionTimeoutManagerState();
 }
 
 class _SessionTimeoutManagerState extends ConsumerState<SessionTimeoutManager> {
@@ -48,20 +49,39 @@ class _SessionTimeoutManagerState extends ConsumerState<SessionTimeoutManager> {
     final context = AppRouter.rootNavigatorKey.currentContext;
     if (context != null && context.mounted) {
       GoRouter.of(context).go('/login');
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(dismissDirection: DismissDirection.horizontal, content: Row(
+        SnackBar(
+          dismissDirection: DismissDirection.horizontal,
+          content: Row(
             children: [
-              const Icon(LucideIcons.shieldAlert, color: Colors.amberAccent, size: 26),
+              const Icon(
+                LucideIcons.shieldAlert,
+                color: Colors.amberAccent,
+                size: 26,
+              ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('🔒 Sesión Expirada por Privacidad', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white)),
+                    const Text(
+                      '🔒 Sesión Expirada por Privacidad',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: Colors.white,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text('Tu sesión se cerró automáticamente tras $mins minuto${mins > 1 ? 's' : ''} de inactividad.', style: const TextStyle(fontSize: 12, color: Colors.white70)),
+                    Text(
+                      'Tu sesión se cerró automáticamente tras $mins minuto${mins > 1 ? 's' : ''} de inactividad.',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white70,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -69,7 +89,9 @@ class _SessionTimeoutManagerState extends ConsumerState<SessionTimeoutManager> {
           ),
           behavior: SnackBarBehavior.floating,
           backgroundColor: const Color(0xFF1E1B4B),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           margin: const EdgeInsets.all(20),
           duration: const Duration(seconds: 5),
           elevation: 10,
@@ -84,7 +106,8 @@ class _SessionTimeoutManagerState extends ConsumerState<SessionTimeoutManager> {
       final prevAuth = previous?.isAuthenticated ?? false;
       final prevMins = previous?.user?.autoLockMinutes ?? 1;
       final nextMins = next.user?.autoLockMinutes ?? 1;
-      if ((next.isAuthenticated && !prevAuth) || (next.isAuthenticated && prevMins != nextMins)) {
+      if ((next.isAuthenticated && !prevAuth) ||
+          (next.isAuthenticated && prevMins != nextMins)) {
         _resetTimer();
       } else if (!next.isAuthenticated) {
         _inactivityTimer?.cancel();

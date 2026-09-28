@@ -13,7 +13,9 @@ import '../../presentation/providers/auth_provider.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 class SiriShortcutsService {
-  static const MethodChannel _channel = MethodChannel('com.example.flutter_app/siri_shortcuts');
+  static const MethodChannel _channel = MethodChannel(
+    'com.example.flutter_app/siri_shortcuts',
+  );
   static bool _initialized = false;
 
   static Future<bool> registerSiriShortcuts() async {
@@ -21,8 +23,12 @@ class SiriShortcutsService {
     try {
       final result = await _channel.invokeMethod<bool>('registerShortcuts', {
         'shortcuts': [
-          {'identifier': 'com.example.flutter_app.addExpense', 'title': 'Registrar Gasto', 'suggestedPhrase': 'Registrar gasto'}
-        ]
+          {
+            'identifier': 'com.example.flutter_app.addExpense',
+            'title': 'Registrar Gasto',
+            'suggestedPhrase': 'Registrar gasto',
+          },
+        ],
       });
       return result ?? true;
     } catch (e) {
@@ -33,47 +39,61 @@ class SiriShortcutsService {
   static void initialize(BuildContext context, WidgetRef ref) {
     if (_initialized) return;
     _initialized = true;
-    
+
     _channel.setMethodCallHandler((call) async {
       if (call.method == 'handleSiriIntent') {
         final user = ref.read(authProvider).user;
         if (user == null) return;
-        
+
         if (!user.isPremium) {
           final tts = FlutterTts();
           await TtsHelper.configureTts(tts, 'es');
-          await tts.speak('Para registrar gastos con Siri, necesitas ser usuario Premium en QUIVO.');
+          await tts.speak(
+            'Para registrar gastos con Siri, necesitas ser usuario Premium en QUIVO.',
+          );
           return;
         }
-        
-        final spokenText = call.arguments is String ? call.arguments as String : (call.arguments is Map ? call.arguments['text'] : null);
-        
+
+        final spokenText = call.arguments is String
+            ? call.arguments as String
+            : (call.arguments is Map ? call.arguments['text'] : null);
+
         if (spokenText != null && spokenText.isNotEmpty) {
-           // Siri automatically passed the text! Let's analyze and insert.
-           try {
-             final tts = FlutterTts();
-             await TtsHelper.configureTts(tts, 'es');
-             
-             final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-             final transaction = await AIAnalysisService.analyzeVoiceTransaction(spokenText, uid);
-             if (transaction != null) {
-                ref.read(transactionRepositoryProvider).addTransaction(transaction);
-                await tts.speak('Listo, he registrado el ${transaction.type} de ${transaction.amount} en ${transaction.description}.');
-                await LocalNotificationService.showNotification(
-                  title: '✅ Transacción agregada por Siri',
-                  body: 'Se añadió ${transaction.amount} en ${transaction.description}.',
-                );
-             } else {
-                await tts.speak('No pude entender el monto o los detalles, intenta de nuevo.');
-             }
-           } catch (e) {
-             print('Siri processing error: $e');
-           }
+          // Siri automatically passed the text! Let's analyze and insert.
+          try {
+            final tts = FlutterTts();
+            await TtsHelper.configureTts(tts, 'es');
+
+            final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+            final transaction = await AIAnalysisService.analyzeVoiceTransaction(
+              spokenText,
+              uid,
+            );
+            if (transaction != null) {
+              ref
+                  .read(transactionRepositoryProvider)
+                  .addTransaction(transaction);
+              await tts.speak(
+                'Listo, he registrado el ${transaction.type} de ${transaction.amount} en ${transaction.description}.',
+              );
+              await LocalNotificationService.showNotification(
+                title: '✅ Transacción agregada por Siri',
+                body:
+                    'Se añadió ${transaction.amount} en ${transaction.description}.',
+              );
+            } else {
+              await tts.speak(
+                'No pude entender el monto o los detalles, intenta de nuevo.',
+              );
+            }
+          } catch (e) {
+            print('Siri processing error: $e');
+          }
         } else {
-           // Fallback to manual UI if no text was provided
-           if (context.mounted) {
-             VoiceExpenseModal.show(context);
-           }
+          // Fallback to manual UI if no text was provided
+          if (context.mounted) {
+            VoiceExpenseModal.show(context);
+          }
         }
       }
     });

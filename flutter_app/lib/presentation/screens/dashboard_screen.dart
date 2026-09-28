@@ -1,5 +1,6 @@
 import '../../core/services/siri_shortcuts_service.dart';
 import 'package:flutter/material.dart';
+import '../widgets/common/swipeable_transaction.dart';
 import '../widgets/animated_3d_avatar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -1019,7 +1020,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
 
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: _buildTransactionItem(
+                      child: SwipeableTransaction(transaction: t, currencyCode: currencyCode, child: _buildTransactionItem(
                         isDark,
                         icon: emoji,
                         bgColor: isIncome
@@ -1031,7 +1032,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> with SingleTi
                         amountColor: isIncome
                             ? (isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A))
                             : (isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626)),
-                      ),
+                      )),
                     );
                   }).toList(),
                 );

@@ -1,3 +1,4 @@
+import "../widgets/common/swipeable_transaction.dart";
 import 'package:flutter/material.dart';
 import 'package:flutter_app/presentation/widgets/common/delete_confirmation_dialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -781,7 +782,7 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                         child: Center(child: Text('No hay ingresos recientes.', style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600]))),
                       ),
                     ...(_showAllIncomes ? filteredIncomes : filteredIncomes.take(3)).map((income) {
-                      return Container(
+                      return SwipeableTransaction(transaction: income, currencyCode: currencyCode, child: Container(
                         margin: const EdgeInsets.only(bottom: 16),
                         child: Row(
                           children: [
@@ -808,44 +809,10 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                               ),
                             ),
                             Text('+${CurrencyFormatter.format(income.amount, currencyCode)}', style: TextStyle(color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A), fontWeight: FontWeight.bold, fontSize: 16)),
-                            PopupMenuButton<String>(
-                              icon: Icon(LucideIcons.moreVertical, size: 20, color: isDark ? Colors.grey[400] : Colors.grey[600]),
-                              color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                              onSelected: (value) async {
-                                if (value == 'edit') {
-                                  AddIncomeModal.show(context, existingTransaction: income, isFixed: income.isFixed);
-                                } else if (value == 'delete') {
-                                  if (await DeleteConfirmationDialog.show(context)) {
-                                    ref.read(transactionNotifierProvider.notifier).deleteTransaction(income.id);
-                                  }
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                PopupMenuItem(
-                                  value: 'edit',
-                                  child: Row(
-                                    children: [
-                                      Icon(LucideIcons.edit2, size: 16, color: isDark ? Colors.white : Colors.black),
-                                      const SizedBox(width: 8),
-                                      Text('Editar', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
-                                    ],
-                                  ),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'delete',
-                                  child: Row(
-                                    children: [
-                                      Icon(LucideIcons.trash2, size: 16, color: Colors.red),
-                                      SizedBox(width: 8),
-                                      Text('Eliminar', style: TextStyle(color: Colors.red)),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
+                            
                           ],
                         ),
-                      );
+                      ));
                     }),
                     if (!_showAllIncomes && filteredIncomes.length > 3)
                       Padding(

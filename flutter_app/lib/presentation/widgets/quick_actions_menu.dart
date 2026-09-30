@@ -204,8 +204,13 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
                             width: 1.5,
                           ),
                         ),
-                        child: Transform.rotate(
-                          angle: 45 * 3.1415927 / 180,
+                        child: RotationTransition(
+                          turns: Tween<double>(begin: 0.0, end: 0.375).animate(
+                            CurvedAnimation(
+                              parent: _animController,
+                              curve: Curves.easeInOutCubic,
+                            ),
+                          ),
                           child: Icon(
                             LucideIcons.plus,
                             color: isDark ? Colors.white : Colors.black87,

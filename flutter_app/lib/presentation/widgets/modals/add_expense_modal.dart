@@ -256,9 +256,10 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
@@ -282,11 +283,12 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                         ),
                       ),
                       const SizedBox(width: 14),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Elige una Categoría',
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Elige una Categoría',
                             style: TextStyle(
                               color: isDark ? Colors.white : Colors.black,
                               fontSize: 20,
@@ -307,9 +309,12 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                           ),
                         ],
                       ),
+                      ),
                     ],
                   ),
+                  ),
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       TextButton.icon(
                         onPressed: () async {
@@ -1636,5 +1641,23 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
         ],
       ),
     );
+  }
+
+  List<Map<String, dynamic>> _getAllCategories() {
+    final user = ref.read(authProvider).user;
+    final customCats = (user?.unlockedItems ?? [])
+        .where((item) => item.startsWith('cat_'))
+        .map((item) => item.replaceFirst('cat_', ''))
+        .toList();
+        
+    if (customCats.isEmpty) return detailedCategories;
+    
+    final customSection = {
+      'main': 'Personalizadas',
+      'emoji': '🏷️',
+      'subs': customCats.map((c) => {'value': c, 'label': c, 'emoji': '🏷️'}).toList(),
+    };
+    
+    return [...detailedCategories, customSection];
   }
 }

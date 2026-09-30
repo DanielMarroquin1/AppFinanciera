@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'dart:ui';
+import '../common/glass_container.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -1140,8 +1142,20 @@ $cardsInfo
     
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF16132D) : const Color(0xFFF1F5F9),
-      body: SafeArea(
-        child: _showPreview ? _buildPreviewView(isDark) : _buildListeningView(isDark),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                color: isDark ? Colors.black.withOpacity(0.5) : Colors.white.withOpacity(0.2),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: _showPreview ? _buildPreviewView(isDark) : _buildListeningView(isDark),
+          ),
+        ],
       ),
     );
   }

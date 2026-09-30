@@ -29,17 +29,23 @@ class AppShell extends ConsumerStatefulWidget {
 }
 
 class _AppShellState extends ConsumerState<AppShell>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   bool _isKeyboardVisible = false;
+  late AnimationController _fabController;
 
   @override
   void initState() {
+    _fabController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
     super.initState();
     WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
+    _fabController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -82,30 +88,72 @@ class _AppShellState extends ConsumerState<AppShell>
           : AppColors.backgroundLight,
       resizeToAvoidBottomInset: false,
       drawer: const Drawer(child: SettingsScreen()),
-      body: SafeArea(child: widget.child),
+      body: Stack(
+        children: [
+          Positioned(
+            top: -100,
+            left: -50,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: paletteGradient.first.withValues(alpha: isDark ? 0.25 : 0.15),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 50,
+            right: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: paletteGradient.last.withValues(alpha: isDark ? 0.2 : 0.1),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+              child: const SizedBox(),
+            ),
+          ),
+          SafeArea(child: widget.child),
+        ],
+      ),
 
       bottomNavigationBar: _isKeyboardVisible
           ? const SizedBox.shrink()
-          : Container(
-              height: 80,
-              margin: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: isDark
-                        ? Colors.black.withOpacity(0.3)
-                        : const Color(0xFF0F172A).withOpacity(0.08),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Row(
+          : SafeArea(
+              child: Container(
+                height: 70,
+                margin: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(35),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(35),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white.withOpacity(0.08) : Colors.white.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(35),
+                        border: Border.all(
+                          color: isDark ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.5),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _buildAnimatedNavItem(
@@ -129,6 +177,7 @@ class _AppShellState extends ConsumerState<AppShell>
                       GestureDetector(
                         onTap: () async {
                           HapticFeedback.mediumImpact();
+                          _fabController.forward();
                           bool keepMenuOpen = true;
                           while (keepMenuOpen && context.mounted) {
                             final action = await showGeneralDialog<String>(
@@ -218,8 +267,13 @@ class _AppShellState extends ConsumerState<AppShell>
                               }
                             }
                           }
+                          _fabController.reverse();
                         },
-                        child: Container(
+                        child: RotationTransition(
+                          turns: Tween(begin: 0.0, end: 0.375).animate(
+                            CurvedAnimation(parent: _fabController, curve: Curves.easeInOutCubic),
+                          ),
+                          child: Container(
                           width: 56,
                           height: 56,
                           decoration: BoxDecoration(
@@ -243,6 +297,7 @@ class _AppShellState extends ConsumerState<AppShell>
                             ),
                           ),
                         ),
+                        ),
                       ),
 
                       _buildAnimatedNavItem(
@@ -264,8 +319,10 @@ class _AppShellState extends ConsumerState<AppShell>
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
+            ),
+            ),
             ),
     );
   }
@@ -280,8 +337,7 @@ class _AppShellState extends ConsumerState<AppShell>
     Key? key,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color neonColor = activeColor;
-
+    
     return GestureDetector(
       key: key,
       behavior: HitTestBehavior.opaque,
@@ -291,80 +347,44 @@ class _AppShellState extends ConsumerState<AppShell>
       },
       child: SizedBox(
         width: 60,
+        height: 60,
         child: Stack(
           alignment: Alignment.center,
-          clipBehavior: Clip.none,
           children: [
-            // The floating bubble (pops up and scales)
             AnimatedPositioned(
               duration: const Duration(milliseconds: 400),
-              curve: Curves.elasticOut,
-              top: isSelected ? -24 : 20,
-              child: AnimatedScale(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutBack,
-                scale: isSelected ? 1.0 : 0.3,
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 200),
-                  opacity: isSelected ? 1.0 : 0.0,
-                  child: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: neonColor,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: neonColor.withOpacity(0.5),
-                          blurRadius: 15,
-                          spreadRadius: 2,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Icon(icon, color: Colors.white, size: 24),
-                  ),
-                ),
-              ),
-            ),
-
-            // The unselected icon (fades out and moves down)
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutCubic,
-              top: isSelected ? 40 : 20,
-              child: AnimatedScale(
-                duration: const Duration(milliseconds: 300),
-                scale: isSelected ? 0.5 : 1.0,
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 200),
-                  opacity: isSelected ? 0.0 : 1.0,
-                  child: Icon(
-                    icon,
-                    color: isDark ? Colors.grey[500] : const Color(0xFF64748B),
-                    size: 24,
-                  ),
-                ),
-              ),
-            ),
-
-            // The label (slides up and fades in)
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 400),
-              curve: Curves.easeOutBack,
-              bottom: isSelected ? 10 : -15,
+              curve: Curves.easeInOutCubic,
+              bottom: isSelected ? 8 : -10,
               child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 250),
+                duration: const Duration(milliseconds: 200),
                 opacity: isSelected ? 1.0 : 0.0,
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: neonColor,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.2,
+                child: Container(
+                  width: 5,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: activeColor,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: activeColor.withOpacity(0.5),
+                        blurRadius: 6,
+                        spreadRadius: 2,
+                      )
+                    ]
                   ),
                 ),
+              ),
+            ),
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeInOutCubic,
+              top: isSelected ? 12 : 18,
+              child: Icon(
+                icon,
+                color: isSelected 
+                    ? activeColor 
+                    : (isDark ? Colors.white54 : Colors.black54),
+                size: isSelected ? 26 : 24,
               ),
             ),
           ],

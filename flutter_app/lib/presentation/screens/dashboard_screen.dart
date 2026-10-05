@@ -957,18 +957,29 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                   double totalExpense = 0;
                   double totalIncome = 0;
                   final now = DateTime.now();
+                  double allTimeIncome = 0;
+                  double allTimeExpense = 0;
+
                   for (var t in transactions) {
                     if (t.isFixed) continue; // Ignorar plantillas
-                    if (t.date.year == now.year && t.date.month == now.month) {
-                      if (t.type == 'expense') totalExpense += t.amount;
-                      if (t.type == 'income') totalIncome += t.amount;
+                    if (t.type == 'income') allTimeIncome += t.amount;
+                    if (t.type == 'expense' || t.type == 'cc_payment') {
+                      allTimeExpense += t.amount;
+                      if (t.date.year == now.year && t.date.month == now.month) {
+                        totalExpense += t.amount;
+                      }
                     }
                   }
+                  
+                  // Base for the budget is their current wealth + what they have spent this month.
+                  // This represents the total available funds they have to spend this month.
+                  final double currentBalance = allTimeIncome - allTimeExpense;
+                  final double baseAmount = currentBalance + totalExpense;
 
                   final double calculatedLimit =
-                      (totalIncome * limitPercentage) / 100.0;
+                      (baseAmount * limitPercentage) / 100.0;
                   final isOverLimit =
-                      totalIncome > 0 && totalExpense >= calculatedLimit;
+                      baseAmount > 0 && totalExpense >= calculatedLimit;
 
                   if (isOverLimit && !_limitAlertShown) {
                     _limitAlertShown = true;

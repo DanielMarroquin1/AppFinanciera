@@ -36,11 +36,9 @@ final notificationsProvider = StreamProvider<List<NotificationModel>>((ref) {
               final notif = NotificationModel.fromFirestore(change.doc);
               if (!_seenNotificationIds.contains(notif.id) && !notif.isRead) {
                 _seenNotificationIds.add(notif.id);
-                LocalNotificationService.showNotification(
-                  title: notif.title,
-                  body: notif.body,
-                  id: notif.id.hashCode.abs() % 100000,
-                );
+                // Notifications are triggered explicitly where they are created
+                // (e.g. transaction_provider or recurring_transaction_service)
+                // to avoid double-triggering or missed startup notifications.
               }
             }
           }

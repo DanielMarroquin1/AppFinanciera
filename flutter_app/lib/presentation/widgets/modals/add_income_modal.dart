@@ -355,12 +355,29 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                             children: subs.map<Widget>((subMap) {
                               final sub = subMap as Map<String, String>;
                               final isSelected = category == sub['value'];
-                              return InkWell(
+                              final isCustom = mainCat['main'] == 'Personalizadas';
+                              return GestureDetector(
                                 onTap: () {
                                   setState(() => category = sub['value']!);
                                   Navigator.pop(ctx);
                                 },
-                                borderRadius: BorderRadius.circular(16),
+                                onLongPress: () async {
+                                  if (!isCustom) return;
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('¿Eliminar categoría?'),
+                                      content: Text('¿Deseas eliminar "${sub['label']}"?'),
+                                      actions: [
+                                        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+                                        TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Eliminar', style: TextStyle(color: Colors.red))),
+                                      ]
+                                    )
+                                  );
+                                  if (confirm == true) {
+                                    await _deleteCustomCategory(sub['value']!);
+                                  }
+                                },
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 200),
                                   padding: const EdgeInsets.symmetric(
@@ -1305,6 +1322,23 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
         ],
       ),
     );
+  }
+
+  Future<void> _deleteCustomCategory(String categoryName) async {
+    final user = ref.read(authProvider).user;
+    if (user != null) {
+      final currentItems = List<String>.from(user.unlockedItems);
+      final tag = 'cat_$categoryName';
+      if (currentItems.contains(tag)) {
+        currentItems.remove(tag);
+        await ref.read(authProvider.notifier).updateProfile(user.copyWith(unlockedItems: currentItems));
+        setState(() {
+          if (category == categoryName) {
+            category = '';
+          }
+        });
+      }
+    }
   }
 
   List<Map<String, dynamic>> _getAllCategories() {

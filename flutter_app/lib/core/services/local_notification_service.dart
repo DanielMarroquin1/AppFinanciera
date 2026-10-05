@@ -166,13 +166,28 @@ class LocalNotificationService {
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
-    const androidDetails = AndroidNotificationDetails(
+    final androidDetails = AndroidNotificationDetails(
       'finanza_high_importance_channel',
       'Notificaciones Finanza',
+      channelDescription: 'Alertas y recordatorios programados',
       importance: Importance.max,
       priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+      color: const Color(0xFF3B82F6),
+      enableLights: true,
+      ledColor: const Color(0xFF3B82F6),
+      ledOnMs: 1000,
+      ledOffMs: 500,
+      styleInformation: BigTextStyleInformation(
+        body,
+        htmlFormatBigText: true,
+        contentTitle: '<b>$title</b>',
+        htmlFormatContentTitle: true,
+        summaryText: 'Finanzas Personales',
+        htmlFormatSummaryText: true,
+      ),
     );
-    const details = NotificationDetails(
+    final details = NotificationDetails(
       android: androidDetails,
       iOS: DarwinNotificationDetails(),
     );
@@ -244,7 +259,7 @@ class LocalNotificationService {
         importance: Importance.max,
         priority: Priority.high,
       );
-      const details = NotificationDetails(
+      final details = NotificationDetails(
         android: androidDetails,
         iOS: DarwinNotificationDetails(),
       );
@@ -296,7 +311,7 @@ class LocalNotificationService {
         priority: Priority.high,
       );
 
-      const details = NotificationDetails(
+      final details = NotificationDetails(
         android: androidDetails,
         iOS: const DarwinNotificationDetails(),
       );

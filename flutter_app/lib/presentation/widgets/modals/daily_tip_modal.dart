@@ -607,7 +607,14 @@ class DailyTipModal {
 
     final prefs = await SharedPreferences.getInstance();
     int lastIndex = prefs.getInt('last_tip_index') ?? -1;
-    int nextIndex = (lastIndex + 1) % kFinancialTips.length;
+    
+    // Generar un índice aleatorio que no sea el mismo que el anterior
+    
+    int nextIndex;
+    do {
+      nextIndex = _random.nextInt(kFinancialTips.length);
+    } while (nextIndex == lastIndex && kFinancialTips.length > 1);
+    
     await prefs.setInt('last_tip_index', nextIndex);
     final tip = kFinancialTips[nextIndex];
 
@@ -615,12 +622,19 @@ class DailyTipModal {
     _show(context, tip);
   }
 
+  static final _random = math.Random();
+
   /// Force-show for testing / manual trigger.
-  static void show(BuildContext context) {
-    final now = DateTime.now();
-    final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
-    final tipIndex = dayOfYear % kFinancialTips.length;
-    final tip = kFinancialTips[tipIndex];
+  static void show(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    int lastIndex = prefs.getInt('last_tip_index') ?? -1;
+    int nextIndex;
+    do {
+      nextIndex = _random.nextInt(kFinancialTips.length);
+    } while (nextIndex == lastIndex && kFinancialTips.length > 1);
+    await prefs.setInt('last_tip_index', nextIndex);
+    final tip = kFinancialTips[nextIndex];
+    if (!context.mounted) return;
     _show(context, tip);
   }
 

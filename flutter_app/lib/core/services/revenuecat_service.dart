@@ -51,9 +51,13 @@ class RevenueCatService {
   Future<bool> purchasePackage(Package package) async {
     if (!_isInitialized) return false;
     try {
-      final customerInfo = await Purchases.purchasePackage(package);
+      final purchaseResult = await Purchases.purchase(
+        PurchaseParams.package(package),
+      );
       // Validar si la compra otorgó el "Entitlement" premium (ejemplo: 'premium')
-      final isPro = customerInfo.entitlements.all['premium']?.isActive ?? false;
+      final isPro =
+          purchaseResult.customerInfo.entitlements.all['premium']?.isActive ??
+          false;
       return isPro;
     } catch (e) {
       debugPrint('Error realizando compra: $e');

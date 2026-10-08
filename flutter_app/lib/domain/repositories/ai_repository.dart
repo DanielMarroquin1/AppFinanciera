@@ -6,4 +6,9 @@ abstract class AIRepository {
     List<ChatMessage> history, {
     String? context,
   });
+
+  Stream<String> analyzeScenario({
+    required String prompt,
+    String? systemInstruction,
+  });
 }

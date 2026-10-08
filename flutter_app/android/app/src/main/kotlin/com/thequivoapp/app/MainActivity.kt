@@ -1,4 +1,4 @@
-package com.marro.appfinanciera.flutter_app
+package com.thequivoapp.app
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 

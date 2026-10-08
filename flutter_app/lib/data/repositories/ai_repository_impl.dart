@@ -291,4 +291,49 @@ class AIRepositoryImpl implements AIRepository {
       }
     }
   }
+
+  @override
+  Stream<String> analyzeScenario({
+    required String prompt,
+    String? systemInstruction,
+  }) async* {
+    print('[AIRepo] analyzeScenario invoked with model: ${AIConfig.modelName}');
+
+    final model = GenerativeModel(
+      model: AIConfig.modelName,
+      apiKey: AIConfig.apiKey,
+      systemInstruction: systemInstruction != null
+          ? Content.system(systemInstruction)
+          : null,
+      // INTENCIONAL: Sin herramientas (tools: null) para evitar intercepciones
+      // de function calls, JSON payloads o acciones de UI filtradas.
+    );
+
+    try {
+      final responseStream = model.generateContentStream([
+        Content.text(prompt),
+      ]).timeout(
+        Duration(seconds: AIConfig.apiTimeoutSeconds),
+        onTimeout: (sink) => sink.addError(
+          TimeoutException(
+            'La simulación tardó demasiado. Por favor intenta de nuevo.',
+          ),
+        ),
+      );
+
+      await for (final chunk in responseStream) {
+        if (chunk.text != null && chunk.text!.isNotEmpty) {
+          yield chunk.text!;
+        }
+      }
+    } catch (e, stack) {
+      print('[AIRepo] analyzeScenario error: $e');
+      print('[AIRepo] Stack: $stack');
+      if (e is TimeoutException) {
+        yield '⏱️ La simulación tardó demasiado tiempo. Verifica tu conexión e intenta de nuevo.';
+      } else {
+        yield '❌ Error al generar la simulación en SimLab: $e';
+      }
+    }
+  }
 }

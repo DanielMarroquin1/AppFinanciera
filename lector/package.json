@@ -1,0 +1,18 @@
+{
+  "name": "quivo-ticket-support",
+  "version": "1.0.0",
+  "description": "Portal local de soporte y lector de tickets en tiempo real para Quivo Financial AI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "quivo",
+    "support",
+    "tickets",
+    "firestore",
+    "resend"
+  ],
+  "author": "Quivo Team",
+  "license": "MIT"
+}

@@ -1,25 +1,17 @@
-import '../../../core/helpers/tts_helper.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import '../common/glass_container.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-import 'package:google_generative_ai/google_generative_ai.dart';
-import '../../../core/config/ai_config.dart';
 import '../../providers/transaction_provider.dart';
 import '../../../domain/entities/transaction.dart' as entity;
 import '../../../core/utils/currency_formatter.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/credit_card_provider.dart';
 import '../../../core/utils/localization.dart';
-import 'premium_modal.dart';
 
 class VoiceTransactionModal extends ConsumerStatefulWidget {
   const VoiceTransactionModal({super.key});
@@ -36,64 +28,63 @@ class VoiceTransactionModal extends ConsumerStatefulWidget {
       _VoiceTransactionModalState();
 }
 
-// Keep the old name as an alias for backwards compatibility
 typedef VoiceExpenseModal = VoiceTransactionModal;
 
 class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+  late AnimationController _pulseController;
   final SpeechToText _speechToText = SpeechToText();
   Timer? _silenceTimer;
   bool _isListening = false;
   bool _isProcessing = false;
   bool _isDone = false;
   final TextEditingController _textController = TextEditingController();
+  final TextEditingController _descController = TextEditingController();
   String _recognizedText = '';
   double _parsedAmount = 0.0;
-  String _parsedCategory = 'other';
+  String _parsedCategory = 'food';
   String _parsedDescription = '';
   String _parsedType = 'expense'; // 'expense' or 'income'
   String _parsedPaymentMethod = 'efectivo'; // 'efectivo' or 'tarjeta'
   String _errorMessage = '';
   bool _showPreview = false;
   String? _selectedCreditCardId;
-  
-  bool _waitingForPaymentMethod = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 1),
+      duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
     _initSpeech();
   }
 
   Future<void> _initSpeech() async {
     try {
-      await _speechToText.initialize(
-        onError: (errorNotification) {
-          setState(() {
-            _isListening = false;
-            _errorMessage = 'Mic error: ${errorNotification.errorMsg}';
-          });
+      final available = await _speechToText.initialize(
+        onError: (err) {
+          if (mounted) {
+            setState(() {
+              _isListening = false;
+              _errorMessage = 'Mic error: ${err.errorMsg}';
+            });
+          }
         },
       );
-
-      
-    } catch (e) {
-      // Handle init error
-    }
+      if (available && mounted) {
+        _startListening();
+      }
+    } catch (_) {}
   }
 
   @override
   void dispose() {
     _silenceTimer?.cancel();
     _textController.dispose();
-    _controller.dispose();
+    _descController.dispose();
+    _pulseController.dispose();
     _speechToText.cancel();
-    
     super.dispose();
   }
 
@@ -107,934 +98,322 @@ class _VoiceTransactionModalState extends ConsumerState<VoiceTransactionModal>
     return 'es_ES';
   }
 
-  String get _ttsLocale {
-    final loc = ref.read(localizationProvider);
-    final String currentLang = loc.intlLocale;
-    if (currentLang == 'en') return 'en-US';
-    if (currentLang == 'pt') return 'pt-BR';
-    if (currentLang == 'fr') return 'fr-FR';
-    if (currentLang == 'it') return 'it-IT';
-    return 'es-ES';
-  }
-
-  Future<void> _toggleListening() async {
-    if (_isDone || _showPreview) {
-      Navigator.of(context).pop();
+  Future<void> _startListening() async {
+    var status = await Permission.microphone.request();
+    if (status != PermissionStatus.granted) {
+      if (mounted) {
+        setState(() => _errorMessage = 'Permiso de micrófono denegado');
+      }
       return;
     }
 
-    if (_isListening) {
-      _silenceTimer?.cancel();
-      await _speechToText.stop();
-      setState(() => _isListening = false);
-      _processText();
-    } else {
-      // Request permission
-      var status = await Permission.microphone.request();
-      if (status != PermissionStatus.granted) {
-        setState(() => _errorMessage = 'Microphone permission denied');
-        return;
-      }
+    final available = await _speechToText.initialize();
+    if (available && mounted) {
+      setState(() {
+        _isListening = true;
+        _errorMessage = '';
+        _recognizedText = '';
+        _textController.clear();
+      });
 
-      final available = await _speechToText.initialize();
-      if (available) {
-        setState(() {
-          _isListening = true;
-          _errorMessage = '';
-          _recognizedText = '';
-        });
-        await _speechToText.listen(
-          onResult: (result) {
-            setState(() {
-              _recognizedText = result.recognizedWords; _textController.text = _recognizedText;
+      await _speechToText.listen(
+        onResult: (result) {
+          if (!mounted) return;
+          setState(() {
+            _recognizedText = result.recognizedWords;
+            _textController.text = _recognizedText;
+          });
+
+          _silenceTimer?.cancel();
+          if (_recognizedText.trim().isNotEmpty) {
+            _silenceTimer = Timer(const Duration(milliseconds: 1600), () {
+              if (_isListening && mounted) {
+                _stopAndProcess();
+              }
             });
+          }
+
+          if (result.finalResult) {
             _silenceTimer?.cancel();
-            if (_recognizedText.trim().isNotEmpty) {
-              // Reducimos el tiempo de espera de 3 a 1.5 segundos para que sea mucho más rápida
-              _silenceTimer = Timer(const Duration(milliseconds: 1500), () {
-                if (_isListening) {
-                  _speechToText.stop();
-                  if (mounted) {
-                    setState(() => _isListening = false);
-                    _processText();
-                  }
-                }
-              });
-            }
-            if (result.finalResult) {
-              _silenceTimer?.cancel();
-              setState(() => _isListening = false);
-              _processText();
-            }
-          },
-          localeId: _speechLocale,
-          pauseFor: const Duration(seconds: 3),
-          listenFor: const Duration(seconds: 45),
-        );
-      } else {
-        setState(
-          () =>
-              _errorMessage = 'Speech recognition not available on this device',
-        );
-      }
+            _stopAndProcess();
+          }
+        },
+        localeId: _speechLocale,
+        listenMode: ListenMode.confirmation,
+        pauseFor: const Duration(seconds: 3),
+        listenFor: const Duration(seconds: 45),
+      );
     }
   }
 
-  void _processText() async {
-    if (_isProcessing || _showPreview || _isDone) return; // Fix duplication
-    if (_recognizedText.isEmpty) return;
+  Future<void> _stopAndProcess() async {
+    _silenceTimer?.cancel();
+    await _speechToText.stop();
+    if (mounted) {
+      setState(() => _isListening = false);
+      _processVoiceInput();
+    }
+  }
 
-    // Reset previous parses
-    _parsedAmount = 0.0;
-    _parsedCategory = 'other';
-    _parsedPaymentMethod = 'efectivo';
-    _parsedType = 'expense';
-    _parsedDescription = '';
-    _selectedCreditCardId = null;
+  Future<void> _toggleListening() async {
+    if (_isListening) {
+      await _stopAndProcess();
+    } else {
+      await _startListening();
+    }
+  }
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PARSER DE VOZ MULTILINGÜE Y EN ESPAÑOL ROBUSTO
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  double _parseSpokenAmount(String raw) {
+    String text = raw.toLowerCase().trim();
+
+    // 1. Normalizar "50 con 50" o "50 punto 50" -> "50.50"
+    text = text.replaceAllMapped(
+      RegExp(r'(\d+)\s*(?:con|punto|coma|\.)\s*(\d+)'),
+      (m) => '${m[1]}.${m[2]}',
+    );
+
+    // 2. Extraer números en dígitos explícitos (ej. Q50, $25.50, 100 quetzales)
+    final digitMatch = RegExp(r'[$Q€£¥]?\s*(\d+(?:\.\d+)?)\s*(?:quetzales|quetzal|dolares|dólares|pesos|euros|usd|gtq)?')
+        .allMatches(text);
+    for (final m in digitMatch) {
+      final valStr = m.group(1);
+      if (valStr != null) {
+        final val = double.tryParse(valStr);
+        if (val != null && val > 0) {
+          return val;
+        }
+      }
+    }
+
+    // 3. Diccionarios de palabras a números en español
+    const units = {
+      'cero': 0, 'un': 1, 'uno': 1, 'una': 1, 'dos': 2, 'tres': 3, 'cuatro': 4,
+      'cinco': 5, 'seis': 6, 'siete': 7, 'ocho': 8, 'nueve': 9, 'diez': 10,
+      'once': 11, 'doce': 12, 'trece': 13, 'catorce': 14, 'quince': 15,
+      'dieciseis': 16, 'dieciséis': 16, 'diecisiete': 17, 'dieciocho': 18, 'diecinueve': 19,
+      'veinte': 20, 'veintiuno': 21, 'veintiún': 21, 'veintiun': 21, 'veintidos': 22, 'veintidós': 22,
+      'veintitres': 23, 'veintitrés': 23, 'veinticuatro': 24, 'veinticinco': 25,
+      'veintiseis': 26, 'veintiséis': 26, 'veintisiete': 27, 'veintiocho': 28, 'veintinueve': 29,
+      'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+    };
+
+    const tens = {
+      'treinta': 30, 'cuarenta': 40, 'cincuenta': 50, 'sesenta': 60,
+      'setenta': 70, 'ochenta': 80, 'noventa': 90,
+      'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50, 'sixty': 60,
+      'seventy': 70, 'eighty': 80, 'ninety': 90,
+    };
+
+    const hundreds = {
+      'cien': 100, 'ciento': 100, 'doscientos': 200, 'trescientos': 300,
+      'cuatrocientos': 400, 'quinientos': 500, 'seiscientos': 600,
+      'setecientos': 700, 'ochocientos': 800, 'novecientos': 900,
+      'hundred': 100,
+    };
+
+    final words = RegExp(r'[a-záéíóúñ]+').allMatches(text).map((m) => m.group(0)!).toList();
+
+    double currentTotal = 0.0;
+    double currentSub = 0.0;
+    int i = 0;
+    bool foundAny = false;
+
+    while (i < words.length) {
+      final w = words[i];
+      int? val;
+
+      if (units.containsKey(w)) {
+        val = units[w];
+      } else if (tens.containsKey(w)) {
+        val = tens[w];
+        if (i + 2 < words.length && words[i + 1] == 'y' && units.containsKey(words[i + 2])) {
+          val = (val ?? 0) + (units[words[i + 2]] ?? 0);
+          i += 2;
+        }
+      } else if (hundreds.containsKey(w)) {
+        val = hundreds[w];
+      } else if (w == 'mil' || w == 'thousand') {
+        if (currentSub == 0) currentSub = 1;
+        currentTotal += currentSub * 1000;
+        currentSub = 0;
+        foundAny = true;
+        i++;
+        continue;
+      }
+
+      if (val != null) {
+        foundAny = true;
+        currentSub += val;
+      } else if (foundAny) {
+        if ((w == 'con' || w == 'punto') && i + 1 < words.length) {
+          final centsWord = words[i + 1];
+          int? cents;
+          if (units.containsKey(centsWord)) {
+            cents = units[centsWord];
+          } else if (tens.containsKey(centsWord)) {
+            cents = tens[centsWord];
+            if (i + 3 < words.length && words[i + 2] == 'y' && units.containsKey(words[i + 3])) {
+              cents = (cents ?? 0) + (units[words[i + 3]] ?? 0);
+            }
+          }
+          if (cents != null) {
+            currentSub += cents >= 10 ? cents / 100.0 : cents / 10.0;
+          }
+        }
+        break;
+      }
+      i++;
+    }
+
+    return currentTotal + currentSub;
+  }
+
+  void _processVoiceInput() {
+    if (_recognizedText.trim().isEmpty) return;
     setState(() => _isProcessing = true);
 
-    // Normalize "con" and "punto" to handle decimals in Spanish (e.g. 50 con 50 -> 50.50)
-    String normalizedText = _recognizedText.replaceAll(
-      RegExp(
-        r'(\d+)\s+(?:con|punto|coma|with|point|dot|com|ponto|virgula|virgule|avec)\s+(\d+)',
-      ),
-      r'$1.$2',
-    );
-    _recognizedText = normalizedText;
+    final text = _recognizedText.toLowerCase();
 
-    final loc = ref.read(localizationProvider);
+    // 1. Detectar Tipo (Ingreso o Gasto)
+    final isIncome = RegExp(
+      r'(recibí|recibi|me pagaron|me depositaron|gané|gane|ingreso|sueldo|salario|nómina|nomina|aguinaldo|bono|propina|vendí|vendi|received|earned|paid me)',
+    ).hasMatch(text);
+    _parsedType = isIncome ? 'income' : 'expense';
+
+    // 2. Extraer Monto
+    _parsedAmount = _parseSpokenAmount(_recognizedText);
+
+    // 3. Extraer Categoría (Checar primero categorías personalizadas del usuario)
+    final user = ref.read(authProvider).user;
+    final customCats = (user?.unlockedItems ?? [])
+        .where((item) => item.startsWith('cat_'))
+        .map((item) => item.replaceFirst('cat_', ''))
+        .toList();
+
+    String matchedCategory = 'other';
+
+    for (final cc in customCats) {
+      if (text.contains(cc.toLowerCase())) {
+        matchedCategory = cc;
+        break;
+      }
+    }
+
+    if (matchedCategory == 'other') {
+      if (isIncome) {
+        if (RegExp(r'(salario|sueldo|nómina|nomina|quincena|mensualidad|trabajo)').hasMatch(text)) {
+          matchedCategory = 'salary';
+        } else if (RegExp(r'(freelance|proyecto|cliente|extra|consultoría|diseño)').hasMatch(text)) {
+          matchedCategory = 'freelance';
+        } else if (RegExp(r'(bono|aguinaldo|bonificación|premio|propina)').hasMatch(text)) {
+          matchedCategory = 'bonus';
+        } else if (RegExp(r'(inversión|inversion|rendimiento|cripto|trading|intereses)').hasMatch(text)) {
+          matchedCategory = 'investment';
+        } else if (RegExp(r'(venta|vendí|vendi|marketplace|segunda mano)').hasMatch(text)) {
+          matchedCategory = 'sale';
+        } else if (RegExp(r'(regalo|cumpleaños|donación|me dieron)').hasMatch(text)) {
+          matchedCategory = 'gift';
+        } else {
+          matchedCategory = 'salary';
+        }
+      } else {
+        if (RegExp(r'(comida|restaurante|almuerzo|cena|desayuno|café|cafe|pizza|hamburguesa|tacos|super|supermercado|despensa|walmart|pan|pollo|carne|uber eats|pedidosya|rappi|cerveza|helado|snack|mcdonalds|starbucks)').hasMatch(text)) {
+          matchedCategory = 'food';
+        } else if (RegExp(r'(gasolina|combustible|shell|puma|texaco|uber|didi|taxi|bus|metro|pasaje|parqueo|estacionamiento|peaje|taller|mecánico|carro|auto)').hasMatch(text)) {
+          matchedCategory = 'transport';
+        } else if (RegExp(r'(luz|agua|internet|teléfono|telefono|celular|saldo|recarga|claro|tigo|eegsa|energuate|gas|servicio|factura|recibo)').hasMatch(text)) {
+          matchedCategory = 'bills';
+        } else if (RegExp(r'(ropa|zapatos|tenis|camisa|pantalón|zara|bershka|amazon|compras|mall|tienda|electrónica)').hasMatch(text)) {
+          matchedCategory = 'shopping';
+        } else if (RegExp(r'(cine|película|netflix|spotify|juego|videojuego|playstation|concierto|fiesta|bar|disco|salida)').hasMatch(text)) {
+          matchedCategory = 'entertainment';
+        } else if (RegExp(r'(medicina|farmacia|pastillas|doctor|médico|medico|hospital|clínica|dentista|salud|gimnasio|gym)').hasMatch(text)) {
+          matchedCategory = 'health';
+        } else if (RegExp(r'(alquiler|renta|casa|mueble|muebles|ferretería|limpieza|departamento|hogar)').hasMatch(text)) {
+          matchedCategory = 'home';
+        } else if (RegExp(r'(universidad|colegio|escuela|curso|libros|cuaderno|clases|educación)').hasMatch(text)) {
+          matchedCategory = 'education';
+        } else {
+          matchedCategory = 'food'; // Default más frecuente
+        }
+      }
+    }
+    _parsedCategory = matchedCategory;
+
+    // 4. Extraer Método de Pago
     final cards = ref.read(creditCardsProvider).value ?? [];
-    String cardsInfo = 'No cards registered.';
-    if (cards.isNotEmpty) {
-      cardsInfo = cards
-          .map(
-            (c) =>
-                '- ID: "${c.id}", Name: "${c.name}", Network: "${c.network}"',
-          )
-          .join('\n');
-    }
-
-    // Try using Gemini AI for extraction
-    try {
-      if (AIConfig.apiKey.isNotEmpty) {
-        final model = GenerativeModel(
-          model: AIConfig.modelName,
-          apiKey: AIConfig.apiKey,
-          generationConfig: GenerationConfig(
-            responseMimeType: 'application/json',
-          ),
-        );
-
-        final user = ref.read(authProvider).user;
-        final customCats = (user?.unlockedItems ?? [])
-            .where((item) => item.startsWith('cat_'))
-            .map((item) => item.replaceFirst('cat_', ''))
-            .toList();
-        final customCatsString = customCats.isNotEmpty ? '  - Custom user categories: ${customCats.join(", ")}' : '';
-
-        final prompt =
-            '''
-Analyze this financial transaction spoken by the user: "$_recognizedText"
-The user's preferred language is: "${loc.intlLocale}" (can be 'es', 'en', 'pt', 'fr', 'it').
-
-Your task is to determine:
-1. The transaction type: "expense" (gasto) or "income" (ingreso).
-2. The transaction category: MUST be one of the standard categories listed below (in English).
-3. The clean description of the transaction (short concept/name in the user's language).
-4. The payment method (if expense: "efectivo" or "tarjeta", if income: "efectivo").
-5. The creditCardId (if card matched from list).
-
---- HANDLING NUMBERS (CRITICAL) ---
-If the user says a combination of numbers like "doce cincuenta", "quince treinta", interpret it as a decimal amount (e.g. 12.50, 15.30). DO NOT interpret "doce cincuenta" as 1250. The second number represents cents.
-
---- DETECTING TYPE ---
-Identify if the user is spending money (expense) or receiving money (income). Use standard rules for Spanish, English, Portuguese, French, and Italian.
-For example:
-- "gasté", "pagué", "compré", "spent", "paid", "bought", "gastei", "paguei", "comprei", "dépensé", "payé", "acheté", "speso", "pagato", "comprato" -> "expense"
-- "recibí", "gané", "me pagaron", "received", "earned", "paid me", "recebi", "ganhei", "me pagaram", "reçu", "gagné", "pagato", "ricevuto", "guadagnato" -> "income"
-
---- STANDARD CATEGORIES (Use EXACTLY these English keys in the JSON category field) ---
-* Expense Categories:
-  - food (Comida / Food / Alimentação / Nourriture / Cibo)
-  - transport (Transporte / Transport / Trasporto)
-  - bills (Servicios / Bills / Contas / Factures / Bollette)
-  - shopping (Compras / Shopping / Achats / Acquisti)
-  - entertainment (Entretenimiento / Entertainment / Divertissement / Intrattenimento)
-  - health (Salud / Health / Saúde / Santé / Salute)
-  - home (Hogar / Home / Casa / Maison)
-  - education (Educación / Education / Educação / Éducation / Istruzione)
-  - other (Otro / Other / Outros / Autres / Altri)
-
-* Income Categories:
-  - salary (Salario / Salary / Salário / Salaire / Stipendio)
-  - freelance (Freelance / Proyectos / Freelance)
-  - bonus (Bonificación / Bonus / Bônus / Prime)
-  - investment (Inversiones / Investment / Investimentos / Investissements / Investimenti)
-  - sale (Venta / Sale / Venda / Vente / Vendita)
-  - dividends (Dividendos / Dividends / Dividendos / Dividendes / Dividendi)
-  - gift (Regalo / Gift / Presente / Cadeau / Regalo)
-  - other (Otro Ingreso / Other Income / Outro / Autre / Altro)
-
-Output STRICT JSON:
-{
-  "type": "expense" | "income",
-  "amount": decimal number,
-  "category": "standard_category_key_in_english",
-  "description": "clean name of concept/store without verbs or numbers or currency symbols, written in the user's language",
-  "paymentMethod": "efectivo" | "tarjeta",
-  "creditCardId": "id_if_matched_or_null"
-}
-
-Cards available:
-$cardsInfo
-''';
-
-        final response = await model.generateContent([Content.text(prompt)]);
-        if (response.text != null && response.text!.isNotEmpty) {
-          final data = jsonDecode(response.text!);
-          _parsedAmount = (data['amount'] as num).toDouble();
-          _parsedType = data['type'] ?? 'expense';
-          _parsedCategory = data['category'] ?? 'other';
-
-          // Validate type
-          if (_parsedType != 'income' && _parsedType != 'expense') {
-            _parsedType = _fallbackClassifyType(_recognizedText);
-          }
-
-          // Fallback for category
-          if (_parsedCategory == 'other') {
-            if (_parsedType == 'income') {
-              final localCat = _fallbackClassifyIncomeCategory(_recognizedText);
-              if (localCat != 'other') _parsedCategory = localCat;
-            } else {
-              final localCat = _fallbackClassifyExpenseCategory(
-                _recognizedText,
-              );
-              if (localCat != 'other') _parsedCategory = localCat;
-            }
-          }
-          if (_parsedCategory.contains('_')) {
-            _parsedCategory = _parsedCategory.split('_')[0];
-          }
-
-          // Only set payment method for expenses
-          if (_parsedType == 'expense') {
-            _parsedPaymentMethod = data['paymentMethod'] ?? 'efectivo';
-            if (data['creditCardId'] != null) {
-              _selectedCreditCardId = data['creditCardId'].toString();
-            }
-          } else {
-            _parsedPaymentMethod = 'efectivo';
-            _selectedCreditCardId = null;
-          }
-
-          if (data['description'] != null &&
-              data['description'].toString().trim().isNotEmpty) {
-            _parsedDescription = _extractCleanDescription(
-              data['description'].toString().trim(),
-            );
-          } else {
-            _parsedDescription = _extractCleanDescription(_recognizedText);
-          }
-        }
-      }
-    } catch (e) {
-      // Fallback to local processing
-    }
-
-    if (_parsedAmount == 0.0) {
-      // Detect type locally first
-      _parsedType = _fallbackClassifyType(_recognizedText);
-
-      // Fallback for numbers
-      final currencyPriceRegex = RegExp(
-        r'(?:en|por|costó|cuesta|son|fueron|pagué|pague|gasto de|recibí|recibi|me dieron|me pagaron|cobré|cobre|gané|gane|vendí|vendi|spent|paid|received|cost|[$Q€£¥])\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*(?:quetzales|quetzal|dólares|dolares|dólar|dolar|pesos|peso|mxn|euros|euro|eur|usd|gtq|lempiras|soles|colones|pounds|dollars|[$Q€£¥])',
-        caseSensitive: false,
-      );
-      final priceMatch = currencyPriceRegex.firstMatch(_recognizedText);
-      if (priceMatch != null) {
-        final valStr = priceMatch.group(1) ?? priceMatch.group(2);
-        if (valStr != null) {
-          _parsedAmount = double.tryParse(valStr) ?? 0.0;
-        }
-      }
-      if (_parsedAmount == 0.0) {
-        final allNumRegex = RegExp(r'\b(\d+(?:\.\d+)?)\b');
-        final matches = allNumRegex.allMatches(_recognizedText);
-        double maxNum = 0.0;
-        for (final m in matches) {
-          final str = m.group(1)!;
-          final afterIdx = m.end;
-          final remainder = _recognizedText
-              .substring(afterIdx)
-              .trimLeft()
-              .toLowerCase();
-          if (remainder.startsWith('lb') ||
-              remainder.startsWith('libra') ||
-              remainder.startsWith('kg') ||
-              remainder.startsWith('kilo') ||
-              remainder.startsWith('g ') ||
-              remainder.startsWith('gr') ||
-              remainder.startsWith('ml') ||
-              remainder.startsWith('litro') ||
-              remainder.startsWith('oz') ||
-              remainder.startsWith('onza') ||
-              remainder.startsWith('unidad')) {
-            continue;
-          }
-          final val = double.tryParse(str) ?? 0.0;
-          if (val > maxNum) maxNum = val;
-        }
-        if (maxNum > 0) {
-          _parsedAmount = maxNum;
-        } else {
-          final amountRegex = RegExp(r'\d+(\.\d+)?');
-          final match = amountRegex.firstMatch(_recognizedText);
-          if (match != null) {
-            _parsedAmount = double.tryParse(match.group(0)!) ?? 0.0;
-          }
-        }
-      }
-
-      // Classify category based on type
-      if (_parsedType == 'income') {
-        _parsedCategory = _fallbackClassifyIncomeCategory(_recognizedText);
-      } else {
-        _parsedCategory = _fallbackClassifyExpenseCategory(_recognizedText);
-      }
-
-      // If amount was found in words, try parsing it
-      if (_parsedAmount == 0.0) {
-        final textLower = _recognizedText.toLowerCase();
-        final wordToNum = {
-          'un': 1,
-          'uno': 1,
-          'una': 1,
-          'dos': 2,
-          'tres': 3,
-          'cuatro': 4,
-          'cinco': 5,
-          'seis': 6,
-          'siete': 7,
-          'ocho': 8,
-          'nueve': 9,
-          'diez': 10,
-          'veinte': 20,
-          'treinta': 30,
-          'cuarenta': 40,
-          'cincuenta': 50,
-          'sesenta': 60,
-          'setenta': 70,
-          'ochenta': 80,
-          'noventa': 90,
-          'cien': 100,
-          'ciento': 100,
-          'doscientos': 200,
-          'quinientos': 500,
-          'mil': 1000,
-          'one': 1,
-          'two': 2,
-          'three': 3,
-          'four': 4,
-          'five': 5,
-          'six': 6,
-          'seven': 7,
-          'eight': 8,
-          'nine': 9,
-          'ten': 10,
-          'twenty': 20,
-          'thirty': 30,
-          'forty': 40,
-          'fifty': 50,
-          'sixty': 60,
-          'seventy': 70,
-          'eighty': 80,
-          'ninety': 90,
-          'hundred': 100,
-          'thousand': 1000,
-          'um': 1,
-          'uma': 1,
-          'dois': 2,
-          'duas': 2,
-          'três': 3,
-          'tres': 3,
-          'quatro': 4,
-          'cinco': 5,
-          'seis': 6,
-          'sete': 7,
-          'oito': 8,
-          'nove': 9,
-          'dez': 10,
-          'vinte': 20,
-          'trinta': 30,
-          'quarenta': 40,
-          'cinquenta': 50,
-          'sessenta': 60,
-          'setenta': 70,
-          'oitenta': 80,
-          'noventa': 90,
-          'cem': 100,
-          'cento': 100,
-          'mil': 1000,
-        };
-        for (var entry in wordToNum.entries) {
-          if (RegExp(r'\b' + entry.key + r'\b').hasMatch(textLower)) {
-            _parsedAmount = entry.value.toDouble();
-            // Basic combinations (e.g. ciento cincuenta)
-            if (textLower.contains(entry.key + ' y ')) {
-              _parsedAmount += 5; // Hacky fallback
-            }
-            break;
-          }
-        }
-      }
-      _parsedDescription = _extractCleanDescription(_recognizedText);
-
-      // Only check payment method for expenses
-      if (_parsedType == 'expense') {
-        final textLower = _recognizedText.toLowerCase();
-        if (textLower.contains('tarjeta') ||
-            textLower.contains('crédito') ||
-            textLower.contains('credito') ||
-            textLower.contains('tc') ||
-            textLower.contains('card') ||
-            textLower.contains('cartão')) {
-          _parsedPaymentMethod = 'tarjeta';
-        }
-      }
-    } else if (_parsedDescription.isEmpty ||
-        _parsedDescription == _recognizedText) {
-      _parsedDescription = _extractCleanDescription(_recognizedText);
-      if (_parsedCategory == 'other') {
-        if (_parsedType == 'income') {
-          final localCat = _fallbackClassifyIncomeCategory(_recognizedText);
-          if (localCat != 'other') _parsedCategory = localCat;
-        } else {
-          final localCat = _fallbackClassifyExpenseCategory(_recognizedText);
-          if (localCat != 'other') _parsedCategory = localCat;
-        }
-      }
-      // Revalidate type if not set by AI
-      if (_parsedType == 'expense') {
-        final detectedType = _fallbackClassifyType(_recognizedText);
-        if (detectedType == 'income') _parsedType = 'income';
-      }
-    }
-
-    // Handle credit card for expenses
-    if (_parsedType == 'expense' && _parsedPaymentMethod == 'tarjeta') {
-      if (_selectedCreditCardId == null && cards.isNotEmpty) {
-        if (cards.length == 1) {
-          _selectedCreditCardId = cards.first.id;
-        } else {
-          for (final c in cards) {
-            if (_recognizedText.toLowerCase().contains(c.name.toLowerCase()) ||
-                _recognizedText.toLowerCase().contains(
-                  c.network.toLowerCase(),
-                )) {
-              _selectedCreditCardId = c.id;
-              break;
-            }
-          }
-          if (_selectedCreditCardId == null) {
-            _selectedCreditCardId = cards.first.id;
-          }
-        }
-      }
-    }
-
-    if (_parsedAmount > 0) {
-      // For incomes, skip payment method question entirely
-      if (_parsedType == 'income') {
-        setState(() {
-          _isProcessing = false;
-          _showPreview = true;
-        });
-      } else {
-        // For expenses, check if payment method was mentioned
-        final txt = _recognizedText.toLowerCase();
-        final hasPaymentMethod =
-            txt.contains('tarjeta') ||
-            txt.contains('efectivo') ||
-            txt.contains('crédito') ||
-            txt.contains('credito') ||
-            txt.contains('visa') ||
-            txt.contains('mastercard') ||
-            txt.contains('cash') ||
-            txt.contains('efec') ||
-            txt.contains('card') ||
-            txt.contains('cartão') ||
-            txt.contains('argent');
-
-        setState(() {
-          _isProcessing = false;
-          _showPreview = true;
-        });
-      }
-    } else {
-      setState(() {
-        _isProcessing = false;
-        _errorMessage = loc
-            .get('voice_no_amount')
-            .replaceAll('{text}', _recognizedText);
-      });
-      
-
-      // Auto-restart listening after error
-      Future.delayed(const Duration(seconds: 3), () {
-        if (mounted && !_isListening && !_showPreview) {
-          _toggleListening();
-        }
-      });
-    }
-  }
-
-  /// Detects whether the voice input is an income or expense based on keywords in multiple languages
-  String _fallbackClassifyType(String text) {
-    final lower = text.toLowerCase();
-
-    // Strong income indicators (es, en, pt, fr, it)
-    if (RegExp(
-      r'\b(me\s+regalaron|me\s+dieron|me\s+pagaron|me\s+depositaron|me\s+transfirieron|me\s+abonaron|me\s+llegó|me\s+llego|received|earned|paid\s+me|gave\s+me|recebi|ganhei|me\s+pagaram|me\s+deram|reçu|gagné|offert|ricevuto|guadagnato|pagato|donato)\b',
-    ).hasMatch(lower)) {
-      return 'income';
-    }
-    if (RegExp(
-      r'\b(gané|gane|recibí|recibi|cobré|cobre|vendí|vendi|obtuve|ingresé|ingrese|ahorré|ahorre|win|won|get|got|sold|sell|receber|vender|vendi|ganhar|vendre|vendu|gagner|vendere|venduto|guadagnare)\b',
-    ).hasMatch(lower)) {
-      if (lower.contains('cobré') || lower.contains('cobre')) {
-        if (lower.contains('cobrame') || lower.contains('cóbrame')) {
-          return 'expense';
-        }
-        return 'income';
-      }
-      return 'income';
-    }
-    // Income context phrases
-    if (RegExp(
-      r'\b(de\s+salario|de\s+sueldo|mi\s+sueldo|mi\s+salario|de\s+regalo|por\s+mi\s+cumpleaños|por\s+mi\s+cumple|de\s+freelance|por\s+un\s+proyecto|de\s+dividendos|de\s+inversión|de\s+inversion|de\s+rendimiento|de\s+aguinaldo|de\s+bono|de\s+bonificación|de\s+bonificacion|de\s+propina|de\s+comisión|de\s+comision|por\s+mi\s+trabajo|de\s+nómina|de\s+nomina|de\s+quincena|salary|wage|bonus|dividends|freelance|gift|birthday|investments|salário|sueldo|cadeau|stipendio|regalo)\b',
-    ).hasMatch(lower)) {
-      return 'income';
-    }
-
-    // Strong expense indicators
-    if (RegExp(
-      r'\b(gasté|gaste|gasto|consumí|consumi|debítame|debitame|cóbrame|cobrame|pagué|pague|compré|compre|costó|costo|me\s+costó|me\s+costo|invertí\s+en|anota|agrega|pon|registra|spent|spent|bought|buy|purchased|cost|paid|pay|gastei|paguei|comprei|compra|dépensé|payé|acheté|speso|pagato|comprato|comprate)\b',
-    ).hasMatch(lower)) {
-      return 'expense';
-    }
-
-    return 'expense';
-  }
-
-  /// Classifies income category based on keywords in multiple languages
-  String _fallbackClassifyIncomeCategory(String text) {
-    final lower = text.toLowerCase();
-
-    // Salary
-    if (RegExp(
-      r'\b(salario|sueldo|nómina|nomina|quincena|pago\s+mensual|mensualidad|del\s+trabajo|me\s+pagaron\s+del|pago\s+quincenal|salary|wage|payroll|monthly\s+pay|salário|sueldo|salaire|stipendio)\b',
-    ).hasMatch(lower)) {
-      return 'salary';
-    }
-    // Freelance
-    if (RegExp(
-      r'\b(freelance|proyecto|cliente|trabajo\s+extra|independiente|comisión|comision|consultoría|consultoria|diseño|programación|programacion|trabajo\s+independiente|project|freelancer|gig|consulting|commission|freelance|progetto|cliente)\b',
-    ).hasMatch(lower)) {
-      return 'freelance';
-    }
-    // Bonus
-    if (RegExp(
-      r'\b(bono|bonificación|bonificacion|aguinaldo|extra|premio|incentivo|propina|gratificación|gratificacion|bonus|tip|extra|prime|propine|premio)\b',
-    ).hasMatch(lower)) {
-      return 'bonus';
-    }
-    // Investment
-    if (RegExp(
-      r'\b(inversión|inversion|rendimiento|rendimientos|intereses|interés|interes|ganancia|trading|cripto|criptomoneda|bitcoin|acciones|bolsa|fondos|capitalización|capitalizacion|investment|yield|interest|profits|crypto|investimento|rendimento|interesses|investissements|dividendes)\b',
-    ).hasMatch(lower)) {
-      return 'investment';
-    }
-    // Sale
-    if (RegExp(
-      r'\b(vendí|vendi|venta|marketplace|segunda\s+mano|usado|usada|mercadolibre|facebook\s+marketplace|olx|sold|sell|sale|venda|vendre|vendu|venduto|vendere)\b',
-    ).hasMatch(lower)) {
-      return 'sale';
-    }
-    // Dividends
-    if (RegExp(
-      r'\b(dividendo|dividendos|regalías|regalias|royalties|royalty|dividends|dividende|dividendi)\b',
-    ).hasMatch(lower)) {
-      return 'dividends';
-    }
-    // Gift
-    if (RegExp(
-      r'\b(regalo|regalaron|cumpleaños|cumple|navidad|obsequio|herencia|donación|donacion|me\s+dieron|quinceañera|bautizo|boda|graduación|graduacion|gift|present|birthday|christmas|inheritance|donation|presente|cadeau|anniversaire)\b',
-    ).hasMatch(lower)) {
-      return 'gift';
-    }
-
-    return 'other';
-  }
-
-  /// Classifies expense category based on keywords in multiple languages
-  String _fallbackClassifyExpenseCategory(String text) {
-    final lower = text.toLowerCase();
-    if (RegExp(
-      r'\b(burger|burguer|king|mcdonalds|mcdonald|mac|macs|wendys|kfc|taco|tacos|pizza|pizzas|sushi|pollo|comida|restaurante|almuerzo|cena|desayuno|café|cafe|starbucks|supermercado|súper|super|walmart|torre|paiz|coto|oxxo|panadería|postre|helado|carne|fruta|verdura|uber eats|pedidosya|rappi|grubhub|hamburguesa|hamburguesas|taquería|bebida|cerveza|vino|bar|alimentos|campero|dominos|little caesars|subway|food|grocery|restaurant|coffee|starbucks|dinner|lunch|breakfast|eat|eating|nourriture|cibo|spesa|alimentari)\b',
-    ).hasMatch(lower)) {
-      return 'food';
-    }
-    if (RegExp(
-      r'\b(gasolina|combustible|shell|puma|texaco|uno|bp|uber|indrive|didi|cabify|lyft|taxi|bus|autobús|transporte|metro|pasaje|peaje|estacionamiento|parqueo|vuelo|avión|boleto|mecánico|llantas|aceite|carro|vehículo|transport|gasoline|flight|flight|airplane|ticket|car|metro|subway|essence|trasporto|benzina)\b',
-    ).hasMatch(lower)) {
-      return 'transport';
-    }
-    if (RegExp(
-      r'\b(luz|electricidad|eegsa|deocsa|energuate|agua|empagua|internet|tigo|claro|movistar|teléfono|celular|saldo|recarga|gas|tambo|cilindro|propano|butano|estufa|cocina|basura|servicio|factura|recibo|bills|utilities|water|electricity|phone|recharge|facture|eau|electricite|bolletta|luce|acqua)\b',
-    ).hasMatch(lower)) {
-      return 'bills';
-    }
-    if (RegExp(
-      r'\b(ropa|camisa|pantalón|zapatos|tenis|zapatillas|vestido|chaqueta|zara|h&m|bershka|nike|adidas|compra|compras|mall|tienda|amazon|electrónica|computadora|audífonos|cable|cargador|regalo|shopping|clothes|shoes|electronics|store|purchase|achats|vetements|acquisti|vestiti)\b',
-    ).hasMatch(lower)) {
-      return 'shopping';
-    }
-    if (RegExp(
-      r'\b(cine|película|cinépolis|cinemark|netflix|spotify|disney|hbo|max|prime|youtube|suscripción|juego|videojuego|playstation|xbox|nintendo|steam|partido|estadio|concierto|diversión|fiesta|club|entertainment|movies|cinema|music|sports|game|videogame|subscription|party|concert|fun|divertimento|divertissement)\b',
-    ).hasMatch(lower)) {
-      return 'entertainment';
-    }
-    if (RegExp(
-      r'\b(medicina|pastillas|farmacia|galeno|cruz verde|similares|batres|meykos|doctor|médico|hospital|clínica|dentista|odontólogo|examen|salud|terapia|psicólogo|gimnasio|gym|smart fit|health|medicine|pills|pharmacy|doctor|hospital|clinic|gym|fitness|sante|salute|farmacia|medico)\b',
-    ).hasMatch(lower)) {
-      return 'health';
-    }
-    if (RegExp(
-      r'\b(alquiler|renta|hipoteca|casa|departamento|hogar|doméstico|mantenimiento|mueble|muebles|cama|mesa|silla|reparación|plomero|electricista|pintura|ferretería|cemaco|novex|limpieza|home|rent|mortgage|house|furniture|maintenance|repair|loyer|maison|affitto|casa)\b',
-    ).hasMatch(lower)) {
-      return 'home';
-    }
-    if (RegExp(
-      r'\b(universidad|colegio|escuela|colegiatura|matrícula|curso|udemy|coursera|platzi|clase|clases|libro|libros|cuaderno|papelería|útiles|educación|education|school|university|tuition|course|books|classes|scolarite|livres|istruzione|scuola|libri)\b',
-    ).hasMatch(lower)) {
-      return 'education';
-    }
-    return 'other';
-  }
-
-  
-
-  void _processPaymentMethodResponse() {
-    final cleanText = _recognizedText.toLowerCase();
-    if (cleanText.contains('tarjeta') ||
-        cleanText.contains('crédito') ||
-        cleanText.contains('credito') ||
-        cleanText.contains('visa') ||
-        cleanText.contains('mastercard') ||
-        cleanText.contains('banco') ||
-        cleanText.contains('tc') ||
-        cleanText.contains('card') ||
-        cleanText.contains('cartão') ||
-        cleanText.contains('carte') ||
-        cleanText.contains('carta')) {
+    if (!isIncome && RegExp(r'(tarjeta|crédito|credito|débito|debito|tc|visa|mastercard|card)').hasMatch(text)) {
       _parsedPaymentMethod = 'tarjeta';
+      _selectedCreditCardId = cards.isNotEmpty ? cards.first.id : null;
+      for (final c in cards) {
+        if (text.contains(c.name.toLowerCase()) || text.contains(c.network.toLowerCase())) {
+          _selectedCreditCardId = c.id;
+          break;
+        }
+      }
     } else {
       _parsedPaymentMethod = 'efectivo';
+      _selectedCreditCardId = null;
     }
 
+    // 5. Extraer Concepto / Descripción limpia
+    _parsedDescription = _cleanDescription(_recognizedText);
+    _descController.text = _parsedDescription;
+
     setState(() {
-      _waitingForPaymentMethod = false;
-      _showPreview = true;
+      _isProcessing = false;
+      if (_parsedAmount > 0) {
+        _showPreview = true;
+      } else {
+        _errorMessage = 'No se detectó el monto. Di por ejemplo: "Gasté 50 en pizza"';
+      }
     });
   }
 
-  String _extractCleanDescription(String rawText) {
-    String clean = ' ' + rawText + ' ';
+  String _cleanDescription(String raw) {
+    String clean = ' ' + raw.toLowerCase() + ' ';
 
-    // 1. Remove numbers/amounts (e.g. 15, 15.00, $15, Q15)
-    clean = clean.replaceAll(
-      RegExp(r'[$Q€£¥]?\s*\b\d+(\.\d+)?\b\s*[$Q€£¥]?', caseSensitive: false),
-      ' ',
-    );
+    // Quitar dígitos y montos
+    clean = clean.replaceAll(RegExp(r'[$Q€£¥]?\s*\d+(\.\d+)?\s*[$Q€£¥]?'), ' ');
 
-    // 2. Remove verbs and command words (gasté, recibí, me pagaron, vendí, spent, received, etc.)
+    // Quitar verbos y palabras de orden
     final verbs = [
-      'gasté', 'gaste', 'gasto', 'gastamos', 'gastado',
-      'consumí', 'consumi', 'consumo', 'consumimos', 'consumido',
-      'debítame', 'debitame', 'debita', 'débito', 'debito', 'debitar',
-      'cóbrame', 'cobrame', 'cobra', 'cobro', 'cobrar',
-      'cárgame', 'cargame', 'cargo', 'cargar',
-      'descúentame', 'descuentame', 'descuenta',
-      'pagué', 'pague', 'pago', 'pagamos', 'pagado',
-      'compré',
-      'compre',
-      'compra',
-      'compramos',
-      'comprado',
-      'adquirí',
-      'adquiri',
-      'anota', 'anotar', 'anótame', 'anotame', 'apunta', 'apúntame', 'apuntame',
-      'agrega', 'agregar', 'agrégame', 'agregame',
-      'pon',
-      'poner',
-      'ponme',
-      'registra',
-      'registrar',
-      'regístrame',
-      'registrame',
-      'metí', 'meti', 'mete', 'méteme', 'meteme',
-      'hice', 'hicimos', 'realicé', 'realice',
-      'fueron', 'son', 'serían', 'serian', 'salió', 'salio', 'salieron',
-      'costó', 'costo', 'costaron', 'valió', 'valio', 'valieron',
-      'importe', 'monto', 'valor', 'total', 'precio',
-      // Income verbs
-      'gané', 'gane', 'recibí', 'recibi', 'cobré', 'cobre',
-      'vendí', 'vendi', 'obtuve', 'ingresé', 'ingrese',
-      'ahorré', 'ahorre', 'deposité', 'deposite',
-      'me pagaron', 'me dieron', 'me regalaron', 'me depositaron',
-      'me transfirieron', 'me abonaron', 'me llegó', 'me llego',
-      // English verbs
-      'spent', 'spend', 'paid', 'pay', 'bought', 'buy', 'purchased', 'purchase',
-      'received', 'receive', 'got', 'get', 'earned', 'earn', 'sold', 'sell',
-      'cost', 'costs',
-      // Portuguese verbs
-      'gastei', 'paguei', 'comprei', 'recebi', 'ganhei', 'vendi',
-      // French verbs
-      'dépensé', 'payé', 'acheté', 'reçu', 'gagné', 'vendu',
-      // Italian verbs
-      'speso', 'pagato', 'comprato', 'ricevuto', 'guadagnato', 'venduto',
+      'gasté', 'gaste', 'pagué', 'pague', 'compré', 'compre', 'consumí', 'consumi',
+      'recibí', 'recibi', 'me pagaron', 'me depositaron', 'gané', 'gane', 'cobré', 'cobre',
+      'anota', 'agrega', 'registra', 'pon', 'fueron', 'son', 'costó', 'costo',
+      'quetzales', 'quetzal', 'dólares', 'dolares', 'pesos', 'euros',
+      'en efectivo', 'con efectivo', 'con tarjeta', 'en tarjeta', 'con tc', 'de tarjeta',
+      'por favor', 'hola', 'quivo'
     ];
     for (final v in verbs) {
-      clean = clean.replaceAll(
-        RegExp(
-          r'(?:\b|\s+|^)' + v + r'(?:\b|\s+|$|[,\.\-\_\:\;\/\!\?])',
-          caseSensitive: false,
-        ),
-        ' ',
-      );
+      clean = clean.replaceAll(RegExp(r'(?:|\s+|^)' + v + r'(?:|\s+|$|[,\.\!])'), ' ');
     }
 
-    // 3. Remove currencies and prepositions/connectors
-    final fillers = [
-      'quetzales',
-      'quetzal',
-      'qs',
-      'dólares',
-      'dolares',
-      'dólar',
-      'dolar',
-      'usd',
-      'gtq',
-      'pesos',
-      'peso',
-      'mxn',
-      'euros',
-      'euro',
-      'eur',
-      'lempiras',
-      'soles',
-      'colones',
-      'en',
-      'de',
-      'por',
-      'para',
-      'a',
-      'con',
-      'sin',
-      'usando',
-      'mediante',
-      'sobre',
-      'un gasto',
-      'gasto de',
-      'un consumo',
-      'consumo de',
-      'pago de',
-      'compra de',
-      'un ingreso',
-      'ingreso de',
-      'una venta',
-      'venta de',
-      'mi',
-      'mis',
-      'el',
-      'la',
-      'los',
-      'las',
-      'un',
-      'una',
-      'unos',
-      'unas',
-      'al',
-      'del',
-      'que',
-      'me',
-      'on',
-      'for',
-      'at',
-      'in',
-      'of',
-      'with',
-      'a',
-      'an',
-      'the',
-      'my',
-      'de',
-      'para',
-      'com',
-      'sem',
-      'um',
-      'uma',
-      'o',
-      'a',
-      'os',
-      'as',
-      'sur',
-      'pour',
-      'avec',
-      'sans',
-      'un',
-      'une',
-      'le',
-      'la',
-      'les',
-      'mon',
-      'su',
-      'per',
-      'con',
-      'senza',
-      'un',
-      'una',
-      'il',
-      'la',
-      'i',
-      'mio',
-    ];
-    for (final f in fillers) {
-      clean = clean.replaceAll(
-        RegExp(
-          r'(?:\b|\s+|^)' + f + r'(?:\b|\s+|$|[,\.\-\_\:\;\/\!\?])',
-          caseSensitive: false,
-        ),
-        ' ',
-      );
+    // Quitar preposiciones iniciales
+    final preps = ['en', 'de', 'un', 'una', 'el', 'la', 'los', 'las', 'por', 'para'];
+    final words = clean.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+    while (words.isNotEmpty && preps.contains(words.first)) {
+      words.removeAt(0);
     }
 
-    // 4. Remove payment methods and card keywords
-    final payments = [
-      'tarjeta',
-      'tarjetas',
-      'crédito',
-      'credito',
-      'tc',
-      'tcs',
-      'efectivo',
-      'cash',
-      'dinero',
-      'billetes',
-      'débito',
-      'debito',
-      'visa',
-      'mastercard',
-      'amex',
-      'american express',
-      'discover',
-      'card',
-      'cards',
-      'credit',
-      'money',
-      'cash',
-      'cartão',
-      'dinheiro',
-      'carte',
-      'espèces',
-      'argent',
-      'carta',
-      'contanti',
-    ];
-    for (final p in payments) {
-      clean = clean.replaceAll(
-        RegExp(
-          r'(?:\b|\s+|^)' + p + r'(?:\b|\s+|$|[,\.\-\_\:\;\/\!\?])',
-          caseSensitive: false,
-        ),
-        ' ',
-      );
+    if (words.isEmpty) {
+      return _parsedCategory.toUpperCase();
     }
-
-    // 5. Remove card names and networks from user creditCardsProvider
-    final cards = ref.read(creditCardsProvider).value ?? [];
-    for (final c in cards) {
-      if (c.name.trim().isNotEmpty) {
-        clean = clean.replaceAll(
-          RegExp(
-            r'(?:\b|\s+|^)' +
-                RegExp.escape(c.name.trim()) +
-                r'(?:\b|\s+|$|[,\.\-\_\:\;\/\!\?])',
-            caseSensitive: false,
-          ),
-          ' ',
-        );
-      }
-      if (c.network.trim().isNotEmpty) {
-        clean = clean.replaceAll(
-          RegExp(
-            r'(?:\b|\s+|^)' +
-                RegExp.escape(c.network.trim()) +
-                r'(?:\b|\s+|$|[,\.\-\_\:\;\/\!\?])',
-            caseSensitive: false,
-          ),
-          ' ',
-        );
-      }
-    }
-
-    // 6. Clean extra spaces and punctuation
-    clean = clean.replaceAll(RegExp(r'\s+'), ' ').trim();
-    clean = clean
-        .replaceAll(RegExp(r'^[,\.\-\_\:\;\/\!\?]+|[,\.\-\_\:\;\/\!\?]+$'), '')
-        .trim();
-
-    if (clean.isEmpty) {
-      clean = rawText
-          .replaceAll(RegExp(r'\b\d+(\.\d+)?\b', caseSensitive: false), '')
-          .trim();
-      for (final v in verbs) {
-        clean = clean
-            .replaceAll(
-              RegExp(
-                r'(?:\b|\s+|^)' + v + r'(?:\b|\s+|$)',
-                caseSensitive: false,
-              ),
-              ' ',
-            )
-            .trim();
-      }
-      clean = clean.replaceAll(RegExp(r'\s+'), ' ').trim();
-    }
-
-    if (clean.isNotEmpty) {
-      return clean[0].toUpperCase() + clean.substring(1);
-    }
-    return _parsedType == 'income' ? 'Income' : 'Expense';
+    final res = words.join(' ');
+    return res[0].toUpperCase() + res.substring(1);
   }
 
   Future<void> _saveTransaction() async {
-    if (_isProcessing || _isDone) return;
+    if (_isProcessing || _isDone || _parsedAmount <= 0) return;
     setState(() => _isProcessing = true);
 
-    String? creditCardIdToUse;
-    if (_parsedType == 'expense' && _parsedPaymentMethod == 'tarjeta') {
-      final cards = ref.read(creditCardsProvider).value;
-      if (_selectedCreditCardId != null) {
-        creditCardIdToUse = _selectedCreditCardId;
-      } else if (cards != null && cards.isNotEmpty) {
-        creditCardIdToUse = cards.first.id;
-      } else {
-        creditCardIdToUse = 'TC';
-      }
-    }
+    final finalDesc = _descController.text.trim().isNotEmpty
+        ? _descController.text.trim()
+        : _parsedDescription;
 
     final transaction = entity.TransactionModel(
       id: '',
@@ -1042,628 +421,792 @@ $cardsInfo
       amount: _parsedAmount,
       type: _parsedType,
       category: _parsedCategory,
-      description: _parsedDescription,
+      description: finalDesc,
       date: DateTime.now(),
       isFixed: false,
-      creditCardId: creditCardIdToUse,
+      creditCardId: _parsedPaymentMethod == 'tarjeta' ? (_selectedCreditCardId ?? 'TC') : null,
     );
-    final budgetAlert = await ref
-        .read(transactionNotifierProvider.notifier)
-        .addTransaction(transaction);
+
+    await ref.read(transactionNotifierProvider.notifier).addTransaction(transaction);
 
     setState(() {
       _isProcessing = false;
-      _showPreview = false;
       _isDone = true;
     });
 
     if (mounted) {
-      if (budgetAlert != null) {
-        final alert = budgetAlert;
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final user = ref.read(authProvider).user;
-        final sym = CurrencyFormatter.getSymbol(user?.currency);
-
-        if (alert.status == BudgetAlertStatus.limitReached) {
-          showDialog(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
-              title: Row(
-                children: [
-                  const Icon(
-                    LucideIcons.alertOctagon,
-                    color: Colors.red,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Límite Excedido 🚨',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ],
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(LucideIcons.checkCircle2, color: Colors.white, size: 20),
+              const SizedBox(width: 10),
+              Text(
+                _parsedType == 'income' ? '¡Ingreso guardado con éxito!' : '¡Gasto guardado con éxito!',
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
               ),
-              content: Text(
-                'Has agotado el 100% de tu presupuesto mensual para la categoría "${alert.categoryName}".\n\n'
-                'Límite establecido: $sym${alert.budgetLimit.toStringAsFixed(0)}\n'
-                'Total consumido: $sym${alert.totalSpent.toStringAsFixed(0)}',
-                style: TextStyle(
-                  color: isDark ? Colors.grey[300] : Colors.grey[800],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text(
-                    'Entendido',
-                    style: TextStyle(
-                      color: Color(0xFFEF4444),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        } else if (alert.status == BudgetAlertStatus.nearLimit) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              dismissDirection: DismissDirection.horizontal,
-              content: Text(
-                '⚠️ ¡Cuidado! Has consumido el ${alert.percentage.toStringAsFixed(0)}% del presupuesto mensual para "${alert.categoryName}" '
-                '($sym${alert.totalSpent.toStringAsFixed(0)} / $sym${alert.budgetLimit.toStringAsFixed(0)})',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              backgroundColor: Colors.orange[800],
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-          );
-        }
-      }
+            ],
+          ),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+      );
     }
-  }
-
-  void _onProcessButton() {
-    if (_textController.text.isNotEmpty) {
-      _recognizedText = _textController.text;
-    }
-    _processText();
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF16132D) : const Color(0xFFF1F5F9),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                color: isDark ? Colors.black.withOpacity(0.5) : Colors.white.withOpacity(0.2),
-              ),
-            ),
-          ),
-          SafeArea(
-            child: _showPreview ? _buildPreviewView(isDark) : _buildListeningView(isDark),
-          ),
-        ],
+      backgroundColor: isDark ? const Color(0xFF090D1A) : const Color(0xFFF8FAFC),
+      body: SafeArea(
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: _showPreview ? _buildPreviewView(isDark) : _buildListeningView(isDark),
+        ),
       ),
     );
   }
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // VISTA 1: ESCUCHANDO / DICTANDO
+  // ─────────────────────────────────────────────────────────────────────────────
+
   Widget _buildListeningView(bool isDark) {
-    final loc = ref.read(localizationProvider);
-    return Stack(
+    return Column(
       children: [
-        // Header
-        Positioned(
-          top: 16,
-          left: 16,
-          right: 16,
+        // Top Navigation Bar
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (_textController.text.isNotEmpty)
-                 IconButton(
-                  icon: const Icon(LucideIcons.chevronLeft, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
-                )
-              else
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: const Icon(LucideIcons.x, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => Navigator.pop(context),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(LucideIcons.x, color: isDark ? Colors.white70 : Colors.black87, size: 20),
                   ),
                 ),
-                
-              if (_textController.text.isNotEmpty)
-                const Text('Asistente Inteligente', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold))
-              else
-                const SizedBox.shrink(),
+              ),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(LucideIcons.mic, color: const Color(0xFF38BDF8), size: 14),
+                        const SizedBox(width: 6),
+                        Text(
+                          _isListening ? 'Escuchando...' : 'Dictado por Voz',
+                          style: const TextStyle(
+                            color: Color(0xFF38BDF8),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 40), // Balance spacing
             ],
           ),
         ),
-        
-        // Progress bar (if typing)
-        if (_textController.text.isNotEmpty)
-          Positioned(
-            top: 70,
-            left: 24,
-            right: 24,
-            child: Row(
+
+        const Spacer(),
+
+        // Dynamic Glowing Microphone Center
+        AnimatedBuilder(
+          animation: _pulseController,
+          builder: (context, child) {
+            final scale = _isListening ? 1.0 + (_pulseController.value * 0.12) : 1.0;
+            final glowOpacity = _isListening ? 0.35 + (_pulseController.value * 0.25) : 0.15;
+
+            return Stack(
+              alignment: Alignment.center,
               children: [
-                const Icon(LucideIcons.sparkles, color: Colors.white54, size: 14),
-                const SizedBox(width: 8),
-                const Text('IA MENSUAL', style: TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.bold)),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: LinearProgressIndicator(
-                    value: 0.33,
-                    backgroundColor: Colors.white.withValues(alpha: 0.1),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2DD4BF)),
-                    minHeight: 4,
+                // Outer Pulse Ring
+                if (_isListening)
+                  Container(
+                    width: 140 * scale,
+                    height: 140 * scale,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF38BDF8).withValues(alpha: glowOpacity * 0.4),
+                    ),
+                  ),
+
+                // Inner Glow Ring
+                Container(
+                  width: 110,
+                  height: 110,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF38BDF8).withValues(alpha: glowOpacity),
+                        blurRadius: 36,
+                        spreadRadius: 4,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                const Text('33%', style: TextStyle(color: Colors.white54, fontSize: 10)),
-              ],
-            ),
-          ),
 
-        // Main Content (Center)
-        Positioned.fill(
-          top: 100,
-          bottom: 120,
-          child: _textController.text.isEmpty && !_isListening
-            ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Text(
-                    loc.get('voice_prompt_details'),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black54,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
+                // Button itself
+                GestureDetector(
+                  onTap: _toggleListening,
+                  child: Container(
+                    width: 88,
+                    height: 88,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: _isListening
+                            ? [const Color(0xFF0284C7), const Color(0xFF06B6D4)]
+                            : [const Color(0xFF1E293B), const Color(0xFF0F172A)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
+                        width: 2,
+                      ),
+                    ),
+                    child: Icon(
+                      _isListening ? LucideIcons.mic : LucideIcons.micOff,
+                      color: Colors.white,
+                      size: 36,
                     ),
                   ),
                 ),
-              )
-            : Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                child: TextField(
-                  controller: _textController,
-                  style: const TextStyle(color: Colors.white, fontSize: 24),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: 'Gasté...',
-                    hintStyle: TextStyle(color: Colors.white30),
-                  ),
-                  maxLines: null,
-                  autofocus: true,
-                ),
-              ),
+              ],
+            );
+          },
         ),
 
-        // Bottom Controls
-        Positioned(
-          bottom: 32,
-          left: 0,
-          right: 0,
-          child: _textController.text.isEmpty && !_isListening
-              ? Center(
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    alignment: Alignment.center,
+        const SizedBox(height: 32),
+
+        // Live Transcript or Prompt Text
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 28),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: _textController.text.isNotEmpty
+                ? Text(
+                    '"${_textController.text}"',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      height: 1.35,
+                    ),
+                  )
+                : Column(
                     children: [
-                      GestureDetector(
-                        onTap: _toggleListening,
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF8B5CF6),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(LucideIcons.mic, color: Colors.white, size: 32),
+                      Text(
+                        _isListening ? 'Habla ahora con naturalidad...' : 'Toca el micrófono para comenzar',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-
+                      const SizedBox(height: 8),
+                      Text(
+                        'Di el monto y en qué lo gastaste.',
+                        style: TextStyle(
+                          color: isDark ? Colors.white54 : Colors.black54,
+                          fontSize: 14,
+                        ),
+                      ),
                     ],
+                  ),
+          ),
+        ),
+
+        // Error message if any
+        if (_errorMessage.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                _errorMessage,
+                style: const TextStyle(color: Color(0xFFF87171), fontSize: 13, fontWeight: FontWeight.w500),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ],
+
+        const Spacer(),
+
+        // Quick Examples Pill Chips
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            children: [
+              Text(
+                'EJEMPLOS RECOMENDADOS',
+                style: TextStyle(
+                  color: isDark ? Colors.white38 : Colors.black38,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _buildExampleChip('🍕 "Gasté 50 en pizza"', isDark),
+                  _buildExampleChip('⛽ "Gasolina 100 con tarjeta"', isDark),
+                  _buildExampleChip('💼 "Recibí 2500 de salario"', isDark),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // Manual text bar & Process button
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF141C2E) : Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF22324D) : const Color(0xFFCBD5E1),
+                    ),
                   ),
-                )
-              : Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B),
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: Row(
-                          children: [
-                            GestureDetector(
-                              onTap: _toggleListening,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(LucideIcons.mic, color: _isListening ? const Color(0xFF2DD4BF) : Colors.white, size: 20),
-                                  const SizedBox(height: 4),
-                                  Text('Dictar', style: TextStyle(color: _isListening ? const Color(0xFF2DD4BF) : Colors.white, fontSize: 10)),
-                                ],
-                              ),
-                            ),
-
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: _isProcessing ? null : _onProcessButton,
-                          icon: _isProcessing 
-                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                              : const Icon(LucideIcons.sparkles, color: Colors.white, size: 20),
-                          label: Text(_isProcessing ? 'Procesando...' : 'Procesar', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2DD4BF),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                            elevation: 0,
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: TextField(
+                    controller: _textController,
+                    style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 15),
+                    decoration: const InputDecoration(
+                      hintText: 'O escribe aquí tu gasto...',
+                      hintStyle: TextStyle(color: Colors.white38, fontSize: 14),
+                      border: InputBorder.none,
+                    ),
+                    onSubmitted: (_) {
+                      _recognizedText = _textController.text;
+                      _processVoiceInput();
+                    },
                   ),
                 ),
+              ),
+              const SizedBox(width: 10),
+              GestureDetector(
+                onTap: () {
+                  if (_textController.text.trim().isNotEmpty) {
+                    _recognizedText = _textController.text;
+                    _processVoiceInput();
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF06B6D4)]),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: const Icon(LucideIcons.arrowRight, color: Colors.white, size: 20),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  Future<void> _editDescription() async {
-    final TextEditingController controller = TextEditingController(text: _parsedDescription);
-    final newDesc = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
-        title: const Text('Editar descripción', style: TextStyle(color: Colors.white)),
-        content: TextField(
-          controller: controller,
-          style: const TextStyle(color: Colors.white),
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Descripción...',
-            hintStyle: TextStyle(color: Colors.white30),
-            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
-            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF2DD4BF))),
+  Widget _buildExampleChip(String text, bool isDark) {
+    return GestureDetector(
+      onTap: () {
+        _textController.text = text.replaceAll('"', '').substring(2).trim();
+        _recognizedText = _textController.text;
+        _processVoiceInput();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF141C2E) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? const Color(0xFF22324D) : const Color(0xFFE2E8F0),
           ),
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar', style: TextStyle(color: Colors.white54))),
-          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Guardar', style: TextStyle(color: Color(0xFF2DD4BF)))),
-        ],
-      ),
-    );
-    if (newDesc != null && newDesc.isNotEmpty) {
-      setState(() => _parsedDescription = newDesc);
-    }
-  }
-
-  Future<void> _editCategory() async {
-    final loc = ref.read(localizationProvider);
-    final user = ref.read(authProvider).user;
-    
-    // Default categories
-    final defaultCategories = _parsedType == 'expense' 
-      ? ['food', 'transport', 'bills', 'shopping', 'entertainment', 'health', 'home', 'education', 'other']
-      : ['salary', 'business', 'investments', 'gifts', 'other_income'];
-      
-    // Combine with custom categories
-    final List<String> customCats = (user?.unlockedItems ?? [])
-        .where((item) => item.startsWith('cat_'))
-        .map((item) => item.replaceFirst('cat_', ''))
-        .toList();
-        
-    final allCats = [...defaultCategories, ...customCats];
-
-    final newCat = await showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: const Color(0xFF1E293B),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (_, scrollController) => Column(
-          children: [
-            Container(margin: const EdgeInsets.only(top: 12, bottom: 20), width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Seleccionar Categoría', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  TextButton(
-                    onPressed: () async {
-                      // Show create category dialog
-                      final created = await showDialog<String>(
-                        context: context,
-                        builder: (context) {
-                          final ctrl = TextEditingController();
-                          return AlertDialog(
-                            backgroundColor: const Color(0xFF1E293B),
-                            title: const Text('Nueva Categoría', style: TextStyle(color: Colors.white)),
-                            content: TextField(
-                              controller: ctrl,
-                              style: const TextStyle(color: Colors.white),
-                              autofocus: true,
-                              decoration: const InputDecoration(
-                                hintText: 'Ej. Mascotas',
-                                hintStyle: TextStyle(color: Colors.white30),
-                              ),
-                            ),
-                            actions: [
-                              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-                              TextButton(
-                                onPressed: () {
-                                  final name = ctrl.text.trim();
-                                  if (name.isEmpty) return;
-                                  
-                                  // Simple bad words filter
-                                  final badWords = ['puta', 'mierda', 'pendejo', 'cabron', 'culo', 'fuck', 'shit', 'bitch'];
-                                  bool hasBadWord = badWords.any((w) => name.toLowerCase().contains(w));
-                                  if (hasBadWord) {
-                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se permiten palabras ofensivas')));
-                                    return;
-                                  }
-                                  
-                                  Navigator.pop(context, name);
-                                },
-                                child: const Text('Crear', style: TextStyle(color: Color(0xFF2DD4BF))),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                      
-                      if (created != null && created.isNotEmpty) {
-                        // Save custom category to user profile
-                        if (user != null) {
-                          final authNotifier = ref.read(authProvider.notifier);
-                          final currentItems = List<String>.from(user.unlockedItems);
-                          final newTag = 'cat_$created';
-                          if (!currentItems.contains(newTag)) {
-                            currentItems.add(newTag);
-                            await authNotifier.updateProfile(user.copyWith(unlockedItems: currentItems));
-                          }
-                        }
-                        Navigator.pop(context, created); // Return it as selected
-                      }
-                    },
-                    child: const Text('Crear', style: TextStyle(color: Color(0xFF2DD4BF))),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                controller: scrollController,
-                itemCount: allCats.length,
-                itemBuilder: (context, index) {
-                  final cat = allCats[index];
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-                    title: Text(loc.translateCategory(cat), style: const TextStyle(color: Colors.white)),
-                    trailing: _parsedCategory == cat ? const Icon(LucideIcons.check, color: Color(0xFF2DD4BF)) : null,
-                    onTap: () => Navigator.pop(context, cat),
-                  );
-                },
-              ),
-            ),
-          ],
+        child: Text(
+          text,
+          style: TextStyle(
+            color: isDark ? Colors.white70 : Colors.black87,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );
-    if (newCat != null) {
-      setState(() => _parsedCategory = newCat);
-    }
   }
 
-  Future<void> _editPaymentMethod() async {
-    final cards = ref.read(creditCardsProvider).value ?? [];
-    final newMethod = await showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: const Color(0xFF1E293B),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => ListView(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        children: [
-          ListTile(
-            leading: const Icon(LucideIcons.banknote, color: Colors.green),
-            title: const Text('Efectivo / Cuenta', style: TextStyle(color: Colors.white)),
-            onTap: () => Navigator.pop(context, 'cash'),
-          ),
-          if (_parsedType == 'expense') ...cards.map((c) => ListTile(
-            leading: const Icon(LucideIcons.creditCard, color: Colors.blue),
-            title: Text(c.name, style: const TextStyle(color: Colors.white)),
-            subtitle: Text('Límite: ${CurrencyFormatter.format(c.limit, ref.read(authProvider).user?.currency ?? "USD")}', style: const TextStyle(color: Colors.white54, fontSize: 12)),
-            onTap: () => Navigator.pop(context, c.id),
-          )).toList(),
-        ],
-      ),
-    );
-    if (newMethod != null) {
-      setState(() {
-        if (newMethod == 'cash') {
-          _selectedCreditCardId = null;
-        } else {
-          _selectedCreditCardId = newMethod;
-        }
-      });
-    }
-  }
+  // ─────────────────────────────────────────────────────────────────────────────
+  // VISTA 2: PREVIEW REDISEÑADA, MODERNA Y ELEGANTE
+  // ─────────────────────────────────────────────────────────────────────────────
 
   Widget _buildPreviewView(bool isDark) {
     final isIncome = _parsedType == 'income';
-    final amount = _parsedAmount;
-    final currencyCode = ref.read(authProvider).user?.currency ?? 'USD';
-    final formattedAmount = '${isIncome ? '+' : '-'}${CurrencyFormatter.format(amount, currencyCode)}';
-    
-    return Container(
-      width: double.infinity,
-      color: const Color(0xFF16132D),
+    final user = ref.read(authProvider).user;
+    final currency = user?.currency ?? 'USD';
+    final cards = ref.read(creditCardsProvider).value ?? [];
+
+    final categoriesList = isIncome
+        ? [
+            {'id': 'salary', 'label': 'Salario', 'icon': LucideIcons.briefcase, 'color': const Color(0xFF10B981)},
+            {'id': 'freelance', 'label': 'Freelance', 'icon': LucideIcons.laptop, 'color': const Color(0xFF06B6D4)},
+            {'id': 'bonus', 'label': 'Bono', 'icon': LucideIcons.sparkles, 'color': const Color(0xFFF59E0B)},
+            {'id': 'investment', 'label': 'Inversión', 'icon': LucideIcons.trendingUp, 'color': const Color(0xFF8B5CF6)},
+            {'id': 'gift', 'label': 'Regalo', 'icon': LucideIcons.gift, 'color': const Color(0xFFEC4899)},
+            {'id': 'other', 'label': 'Otro', 'icon': LucideIcons.moreHorizontal, 'color': const Color(0xFF64748B)},
+          ]
+        : [
+            {'id': 'food', 'label': 'Comida', 'icon': LucideIcons.utensils, 'color': const Color(0xFFEF4444)},
+            {'id': 'transport', 'label': 'Transporte', 'icon': LucideIcons.car, 'color': const Color(0xFF3B82F6)},
+            {'id': 'bills', 'label': 'Servicios', 'icon': LucideIcons.zap, 'color': const Color(0xFFF59E0B)},
+            {'id': 'shopping', 'label': 'Compras', 'icon': LucideIcons.shoppingBag, 'color': const Color(0xFFEC4899)},
+            {'id': 'entertainment', 'label': 'Ocio', 'icon': LucideIcons.film, 'color': const Color(0xFF8B5CF6)},
+            {'id': 'health', 'label': 'Salud', 'icon': LucideIcons.heartPulse, 'color': const Color(0xFF10B981)},
+            {'id': 'home', 'label': 'Hogar', 'icon': LucideIcons.home, 'color': const Color(0xFF06B6D4)},
+            {'id': 'education', 'label': 'Educación', 'icon': LucideIcons.bookOpen, 'color': const Color(0xFF6366F1)},
+            {'id': 'other', 'label': 'Otro', 'icon': LucideIcons.moreHorizontal, 'color': const Color(0xFF64748B)},
+          ];
+
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(child: Container()), // Empty space at top
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(32), topRight: Radius.circular(32)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+          // Header Bar
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: (isIncome ? const Color(0xFF10B981) : const Color(0xFFEF4444)).withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: (isIncome ? const Color(0xFF10B981) : const Color(0xFFEF4444)).withValues(alpha: 0.4),
+                  ),
                 ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        const Icon(LucideIcons.alignLeft, color: Color(0xFF2DD4BF), size: 16),
-                        const SizedBox(width: 8),
-                        const Text('LEÍDO DE TU NOTA', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
-                      ],
+                    Icon(
+                      isIncome ? LucideIcons.arrowDownLeft : LucideIcons.arrowUpRight,
+                      size: 14,
+                      color: isIncome ? const Color(0xFF10B981) : const Color(0xFFEF4444),
                     ),
-                    IconButton(
-                      icon: const Icon(LucideIcons.x, color: Colors.white54),
-                      onPressed: () => Navigator.pop(context),
+                    const SizedBox(width: 6),
+                    Text(
+                      isIncome ? 'INGRESO DETECTADO' : 'GASTO DETECTADO',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.8,
+                        color: isIncome ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0F172A),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(isIncome ? LucideIcons.trendingUp : LucideIcons.car, color: const Color(0xFF3B82F6)),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          GestureDetector(
-                            onTap: _editDescription,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(child: Text(_parsedDescription.isNotEmpty ? _parsedDescription : 'Transacción', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
-                                const SizedBox(width: 8),
-                                const Icon(LucideIcons.edit2, color: Colors.white54, size: 16),
-                              ],
-                            ),
+              ),
+              IconButton(
+                icon: Icon(LucideIcons.x, color: isDark ? Colors.white54 : Colors.black54),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // Big Amount Card with Tap-To-Edit
+          Center(
+            child: Column(
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    final ctrl = TextEditingController(text: _parsedAmount.toStringAsFixed(2));
+                    final res = await showDialog<double>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        title: const Text('Editar Monto', style: TextStyle(fontWeight: FontWeight.bold)),
+                        content: TextField(
+                          controller: ctrl,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          autofocus: true,
+                          decoration: const InputDecoration(hintText: '0.00'),
+                        ),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+                          ElevatedButton(
+                            onPressed: () {
+                              final v = double.tryParse(ctrl.text.trim());
+                              if (v != null && v > 0) Navigator.pop(ctx, v);
+                            },
+                            child: const Text('Guardar'),
                           ),
-                          const SizedBox(height: 4),
-                          GestureDetector(
-                            onTap: _editCategory,
-                            child: Row(
-                              children: [
-                                Text(ref.read(localizationProvider).translateCategory(_parsedCategory), style: const TextStyle(color: Color(0xFF2DD4BF), fontSize: 14)),
-                                const SizedBox(width: 4),
-                                const Icon(LucideIcons.chevronDown, color: Color(0xFF2DD4BF), size: 14),
-                                const SizedBox(width: 12),
-                                const Icon(LucideIcons.calendar, color: Colors.white54, size: 12),
-                                const SizedBox(width: 4),
-                                Text('Hoy', style: const TextStyle(color: Colors.white54, fontSize: 14)),
-                              ],
+                        ],
+                      ),
+                    );
+                    if (res != null && mounted) {
+                      setState(() => _parsedAmount = res);
+                    }
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${isIncome ? "+" : "-"}${CurrencyFormatter.format(_parsedAmount, currency)}',
+                        style: TextStyle(
+                          fontSize: 42,
+                          fontWeight: FontWeight.w900,
+                          color: isIncome ? const Color(0xFF10B981) : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                          letterSpacing: -1,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(LucideIcons.edit2, size: 18, color: isDark ? Colors.white38 : Colors.black38),
+                    ],
+                  ),
+                ),
+                Text(
+                  'Toca el monto para corregirlo si es necesario',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.white38 : Colors.black38,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 28),
+
+          // Description Field
+          Text(
+            'CONCEPTO / DESCRIPCIÓN',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.8,
+              color: isDark ? Colors.white54 : Colors.black54,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF141C2E) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? const Color(0xFF22324D) : const Color(0xFFCBD5E1),
+              ),
+            ),
+            child: TextField(
+              controller: _descController,
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+              decoration: const InputDecoration(
+                hintText: 'Ej. Pizza, Gasolina, Supermercado',
+                hintStyle: TextStyle(color: Colors.white30),
+                border: InputBorder.none,
+                prefixIcon: Icon(LucideIcons.fileText, color: Color(0xFF38BDF8), size: 20),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Categories Selector
+          Text(
+            'CATEGORÍA',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.8,
+              color: isDark ? Colors.white54 : Colors.black54,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 48,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: categoriesList.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final cat = categoriesList[index];
+                final isSelected = _parsedCategory == cat['id'];
+                final catColor = cat['color'] as Color;
+
+                return GestureDetector(
+                  onTap: () => setState(() => _parsedCategory = cat['id'] as String),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? catColor.withValues(alpha: 0.2)
+                          : (isDark ? const Color(0xFF141C2E) : Colors.white),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isSelected ? catColor : (isDark ? const Color(0xFF22324D) : const Color(0xFFE2E8F0)),
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(cat['icon'] as IconData, size: 16, color: isSelected ? catColor : (isDark ? Colors.white60 : Colors.black54)),
+                        const SizedBox(width: 8),
+                        Text(
+                          cat['label'] as String,
+                          style: TextStyle(
+                            color: isSelected ? (isDark ? Colors.white : Colors.black87) : (isDark ? Colors.white60 : Colors.black54),
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          if (!isIncome) ...[
+            const SizedBox(height: 24),
+
+            // Payment Method Switcher (Efectivo vs Tarjeta)
+            Text(
+              'MÉTODO DE PAGO',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.8,
+                color: isDark ? Colors.white54 : Colors.black54,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() {
+                      _parsedPaymentMethod = 'efectivo';
+                      _selectedCreditCardId = null;
+                    }),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        color: _parsedPaymentMethod == 'efectivo'
+                            ? const Color(0xFF10B981).withValues(alpha: 0.18)
+                            : (isDark ? const Color(0xFF141C2E) : Colors.white),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: _parsedPaymentMethod == 'efectivo'
+                              ? const Color(0xFF10B981)
+                              : (isDark ? const Color(0xFF22324D) : const Color(0xFFE2E8F0)),
+                          width: _parsedPaymentMethod == 'efectivo' ? 2 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(LucideIcons.banknote, color: _parsedPaymentMethod == 'efectivo' ? const Color(0xFF10B981) : Colors.grey, size: 18),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Efectivo',
+                            style: TextStyle(
+                              color: _parsedPaymentMethod == 'efectivo' ? Colors.white : Colors.grey,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Text(formattedAmount, style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 24),
-                GestureDetector(
-                  onTap: _editPaymentMethod,
-                  child: Row(
-                    children: [
-                      Icon(_selectedCreditCardId == null ? LucideIcons.banknote : LucideIcons.creditCard, color: Colors.white54, size: 14),
-                      const SizedBox(width: 8),
-                      Text(_selectedCreditCardId == null ? 'Efectivo / Cuenta' : 'Tarjeta de Crédito', style: const TextStyle(color: Color(0xFF2DD4BF), fontSize: 14)),
-                      const SizedBox(width: 4),
-                      const Icon(LucideIcons.chevronDown, color: Color(0xFF2DD4BF), size: 14),
-                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    const Icon(LucideIcons.tag, color: Colors.white54, size: 14),
-                    const SizedBox(width: 8),
-                    const Text('Etiquetas', style: TextStyle(color: Colors.white54, fontSize: 14)),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white12),
-                  ),
-                  child: const Text('+ #', style: TextStyle(color: Colors.white)),
-                ),
-                const SizedBox(height: 40),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _saveTransaction,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2DD4BF),
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() {
+                      _parsedPaymentMethod = 'tarjeta';
+                      if (_selectedCreditCardId == null && cards.isNotEmpty) {
+                        _selectedCreditCardId = cards.first.id;
+                      }
+                    }),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        color: _parsedPaymentMethod == 'tarjeta'
+                            ? const Color(0xFF3B82F6).withValues(alpha: 0.18)
+                            : (isDark ? const Color(0xFF141C2E) : Colors.white),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: _parsedPaymentMethod == 'tarjeta'
+                              ? const Color(0xFF3B82F6)
+                              : (isDark ? const Color(0xFF22324D) : const Color(0xFFE2E8F0)),
+                          width: _parsedPaymentMethod == 'tarjeta' ? 2 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(LucideIcons.creditCard, color: _parsedPaymentMethod == 'tarjeta' ? const Color(0xFF3B82F6) : Colors.grey, size: 18),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Tarjeta de Crédito',
+                            style: TextStyle(
+                              color: _parsedPaymentMethod == 'tarjeta' ? Colors.white : Colors.grey,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Text(isIncome ? 'Agregar ingreso' : 'Agregar gasto', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                   ),
                 ),
-                const SizedBox(height: 16),
               ],
             ),
+
+            // Credit card picker if 'tarjeta' is selected
+            if (_parsedPaymentMethod == 'tarjeta' && cards.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF141C2E) : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF22324D) : const Color(0xFFCBD5E1),
+                  ),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    isExpanded: true,
+                    value: _selectedCreditCardId ?? cards.first.id,
+                    dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    items: cards.map((c) {
+                      return DropdownMenuItem<String>(
+                        value: c.id,
+                        child: Row(
+                          children: [
+                            const Icon(LucideIcons.creditCard, color: Color(0xFF38BDF8), size: 18),
+                            const SizedBox(width: 10),
+                            Text(
+                              '${c.name} (${c.network.toUpperCase()})',
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black87,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) setState(() => _selectedCreditCardId = val);
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ],
+
+          const SizedBox(height: 36),
+
+          // Primary Save Action
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isProcessing ? null : _saveTransaction,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isIncome ? const Color(0xFF10B981) : const Color(0xFF0284C7),
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                elevation: 6,
+                shadowColor: (isIncome ? const Color(0xFF10B981) : const Color(0xFF0284C7)).withValues(alpha: 0.4),
+              ),
+              child: _isProcessing
+                  ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                  : Text(
+                      isIncome ? 'Guardar Ingreso' : 'Guardar Gasto',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+            ),
           ),
+
+          const SizedBox(height: 12),
+
+          // Secondary Re-record button
+          Center(
+            child: TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  _showPreview = false;
+                  _textController.clear();
+                  _recognizedText = '';
+                });
+                _startListening();
+              },
+              icon: const Icon(LucideIcons.rotateCcw, size: 16, color: Color(0xFF38BDF8)),
+              label: const Text('Volver a dictar', style: TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold)),
+            ),
+          ),
+
+          const SizedBox(height: 20),
         ],
       ),
     );
   }
-
 }

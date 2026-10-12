@@ -458,17 +458,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     subtitle: 'Acceso rápido biométrico activado',
                     onTap: () => _showBiometricTestModal(context, isDark),
                   ),
-                  _buildSettingItem(
-                    isDark,
-                    icon: LucideIcons.mic,
-                    iconBg: isDark
-                        ? const Color(0xFF8B5CF6).withValues(alpha: 0.3)
-                        : const Color(0xFFF3E8FF),
-                    iconColor: const Color(0xFF8B5CF6),
-                    title: 'Voz de la IA',
-                    subtitle: 'Personaliza cómo te habla QUIVO',
-                    onTap: () => _showAIVoiceModal(context, isDark),
-                  ),
 
                   _buildSettingItem(
                     isDark,
@@ -481,70 +470,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         'Cierre Automático (${user?.autoLockMinutes ?? 1} min)',
                     subtitle: 'Protección de privacidad activa',
                     onTap: () => _showTimeoutInfoModal(context, isDark),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Presupuestos & Sincronización Section
-              _buildSection(
-                isDark,
-                title: 'Automatización & Límites',
-                items: [
-                  _buildSettingItem(
-                    isDark,
-                    icon: LucideIcons.zap,
-                    iconBg: isDark
-                        ? const Color(0xFF312E81).withValues(alpha: 0.6)
-                        : const Color(0xFFE0E7FF),
-                    iconColor: const Color(0xFF6366F1),
-                    title: 'Conexión Bancaria y Siri',
-                    subtitle: 'Clasificación de gastos automática',
-                    badge: !isPremium ? 'PRO' : 'Activo',
-                    badgeColor: !isPremium
-                        ? const Color(0xFFD97706)
-                        : const Color(0xFF6366F1),
-                    onTap: () {
-                      if (!isPremium) {
-                        PremiumPaywallDialog.show(
-                          context,
-                          customMessage:
-                              'Conecta notificaciones bancarias y atajos de voz de Siri con el Plan Premium.',
-                        );
-                      } else {
-                        /* PremiumSyncHubModal removed */
-                      }
-                    },
-                  ),
-                  _buildSettingItem(
-                    isDark,
-                    icon: LucideIcons.pieChart,
-                    iconBg: isDark
-                        ? const Color(0xFF581C87)
-                        : const Color(0xFFF3E8FF),
-                    iconColor: isDark
-                        ? const Color(0xFFC084FC)
-                        : const Color(0xFF9333EA),
-                    title: 'Presupuesto por Categoría',
-                    subtitle: 'Establece límites por rubro',
-                    badge: !isPremium ? 'PRO' : null,
-                    badgeColor: !isPremium ? const Color(0xFFD97706) : null,
-                    onTap: () => CategoryBudgetModal.show(context),
-                  ),
-                  _buildSettingItem(
-                    isDark,
-                    icon: LucideIcons.bellRing,
-                    iconBg: isDark
-                        ? const Color(0xFF78350F).withValues(alpha: 0.5)
-                        : const Color(0xFFFEF3C7),
-                    iconColor: isDark
-                        ? const Color(0xFFFBBF24)
-                        : const Color(0xFFD97706),
-                    title: 'Alertas de Presupuesto',
-                    subtitle: 'Avisos al acercarte al límite',
-                    badge: !isPremium ? 'PRO' : null,
-                    badgeColor: !isPremium ? const Color(0xFFD97706) : null,
-                    onTap: () => _showBudgetAlertModal(context, isDark),
                   ),
                 ],
               ),

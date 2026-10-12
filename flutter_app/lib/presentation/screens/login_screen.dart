@@ -296,702 +296,610 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = const Color(0xFF13131A);
-    final sheetColor = isDark ? const Color(0xFF1E1E26) : Colors.white;
-    final textColor = isDark ? Colors.white : Colors.black;
+    final emeraldAccent = const Color(0xFF10B981);
+
+    final bgGradient = isDark
+        ? const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF090D1A), Color(0xFF0E1326), Color(0xFF070A14)],
+          )
+        : const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFF8FAFC), Color(0xFFF1F5F9), Color(0xFFE2E8F0)],
+          );
+
+    final inputBg = isDark
+        ? const Color(0xFF141C2E)
+        : const Color(0xFFF1F5F9);
+
+    final borderColor = isDark
+        ? const Color(0xFF22324D)
+        : const Color(0xFFCBD5E1);
+
+    final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final subtitleColor = isDark
-        ? const Color(0xFF9CA3AF)
-        : const Color(0xFF4B5563);
-    final inputBg = isDark ? const Color(0xFF2A2A35) : const Color(0xFFF3F4F6);
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
 
     return Scaffold(
-      backgroundColor: bgColor,
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Column(
-                    children: [
-                      SafeArea(
-                        bottom: false,
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 20),
-                            Align(
-                              alignment: Alignment.topRight,
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 24.0),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    onTap: () => LanguageModal.show(context),
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(gradient: bgGradient),
+          child: Stack(
+            children: [
+              // Ambient soft glow orbs
+              Positioned(
+                top: -80,
+                right: -60,
+                child: Container(
+                  width: 280,
+                  height: 280,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        (isDark ? const Color(0xFF3B82F6) : const Color(0xFF60A5FA)).withValues(alpha: 0.2),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 40,
+                left: -70,
+                child: Container(
+                  width: 300,
+                  height: 300,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        (isDark ? const Color(0xFF06B6D4) : const Color(0xFF38BDF8)).withValues(alpha: 0.15),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              SafeArea(
+                child: Center(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 420),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Top bar: Language switch
+                          Align(
+                            alignment: Alignment.topRight,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => LanguageModal.show(context),
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
                                     borderRadius: BorderRadius.circular(20),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 14,
-                                        vertical: 8,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.2,
-                                          ),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(
-                                            LucideIcons.globe,
-                                            color: Colors.white,
-                                            size: 16,
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            ref
-                                                .watch(localizationProvider)
-                                                .intlLocale
-                                                .toUpperCase(),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 20),
-                            Hero(
-                              tag: 'app_logo',
-                              child: Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(24),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(
-                                        0xFF3B82F6,
-                                      ).withValues(alpha: 0.5),
-                                      blurRadius: 30,
-                                      spreadRadius: -5,
-                                    ),
-                                  ],
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    'Q',
-                                    style: TextStyle(
-                                      color: Color(0xFF0F172A),
-                                      fontSize: 50,
-                                      fontWeight: FontWeight.w900,
-                                      fontFamily: 'serif',
-                                      decoration: TextDecoration.none,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            const Text(
-                              'QUIVO',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 32,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 2,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 300),
-                              child: Text(
-                                isLogin ? _t('welcome') : _t('start_journey'),
-                                key: ValueKey(isLogin),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'serif',
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            const SizedBox(height: 40),
-                          ],
-                        ),
-                      ),
-
-                      const Spacer(),
-
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: sheetColor,
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(40),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 30,
-                              offset: const Offset(0, -10),
-                            ),
-                          ],
-                        ),
-                        padding: const EdgeInsets.only(
-                          left: 32,
-                          right: 32,
-                          top: 32,
-                          bottom: 40,
-                        ),
-                        child: AnimatedSize(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: inputBg,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: GestureDetector(
-                                        onTap: () =>
-                                            setState(() => isLogin = true),
-                                        child: AnimatedContainer(
-                                          duration: const Duration(
-                                            milliseconds: 200,
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 14,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: isLogin
-                                                ? (isDark
-                                                      ? Colors.white
-                                                      : const Color(0xFF0F172A))
-                                                : Colors.transparent,
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              _t('tab_login'),
-                                              style: TextStyle(
-                                                color: isLogin
-                                                    ? (isDark
-                                                          ? Colors.black
-                                                          : Colors.white)
-                                                    : subtitleColor,
-                                                fontWeight: isLogin
-                                                    ? FontWeight.bold
-                                                    : FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: GestureDetector(
-                                        onTap: () =>
-                                            setState(() => isLogin = false),
-                                        child: AnimatedContainer(
-                                          duration: const Duration(
-                                            milliseconds: 200,
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 14,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: !isLogin
-                                                ? (isDark
-                                                      ? Colors.white
-                                                      : const Color(0xFF0F172A))
-                                                : Colors.transparent,
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              _t('tab_register'),
-                                              style: TextStyle(
-                                                color: !isLogin
-                                                    ? (isDark
-                                                          ? Colors.black
-                                                          : Colors.white)
-                                                    : subtitleColor,
-                                                fontWeight: !isLogin
-                                                    ? FontWeight.bold
-                                                    : FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: inputBg,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: TextField(
-                                  controller: _emailController,
-                                  style: TextStyle(
-                                    color: textColor,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: _t('email'),
-                                    hintStyle: TextStyle(color: subtitleColor),
-                                    prefixIcon: Icon(
-                                      LucideIcons.mail,
-                                      color: subtitleColor,
-                                      size: 20,
-                                    ),
-                                    border: InputBorder.none,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 18,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: inputBg,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: TextField(
-                                  controller: _passwordController,
-                                  obscureText: obscurePassword,
-                                  style: TextStyle(
-                                    color: textColor,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: _t('password'),
-                                    hintStyle: TextStyle(color: subtitleColor),
-                                    prefixIcon: Icon(
-                                      LucideIcons.lock,
-                                      color: subtitleColor,
-                                      size: 20,
-                                    ),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        obscurePassword
-                                            ? LucideIcons.eyeOff
-                                            : LucideIcons.eye,
-                                        color: subtitleColor,
-                                        size: 20,
-                                      ),
-                                      onPressed: () => setState(
-                                        () =>
-                                            obscurePassword = !obscurePassword,
-                                      ),
-                                    ),
-                                    border: InputBorder.none,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 18,
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              if (!isLogin) ...[
-                                const SizedBox(height: 24),
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    _t('purpose_title'),
-                                    style: TextStyle(
-                                      color: textColor,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: purposes.map((p) {
-                                    final isSelected = purpose == p['value'];
-                                    return GestureDetector(
-                                      onTap: () => setState(
-                                        () => purpose = p['value'] as String,
-                                      ),
-                                      child: AnimatedContainer(
-                                        duration: const Duration(
-                                          milliseconds: 200,
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 14,
-                                          vertical: 10,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: isSelected
-                                              ? const Color(0xFF3B82F6)
-                                              : inputBg,
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          border: Border.all(
-                                            color: isSelected
-                                                ? const Color(0xFF3B82F6)
-                                                : Colors.transparent,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              p['icon'] as IconData,
-                                              size: 16,
-                                              color: isSelected
-                                                  ? Colors.white
-                                                  : subtitleColor,
-                                            ),
-                                            const SizedBox(width: 6),
-                                            Text(
-                                              _t(p['key'] as String),
-                                              style: TextStyle(
-                                                color: isSelected
-                                                    ? Colors.white
-                                                    : textColor,
-                                                fontSize: 12,
-                                                fontWeight: isSelected
-                                                    ? FontWeight.bold
-                                                    : FontWeight.w500,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                              ],
-
-                              const SizedBox(height: 16),
-
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  if (isBiometricSupported && isLogin)
-                                    GestureDetector(
-                                      onTap: _loginWithBiometrics,
-                                      child: Row(
-                                        children: [
-                                          const Icon(
-                                            LucideIcons.fingerprint,
-                                            color: Color(0xFF3B82F6),
-                                            size: 20,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            _t('biometric_login'),
-                                            style: TextStyle(
-                                              color: textColor,
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 13,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  else if (isBiometricSupported && !isLogin)
-                                    Row(
-                                      children: [
-                                        Switch(
-                                          value: rememberBiometric,
-                                          onChanged: (val) => setState(
-                                            () => rememberBiometric = val,
-                                          ),
-                                          activeColor: const Color(0xFF3B82F6),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          _t('biometric_enable'),
-                                          style: TextStyle(
-                                            color: textColor,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  else
-                                    const SizedBox(),
-
-                                  if (isLogin)
-                                    GestureDetector(
-                                      onTap: () =>
-                                          ForgotPasswordModal.show(context),
-                                      child: Text(
-                                        _t('forgot_pass'),
-                                        style: TextStyle(
-                                          color: const Color(0xFF3B82F6),
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              const SizedBox(height: 24),
-
-                              _AnimatedScaleButton(
-                                onPressed: _isLoading
-                                    ? null
-                                    : () async {
-                                        setState(() => _isLoading = true);
-                                        try {
-                                          if (isLogin) {
-                                            await ref
-                                                .read(authProvider.notifier)
-                                                .login(
-                                                  _emailController.text.trim(),
-                                                  _passwordController.text
-                                                      .trim(),
-                                                );
-                                            if (!mounted) return;
-                                            _showWelcomeMessage(context);
-                                            context.go('/dashboard');
-                                          } else {
-                                            await ref
-                                                .read(authProvider.notifier)
-                                                .register(
-                                                  _emailController.text.trim(),
-                                                  _passwordController.text
-                                                      .trim(),
-                                                  purpose,
-                                                );
-                                            if (!mounted) return;
-                                            _showWelcomeMessage(context);
-                                            context.go('/dashboard');
-                                          }
-                                        } catch (e) {
-                                          _showErrorSnackBar(
-                                            context,
-                                            'Error',
-                                            e.toString(),
-                                          );
-                                        } finally {
-                                          if (mounted)
-                                            setState(() => _isLoading = false);
-                                        }
-                                      },
-                                child: Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 18,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF3B82F6),
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(
-                                          0xFF3B82F6,
-                                        ).withValues(alpha: 0.3),
-                                        blurRadius: 15,
-                                        offset: const Offset(0, 5),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: _isLoading
-                                        ? const SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              color: Colors.white,
-                                              strokeWidth: 3,
-                                            ),
-                                          )
-                                        : Text(
-                                            isLogin
-                                                ? _t('tab_login')
-                                                : _t('tab_register'),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Divider(
-                                      color: subtitleColor.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                    ),
-                                    child: Text(
-                                      'OR CONTINUE WITH',
-                                      style: TextStyle(
-                                        color: subtitleColor,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1,
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Divider(
-                                      color: subtitleColor.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 24),
-
-                              _AnimatedScaleButton(
-                                onPressed: _isLoading
-                                    ? null
-                                    : () async {
-                                        setState(() => _isLoading = true);
-                                        try {
-                                          await ref
-                                              .read(authProvider.notifier)
-                                              .loginWithGoogle();
-                                          if (!mounted) return;
-                                          _showWelcomeMessage(context);
-                                          context.go('/dashboard');
-                                        } catch (e) {
-                                          _showErrorSnackBar(
-                                            context,
-                                            'Error',
-                                            e.toString(),
-                                          );
-                                        } finally {
-                                          if (mounted)
-                                            setState(() => _isLoading = false);
-                                        }
-                                      },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isDark
-                                        ? const Color(0xFF2A2A35)
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
-                                      color: isDark
-                                          ? Colors.white.withValues(alpha: 0.1)
-                                          : Colors.black.withValues(alpha: 0.1),
+                                      color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.1),
                                     ),
                                   ),
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Image.network(
-                                        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/120px-Google_%22G%22_logo.svg.png',
-                                        height: 20,
-                                        errorBuilder: (_, __, ___) =>
-                                            const Icon(
-                                              LucideIcons.chrome,
-                                              color: Colors.blue,
-                                            ),
-                                      ),
-                                      const SizedBox(width: 10),
+                                      const Icon(LucideIcons.globe, color: Color(0xFF38BDF8), size: 16),
+                                      const SizedBox(width: 6),
                                       Text(
-                                        'Google',
+                                        ref.watch(localizationProvider).intlLocale.toUpperCase(),
                                         style: TextStyle(
-                                          color: textColor,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 14,
+                                          color: isDark ? Colors.white : Colors.black87,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 24),
-                              Wrap(
-                                alignment: WrapAlignment.center,
-                                children: [
-                                  Text(
-                                    isLogin
-                                        ? _t('new_to_quivo')
-                                        : _t('already_have_account'),
-                                    style: TextStyle(
-                                      color: subtitleColor,
-                                      fontSize: 13,
+                            ),
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // Brand Icon: Squircle with glowing Piggy Bank
+                          Hero(
+                            tag: 'app_logo',
+                            child: Container(
+                              width: 76,
+                              height: 76,
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF141C2E) : Colors.white,
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
+                                    blurRadius: 28,
+                                    spreadRadius: -2,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  LucideIcons.piggyBank,
+                                  size: 38,
+                                  color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // Welcome Titles
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: Column(
+                              key: ValueKey(isLogin),
+                              children: [
+                                Text(
+                                  isLogin ? _t('welcome') : _t('start_journey'),
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -0.5,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  isLogin ? _t('welcome_sub') : _t('start_journey_sub'),
+                                  style: TextStyle(
+                                    color: subtitleColor,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 26),
+
+                          // Segmented Tabs: Iniciar Sesión / Registro
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF141C2E) : const Color(0xFFE2E8F0),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: borderColor),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => setState(() => isLogin = true),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      decoration: BoxDecoration(
+                                        gradient: isLogin
+                                            ? const LinearGradient(
+                                                colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                                              )
+                                            : null,
+                                        color: isLogin ? null : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: isLogin
+                                            ? [
+                                                BoxShadow(
+                                                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                                                  blurRadius: 10,
+                                                  offset: const Offset(0, 3),
+                                                ),
+                                              ]
+                                            : [],
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          _t('tab_login'),
+                                          style: TextStyle(
+                                            color: isLogin ? Colors.white : subtitleColor,
+                                            fontWeight: isLogin ? FontWeight.bold : FontWeight.w600,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(width: 4),
-                                  GestureDetector(
-                                    onTap: () =>
-                                        setState(() => isLogin = !isLogin),
+                                ),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => setState(() => isLogin = false),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      decoration: BoxDecoration(
+                                        gradient: !isLogin
+                                            ? const LinearGradient(
+                                                colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                                              )
+                                            : null,
+                                        color: !isLogin ? null : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: !isLogin
+                                            ? [
+                                                BoxShadow(
+                                                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                                                  blurRadius: 10,
+                                                  offset: const Offset(0, 3),
+                                                ),
+                                              ]
+                                            : [],
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          _t('tab_register'),
+                                          style: TextStyle(
+                                            color: !isLogin ? Colors.white : subtitleColor,
+                                            fontWeight: !isLogin ? FontWeight.bold : FontWeight.w600,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 22),
+
+                          // Email Field
+                          Container(
+                            decoration: BoxDecoration(
+                              color: inputBg,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: borderColor),
+                            ),
+                            child: TextField(
+                              controller: _emailController,
+                              style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
+                              decoration: InputDecoration(
+                                hintText: _t('email'),
+                                hintStyle: TextStyle(color: subtitleColor, fontSize: 14),
+                                prefixIcon: const Icon(LucideIcons.mail, color: Color(0xFF38BDF8), size: 19),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 14),
+
+                          // Password Field
+                          Container(
+                            decoration: BoxDecoration(
+                              color: inputBg,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: borderColor),
+                            ),
+                            child: TextField(
+                              controller: _passwordController,
+                              obscureText: obscurePassword,
+                              style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
+                              decoration: InputDecoration(
+                                hintText: _t('password'),
+                                hintStyle: TextStyle(color: subtitleColor, fontSize: 14),
+                                prefixIcon: const Icon(LucideIcons.lock, color: Color(0xFF38BDF8), size: 19),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    obscurePassword ? LucideIcons.eyeOff : LucideIcons.eye,
+                                    color: subtitleColor,
+                                    size: 19,
+                                  ),
+                                  onPressed: () => setState(() => obscurePassword = !obscurePassword),
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                              ),
+                            ),
+                          ),
+
+                          // Register purpose selection
+                          if (!isLogin) ...[
+                            const SizedBox(height: 20),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                _t('purpose_title'),
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: purposes.map((p) {
+                                final isSelected = purpose == p['value'];
+                                return GestureDetector(
+                                  onTap: () => setState(() => purpose = p['value'] as String),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? const Color(0xFF2563EB) : inputBg,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: isSelected ? const Color(0xFF38BDF8) : borderColor,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          p['icon'] as IconData,
+                                          size: 15,
+                                          color: isSelected ? Colors.white : subtitleColor,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          _t(p['key'] as String),
+                                          style: TextStyle(
+                                            color: isSelected ? Colors.white : textColor,
+                                            fontSize: 12,
+                                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                            const SizedBox(height: 14),
+                            if (isBiometricSupported)
+                              Row(
+                                children: [
+                                  Switch(
+                                    value: rememberBiometric,
+                                    onChanged: (val) => setState(() => rememberBiometric = val),
+                                    activeColor: const Color(0xFF38BDF8),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
                                     child: Text(
-                                      isLogin
-                                          ? _t('btn_register')
-                                          : _t('btn_login'),
-                                      style: const TextStyle(
-                                        color: Color(0xFF3B82F6),
-                                        fontWeight: FontWeight.bold,
+                                      _t('biometric_enable'),
+                                      style: TextStyle(
+                                        color: textColor,
+                                        fontWeight: FontWeight.w600,
                                         fontSize: 13,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
+                          ],
+
+                          // Forgot Password
+                          if (isLogin) ...[
+                            const SizedBox(height: 12),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: GestureDetector(
+                                onTap: () => ForgotPasswordModal.show(context),
+                                child: Text(
+                                  _t('forgot_pass'),
+                                  style: const TextStyle(
+                                    color: Color(0xFF38BDF8),
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+
+                          const SizedBox(height: 24),
+
+                          // Primary Action Button (Ingresar a mi cuenta / Crear mi cuenta)
+                          _AnimatedScaleButton(
+                            onPressed: _isLoading
+                                ? null
+                                : () async {
+                                    setState(() => _isLoading = true);
+                                    try {
+                                      if (isLogin) {
+                                        await ref.read(authProvider.notifier).login(
+                                              _emailController.text.trim(),
+                                              _passwordController.text.trim(),
+                                            );
+                                        if (!mounted) return;
+                                        _showWelcomeMessage(context);
+                                        context.go('/dashboard');
+                                      } else {
+                                        await ref.read(authProvider.notifier).register(
+                                              _emailController.text.trim(),
+                                              _passwordController.text.trim(),
+                                              purpose,
+                                            );
+                                        if (!mounted) return;
+                                        _showWelcomeMessage(context);
+                                        context.go('/dashboard');
+                                      }
+                                    } catch (e) {
+                                      _showErrorSnackBar(context, 'Error', e.toString());
+                                    } finally {
+                                      if (mounted) setState(() => _isLoading = false);
+                                    }
+                                  },
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 17),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF3B82F6).withValues(alpha: 0.35),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2.5,
+                                        ),
+                                      )
+                                    : Text(
+                                        isLogin ? _t('btn_login') : _t('btn_register'),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.3,
+                                        ),
+                                      ),
+                              ),
+                            ),
                           ),
-                        ),
+
+                          const SizedBox(height: 14),
+
+                          // Google Sign-In Button
+                          _AnimatedScaleButton(
+                            onPressed: _isLoading
+                                ? null
+                                : () async {
+                                    setState(() => _isLoading = true);
+                                    try {
+                                      await ref.read(authProvider.notifier).loginWithGoogle();
+                                      if (!mounted) return;
+                                      _showWelcomeMessage(context);
+                                      context.go('/dashboard');
+                                    } catch (e) {
+                                      _showErrorSnackBar(context, 'Error', e.toString());
+                                    } finally {
+                                      if (mounted) setState(() => _isLoading = false);
+                                    }
+                                  },
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF141C2E) : Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: borderColor),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.05),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.network(
+                                    'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/120px-Google_%22G%22_logo.svg.png',
+                                    height: 19,
+                                    errorBuilder: (_, __, ___) => const Icon(
+                                      LucideIcons.chrome,
+                                      color: Colors.blue,
+                                      size: 19,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    'Continuar con Google',
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // Biometric Button
+                          if (isBiometricSupported && isLogin) ...[
+                            const SizedBox(height: 22),
+                            _AnimatedScaleButton(
+                              onPressed: _loginWithBiometrics,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
+                                decoration: BoxDecoration(
+                                  color: emeraldAccent.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: emeraldAccent.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      LucideIcons.fingerprint,
+                                      color: emeraldAccent,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      _t('biometric_login'),
+                                      style: TextStyle(
+                                        color: emeraldAccent,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+
+                          const SizedBox(height: 24),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            );
-          },
+            ],
+          ),
         ),
       ),
     );

@@ -562,11 +562,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ? 'Learn how to use the app'
                         : 'Aprende a usar la app',
                     onTap: () async {
+                      // Cerrar inmediatamente el Drawer lateral de ajustes si está abierto
+                      try {
+                        final scaffoldState = Scaffold.maybeOf(context);
+                        if (scaffoldState != null && scaffoldState.isDrawerOpen) {
+                          scaffoldState.closeDrawer();
+                        } else if (Navigator.of(context).canPop()) {
+                          Navigator.of(context).pop();
+                        }
+                      } catch (_) {}
+
                       final prefs = await SharedPreferences.getInstance();
                       await prefs.setBool('has_seen_app_tutorial', false);
                       if (context.mounted) {
                         context.go('/dashboard');
-                        Future.delayed(const Duration(milliseconds: 500), () {
+                        Future.delayed(const Duration(milliseconds: 450), () {
                           showTutorialTrigger.value = true;
                         });
                       }

@@ -53,6 +53,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late AnimationController _fireAnimController;
+  final ScrollController _scrollController = ScrollController();
   bool _limitAlertShown = false;
   bool _fixedExpenseAlertShown = false;
   bool _insightsLoaded = false;
@@ -112,11 +113,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   void dispose() {
     showTutorialTrigger.removeListener(_onTutorialTriggered);
     _fireAnimController.dispose();
+    _scrollController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   void _showTutorial() {
+    if (_scrollController.hasClients && _scrollController.offset > 0) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
+    }
     final loc = ref.read(localizationProvider);
     AppTutorialCoachMark.showTutorial(
       context,
@@ -364,6 +373,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     final isStreakActive = currentStreak >= 2 || isFrozenGrace;
 
     return SingleChildScrollView(
+      controller: _scrollController,
       padding: const EdgeInsets.only(
         left: 24.0,
         right: 24.0,

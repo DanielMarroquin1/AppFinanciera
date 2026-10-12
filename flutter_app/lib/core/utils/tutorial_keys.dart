@@ -7,6 +7,7 @@ class TutorialKeys {
   static final GlobalKey debtsKey = GlobalKey();
   static final GlobalKey cardsKey = GlobalKey();
   static final GlobalKey savingsNavKey = GlobalKey();
+  static final GlobalKey centerFabKey = GlobalKey();
   static final GlobalKey premiumKey = GlobalKey();
 
   // Old keys kept for compatibility

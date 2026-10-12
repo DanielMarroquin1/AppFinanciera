@@ -25,6 +25,14 @@
 -dontwarn com.google.firebase.**
 -dontwarn com.google.android.gms.**
 
+# Google Sign In / Identity Credential Manager (google_sign_in 7+)
+-keep class androidx.credentials.** { *; }
+-keep class com.google.android.libraries.identity.googleid.** { *; }
+-keep class com.google.android.gms.auth.api.signin.** { *; }
+-dontwarn androidx.credentials.**
+-dontwarn com.google.android.libraries.identity.googleid.**
+-dontwarn com.google.android.gms.auth.api.signin.**
+
 # Google Mobile Ads
 -keep public class com.google.android.gms.ads.** { public *; }
 

@@ -1267,6 +1267,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
             key: TutorialKeys.quickActionsKey,
             children: [
               AnimatedQuickActionItem(
+                key: TutorialKeys.incomeKey,
                 index: 0,
                 icon: LucideIcons.trendingUp,
                 label: loc.get('dashboard_income'),
@@ -1276,6 +1277,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
               ),
               const SizedBox(width: 8),
               AnimatedQuickActionItem(
+                key: TutorialKeys.expenseKey,
                 index: 1,
                 icon: LucideIcons.trendingDown,
                 label: loc.get('dashboard_expenses'),
@@ -1285,6 +1287,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
               ),
               const SizedBox(width: 8),
               AnimatedQuickActionItem(
+                key: TutorialKeys.debtsKey,
                 index: 2,
                 icon: LucideIcons.wallet,
                 label: loc.get('dashboard_debts'),
@@ -1294,6 +1297,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
               ),
               const SizedBox(width: 8),
               AnimatedQuickActionItem(
+                key: TutorialKeys.cardsKey,
                 index: 3,
                 icon: LucideIcons.creditCard,
                 label: loc.get('dashboard_cards'),

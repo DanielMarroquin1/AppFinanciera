@@ -175,6 +175,7 @@ class _AppShellState extends ConsumerState<AppShell>
 
                       // Center FAB
                       GestureDetector(
+                        key: TutorialKeys.aiInsightsKey,
                         onTap: () async {
                           HapticFeedback.mediumImpact();
                           _fabController.forward();

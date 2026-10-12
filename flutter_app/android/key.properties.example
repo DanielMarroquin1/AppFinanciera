@@ -1,0 +1,10 @@
+# Plantilla de configuración de firma para Producción (Release)
+# IMPORTANTE:
+# 1. Copia este archivo y nómbralo exactamente "key.properties" en esta misma carpeta (android/).
+# 2. NO subas "key.properties" ni tus archivos ".jks" / ".keystore" a Git (ya están en .gitignore).
+# 3. Completa los valores con la información de tu keystore generado con keytool.
+
+storePassword=TU_CONTRASEÑA_DE_KEYSTORE
+keyPassword=TU_CONTRASEÑA_DE_KEY
+keyAlias=quivo-upload-key
+storeFile=quivo-upload-keystore.jks

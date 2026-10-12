@@ -173,17 +173,29 @@ class AuthRepositoryImpl implements AuthRepository {
           );
         }
 
-        // google_sign_in v7 API: initialize first, then authenticate
-        await googleSignIn.initialize();
+        // google_sign_in v7 API: inicializar con Web Client ID del proyecto Firebase
+        await googleSignIn.initialize(
+          serverClientId:
+              '164540827567-tvoqns335s6nu100chit15d3q99137bt.apps.googleusercontent.com',
+        );
 
         try {
           final dynamic googleUser = await googleSignIn.authenticate();
 
           // v7: authentication is a sync property with idToken
           final dynamic googleAuth = googleUser.authentication;
+          final String? idToken = googleAuth?.idToken;
+
+          if (idToken == null || idToken.isEmpty) {
+            throw firebase_auth.FirebaseAuthException(
+              code: 'null-id-token',
+              message:
+                  'No se pudo obtener el idToken de Google. Verifica las huellas SHA en Firebase.',
+            );
+          }
 
           final credential = firebase_auth.GoogleAuthProvider.credential(
-            idToken: googleAuth.idToken,
+            idToken: idToken,
           );
 
           userCredential = await _firebaseAuth.signInWithCredential(credential);

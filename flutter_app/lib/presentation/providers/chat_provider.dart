@@ -111,6 +111,15 @@ class ChatNotifier extends Notifier<ChatState> {
               displayText =
                   "Creando la meta de ahorro: ${decoded['name']} por \$${decoded['targetAmount']}... ¡Listo!";
               _executeCreateSavingsGoal(decoded);
+            } else if (decoded['___UI_ACTION___'] == true || decoded['action_trigger'] != null) {
+              final msg = decoded['message']?.toString() ?? '';
+              final desc = decoded['action_trigger']?['description']?.toString() ?? '';
+              final title = decoded['action_trigger']?['title']?.toString() ?? '';
+              displayText = [
+                if (msg.isNotEmpty) msg,
+                if (title.isNotEmpty) '**$title**',
+                if (desc.isNotEmpty) desc,
+              ].join('\n\n');
             }
           }
         } catch (_) {

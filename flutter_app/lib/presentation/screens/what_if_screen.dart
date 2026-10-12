@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../providers/auth_provider.dart';
@@ -1948,14 +1950,44 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen>
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            content,
-            style: TextStyle(
-              fontSize: 13,
-              color: isPlaceholder
-                  ? (isDark ? Colors.grey[500] : Colors.grey[400])
-                  : (isDark ? Colors.grey[300] : Colors.grey[700]),
-              height: 1.55,
+          MarkdownBody(
+            data: content,
+            selectable: true,
+            styleSheet: MarkdownStyleSheet(
+              p: TextStyle(
+                fontSize: 13.5,
+                color: isPlaceholder
+                    ? (isDark ? Colors.grey[500] : Colors.grey[400])
+                    : (isDark ? Colors.grey[200] : Colors.grey[800]),
+                height: 1.55,
+              ),
+              strong: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              h1: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: isDark ? const Color(0xFFA5B4FC) : const Color(0xFF4F46E5),
+                height: 1.8,
+              ),
+              h2: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: isDark ? const Color(0xFFA5B4FC) : const Color(0xFF4F46E5),
+                height: 1.8,
+              ),
+              h3: TextStyle(
+                fontSize: 14.5,
+                fontWeight: FontWeight.bold,
+                color: isDark ? const Color(0xFFA5B4FC) : const Color(0xFF4F46E5),
+                height: 1.8,
+              ),
+              listBullet: TextStyle(
+                fontSize: 13.5,
+                color: isDark ? const Color(0xFF818CF8) : const Color(0xFF6366F1),
+              ),
+              blockSpacing: 10,
             ),
           ),
         ],
@@ -2099,57 +2131,139 @@ class _WhatIfScreenState extends ConsumerState<WhatIfScreen>
     final user = ref.read(authProvider).user;
     final transactions = ref.read(transactionsProvider).value ?? [];
     final debts = ref.read(debtsProvider).value ?? [];
+    final goals = ref.read(savingGoalsProvider).value ?? [];
     final sym = CurrencyFormatter.getSymbol(user?.currency);
 
     final now = DateTime.now();
-    final expenses = transactions.where((t) => t.type == 'expense');
-    final incomes = transactions.where((t) => t.type == 'income');
+    final expenses = transactions.where((t) => t.type == 'expense').toList();
+    final incomes = transactions.where((t) => t.type == 'income').toList();
 
-    final monthlyExpenses = expenses
-        .where((t) => t.date.month == now.month && t.date.year == now.year)
-        .fold(0.0, (s, t) => s + t.amount);
-    final monthlyIncomes = incomes
+    // 1. Ingresos del mes o salario base
+    double monthlyIncomes = incomes
         .where((t) => t.date.month == now.month && t.date.year == now.year)
         .fold(0.0, (s, t) => s + t.amount);
 
+    final parsedSalary = double.tryParse(user?.salary?.replaceAll(RegExp(r'[^0-9.]'), '') ?? '') ?? 0.0;
+    if (monthlyIncomes <= 0 && parsedSalary > 0) {
+      monthlyIncomes = parsedSalary;
+    } else if (monthlyIncomes <= 0 && incomes.isNotEmpty) {
+      final recentIncomes = incomes
+          .where((t) => t.date.isAfter(now.subtract(const Duration(days: 60))))
+          .toList();
+      if (recentIncomes.isNotEmpty) {
+        monthlyIncomes = recentIncomes.fold(0.0, (s, t) => s + t.amount) / 2;
+      }
+    }
+
+    // 2. Gastos del mes y desglose detallado
+    final thisMonthExpenses = expenses
+        .where((t) => t.date.month == now.month && t.date.year == now.year)
+        .toList();
+
+    double monthlyExpenses = thisMonthExpenses.fold(0.0, (s, t) => s + t.amount);
     final Map<String, double> byCat = {};
-    for (var t in expenses.where(
-      (t) => t.date.month == now.month && t.date.year == now.year,
-    )) {
+
+    final sourceExpenses = thisMonthExpenses.isNotEmpty
+        ? thisMonthExpenses
+        : expenses
+            .where((t) => t.date.isAfter(now.subtract(const Duration(days: 60))))
+            .toList();
+
+    if (thisMonthExpenses.isEmpty && sourceExpenses.isNotEmpty) {
+      monthlyExpenses = sourceExpenses.fold(0.0, (s, t) => s + t.amount) / 2;
+    }
+
+    for (var t in sourceExpenses) {
       byCat[t.category] = (byCat[t.category] ?? 0) + t.amount;
     }
-    final catBreakdown = byCat.entries
-        .map((e) => '  - ${e.key}: $sym${e.value.toStringAsFixed(2)}')
-        .join('\n');
-    final monthlyDebtPayments = debts
-        .where((d) => d.paidInstallments < d.totalInstallments)
-        .fold(0.0, (s, d) => s + d.installmentAmount);
+
+    final sortedCats = byCat.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    final catBreakdown = sortedCats.map((e) {
+      final totalCat = thisMonthExpenses.isEmpty && sourceExpenses.isNotEmpty
+          ? e.value / 2
+          : e.value;
+      final pct = monthlyExpenses > 0
+          ? (totalCat / monthlyExpenses * 100).toStringAsFixed(1)
+          : '0';
+      return '  - ${_catEmoji(e.key)} ${_catLabel(e.key)}: $sym${totalCat.toStringAsFixed(2)} ($pct% del gasto total)';
+    }).join('\n');
+
+    // 3. Deudas activas
+    final activeDebts =
+        debts.where((d) => d.paidInstallments < d.totalInstallments).toList();
+    final monthlyDebtPayments =
+        activeDebts.fold(0.0, (s, d) => s + d.installmentAmount);
+    final totalRemainingDebt = activeDebts.fold(
+      0.0,
+      (s, d) => s + ((d.totalInstallments - d.paidInstallments) * d.installmentAmount),
+    );
+
+    // 4. Metas de ahorro
+    final goalsBreakdown = goals.isEmpty
+        ? '  (Sin metas activas registradas)'
+        : goals
+            .map((g) =>
+                '  - 🎯 ${g.name}: $sym${g.currentAmount.toStringAsFixed(2)} de $sym${g.targetAmount.toStringAsFixed(2)}')
+            .join('\n');
+
+    // 5. Flujo libre actual
+    final freeCashFlow =
+        monthlyIncomes - monthlyExpenses - monthlyDebtPayments;
+
+    final salaryStr = user?.salary;
+    final displaySalary = (salaryStr != null && salaryStr.trim().isNotEmpty)
+        ? '$sym$salaryStr'
+        : 'No fijado';
 
     return '''
-Perfil: ${user?.name ?? 'Usuario'} | Moneda: ${user?.currency ?? 'GTQ'} ($sym) | Salario: ${user?.salary ?? 'N/A'}
-Mes actual: Ingresos $sym${monthlyIncomes.toStringAsFixed(2)} | Gastos $sym${monthlyExpenses.toStringAsFixed(2)} | Flujo: $sym${(monthlyIncomes - monthlyExpenses).toStringAsFixed(2)}
-Gastos por categoría: ${catBreakdown.isEmpty ? 'Sin datos' : catBreakdown}
-Deudas activas: ${debts.isEmpty ? 'Sin deudas' : 'Pago mensual $sym${monthlyDebtPayments.toStringAsFixed(2)}'}
+PERFIL Y PARÁMETROS REALES:
+• Usuario: ${user?.name ?? 'Usuario'} | Moneda Oficial: ${user?.currency ?? 'GTQ'} (Símbolo: $sym)
+• Salario / Ingreso Base: $displaySalary
+• Ingresos Mensuales Estimados: $sym${monthlyIncomes.toStringAsFixed(2)}
+• Gastos Mensuales Estimados: $sym${monthlyExpenses.toStringAsFixed(2)}
+• Compromiso en Deudas Activas: $sym${monthlyDebtPayments.toStringAsFixed(2)}/mes (Saldo total pendiente en deudas: $sym${totalRemainingDebt.toStringAsFixed(2)})
+• Flujo Libre Mensual Neto (Margen Disponible Real): $sym${freeCashFlow.toStringAsFixed(2)}/mes
+
+DESGLOSE REAL DE GASTOS POR CATEGORÍA (de mayor a menor):
+${catBreakdown.isEmpty ? '  (Sin historial detallado de gastos registrado aún)' : catBreakdown}
+
+METAS DE AHORRO ACTIVAS:
+$goalsBreakdown
 ''';
   }
 
-  String _getMonthName(int month) {
-    const months = [
-      '',
-      'Enero',
-      'Febrero',
-      'Marzo',
-      'Abril',
-      'Mayo',
-      'Junio',
-      'Julio',
-      'Agosto',
-      'Septiembre',
-      'Octubre',
-      'Noviembre',
-      'Diciembre',
-    ];
-    return months[month];
+  String _sanitizeAiResponse(String raw) {
+    var text = raw.trim();
+    if (text.contains('___UI_ACTION___') || text.contains('"action_trigger"')) {
+      try {
+        final startIdx = text.indexOf('{');
+        final endIdx = text.lastIndexOf('}');
+        if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
+          final jsonStr = text.substring(startIdx, endIdx + 1);
+          final decoded = jsonDecode(jsonStr);
+          if (decoded is Map<String, dynamic>) {
+            final msg = decoded['message']?.toString() ?? '';
+            final desc = decoded['action_trigger']?['description']?.toString() ?? '';
+            final title = decoded['action_trigger']?['title']?.toString() ?? '';
+            text = [
+              if (msg.isNotEmpty) msg,
+              if (title.isNotEmpty) '**$title**',
+              if (desc.isNotEmpty) desc,
+            ].join('\n\n');
+          }
+        }
+      } catch (_) {}
+    } else if (text.startsWith('{') && text.endsWith('}')) {
+      try {
+        final decoded = jsonDecode(text);
+        if (decoded is Map<String, dynamic> && decoded.containsKey('message')) {
+          text = decoded['message'].toString();
+        }
+      } catch (_) {}
+    }
+    return text;
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -2163,8 +2277,14 @@ Deudas activas: ${debts.isEmpty ? 'Sin deudas' : 'Pago mensual $sym${monthlyDebt
     final lang = user?.language ?? 'Español';
 
     final context = _buildFinancialContext();
-    final prompt =
-        '''
+    final systemInstruction = '''
+Eres QUIVO, asesor financiero de élite en SimLab.
+Analiza con rigor matemático el diagnóstico financiero What-If.
+Usa SIEMPRE el símbolo "$sym" para todas las cifras monetarias.
+Formatea en Markdown limpio y estructurado con viñetas y negritas.
+''';
+
+    final prompt = '''
 Diagnóstico financiero "What If" — responde en $lang.
 
 El usuario ha simulado estos cambios:
@@ -2175,7 +2295,10 @@ El usuario ha simulado estos cambios:
 Contexto financiero real:
 $context
 
-Genera un diagnóstico conciso (3-4 párrafos) con: impacto en salud financiera, nivel de riesgo y 2-3 recomendaciones concretas de mitigación.
+Genera un diagnóstico estructurado y conciso (3-4 párrafos) con:
+1. 📊 Impacto directo en salud financiera y flujo mensual.
+2. ⚠️ Nivel de riesgo detectado.
+3. 💡 2-3 recomendaciones concretas y cuantitativas de mitigación.
 ''';
 
     setState(() {
@@ -2183,15 +2306,22 @@ Genera un diagnóstico conciso (3-4 párrafos) con: impacto en salud financiera,
       aiResponse = '';
     });
     try {
-      final stream = ref.read(aiRepositoryProvider).sendMessage(prompt, []);
+      final stream = ref.read(aiRepositoryProvider).analyzeScenario(
+        prompt: prompt,
+        systemInstruction: systemInstruction,
+      );
       await for (final chunk in stream) {
         if (mounted) setState(() => aiResponse += chunk);
       }
+      if (mounted) {
+        setState(() => aiResponse = _sanitizeAiResponse(aiResponse));
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(
           () => aiResponse = '${loc.get('error_obtaining_diagnosis')}: $e',
         );
+      }
     } finally {
       if (mounted) setState(() => aiLoading = false);
     }
@@ -2206,20 +2336,55 @@ Genera un diagnóstico conciso (3-4 párrafos) con: impacto en salud financiera,
     if (scenario.isEmpty) return;
 
     final financialContext = _buildFinancialContext();
-    final prompt =
-        '''
-El usuario simula este escenario hipotético (responde en $lang):
+    final systemInstruction = '''
+Eres QUIVO, un asesor financiero personal de élite y auditor patrimonial en modo SimLab.
+Tu rol es realizar simulaciones de escenarios hipotéticos con extremo rigor analítico, honestidad brutal, empatía y cálculos matemáticos exactos.
+NUNCA inventes números: usa los datos financieros del usuario.
+Usa SIEMPRE el símbolo monetario "$sym" para todas las cifras.
+Formatea toda tu respuesta en Markdown limpio, profesional y legible, utilizando encabezados claros, viñetas y texto en negrita.
+NUNCA devuelvas bloques de código JSON ni etiquetas técnicas.
+''';
+
+    final prompt = '''
+Analiza de forma INTENSA, PROFUNDA, HIPER-INFORMATIVA y RIGUROSA este escenario hipotético en $lang para el usuario:
 "$scenario"
 
-Datos financieros reales:
+=========================================
+ESTADO FINANCIERO REAL DEL USUARIO:
 $financialContext
+=========================================
 
-Analiza con estructura:
-1. 📊 IMPACTO FINANCIERO (números reales en $sym)
-2. ✅ VIABILIDAD (sé honesto)
-3. ⚠️ RIESGOS
-4. 💡 RECOMENDACIÓN
-5. 📅 PROYECCIÓN (si aplica, tabla mes a mes)
+INSTRUCCIONES OBLIGATORIAS:
+Estructura tu respuesta exactamente con estas 4 secciones claras usando Markdown profesional:
+
+### 1. 🚦 VEREDICTO CLARO: ¿PUEDE HACERLO CON SU PRESUPUESTO ACTUAL?
+- Emite un veredicto directo, tajante y sin rodeos con semáforo:
+  • 🟢 **VIABLE CON TU PRESUPUESTO ACTUAL**: Si tu flujo libre cubre la cuota holgadamente dejando más de un 20% de margen de seguridad.
+  • 🟡 **AJUSTADO / AL LÍMITE**: Si lo puedes pagar pero reduce peligrosamente tu margen de maniobra ante imprevistos.
+  • 🔴 **NO ES VIABLE ACTUALMENTE**: Si tu flujo libre es menor que la cuota requerida o si tus finanzas ya están en déficit/sobreendeudamiento.
+- Desglose matemático exacto con números reales:
+  • Estimación de la cuota mensual requerida según el plazo o monto del escenario (ej. total / meses = cuota/mes en $sym).
+  • Flujo libre mensual actual del usuario antes de la adquisición.
+  • Flujo libre restante después de pagar la cuota.
+  • Porcentaje de sus ingresos totales que representará esta nueva cuota (más sus deudas existentes).
+
+### 2. ⚖️ ANÁLISIS DE CONVENIENCIA: ¿LE CONVIENE ADQUIRIRLO O NO?
+- Analiza a profundidad si la decisión es conveniente desde una perspectiva patrimonial:
+  • **Depreciación vs Plazo de Pago**: Si es un artículo de consumo (ej. smartphone, tecnología, moda) a plazos largos (ej. 24 meses), evalúa cómo se devalúa el bien mientras el compromiso financiero sigue vigente por 2 años.
+  • **Costo de Oportunidad**: ¿Qué pasaría si ese monto mensual se destinara a un fondo de emergencia o a inversión con interés compuesto durante ese mismo plazo?
+  • **Rigidez Financiera**: Evalúa el riesgo de congelar flujo de efectivo mensual durante tantos meses frente a la estabilidad de sus ingresos.
+
+### 3. ✂️ PLAN DE REDUCCIÓN DE GASTOS PARA LOGRARLO
+- Identifica en qué categorías específicas de sus gastos reales actuales puede recortar para liberar exactamente la cuota mensual necesaria:
+  • Analiza las categorías de mayor gasto o gastos prescindibles (compras, salidas a comer, entretenimiento, suscripciones, etc.).
+  • Proporciona montos específicos y sugerencias concretas de reducción (ej. "Reducir $sym X en Comida/Salidas y $sym Y en Compras/Deseos para liberar un total de $sym Z/mes").
+  • Demuestra cómo estos ajustes permiten cubrir la cuota sin sacrificar sus necesidades esenciales.
+
+### 4. 💡 ESTRATEGIA INTELIGENTE Y RECOMENDACIONES DE QUIVO
+- Ofrece alternativas prácticas y superiores para adquirirlo de forma sana:
+  • Ejemplo: Ahorrar un fondo previo del 40-50% para reducir el monto financiado y recortar el plazo a menos meses.
+  • Ejemplo: Esperar periodos de descuento, liquidación o evaluar modelos inmediatamente anteriores con 90% de prestaciones por menor costo.
+  • Regla de oro para evitar compras impulsivas (ej. regla de los 30 días o 72 horas).
 ''';
 
     setState(() {
@@ -2227,16 +2392,29 @@ Analiza con estructura:
       _customAiResponse = '';
     });
     try {
-      final stream = ref.read(aiRepositoryProvider).sendMessage(prompt, []);
+      final stream = ref.read(aiRepositoryProvider).analyzeScenario(
+        prompt: prompt,
+        systemInstruction: systemInstruction,
+      );
       await for (final chunk in stream) {
-        if (mounted) setState(() => _customAiResponse += chunk);
+        if (mounted) {
+          setState(() {
+            _customAiResponse += chunk;
+          });
+        }
+      }
+      if (mounted) {
+        setState(() {
+          _customAiResponse = _sanitizeAiResponse(_customAiResponse);
+        });
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(
           () =>
               _customAiResponse = '${loc.get('error_analyzing_scenario')}: $e',
         );
+      }
     } finally {
       if (mounted) setState(() => _customAiLoading = false);
     }

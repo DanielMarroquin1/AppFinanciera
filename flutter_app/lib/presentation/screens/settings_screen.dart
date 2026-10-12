@@ -667,7 +667,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Versión 1.2 de QUIVO',
+                      'Versión 1.0.0 de QUIVO',
                       style: TextStyle(
                         color: isDark ? Colors.grey[500] : Colors.grey[400],
                         fontSize: 13,

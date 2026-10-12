@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quivo Support Desk | Lector de Tickets en Vivo</title>
+  <meta name="description" content="Portal local de soporte y lector de tickets en tiempo real para Quivo Financial AI.">
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- CSS Styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Firebase v10 Compat SDKs (App, Auth, Firestore) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- Ambient light glow -->
+  <div class="ambient-glow"></div>
+
+  <div class="app-container">
+    
+    <!-- ========================================== -->
+    <!-- HEADER                                     -->
+    <!-- ========================================== -->
+    <header class="header">
+      <div class="brand-section">
+        <div class="brand-logo">Q</div>
+        <div class="brand-info">
+          <h1>
+            Quivo Support Desk
+            <span class="badge-pro">LIVE CONSOLE</span>
+          </h1>
+          <p>Lector y Gestor de Tickets en Tiempo Real • Firebase Firestore</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Live status pill -->
+        <div class="live-indicator" id="connectionBadge">
+          <span class="live-dot" id="liveDot"></span>
+          <span id="connectionText">Conectando...</span>
+        </div>
+
+        <!-- Theme toggle -->
+        <button class="btn-icon" id="themeToggleBtn" title="Cambiar tema Claro / Oscuro" aria-label="Cambiar tema">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" id="themeIcon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+        </button>
+
+        <!-- Force Refresh -->
+        <button class="btn-icon" id="refreshBtn" title="Forzar sincronización de tickets" aria-label="Recargar">
+          <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+
+        <!-- Demo Mode Quick Button -->
+        <button class="btn btn-secondary btn-sm" onclick="loadDemoTickets()" title="Cargar tickets de ejemplo inmediatamente" style="background: rgba(245, 158, 11, 0.12); color: var(--amber); border-color: var(--amber-border);">
+          <span>🧪 Modo Demo</span>
+        </button>
+
+        <!-- Agent Auth Status -->
+        <button class="btn btn-secondary btn-sm" id="authModalTrigger">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          <span id="agentProfileLabel">Acceso Agente</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- KPIS & STATS CARDS                         -->
+    <!-- ========================================== -->
+    <section class="kpi-grid" aria-label="Métricas clave">
+      <!-- Total -->
+      <div class="kpi-card total">
+        <div class="kpi-info">
+          <h3>Total Recibidos</h3>
+          <div class="kpi-value" id="kpiTotal">0</div>
+          <div class="kpi-subtitle">Registrados en la BD</div>
+        </div>
+        <div class="kpi-icon-wrap">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Abiertos -->
+      <div class="kpi-card open">
+        <div class="kpi-info">
+          <h3>Tickets Abiertos</h3>
+          <div class="kpi-value" id="kpiOpen">0</div>
+          <div class="kpi-subtitle">Requieren atención</div>
+        </div>
+        <div class="kpi-icon-wrap">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- En Proceso -->
+      <div class="kpi-card in_progress">
+        <div class="kpi-info">
+          <h3>En Investigación</h3>
+          <div class="kpi-value" id="kpiInProgress">0</div>
+          <div class="kpi-subtitle">En soporte técnico</div>
+        </div>
+        <div class="kpi-icon-wrap">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Resueltos -->
+      <div class="kpi-card resolved">
+        <div class="kpi-info">
+          <h3>Resueltos / Éxito</h3>
+          <div class="kpi-value" id="kpiResolved">0</div>
+          <div class="kpi-subtitle" id="kpiRate">Tasa de resolución: 0%</div>
+        </div>
+        <div class="kpi-icon-wrap">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- CONTROLS, SEARCH & FILTERS                 -->
+    <!-- ========================================== -->
+    <section class="controls-bar" aria-label="Filtros de tickets">
+      <!-- Search and Action buttons -->
+      <div class="controls-row-top">
+        <div class="search-box">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input 
+            type="text" 
+            id="searchInput" 
+            class="search-input" 
+            placeholder="Buscar por #ticket, correo de usuario, palabras clave..." 
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="controls-buttons">
+          <button class="btn btn-primary" id="btnSimulateTicket" title="Generar un ticket de prueba en Firestore">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+            <span>Crear Ticket de Prueba</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Status Tabs -->
+      <div class="status-tabs" id="statusTabs">
+        <button class="tab-btn active" data-status="all">
+          Todos <span class="tab-count" id="countAll">0</span>
+        </button>
+        <button class="tab-btn" data-status="open">
+          Abiertos <span class="tab-count" id="countOpen">0</span>
+        </button>
+        <button class="tab-btn" data-status="in_progress">
+          En Proceso <span class="tab-count" id="countInProgress">0</span>
+        </button>
+        <button class="tab-btn" data-status="resolved">
+          Resueltos <span class="tab-count" id="countResolved">0</span>
+        </button>
+        <button class="tab-btn" data-status="closed">
+          Cerrados <span class="tab-count" id="countClosed">0</span>
+        </button>
+      </div>
+
+      <!-- Issue Category Chips -->
+      <div class="category-filter-row" id="categoryChips">
+        <button class="category-chip active" data-cat="all">Todas las Categorías</button>
+        <button class="category-chip" data-cat="Error en transacción">💳 Transacciones</button>
+        <button class="category-chip" data-cat="Problema de inicio de sesión">🔐 Login / Sesión</button>
+        <button class="category-chip" data-cat="Fallo visual">🎨 Fallo Visual</button>
+        <button class="category-chip" data-cat="Error en cálculos">🧮 Cálculos</button>
+        <button class="category-chip" data-cat="Problema con notificaciones">🔔 Notificaciones</button>
+        <button class="category-chip" data-cat="Otro">📋 Otro</button>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TICKETS FEED / LIST                        -->
+    <!-- ========================================== -->
+    <main>
+      <div class="tickets-header">
+        <div class="tickets-count-label" id="ticketsShowingCount">
+          Mostrando 0 tickets
+        </div>
+        <div style="font-size: 12px; color: var(--text-dim);">
+          Ordenados por fecha más reciente
+        </div>
+      </div>
+
+      <!-- List Container -->
+      <div class="tickets-grid" id="ticketsContainer">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </main>
+
+  </div> <!-- End .app-container -->
+
+  <!-- ========================================== -->
+  <!-- MODAL: TICKET DETAIL & SUPPORT ACTIONS     -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="ticketDetailModal" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-labelledby="modalTicketTitle">
+      
+      <div class="modal-header">
+        <h2 id="modalTicketTitle">
+          <span class="ticket-id" id="modalTicketNumber">#0</span>
+          <span id="modalTicketCategory">Categoría</span>
+        </h2>
+        <button class="btn-icon" id="closeDetailModalBtn" aria-label="Cerrar modal">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- Status Changer -->
+        <div class="detail-section">
+          <label class="detail-label">Estado Actual del Ticket (Haz clic para cambiar)</label>
+          <div class="status-change-group" id="modalStatusGroup">
+            <button class="btn-status-option" data-status="open">
+              <span class="status-open ticket-status-badge">Abierto</span>
+            </button>
+            <button class="btn-status-option" data-status="in_progress">
+              <span class="status-in_progress ticket-status-badge">En Proceso</span>
+            </button>
+            <button class="btn-status-option" data-status="resolved">
+              <span class="status-resolved ticket-status-badge">Resuelto</span>
+            </button>
+            <button class="btn-status-option" data-status="closed">
+              <span class="status-closed ticket-status-badge">Cerrado</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- User Information Grid -->
+        <div class="detail-meta-grid">
+          <div class="meta-item">
+            <div class="meta-item-label">Correo del Usuario</div>
+            <div class="meta-item-value" id="modalUserEmail">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-item-label">ID de Usuario (Firebase UID)</div>
+            <div class="meta-item-value" id="modalUserId">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-item-label">Fecha y Hora de Creación</div>
+            <div class="meta-item-value" id="modalCreatedAt">-</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-item-label">Dispositivo / Plataforma</div>
+            <div class="meta-item-value" id="modalPlatform">-</div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="detail-section">
+          <label class="detail-label">Descripción del Problema reportado</label>
+          <div class="detail-box" id="modalDescription">-</div>
+        </div>
+
+        <!-- Support Reply Section (Resend Email) -->
+        <div class="detail-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="detail-label">Responder al Usuario por Correo Electrónico</label>
+            <span style="font-size: 11px; color: var(--emerald);">Vía Resend API oficial</span>
+          </div>
+
+          <!-- Quick Templates -->
+          <div class="template-pills" id="templatePills">
+            <span style="font-size: 11.5px; color: var(--text-dim);">Plantillas:</span>
+            <button class="template-pill" data-template="investigating">🔍 En Investigación</button>
+            <button class="template-pill" data-template="solved">✅ Solucionado</button>
+            <button class="template-pill" data-template="more_info">❓ Más Información</button>
+            <button class="template-pill" data-template="closed">🔒 Cierre de Ticket</button>
+          </div>
+
+          <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+            <input type="text" id="emailSubjectInput" class="form-input" placeholder="Asunto del correo...">
+            <textarea id="emailBodyInput" class="form-textarea" rows="4" placeholder="Escribe tu respuesta de soporte técnico aquí..."></textarea>
+          </div>
+        </div>
+
+      </div> <!-- End .modal-body -->
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCancelModal">Cerrar</button>
+        <button class="btn btn-primary" id="btnSendEmailResponse">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          <span>Enviar Respuesta por Correo</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: AGENT AUTH LOGIN                    -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="agentAuthModal" aria-hidden="true">
+    <div class="modal-content" style="max-width: 440px;" role="dialog">
+      <div class="modal-header">
+        <h2>
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          <span>Acceso de Agente Quivo</span>
+        </h2>
+        <button class="btn-icon" id="closeAuthModalBtn">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body" style="gap: 16px;">
+        <div style="padding: 12px 14px; background: rgba(79, 70, 229, 0.1); border: 1px solid var(--border-focus); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-primary); line-height: 1.5;">
+          <strong>ℹ️ Acceso a la base de tickets de Firestore</strong><br>
+          Para leer tickets en vivo, Firebase requiere una sesión activa. Puedes:
+          <ul style="margin: 6px 0 0 18px; color: var(--text-muted);">
+            <li>Usar el <strong>mismo correo y contraseña</strong> de tu cuenta en QUIVO.</li>
+            <li>Registrar un <strong>nuevo agente</strong> con el botón inferior.</li>
+            <li>Entrar con <strong>Google</strong> con 1 clic.</li>
+            <li>O explorar en <strong>Modo Demostración</strong> sin iniciar sesión.</li>
+          </ul>
+        </div>
+
+        <div id="authCurrentUserBox" style="display: none; padding: 14px; background: var(--card-alt); border-radius: 10px; border: 1px solid var(--emerald-border);">
+          <div style="font-size: 12px; color: var(--emerald); font-weight: 700;">SESIÓN ACTIVA</div>
+          <div id="authCurrentEmail" style="font-size: 14px; font-weight: 600; margin-top: 4px;">-</div>
+          <button class="btn btn-secondary btn-sm" id="btnLogoutAgent" style="margin-top: 10px;">Cerrar Sesión</button>
+        </div>
+
+        <form id="agentLoginForm" style="display: flex; flex-direction: column; gap: 12px;">
+          <div>
+            <label class="detail-label" for="agentEmailInput">Correo de Administrador / Agente</label>
+            <input type="email" id="agentEmailInput" class="form-input" placeholder="admin@thequivoapp.com" required>
+          </div>
+          <div>
+            <label class="detail-label" for="agentPassInput">Contraseña</label>
+            <input type="password" id="agentPassInput" class="form-input" placeholder="Mínimo 6 caracteres" required>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 6px;">
+            <button type="submit" class="btn btn-primary" id="btnAgentSubmit" style="flex: 1; justify-content: center;">
+              Iniciar Sesión
+            </button>
+            <button type="button" class="btn btn-secondary" id="btnAgentRegister" style="flex: 1; justify-content: center;">
+              Registrar Agente
+            </button>
+          </div>
+        </form>
+
+        <div style="display: flex; align-items: center; gap: 12px; margin: 4px 0;">
+          <div style="flex: 1; height: 1px; background: var(--border);"></div>
+          <span style="font-size: 12px; color: var(--text-dim); text-transform: uppercase;">o alternativamente</span>
+          <div style="flex: 1; height: 1px; background: var(--border);"></div>
+        </div>
+
+        <button type="button" class="btn btn-secondary" id="btnGoogleLogin" style="width: 100%; justify-content: center; gap: 10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.15z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"/>
+            <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.16 0 9.97 0 12s.45 3.84 1.25 5.42l4.03-3.15z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+          </svg>
+          <span>Continuar con Google</span>
+        </button>
+
+        <button type="button" class="btn btn-sm" id="btnLoadDemoFromModal" style="width: 100%; justify-content: center; background: rgba(245, 158, 11, 0.12); color: var(--amber); border: 1px solid var(--amber-border);">
+          🧪 Explorar en Modo Demostración (Sin Iniciar Sesión)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Main Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

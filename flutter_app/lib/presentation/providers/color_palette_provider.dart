@@ -19,9 +19,9 @@ class ColorPalette {
 const List<ColorPalette> presetPalettes = [
   ColorPalette(
     id: 'theme_default',
-    name: 'Índigo Esmeralda',
-    icon: '✨',
-    colors: [Color(0xFF6366F1), Color(0xFF10B981), Color(0xFF8B5CF6)],
+    name: 'Azul Profundo & Lima',
+    icon: '💎',
+    colors: [Color(0xFF004458), Color(0xFF00C2A8), Color(0xFFCDE60E)],
   ),
   ColorPalette(
     id: 'theme1',
@@ -70,6 +70,12 @@ const List<ColorPalette> presetPalettes = [
     name: 'Sakura Japonés',
     icon: '🌸',
     colors: [Color(0xFFEC4899), Color(0xFFF43F5E), Color(0xFFF472B6)],
+  ),
+  ColorPalette(
+    id: 'theme9',
+    name: 'Índigo Esmeralda',
+    icon: '✨',
+    colors: [Color(0xFF6366F1), Color(0xFF10B981), Color(0xFF8B5CF6)],
   ),
 ];
 

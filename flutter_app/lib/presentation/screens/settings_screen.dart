@@ -28,6 +28,7 @@ import '../../core/services/local_notification_service.dart';
 import '../widgets/modals/category_budget_modal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/rewards_shop_modal.dart';
+import '../widgets/common/quivo_logo.dart';
 import '../providers/transaction_provider.dart';
 import 'dashboard_screen.dart'; // Add import for showTutorialProvider
 
@@ -670,12 +671,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Center(
                 child: Column(
                   children: [
-                    const Icon(
-                      LucideIcons.fingerprint,
-                      size: 28,
-                      color: Color(0xFF6366F1),
+                    const QuivoLogo(
+                      size: 34,
+                      withGlow: true,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     Text(
                       'Versión 1.0.0 de QUIVO',
                       style: TextStyle(

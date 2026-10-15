@@ -12,6 +12,8 @@ import '../../core/services/biometric_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../providers/auth_provider.dart';
+import '../providers/color_palette_provider.dart';
+import '../widgets/common/quivo_logo.dart';
 import '../../core/utils/localization.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -417,35 +419,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                           const SizedBox(height: 12),
 
-                          // Brand Icon: Squircle with glowing Piggy Bank
+                          // Brand Icon: Squircle with dynamic Q Logo
                           Hero(
                             tag: 'app_logo',
-                            child: Container(
-                              width: 76,
-                              height: 76,
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF141C2E) : Colors.white,
-                                borderRadius: BorderRadius.circular(24),
-                                border: Border.all(
-                                  color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
-                                  width: 1.5,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
-                                    blurRadius: 28,
-                                    spreadRadius: -2,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  LucideIcons.piggyBank,
-                                  size: 38,
-                                  color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
-                                ),
-                              ),
+                            child: QuivoLogo(
+                              size: 48,
+                              withContainer: true,
+                              withGlow: true,
                             ),
                           ),
 

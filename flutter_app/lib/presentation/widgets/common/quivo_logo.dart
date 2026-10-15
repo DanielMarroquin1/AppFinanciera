@@ -35,9 +35,9 @@ class QuivoLogo extends ConsumerWidget {
     } else if (usePalette) {
       final palette = ref.watch(colorPaletteProvider);
       if (palette.id == 'theme_default') {
-        // Estándar oficial de la marca: Turquesa a Verde Lima vibrante
+        // Estándar oficial de la marca (Diseño 3): Verde Fresco a Verde Lima
         resolvedGradient = const [
-          Color(0xFF00C2A8), // Turquesa
+          Color(0xFF6AD93D), // Verde Fresco
           Color(0xFFCDE60E), // Verde Lima
         ];
       } else {
@@ -45,7 +45,7 @@ class QuivoLogo extends ConsumerWidget {
       }
     } else {
       // Estándar oficial estático
-      resolvedGradient = const [Color(0xFF00C2A8), Color(0xFFCDE60E)];
+      resolvedGradient = const [Color(0xFF6AD93D), Color(0xFFCDE60E)];
     }
 
     final primaryColor = resolvedGradient.first;

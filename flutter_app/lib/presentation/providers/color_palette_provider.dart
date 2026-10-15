@@ -21,7 +21,7 @@ const List<ColorPalette> presetPalettes = [
     id: 'theme_default',
     name: 'Azul Profundo & Lima',
     icon: '💎',
-    colors: [Color(0xFF004458), Color(0xFF00C2A8), Color(0xFFCDE60E)],
+    colors: [Color(0xFF004458), Color(0xFF6AD93D), Color(0xFFCDE60E)],
   ),
   ColorPalette(
     id: 'theme1',

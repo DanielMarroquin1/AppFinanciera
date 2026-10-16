@@ -242,7 +242,7 @@ class _AppShellState extends ConsumerState<AppShell>
                                 PremiumPaywallDialog.show(
                                   context,
                                   customMessage:
-                                      'Desbloquea el simulador inteligente "What If?" impulsado por IA con el Plan Premium.',
+                                      loc.get('what_if_paywall_desc'),
                                 );
                               } else {
                                 context.push('/what-if');
@@ -263,7 +263,7 @@ class _AppShellState extends ConsumerState<AppShell>
                                 await PremiumPaywallDialog.show(
                                   context,
                                   customMessage:
-                                      'Obtén Premium para generar reportes avanzados en PDF.',
+                                      loc.get('pdf_report_paywall_desc'),
                                 );
                               }
                             }

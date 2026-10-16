@@ -1320,7 +1320,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
           ),
           const SizedBox(height: 24),
 
-          // ── Micro-Insights de QUIVO ────────────────────────────────────
+          // ── Micro-Insights de SAMI ────────────────────────────────────
           Container(
             key: TutorialKeys.aiInsightsKey,
             child: const MicroInsightsSection(),

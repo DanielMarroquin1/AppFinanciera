@@ -354,13 +354,13 @@ $aiInstruction
         amount: (decoded['amount'] as num).toDouble(),
         type: decoded['type'] ?? 'expense',
         category: decoded['category'] ?? 'other',
-        description: decoded['description'] ?? 'Transacción de QUIVO',
+        description: decoded['description'] ?? 'Transacción de SAMI',
         date: DateTime.now(),
         isFixed: false,
       );
       await ref.read(transactionNotifierProvider.notifier).addTransaction(tx);
     } catch (e) {
-      print('Error executing add_transaction from QUIVO: $e');
+      print('Error executing add_transaction from SAMI: $e');
     }
   }
 
@@ -379,7 +379,7 @@ $aiInstruction
       );
       await ref.read(savingGoalsProvider.notifier).addGoal(goal);
     } catch (e) {
-      print('Error executing create_savings_goal from QUIVO: $e');
+      print('Error executing create_savings_goal from SAMI: $e');
     }
   }
 }

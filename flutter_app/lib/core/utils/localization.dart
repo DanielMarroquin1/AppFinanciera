@@ -278,7 +278,7 @@ class AppLocalizations {
       'ai_assistant_subtitle':
           'Descubre cómo invertir tu dinero basado en tu negocio 💰',
       'what_if_subtitle':
-          'Simula variaciones en tus ingresos, gastos o deudas y QUIVO predecirá tu salud financiera.',
+          'Simula variaciones en tus ingresos, gastos o deudas y SAMI predecirá tu salud financiera.',
       'rewards_shop_subtitle': 'Canjea tus puntos ganados',
       'rewards_shop_desc':
           'Desbloquea avatares exclusivos, temas personalizados y consejos VIP para potenciar tus finanzas.',
@@ -306,18 +306,18 @@ class AppLocalizations {
       'quick_actions_footer': 'Selecciona una acción para continuar',
       'quick_actions_new_badge': '{count} nueva(s)',
       'nav_settings': 'Ajustes',
-      'what_if_title': 'Simulador "What If?" AI',
+      'what_if_title': '¿Qué pasaría si...?',
       'what_if_tab_controls': 'Controles',
       'what_if_tab_free': 'Escenario Libre',
       'what_if_initial_desc':
-          'Ajusta los controles de simulación arriba y presiona "Solicitar Diagnóstico a QUIVO" para evaluar tu escenario financiero hipotético.',
+          'Ajusta los controles de simulación arriba y presiona "Solicitar Diagnóstico a SAMI" para evaluar tu escenario financiero hipotético.',
       'what_if_chart_title': 'Proyección Flujo de Caja (6 Meses)',
       'what_if_panel_title': 'Panel de Simulación ⚙️',
       'what_if_additional_expense': 'Gasto Mensual Adicional',
       'what_if_income_reduction': 'Reducción de Ingresos',
       'what_if_new_debt_payment': 'Nueva Cuota de Deuda Fija',
-      'what_if_request_diagnosis': 'Solicitar Diagnóstico a QUIVO',
-      'what_if_diagnosis_title': 'Plan Diagnóstico QUIVO 🧠',
+      'what_if_request_diagnosis': 'Solicitar Diagnóstico a SAMI',
+      'what_if_diagnosis_title': 'Plan Diagnóstico SAMI 🧠',
       'what_if_desc_title': '¿Qué pasaría si...?',
       'what_if_desc_subtitle':
           'Describe cualquier escenario financiero y la IA analizará cómo afectaría tus finanzas actuales.',
@@ -359,7 +359,35 @@ class AppLocalizations {
       'what_if_chip_job_query':
           '¿Qué pasaría si pierdo mi empleo y me quedo sin ingresos durante 3 meses?',
       'error_analyzing_scenario': 'Error al analizar el escenario',
-      'error_obtaining_diagnosis': 'Error al obtener diagnóstico de QUIVO',
+      'error_obtaining_diagnosis': 'Error al obtener diagnóstico de SAMI',
+      'sami_welcome_greeting':
+          'Hola, soy SAMI, tu asistente financiero, ¿cómo quieres que te ayude el día de hoy?',
+      'sami_name': 'SAMI',
+      'sami_subtitle': 'Tu asistente financiero inteligente',
+      'sami_thinking': 'SAMI está pensando...',
+      'sami_proposal': 'SAMI ha propuesto un Plan de Ahorro',
+      'sami_input_hint': 'Pregúntale a SAMI...',
+      'sami_quick_q1': '¿Cómo puedo ahorrar más?',
+      'sami_quick_q2': 'Analiza mis gastos',
+      'sami_quick_q3': 'Tips para mis metas',
+      'sami_premium_desc':
+          'Interactúa con SAMI, tu asistente financiero IA, con el Plan Premium.',
+      'quick_actions_hub_title': 'Acciones Rápidas',
+      'quick_actions_hub_subtitle': '¿Qué deseas hacer hoy?',
+      'quick_actions_sami_ai': 'Asistente SAMI',
+      'pdf_report': 'Reporte PDF',
+      'quick_actions_what_if_desc': 'Simula escenarios futuros',
+      'quick_actions_rewards_desc': 'Canjea puntos y premios',
+      'quick_actions_budget_desc': 'Límites por categoría',
+      'quick_actions_sami_desc': 'Tu asesor financiero IA',
+      'quick_actions_pdf_desc': 'Exporta balance y métricas',
+      'quick_actions_notif_desc': 'Alertas y recordatorios',
+      'quick_actions_close': 'Cerrar',
+      'close': 'Cerrar',
+      'what_if_paywall_desc':
+          'Desbloquea el simulador inteligente "¿Qué pasaría si...?" impulsado por IA con el Plan Premium.',
+      'pdf_report_paywall_desc':
+          'Obtén Premium para generar reportes avanzados en PDF.',
       // Notifications Modal
       'notif_title_bar': 'Notificaciones',
       'notif_read_all': 'Leer Todo',
@@ -859,7 +887,7 @@ class AppLocalizations {
       'ai_assistant_subtitle':
           'Discover how to invest your money based on your business 💰',
       'what_if_subtitle':
-          'Simulate variations in your income, expenses or debts and QUIVO will predict your financial health.',
+          'Simulate variations in your income, expenses or debts and SAMI will predict your financial health.',
       'rewards_shop_subtitle': 'Redeem your earned points',
       'rewards_shop_desc':
           'Unlock exclusive avatars, custom themes and VIP tips to boost your finances.',
@@ -887,18 +915,18 @@ class AppLocalizations {
       'quick_actions_footer': 'Select an action to continue',
       'quick_actions_new_badge': '{count} new',
       'nav_settings': 'Settings',
-      'what_if_title': 'AI "What If?" Simulator',
+      'what_if_title': 'What if...?',
       'what_if_tab_controls': 'Controls',
       'what_if_tab_free': 'Free Scenario',
       'what_if_initial_desc':
-          'Adjust the simulation controls above and press "Request Diagnosis from QUIVO" to evaluate your hypothetical financial scenario.',
+          'Adjust the simulation controls above and press "Request Diagnosis from SAMI" to evaluate your hypothetical financial scenario.',
       'what_if_chart_title': 'Cash Flow Projection (6 Months)',
       'what_if_panel_title': 'Simulation Panel ⚙️',
       'what_if_additional_expense': 'Additional Monthly Expense',
       'what_if_income_reduction': 'Income Reduction',
       'what_if_new_debt_payment': 'New Fixed Debt Installment',
-      'what_if_request_diagnosis': 'Request Diagnosis from QUIVO',
-      'what_if_diagnosis_title': 'QUIVO Diagnosis Plan 🧠',
+      'what_if_request_diagnosis': 'Request Diagnosis from SAMI',
+      'what_if_diagnosis_title': 'SAMI Diagnosis Plan 🧠',
       'what_if_desc_title': 'What would happen if...?',
       'what_if_desc_subtitle':
           'Describe any financial scenario and the AI will analyze how it would affect your current finances.',
@@ -940,7 +968,35 @@ class AppLocalizations {
       'what_if_chip_job_query':
           'What would happen if I lose my job and am left without income for 3 months?',
       'error_analyzing_scenario': 'Error analyzing scenario',
-      'error_obtaining_diagnosis': 'Error obtaining diagnosis from QUIVO',
+      'error_obtaining_diagnosis': 'Error obtaining diagnosis from SAMI',
+      'sami_welcome_greeting':
+          'Hello, I am SAMI, your financial assistant, how would you like me to help you today?',
+      'sami_name': 'SAMI',
+      'sami_subtitle': 'Your smart financial assistant',
+      'sami_thinking': 'SAMI is thinking...',
+      'sami_proposal': 'SAMI proposed a Savings Plan',
+      'sami_input_hint': 'Ask SAMI anything...',
+      'sami_quick_q1': 'How can I save more?',
+      'sami_quick_q2': 'Analyze my expenses',
+      'sami_quick_q3': 'Tips for my goals',
+      'sami_premium_desc':
+          'Interact with SAMI, your AI financial assistant, with the Premium Plan.',
+      'quick_actions_hub_title': 'Quick Actions',
+      'quick_actions_hub_subtitle': 'What would you like to do today?',
+      'quick_actions_sami_ai': 'SAMI Assistant',
+      'pdf_report': 'PDF Report',
+      'quick_actions_what_if_desc': 'Simulate future scenarios',
+      'quick_actions_rewards_desc': 'Redeem points & rewards',
+      'quick_actions_budget_desc': 'Category spending limits',
+      'quick_actions_sami_desc': 'Your AI financial coach',
+      'quick_actions_pdf_desc': 'Export balance & metrics',
+      'quick_actions_notif_desc': 'Alerts & reminders',
+      'quick_actions_close': 'Close',
+      'close': 'Close',
+      'what_if_paywall_desc':
+          'Unlock the smart AI-powered "What if...?" simulator with the Premium Plan.',
+      'pdf_report_paywall_desc':
+          'Get Premium to generate advanced PDF reports.',
       // Notifications Modal
       'notif_title_bar': 'Notifications',
       'notif_read_all': 'Mark all as read',
@@ -1442,7 +1498,7 @@ class AppLocalizations {
       'ai_assistant_subtitle':
           'Descubra como investir seu dinheiro com base no seu negócio 💰',
       'what_if_subtitle':
-          'Simule variações em suas receitas, despesas ou dívidas e QUIVO preverá sua saúde financeira.',
+          'Simule variações em suas receitas, despesas ou dívidas e SAMI preverá sua saúde financeira.',
       'rewards_shop_subtitle': 'Resgate seus pontos ganhos',
       'rewards_shop_desc':
           'Desbloqueie avatares exclusivos, temas personalizados e dicas VIP para impulsionar suas finanças.',
@@ -1470,18 +1526,18 @@ class AppLocalizations {
       'quick_actions_footer': 'Selecione uma ação para continuar',
       'quick_actions_new_badge': '{count} nova(s)',
       'nav_settings': 'Ajustes',
-      'what_if_title': 'Simulador AI "What If?"',
+      'what_if_title': 'E se...?',
       'what_if_tab_controls': 'Controles',
       'what_if_tab_free': 'Cenário Livre',
       'what_if_initial_desc':
-          'Ajuste os controles de simulação acima e pressione "Solicitar Diagnóstico ao QUIVO" para avaliar seu cenário financeiro hipotético.',
+          'Ajuste os controles de simulação acima e pressione "Solicitar Diagnóstico ao SAMI" para avaliar seu cenário financeiro hipotético.',
       'what_if_chart_title': 'Projeção de Fluxo de Caixa (6 Meses)',
       'what_if_panel_title': 'Painel de Simulação ⚙️',
       'what_if_additional_expense': 'Despesa Mensal Adicional',
       'what_if_income_reduction': 'Redução de Receitas',
       'what_if_new_debt_payment': 'Nova Parcela de Dívida Fixa',
-      'what_if_request_diagnosis': 'Solicitar Diagnóstico ao QUIVO',
-      'what_if_diagnosis_title': 'Plano de Diagnóstico QUIVO 🧠',
+      'what_if_request_diagnosis': 'Solicitar Diagnóstico ao SAMI',
+      'what_if_diagnosis_title': 'Plano de Diagnóstico SAMI 🧠',
       'what_if_desc_title': 'O que aconteceria se...?',
       'what_if_desc_subtitle':
           'Descreva qualquer cenário financeiro e a IA analisará como isso afetaria suas finanças atuais.',
@@ -1523,7 +1579,35 @@ class AppLocalizations {
       'what_if_chip_job_query':
           'O que aconteceria se eu perdesse o emprego e ficasse sem renda por 3 meses?',
       'error_analyzing_scenario': 'Erro ao analisar cenário',
-      'error_obtaining_diagnosis': 'Erro ao obter diagnóstico do QUIVO',
+      'error_obtaining_diagnosis': 'Erro ao obter diagnóstico de SAMI',
+      'sami_welcome_greeting':
+          'Olá, eu sou SAMI, seu assistente financeiro, como posso te ajudar hoje?',
+      'sami_name': 'SAMI',
+      'sami_subtitle': 'Seu assistente financeiro inteligente',
+      'sami_thinking': 'SAMI está pensando...',
+      'sami_proposal': 'SAMI propôs um Plano de Poupança',
+      'sami_input_hint': 'Pergunte ao SAMI...',
+      'sami_quick_q1': 'Como posso economizar mais?',
+      'sami_quick_q2': 'Analise minhas despesas',
+      'sami_quick_q3': 'Dicas para minhas metas',
+      'sami_premium_desc':
+          'Interaja com SAMI, seu assistente financeiro IA, com o Plano Premium.',
+      'quick_actions_hub_title': 'Ações Rápidas',
+      'quick_actions_hub_subtitle': 'O que você gostaria de fazer hoje?',
+      'quick_actions_sami_ai': 'Assistente SAMI',
+      'pdf_report': 'Relatório PDF',
+      'quick_actions_what_if_desc': 'Simule cenários futuros',
+      'quick_actions_rewards_desc': 'Resgate pontos e prêmios',
+      'quick_actions_budget_desc': 'Limites por categoria',
+      'quick_actions_sami_desc': 'Seu coach financeiro IA',
+      'quick_actions_pdf_desc': 'Exporte balanço e métricas',
+      'quick_actions_notif_desc': 'Alertas e lembretes',
+      'quick_actions_close': 'Fechar',
+      'close': 'Fechar',
+      'what_if_paywall_desc':
+          'Desbloqueie o simulador inteligente "E se...?" com IA através do Plano Premium.',
+      'pdf_report_paywall_desc':
+          'Obtenha Premium para gerar relatórios avançados em PDF.',
       // Notifications Modal
       'notif_title_bar': 'Notificações',
       'notif_read_all': 'Ler Tudo',
@@ -2034,7 +2118,7 @@ class AppLocalizations {
       'ai_assistant_subtitle':
           'Découvrez comment investir votre argent en fonction de votre entreprise 💰',
       'what_if_subtitle':
-          'Simulez les variations de vos revenus, dépenses ou dettes et QUIVO prédira votre santé financière.',
+          'Simulez les variations de vos revenus, dépenses ou dettes et SAMI prédira votre santé financière.',
       'rewards_shop_subtitle': 'Échangez vos points gagnés',
       'rewards_shop_desc':
           'Débloquez des avatars exclusifs, des thèmes personnalisés et des conseils VIP pour booster vos finances.',
@@ -2063,18 +2147,18 @@ class AppLocalizations {
       'quick_actions_footer': 'Sélectionnez une action pour continuer',
       'quick_actions_new_badge': '{count} nouvelle(s)',
       'nav_settings': 'Paramètres',
-      'what_if_title': 'Simulateur IA "What If?"',
+      'what_if_title': 'Et si...?',
       'what_if_tab_controls': 'Contrôles',
       'what_if_tab_free': 'Scénario Libre',
       'what_if_initial_desc':
-          'Ajustez les contrôles de simulation ci-dessus et appuyez sur "Demander un diagnostic à QUIVO" pour évaluer votre scénario financier hypothétique.',
+          'Ajustez les contrôles de simulation ci-dessus et appuyez sur "Demander un diagnostic à SAMI" pour évaluer votre scénario financier hypothétique.',
       'what_if_chart_title': 'Projection des flux de trésorerie (6 mois)',
       'what_if_panel_title': 'Panneau de Simulation ⚙️',
       'what_if_additional_expense': 'Dépense Mensuelle Supplémentaire',
       'what_if_income_reduction': 'Réduction des Revenus',
       'what_if_new_debt_payment': 'Nouvelle Échéance de Dette Fixe',
-      'what_if_request_diagnosis': 'Demander un Diagnostic à QUIVO',
-      'what_if_diagnosis_title': 'Plan de Diagnostic QUIVO 🧠',
+      'what_if_request_diagnosis': 'Demander un Diagnostic à SAMI',
+      'what_if_diagnosis_title': 'Plan de Diagnostic SAMI 🧠',
       'what_if_desc_title': 'Que se passerait-il si...?',
       'what_if_desc_subtitle':
           'Décrivez n\'importe quel scénario financier et l\'IA analysera comment il affecterait vos finances actuelles.',
@@ -2118,7 +2202,35 @@ class AppLocalizations {
           'Que se passerait-il si je perdais mon emploi et me retrouvais sans revenu pendant 3 mois ?',
       'error_analyzing_scenario': 'Erreur lors de l\'analyse du scénario',
       'error_obtaining_diagnosis':
-          'Erreur lors de l\'obtention du diagnostic de QUIVO',
+          'Erreur lors de l\'obtention du diagnostic de SAMI',
+      'sami_welcome_greeting':
+          'Bonjour, je suis SAMI, votre assistant financier, comment puis-je vous aider aujourd\'hui ?',
+      'sami_name': 'SAMI',
+      'sami_subtitle': 'Votre assistant financier intelligent',
+      'sami_thinking': 'SAMI réfléchit...',
+      'sami_proposal': 'SAMI a proposé un Plan d\'Épargne',
+      'sami_input_hint': 'Posez une question à SAMI...',
+      'sami_quick_q1': 'Comment puis-je épargner plus ?',
+      'sami_quick_q2': 'Analysez mes dépenses',
+      'sami_quick_q3': 'Conseils pour mes objectifs',
+      'sami_premium_desc':
+          'Interagissez avec SAMI, votre assistant financier IA, grâce au Plan Premium.',
+      'quick_actions_hub_title': 'Actions Rapides',
+      'quick_actions_hub_subtitle': 'Que souhaitez-vous faire aujourd\'hui ?',
+      'quick_actions_sami_ai': 'Assistant SAMI',
+      'pdf_report': 'Rapport PDF',
+      'quick_actions_what_if_desc': 'Simulez des scénarios futurs',
+      'quick_actions_rewards_desc': 'Échangez points et cadeaux',
+      'quick_actions_budget_desc': 'Limites par catégorie',
+      'quick_actions_sami_desc': 'Votre coach financier IA',
+      'quick_actions_pdf_desc': 'Exportez bilans et mesures',
+      'quick_actions_notif_desc': 'Alertes et rappels',
+      'quick_actions_close': 'Fermer',
+      'close': 'Fermer',
+      'what_if_paywall_desc':
+          'Débloquez le simulateur intelligent "Et si...?" alimenté par l\'IA avec le Plan Premium.',
+      'pdf_report_paywall_desc':
+          'Passez à Premium pour générer des rapports PDF avancés.',
       // Notifications Modal
       'notif_title_bar': 'Notifications',
       'notif_read_all': 'Tout lire',
@@ -2620,7 +2732,7 @@ class AppLocalizations {
       'ai_assistant_subtitle':
           'Scopri come investire i tuoi soldi in base alla tua attività 💰',
       'what_if_subtitle':
-          'Simula le variazioni di entrate, spese o debiti e QUIVO prevederà la tua salute finanziaria.',
+          'Simula le variazioni di entrate, spese o debiti e SAMI prevederà la tua salute finanziaria.',
       'rewards_shop_subtitle': 'Riscatta i punti guadagnati',
       'rewards_shop_desc':
           'Sblocca avatar esclusivi, temi personalizzati e consigli VIP per potenziare le tue finanze.',
@@ -2648,18 +2760,18 @@ class AppLocalizations {
       'quick_actions_footer': 'Seleziona un\'azione per continuare',
       'quick_actions_new_badge': '{count} nuova(e)',
       'nav_settings': 'Impostazioni',
-      'what_if_title': 'Simulatore AI "What If?"',
+      'what_if_title': 'Cosa succederebbe se...?',
       'what_if_tab_controls': 'Controlli',
       'what_if_tab_free': 'Scenario Libero',
       'what_if_initial_desc':
-          'Regola i controlli di simulazione sopra e premi "Richiedi Diagnosi a QUIVO" per valutare il tuo scenario finanziario ipotetico.',
+          'Regola i controlli di simulazione sopra e premi "Richiedi Diagnosi a SAMI" per valutare il tuo scenario finanziario ipotetico.',
       'what_if_chart_title': 'Proiezione del Flusso di Cassa (6 Mesi)',
       'what_if_panel_title': 'Pannello di Simulazione ⚙️',
       'what_if_additional_expense': 'Spesa Mensile Aggiuntiva',
       'what_if_income_reduction': 'Riduzione delle Entrate',
       'what_if_new_debt_payment': 'Nuova Rata del Debito Fisso',
-      'what_if_request_diagnosis': 'Richiedi Diagnosi a QUIVO',
-      'what_if_diagnosis_title': 'Piano Diagnostico QUIVO 🧠',
+      'what_if_request_diagnosis': 'Richiedi Diagnosi a SAMI',
+      'what_if_diagnosis_title': 'Piano Diagnostico SAMI 🧠',
       'what_if_desc_title': 'Cosa succederebbe se...?',
       'what_if_desc_subtitle':
           'Descrivi qualsiasi scenario finanziario e l\'IA analizzerà come influenzerebbe le tue finanze attuali.',
@@ -2701,7 +2813,35 @@ class AppLocalizations {
       'what_if_chip_job_query':
           'Cosa succerebbe se perdessi il lavoro e rimanessi senza entrate per 3 mesi?',
       'error_analyzing_scenario': 'Errore durante l\'analisi dello scenario',
-      'error_obtaining_diagnosis': 'Errore nell\'ottenere la diagnosi da QUIVO',
+      'error_obtaining_diagnosis': 'Errore nell\'ottenere la diagnosi da SAMI',
+      'sami_welcome_greeting':
+          'Ciao, sono SAMI, il tuo assistente finanziario, come posso aiutarti oggi?',
+      'sami_name': 'SAMI',
+      'sami_subtitle': 'Il tuo assistente finanziario intelligente',
+      'sami_thinking': 'SAMI sta pensando...',
+      'sami_proposal': 'SAMI ha proposto un Piano di Risparmio',
+      'sami_input_hint': 'Chiedi qualcosa a SAMI...',
+      'sami_quick_q1': 'Come posso risparmiare di più?',
+      'sami_quick_q2': 'Analizza le mie spese',
+      'sami_quick_q3': 'Consigli per i miei obiettivi',
+      'sami_premium_desc':
+          'Interagisci con SAMI, il tuo assistente finanziario IA, con il Piano Premium.',
+      'quick_actions_hub_title': 'Azioni Rapide',
+      'quick_actions_hub_subtitle': 'Cosa vorresti fare oggi?',
+      'quick_actions_sami_ai': 'Assistente SAMI',
+      'pdf_report': 'Report PDF',
+      'quick_actions_what_if_desc': 'Simula scenari futuri',
+      'quick_actions_rewards_desc': 'Riscatta punti e premi',
+      'quick_actions_budget_desc': 'Limiti per categoria',
+      'quick_actions_sami_desc': 'Il tuo coach finanziario IA',
+      'quick_actions_pdf_desc': 'Esporta bilancio e metriche',
+      'quick_actions_notif_desc': 'Avvisi e promemoria',
+      'quick_actions_close': 'Chiudi',
+      'close': 'Chiudi',
+      'what_if_paywall_desc':
+          'Sblocca il simulatore intelligente "Cosa succederebbe se...?" basato su IA con il Piano Premium.',
+      'pdf_report_paywall_desc':
+          'Passa a Premium per generare report PDF avanzati.',
       // Notifications Modal
       'notif_title_bar': 'Notifiche',
       'notif_read_all': 'Segna tutto come letto',

@@ -57,7 +57,7 @@ class MicroInsightsSection extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Insights de QUIVO',
+                'Insights de SAMI',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,

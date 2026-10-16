@@ -45,9 +45,9 @@ class AIRepositoryImpl implements AIRepository {
               "El 50% de tus ingresos irá a necesidades, 30% a deseos y 20% a esta meta de ahorro.",
         });
       } else if (p.contains('plan de ahorro') || p.contains('ahorrar')) {
-        yield '¡Hola! He analizado tus datos. *(Nota: Modo simulación sin API Key)*.\n\nPara ayudarte a ahorrar, te propongo 3 opciones basadas en tus ingresos y gastos:\n\n1. **Regla 50/30/20**: Un enfoque balanceado. Destinas 20% al ahorro.\n2. **Plan Agresivo**: Ideal para metas a corto plazo. Destinas 40% al ahorro reduciendo lujos.\n3. **Plan Conservador**: Cómodo y seguro. Destinas 10% al ahorro sin afectar tu estilo de vida.\n\n¿Qué opción prefieres que apliquemos?';
+        yield '¡Hola! Soy SAMI, tu asistente financiero. He analizado tus datos. *(Nota: Modo simulación sin API Key)*.\n\nPara ayudarte a ahorrar, te propongo 3 opciones basadas en tus ingresos y gastos:\n\n1. **Regla 50/30/20**: Un enfoque balanceado. Destinas 20% al ahorro.\n2. **Plan Agresivo**: Ideal para metas a corto plazo. Destinas 40% al ahorro reduciendo lujos.\n3. **Plan Conservador**: Cómodo y seguro. Destinas 10% al ahorro sin afectar tu estilo de vida.\n\n¿Qué opción prefieres que apliquemos?';
       } else {
-        yield '¡Hola! He recibido tu solicitud: "$prompt".\n\n*(Nota: La API Key de Gemini no está configurada, esto es una respuesta simulada).*';
+        yield '¡Hola! Soy SAMI, tu asistente financiero. He recibido tu solicitud: "$prompt".\n\n*(Nota: La API Key de Gemini no está configurada, esto es una respuesta simulada).*';
       }
       return;
     }
@@ -201,7 +201,7 @@ class AIRepositoryImpl implements AIRepository {
           .timeout(
             Duration(seconds: AIConfig.apiTimeoutSeconds),
             onTimeout: () => throw TimeoutException(
-              'La respuesta de QUIVO tardó demasiado. Por favor intenta de nuevo.',
+              'La respuesta de SAMI tardó demasiado. Por favor intenta de nuevo.',
             ),
           );
 
@@ -287,7 +287,7 @@ class AIRepositoryImpl implements AIRepository {
       if (e is TimeoutException) {
         yield '⏱️ La respuesta tardó demasiado. Verifica tu conexión e intenta de nuevo.';
       } else {
-        yield '❌ Error de conexión con QUIVO. Por favor intenta de nuevo en unos momentos.';
+        yield '❌ Error de conexión con SAMI. Por favor intenta de nuevo en unos momentos.';
       }
     }
   }

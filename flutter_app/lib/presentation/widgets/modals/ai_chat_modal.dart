@@ -7,6 +7,7 @@ import 'package:flutter_app/presentation/widgets/modals/add_saving_goal_modal.da
 import 'package:flutter_app/domain/entities/saving_goal.dart';
 import 'package:flutter_app/presentation/providers/saving_goals_provider.dart';
 import 'package:flutter_app/presentation/providers/auth_provider.dart';
+import 'package:flutter_app/core/utils/localization.dart';
 import 'premium_paywall_dialog.dart';
 
 class AIChatModal extends ConsumerStatefulWidget {
@@ -49,12 +50,6 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  final quickQuestions = [
-    {'icon': LucideIcons.piggyBank, 'text': '¿Cómo puedo ahorrar más?'},
-    {'icon': LucideIcons.trendingUp, 'text': 'Analiza mis gastos'},
-    {'icon': LucideIcons.target, 'text': 'Tips para mis metas'},
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -84,6 +79,7 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = ref.watch(localizationProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final chatState = ref.watch(chatProvider);
     final isPremium = ref.watch(authProvider).user?.isPremium ?? false;
@@ -106,17 +102,17 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 32),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
                 child: Text(
-                  'Interactúa con el Asistente IA impulsado por la magia del Plan Premium.',
+                  loc.get('sami_premium_desc'),
                   textAlign: TextAlign.center,
                 ),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cerrar'),
+                child: Text(loc.get('close')),
               ),
             ],
           ),
@@ -128,8 +124,7 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
     final messages = chatState.messages.isEmpty
         ? [
             ChatMessage(
-              text:
-                  '¡Hola! 👋 Soy QUIVO, tu asistente financiero. Estoy aquí para ayudarte con consejos de ahorro, análisis de gastos y planificación financiera basada en tus datos reales. ¿En qué puedo ayudarte hoy?',
+              text: loc.get('sami_welcome_greeting'),
               role: MessageRole.assistant,
             ),
           ]
@@ -143,16 +138,16 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
       ),
       child: Column(
         children: [
-          // Header
+          // Header with SAMI Branding
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
               gradient: isDark
                   ? const LinearGradient(
-                      colors: [Color(0xFF9333EA), Color(0xFFDB2777)],
+                      colors: [Color(0xFF6B21A8), Color(0xFF9333EA)],
                     )
                   : const LinearGradient(
-                      colors: [Color(0xFFA855F7), Color(0xFFEC4899)],
+                      colors: [Color(0xFFA855F7), Color(0xFFC084FC)],
                     ),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(24),
@@ -164,37 +159,85 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                 Expanded(
                   child: Row(
                     children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          LucideIcons.sparkles,
-                          color: Colors.white,
-                          size: 24,
-                        ),
+                      Stack(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.25),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.4),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: const Center(
+                              child: Text(
+                                '🤖',
+                                style: TextStyle(fontSize: 22),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'QUIVO',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                            Row(
+                              children: [
+                                const Text(
+                                  'SAMI',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 19,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.22),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text(
+                                    'AI',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             Text(
-                              'Siempre disponible para ayudarte',
+                              loc.get('sami_subtitle'),
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.8),
+                                color: Colors.white.withValues(alpha: 0.85),
                                 fontSize: 12,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -238,18 +281,18 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                             : null,
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
+                          const Icon(
                             LucideIcons.sparkles,
                             color: Color(0xFFC084FC),
                             size: 16,
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text(
-                            ' QUIVO está pensando...',
-                            style: TextStyle(color: Colors.grey),
+                            loc.get('sami_thinking'),
+                            style: const TextStyle(color: Colors.grey),
                           ),
                         ],
                       ),
@@ -298,7 +341,7 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'QUIVO ha propuesto un Plan de Ahorro',
+                                loc.get('sami_proposal'),
                                 style: TextStyle(
                                   color: isDark
                                       ? Colors.grey[400]
@@ -472,12 +515,13 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'QUIVO',
+                                'SAMI',
                                 style: TextStyle(
                                   color: isDark
                                       ? Colors.grey[400]
                                       : Colors.grey[600],
                                   fontSize: 12,
+                                  fontWeight: FontWeight.bold,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -517,8 +561,13 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
           ),
 
           // Quick Questions
-          if (messages.length <= 1)
-            Container(
+          if (messages.length <= 1) () {
+            final quickQuestions = [
+              {'icon': LucideIcons.piggyBank, 'text': loc.get('sami_quick_q1')},
+              {'icon': LucideIcons.trendingUp, 'text': loc.get('sami_quick_q2')},
+              {'icon': LucideIcons.target, 'text': loc.get('sami_quick_q3')},
+            ];
+            return Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               height: 60,
               child: ListView.separated(
@@ -549,7 +598,8 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                   );
                 },
               ),
-            ),
+            );
+          }(),
 
           // Input
           Container(
@@ -582,7 +632,7 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                     ),
                     onSubmitted: handleSendMessage,
                     decoration: InputDecoration(
-                      hintText: 'Escribe tu pregunta...',
+                      hintText: loc.get('sami_input_hint'),
                       hintStyle: TextStyle(
                         color: isDark ? Colors.grey[500] : Colors.grey[400],
                       ),

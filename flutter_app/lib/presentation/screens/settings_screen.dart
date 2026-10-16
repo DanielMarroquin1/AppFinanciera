@@ -2084,7 +2084,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           final voices = [
             {
               'id': 'amigable',
-              'name': 'Femenina Amigable (QUIVO)',
+              'name': 'Femenina Amigable (SAMI)',
               'icon': LucideIcons.sparkles,
               'desc': 'Un tono más agudo, rápido y empático.',
             },
@@ -2141,7 +2141,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Personaliza cómo te habla QUIVO en los ingresos por voz.',
+                  'Personaliza cómo te habla SAMI en los ingresos por voz.',
                   style: TextStyle(
                     color: isDark ? Colors.grey[400] : Colors.grey[600],
                     fontSize: 14,
@@ -3643,7 +3643,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Ingresa tu API Key gratuita de Google Gemini para habilitar el procesamiento de lenguaje natural avanzado. Sin esta llave, QUIVO usará un sistema básico de reconocimiento.',
+                'Ingresa tu API Key gratuita de Google Gemini para habilitar el procesamiento de lenguaje natural avanzado. Sin esta llave, SAMI usará un sistema básico de reconocimiento.',
                 style: TextStyle(
                   color: isDark ? Colors.grey[400] : Colors.grey[600],
                   fontSize: 14,

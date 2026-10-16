@@ -185,19 +185,13 @@ class _AppShellState extends ConsumerState<AppShell>
                               context: context,
                               barrierDismissible: true,
                               barrierLabel: 'Cerrar',
-                              barrierColor: Colors.black.withOpacity(0.6),
+                              barrierColor: Colors.black.withValues(alpha: 0.65),
                               transitionDuration: const Duration(
-                                milliseconds: 300,
+                                milliseconds: 320,
                               ),
                               pageBuilder:
                                   (context, animation, secondaryAnimation) {
-                                    return BackdropFilter(
-                                      filter: ImageFilter.blur(
-                                        sigmaX: 12,
-                                        sigmaY: 12,
-                                      ),
-                                      child: const QuickActionsMenu(),
-                                    );
+                                    return const QuickActionsMenu();
                                   },
                               transitionBuilder:
                                   (
@@ -206,21 +200,17 @@ class _AppShellState extends ConsumerState<AppShell>
                                     secondaryAnimation,
                                     child,
                                   ) {
-                                    return FadeTransition(
-                                      opacity: animation,
-                                      child: ScaleTransition(
-                                        scale:
-                                            Tween<double>(
-                                              begin: 0.9,
-                                              end: 1.0,
-                                            ).animate(
-                                              CurvedAnimation(
-                                                parent: animation,
-                                                curve: Curves.easeOutCubic,
-                                              ),
-                                            ),
-                                        child: child,
-                                      ),
+                                    final curved = CurvedAnimation(
+                                      parent: animation,
+                                      curve: Curves.easeOutCubic,
+                                      reverseCurve: Curves.easeInCubic,
+                                    );
+                                    return SlideTransition(
+                                      position: Tween<Offset>(
+                                        begin: const Offset(0, 1.0),
+                                        end: Offset.zero,
+                                      ).animate(curved),
+                                      child: child,
                                     );
                                   },
                             );

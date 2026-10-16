@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../presentation/screens/splash_loading_screen.dart';
 import '../../presentation/screens/login_screen.dart';
 import '../../presentation/screens/dashboard_screen.dart';
 import '../../presentation/screens/expenses_screen.dart';
@@ -20,8 +21,12 @@ class AppRouter {
   static GoRouter createRouter() {
     return GoRouter(
       navigatorKey: rootNavigatorKey,
-      initialLocation: '/login',
+      initialLocation: '/splash',
       routes: [
+        GoRoute(
+          path: '/splash',
+          builder: (context, state) => const SplashLoadingScreen(),
+        ),
         GoRoute(
           path: '/login',
           builder: (context, state) => const LoginScreen(),

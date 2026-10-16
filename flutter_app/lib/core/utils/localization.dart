@@ -372,6 +372,7 @@ class AppLocalizations {
       'sami_quick_q3': 'Tips para mis metas',
       'sami_premium_desc':
           'Interactúa con SAMI, tu asistente financiero IA, con el Plan Premium.',
+      'app_slogan': 'Todo gran ahorro empieza como una semilla',
       'quick_actions_hub_title': 'Acciones Rápidas',
       'quick_actions_hub_subtitle': '¿Qué deseas hacer hoy?',
       'quick_actions_sami_ai': 'Asistente SAMI',
@@ -981,6 +982,7 @@ class AppLocalizations {
       'sami_quick_q3': 'Tips for my goals',
       'sami_premium_desc':
           'Interact with SAMI, your AI financial assistant, with the Premium Plan.',
+      'app_slogan': 'Every great saving starts as a seed',
       'quick_actions_hub_title': 'Quick Actions',
       'quick_actions_hub_subtitle': 'What would you like to do today?',
       'quick_actions_sami_ai': 'SAMI Assistant',
@@ -1592,6 +1594,7 @@ class AppLocalizations {
       'sami_quick_q3': 'Dicas para minhas metas',
       'sami_premium_desc':
           'Interaja com SAMI, seu assistente financeiro IA, com o Plano Premium.',
+      'app_slogan': 'Toda grande economia começa como uma semente',
       'quick_actions_hub_title': 'Ações Rápidas',
       'quick_actions_hub_subtitle': 'O que você gostaria de fazer hoje?',
       'quick_actions_sami_ai': 'Assistente SAMI',
@@ -2215,6 +2218,7 @@ class AppLocalizations {
       'sami_quick_q3': 'Conseils pour mes objectifs',
       'sami_premium_desc':
           'Interagissez avec SAMI, votre assistant financier IA, grâce au Plan Premium.',
+      'app_slogan': 'Toute grande épargne commence comme une graine',
       'quick_actions_hub_title': 'Actions Rapides',
       'quick_actions_hub_subtitle': 'Que souhaitez-vous faire aujourd\'hui ?',
       'quick_actions_sami_ai': 'Assistant SAMI',
@@ -2826,6 +2830,7 @@ class AppLocalizations {
       'sami_quick_q3': 'Consigli per i miei obiettivi',
       'sami_premium_desc':
           'Interagisci con SAMI, il tuo assistente finanziario IA, con il Piano Premium.',
+      'app_slogan': 'Ogni grande risparmio inizia come un seme',
       'quick_actions_hub_title': 'Azioni Rapide',
       'quick_actions_hub_subtitle': 'Cosa vorresti fare oggi?',
       'quick_actions_sami_ai': 'Assistente SAMI',

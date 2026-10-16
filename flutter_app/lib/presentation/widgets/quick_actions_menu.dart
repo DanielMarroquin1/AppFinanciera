@@ -20,7 +20,7 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
     super.initState();
     _staggerController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 520),
+      duration: const Duration(milliseconds: 500),
     );
     _staggerController.forward();
   }
@@ -117,9 +117,8 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
             alignment: Alignment.bottomCenter,
             child: GestureDetector(
               onVerticalDragEnd: (details) {
-                // Swipe down to dismiss
                 if (details.primaryVelocity != null &&
-                    details.primaryVelocity! > 220) {
+                    details.primaryVelocity! > 200) {
                   _handleDismiss();
                 }
               },
@@ -127,7 +126,7 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
                 width: double.infinity,
                 constraints: BoxConstraints(
                   maxWidth: 520,
-                  maxHeight: size.height * 0.88,
+                  maxHeight: size.height * 0.90,
                 ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -136,8 +135,8 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
                     colors: isDark
                         ? [
                             const Color(0xFF0F172A),
-                            const Color(0xFF0B1222),
-                            const Color(0xFF070B14),
+                            const Color(0xFF0A101D),
+                            const Color(0xFF060913),
                           ]
                         : [
                             Colors.white,
@@ -146,225 +145,241 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
                           ],
                   ),
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(32),
-                  ),
-                  border: Border(
-                    top: BorderSide(
-                      color: isDark
-                          ? const Color(0xFF38BDF8).withValues(alpha: 0.45)
-                          : const Color(0xFFE2E8F0),
-                      width: 1.5,
-                    ),
+                    top: Radius.circular(36),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.6 : 0.2),
-                      blurRadius: 36,
-                      offset: const Offset(0, -10),
+                      color: Colors.black.withValues(alpha: isDark ? 0.65 : 0.22),
+                      blurRadius: 40,
+                      offset: const Offset(0, -12),
                     ),
                     if (isDark)
                       BoxShadow(
-                        color: const Color(0xFF38BDF8).withValues(alpha: 0.08),
-                        blurRadius: 24,
+                        color: const Color(0xFF06B6D4).withValues(alpha: 0.12),
+                        blurRadius: 30,
                         offset: const Offset(0, -2),
                       ),
                   ],
                 ),
-                child: SafeArea(
-                  top: false,
-                  bottom: true,
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Drag Handle
-                        Container(
-                          width: 44,
-                          height: 4.5,
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF475569)
-                                : const Color(0xFFCBD5E1),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Glowing Top Accent Line (Cyan -> Purple -> Emerald)
+                    Container(
+                      height: 3.5,
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(36),
                         ),
-                        const SizedBox(height: 14),
+                        gradient: LinearGradient(
+                          colors: [
+                            Color(0xFF06B6D4),
+                            Color(0xFF8B5CF6),
+                            Color(0xFF10B981),
+                          ],
+                        ),
+                      ),
+                    ),
 
-                        // Header Row with Title Badge and Close X
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                    SafeArea(
+                      top: false,
+                      bottom: true,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            // Drag Pill
+                            Container(
+                              width: 42,
+                              height: 4.5,
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? const Color(0xFF475569)
+                                    : const Color(0xFFCBD5E1),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+
+                            // Header with SAMI Mascot Greeting!
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
+                                // SAMI Mascot Avatar with glowing aura
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 4,
-                                  ),
+                                  width: 52,
+                                  height: 52,
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(
+                                    shape: BoxShape.circle,
+                                    gradient: RadialGradient(
                                       colors: [
-                                        const Color(0xFF38BDF8)
-                                            .withValues(alpha: 0.18),
-                                        const Color(0xFF0284C7)
-                                            .withValues(alpha: 0.12),
+                                        const Color(0xFF06B6D4).withValues(alpha: 0.35),
+                                        const Color(0xFF06B6D4).withValues(alpha: 0.05),
+                                        Colors.transparent,
                                       ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: const Color(0xFF38BDF8)
-                                          .withValues(alpha: 0.4),
-                                      width: 1,
+                                      stops: const [0.0, 0.7, 1.0],
                                     ),
                                   ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
+                                  child: Center(
+                                    child: Image.asset(
+                                      'assets/images/sami_bienvenida.png',
+                                      width: 46,
+                                      height: 46,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+
+                                // Title and Subtitle
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Icon(
-                                        LucideIcons.zap,
-                                        size: 13,
-                                        color: Color(0xFF38BDF8),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            loc.get('quick_actions_hub_title'),
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w900,
+                                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                              letterSpacing: -0.3,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF06B6D4).withValues(alpha: 0.18),
+                                              borderRadius: BorderRadius.circular(12),
+                                              border: Border.all(
+                                                color: const Color(0xFF06B6D4).withValues(alpha: 0.45),
+                                                width: 1,
+                                              ),
+                                            ),
+                                            child: const Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(LucideIcons.zap, size: 11, color: Color(0xFF06B6D4)),
+                                                SizedBox(width: 3),
+                                                Text(
+                                                  'QUIVO',
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w900,
+                                                    color: Color(0xFF06B6D4),
+                                                    letterSpacing: 0.8,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(width: 5),
+                                      const SizedBox(height: 3),
                                       Text(
-                                        loc
-                                            .get('quick_actions_hub_title')
-                                            .toUpperCase(),
-                                        style: const TextStyle(
-                                          color: Color(0xFF38BDF8),
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w800,
-                                          letterSpacing: 1.2,
+                                        loc.get('quick_actions_hub_subtitle'),
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  loc.get('quick_actions_hub_subtitle'),
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                    color: isDark
-                                        ? const Color(0xFF94A3B8)
-                                        : const Color(0xFF64748B),
-                                  ),
+
+                                // Close Circular Button
+                                _HeaderCloseButton(
+                                  isDark: isDark,
+                                  onTap: () => _handleDismiss(),
                                 ),
                               ],
                             ),
-                            // Quick Close Circle Icon Button
-                            _HeaderCloseButton(
+
+                            const SizedBox(height: 18),
+
+                            // 2-Column Bento Grid with Staggered Entrance Animations
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                final cardWidth = (constraints.maxWidth - 12) / 2;
+                                return Wrap(
+                                  spacing: 12,
+                                  runSpacing: 12,
+                                  children: List.generate(actions.length, (index) {
+                                    final action = actions[index];
+
+                                    final startInterval = (0.05 + index * 0.07).clamp(0.0, 0.95);
+                                    final endInterval = (startInterval + 0.38).clamp(0.0, 1.0);
+
+                                    final cardScale = Tween<double>(begin: 0.82, end: 1.0).animate(
+                                      CurvedAnimation(
+                                        parent: _staggerController,
+                                        curve: Interval(startInterval, endInterval, curve: Curves.easeOutBack),
+                                      ),
+                                    );
+
+                                    final cardSlide = Tween<Offset>(
+                                      begin: const Offset(0, 24),
+                                      end: Offset.zero,
+                                    ).animate(
+                                      CurvedAnimation(
+                                        parent: _staggerController,
+                                        curve: Interval(startInterval, endInterval, curve: Curves.easeOutCubic),
+                                      ),
+                                    );
+
+                                    final cardFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+                                      CurvedAnimation(
+                                        parent: _staggerController,
+                                        curve: Interval(startInterval, endInterval, curve: Curves.easeOut),
+                                      ),
+                                    );
+
+                                    return AnimatedBuilder(
+                                      animation: _staggerController,
+                                      builder: (context, child) {
+                                        return Transform.translate(
+                                          offset: cardSlide.value,
+                                          child: Transform.scale(
+                                            scale: cardScale.value,
+                                            child: Opacity(
+                                              opacity: cardFade.value.clamp(0.0, 1.0),
+                                              child: child,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: SizedBox(
+                                        width: cardWidth,
+                                        child: _BentoQuickActionCard(
+                                          action: action,
+                                          isDark: isDark,
+                                          onTap: () => _handleDismiss(action['id'] as String),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                );
+                              },
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // Bottom Close Bar
+                            _BottomCloseBar(
                               isDark: isDark,
+                              label: loc.get('quick_actions_close'),
                               onTap: () => _handleDismiss(),
                             ),
                           ],
                         ),
-
-                        const SizedBox(height: 18),
-
-                        // 2-Column Bento Grid with Staggered Entrance Animations
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            final cardWidth = (constraints.maxWidth - 12) / 2;
-                            return Wrap(
-                              spacing: 12,
-                              runSpacing: 12,
-                              children: List.generate(actions.length, (index) {
-                                final action = actions[index];
-
-                                // Staggered curve for this card
-                                final startInterval =
-                                    (0.06 + index * 0.08).clamp(0.0, 0.95);
-                                final endInterval =
-                                    (startInterval + 0.38).clamp(0.0, 1.0);
-
-                                final cardScale = Tween<double>(
-                                  begin: 0.82,
-                                  end: 1.0,
-                                ).animate(
-                                  CurvedAnimation(
-                                    parent: _staggerController,
-                                    curve: Interval(
-                                      startInterval,
-                                      endInterval,
-                                      curve: Curves.easeOutBack,
-                                    ),
-                                  ),
-                                );
-
-                                final cardSlide = Tween<Offset>(
-                                  begin: const Offset(0, 24),
-                                  end: Offset.zero,
-                                ).animate(
-                                  CurvedAnimation(
-                                    parent: _staggerController,
-                                    curve: Interval(
-                                      startInterval,
-                                      endInterval,
-                                      curve: Curves.easeOutCubic,
-                                    ),
-                                  ),
-                                );
-
-                                final cardFade = Tween<double>(
-                                  begin: 0.0,
-                                  end: 1.0,
-                                ).animate(
-                                  CurvedAnimation(
-                                    parent: _staggerController,
-                                    curve: Interval(
-                                      startInterval,
-                                      endInterval,
-                                      curve: Curves.easeOut,
-                                    ),
-                                  ),
-                                );
-
-                                return AnimatedBuilder(
-                                  animation: _staggerController,
-                                  builder: (context, child) {
-                                    return Transform.translate(
-                                      offset: cardSlide.value,
-                                      child: Transform.scale(
-                                        scale: cardScale.value,
-                                        child: Opacity(
-                                          opacity: cardFade.value.clamp(0.0, 1.0),
-                                          child: child,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  child: SizedBox(
-                                    width: cardWidth,
-                                    child: _BentoQuickActionCard(
-                                      action: action,
-                                      isDark: isDark,
-                                      onTap: () =>
-                                          _handleDismiss(action['id'] as String),
-                                    ),
-                                  ),
-                                );
-                              }),
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Bottom Close Bar
-                        _BottomCloseBar(
-                          isDark: isDark,
-                          label: loc.get('quick_actions_close'),
-                          onTap: () => _handleDismiss(),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -424,13 +439,9 @@ class _HeaderCloseButtonState extends State<_HeaderCloseButton>
           height: 38,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: widget.isDark
-                ? const Color(0xFF1E293B)
-                : const Color(0xFFF1F5F9),
+            color: widget.isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
             border: Border.all(
-              color: widget.isDark
-                  ? const Color(0xFF334155)
-                  : const Color(0xFFE2E8F0),
+              color: widget.isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
             ),
             boxShadow: [
               BoxShadow(
@@ -520,9 +531,7 @@ class _BottomCloseBarState extends State<_BottomCloseBar>
               Icon(
                 LucideIcons.chevronDown,
                 size: 18,
-                color: widget.isDark
-                    ? const Color(0xFF94A3B8)
-                    : const Color(0xFF64748B),
+                color: widget.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
               ),
               const SizedBox(width: 6),
               Text(
@@ -530,9 +539,7 @@ class _BottomCloseBarState extends State<_BottomCloseBar>
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: widget.isDark
-                      ? const Color(0xFFCBD5E1)
-                      : const Color(0xFF475569),
+                  color: widget.isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
                 ),
               ),
             ],
@@ -571,7 +578,7 @@ class _BentoQuickActionCardState extends State<_BentoQuickActionCard>
       vsync: this,
       duration: const Duration(milliseconds: 110),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.91).animate(
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.89).animate(
       CurvedAnimation(parent: _pressController, curve: Curves.easeInOutCubic),
     );
   }
@@ -587,9 +594,7 @@ class _BentoQuickActionCardState extends State<_BentoQuickActionCard>
     setState(() => _isTapped = true);
     HapticFeedback.mediumImpact();
 
-    // Trigger visual press bounce
     await _pressController.forward();
-    // Allow user to see the tactile bounce and glow flash
     await Future.delayed(const Duration(milliseconds: 130));
 
     if (mounted) {
@@ -618,23 +623,21 @@ class _BentoQuickActionCardState extends State<_BentoQuickActionCard>
           padding: const EdgeInsets.all(13),
           decoration: BoxDecoration(
             color: widget.isDark
-                ? const Color(0xFF1E293B).withValues(alpha: 0.65)
+                ? const Color(0xFF1E293B).withValues(alpha: 0.70)
                 : Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: _isTapped
                   ? accent
-                  : accent.withValues(alpha: widget.isDark ? 0.32 : 0.22),
-              width: _isTapped ? 1.8 : 1.3,
+                  : accent.withValues(alpha: widget.isDark ? 0.35 : 0.25),
+              width: _isTapped ? 2.0 : 1.3,
             ),
             boxShadow: [
               BoxShadow(
                 color: accent.withValues(
-                  alpha: _isTapped
-                      ? 0.35
-                      : (widget.isDark ? 0.12 : 0.08),
+                  alpha: _isTapped ? 0.40 : (widget.isDark ? 0.14 : 0.09),
                 ),
-                blurRadius: _isTapped ? 20 : 14,
+                blurRadius: _isTapped ? 22 : 14,
                 offset: const Offset(0, 4),
               ),
             ],
@@ -660,7 +663,7 @@ class _BentoQuickActionCardState extends State<_BentoQuickActionCard>
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: gradient.first.withValues(alpha: 0.35),
+                          color: gradient.first.withValues(alpha: 0.4),
                           blurRadius: 10,
                           offset: const Offset(0, 3),
                         ),
@@ -674,36 +677,29 @@ class _BentoQuickActionCardState extends State<_BentoQuickActionCard>
                   ),
                   if (isPremium)
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 7,
-                        vertical: 3,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFFF59E0B).withValues(alpha: 0.25),
-                            const Color(0xFFEA580C).withValues(alpha: 0.2),
-                          ],
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFF59E0B), Color(0xFFEA580C)],
                         ),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.45),
-                          width: 1,
-                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            LucideIcons.crown,
-                            size: 10,
-                            color: Color(0xFFF59E0B),
-                          ),
+                          Icon(LucideIcons.crown, size: 10, color: Colors.white),
                           SizedBox(width: 3),
                           Text(
                             'PRO',
                             style: TextStyle(
-                              color: Color(0xFFF59E0B),
+                              color: Colors.white,
                               fontSize: 10,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 0.5,
@@ -739,9 +735,7 @@ class _BentoQuickActionCardState extends State<_BentoQuickActionCard>
                   fontSize: 11,
                   height: 1.25,
                   fontWeight: FontWeight.w400,
-                  color: widget.isDark
-                      ? const Color(0xFF94A3B8)
-                      : const Color(0xFF64748B),
+                  color: widget.isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                 ),
               ),
             ],

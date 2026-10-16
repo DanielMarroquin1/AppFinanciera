@@ -156,34 +156,45 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Icon Header
+          // Animated SAMI Alert/Sad Hero
           AnimatedBuilder(
             animation: _shakeCtrl,
             builder: (context, child) {
               return Transform.rotate(
-                angle: (_shakeCtrl.value - 0.5) * 0.1,
+                angle: (_shakeCtrl.value - 0.5) * 0.12,
                 child: child,
               );
             },
             child: Stack(
               alignment: Alignment.center,
+              clipBehavior: Clip.none,
               children: [
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: 96,
+                  height: 96,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFFEF4444).withOpacity(0.1),
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.12),
                     border: Border.all(
-                      color: const Color(0xFFEF4444).withOpacity(0.3),
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.35),
                       width: 2,
                     ),
                   ),
                 ),
-                const Icon(
-                  LucideIcons.heartCrack,
-                  color: Color(0xFFEF4444),
-                  size: 40,
+                Image.asset(
+                  'assets/images/sami_alerta.png',
+                  width: 86,
+                  height: 86,
+                  fit: BoxFit.contain,
+                ),
+                const Positioned(
+                  bottom: -2,
+                  right: -2,
+                  child: Icon(
+                    LucideIcons.heartCrack,
+                    color: Color(0xFFEF4444),
+                    size: 24,
+                  ),
                 ),
               ],
             ),
@@ -309,17 +320,24 @@ class _CancelPremiumDialogState extends ConsumerState<CancelPremiumDialog>
             scale: Tween<double>(begin: 0.5, end: 1.0).animate(
               CurvedAnimation(parent: _shakeCtrl, curve: Curves.elasticOut),
             ),
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                LucideIcons.frown,
-                color: Colors.grey,
-                size: 60,
-              ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                Image.asset(
+                  'assets/images/sami_alerta.png',
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.contain,
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 32),

@@ -265,29 +265,40 @@ class _AppShellState extends ConsumerState<AppShell>
                             CurvedAnimation(parent: _fabController, curve: Curves.easeInOutCubic),
                           ),
                           child: Container(
-                          width: 56,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isDark
-                                ? const Color(0xFF2D2D3A)
-                                : const Color(0xFFF1F5F9),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
+                            width: 58,
+                            height: 58,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: const LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
                               ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Icon(
-                              LucideIcons.plus,
-                              color: isDark ? Colors.white : Colors.black,
-                              size: 28,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF06B6D4).withValues(alpha: 0.45),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                                BoxShadow(
+                                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.4),
+                                width: 2,
+                              ),
+                            ),
+                            child: Center(
+                              child: Icon(
+                                LucideIcons.plus,
+                                color: Colors.white,
+                                size: 28,
+                              ),
                             ),
                           ),
-                        ),
                         ),
                       ),
 

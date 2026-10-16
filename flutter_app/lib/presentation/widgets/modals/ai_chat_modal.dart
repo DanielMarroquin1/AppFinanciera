@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -46,18 +47,33 @@ class AIChatModal extends ConsumerStatefulWidget {
   ConsumerState<AIChatModal> createState() => _AIChatModalState();
 }
 
-class _AIChatModalState extends ConsumerState<AIChatModal> {
+class _AIChatModalState extends ConsumerState<AIChatModal>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  late AnimationController _samiAnimCtrl;
 
   @override
   void initState() {
     super.initState();
+    _samiAnimCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    )..repeat(reverse: true);
+
     if (widget.initialMessage != null && widget.initialMessage!.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         handleSendMessage(widget.initialMessage!);
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _samiAnimCtrl.dispose();
+    _controller.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   void scrollToBottom() {
@@ -161,21 +177,41 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                     children: [
                       Stack(
                         children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.25),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.4),
-                                width: 1.5,
+                          AnimatedBuilder(
+                            animation: _samiAnimCtrl,
+                            builder: (context, child) {
+                              final floatY = (math.sin(_samiAnimCtrl.value * math.pi) - 0.5) * 4.0;
+                              return Transform.translate(
+                                offset: Offset(0, floatY),
+                                child: child,
+                              );
+                            },
+                            child: Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.22),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.5),
+                                  width: 2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFC084FC).withValues(alpha: 0.4),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                '🤖',
-                                style: TextStyle(fontSize: 22),
+                              child: ClipOval(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Image.asset(
+                                    'assets/images/sami_analizando.png',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -183,14 +219,14 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                             bottom: 0,
                             right: 0,
                             child: Container(
-                              width: 12,
-                              height: 12,
+                              width: 14,
+                              height: 14,
                               decoration: BoxDecoration(
                                 color: const Color(0xFF10B981),
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: Colors.white,
-                                  width: 2,
+                                  width: 2.2,
                                 ),
                               ),
                             ),
@@ -284,15 +320,26 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
-                            LucideIcons.sparkles,
-                            color: Color(0xFFC084FC),
-                            size: 16,
+                          AnimatedBuilder(
+                            animation: _samiAnimCtrl,
+                            builder: (context, child) {
+                              final tilt = (math.sin(_samiAnimCtrl.value * 2 * math.pi)) * 0.15;
+                              return Transform.rotate(angle: tilt, child: child);
+                            },
+                            child: Image.asset(
+                              'assets/images/sami_analizando.png',
+                              width: 24,
+                              height: 24,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Text(
                             loc.get('sami_thinking'),
-                            style: const TextStyle(color: Colors.grey),
+                            style: TextStyle(
+                              color: isDark ? Colors.grey[300] : Colors.grey[700],
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),
@@ -334,12 +381,13 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                         children: [
                           Row(
                             children: [
-                              const Icon(
-                                LucideIcons.sparkles,
-                                color: Color(0xFFC084FC),
-                                size: 16,
+                              Image.asset(
+                                'assets/images/sami_analizando.png',
+                                width: 22,
+                                height: 22,
+                                fit: BoxFit.contain,
                               ),
-                              const SizedBox(width: 4),
+                              const SizedBox(width: 6),
                               Text(
                                 loc.get('sami_proposal'),
                                 style: TextStyle(
@@ -347,6 +395,7 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                                       ? Colors.grey[400]
                                       : Colors.grey[600],
                                   fontSize: 12,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ],
@@ -508,26 +557,27 @@ class _AIChatModalState extends ConsumerState<AIChatModal> {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
-                                LucideIcons.sparkles,
-                                color: Color(0xFFC084FC),
-                                size: 16,
+                              Image.asset(
+                                'assets/images/sami_analizando.png',
+                                width: 20,
+                                height: 20,
+                                fit: BoxFit.contain,
                               ),
-                              const SizedBox(width: 4),
+                              const SizedBox(width: 6),
                               Text(
                                 'SAMI',
                                 style: TextStyle(
                                   color: isDark
-                                      ? Colors.grey[400]
-                                      : Colors.grey[600],
+                                      ? const Color(0xFFC084FC)
+                                      : const Color(0xFF7E22CE),
                                   fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w900,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 6),
                         ],
                         Text(
                           msg.text,

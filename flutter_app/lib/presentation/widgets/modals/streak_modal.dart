@@ -286,130 +286,93 @@ class _StreakModalState extends ConsumerState<StreakModal>
                 ],
                 const SizedBox(height: 20),
 
-                // Flame Icon Circle
+                // SAMI Mascot Hero in Streak Modal
                 Stack(
                   alignment: Alignment.center,
+                  clipBehavior: Clip.none,
                   children: [
+                    // Outer pulsing aura
                     if (widget.isActiveToday || widget.isFrozen)
                       AnimatedBuilder(
                         animation: _pulseController,
                         builder: (context, child) {
                           return Container(
-                            width: 100 + (_pulseController.value * 20),
-                            height: 100 + (_pulseController.value * 20),
+                            width: 140 + (_pulseController.value * 25),
+                            height: 140 + (_pulseController.value * 25),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(
-                                color:
-                                    (widget.isFrozen
-                                            ? const Color(0xFF0EA5E9)
-                                            : const Color(0xFFF97316))
-                                        .withValues(
-                                          alpha:
-                                              0.3 *
-                                              (1.0 - _pulseController.value),
-                                        ),
-                                width: 3,
+                              gradient: RadialGradient(
+                                colors: [
+                                  (widget.isFrozen
+                                          ? const Color(0xFF0EA5E9)
+                                          : const Color(0xFFF97316))
+                                      .withValues(
+                                        alpha: 0.35 * (1.0 - _pulseController.value),
+                                      ),
+                                  Colors.transparent,
+                                ],
                               ),
                             ),
                           );
                         },
                       ),
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: widget.isFrozen
-                            ? (isDark
-                                  ? const LinearGradient(
-                                      colors: [
-                                        Color(0xFF0C4A6E),
-                                        Color(0xFF075985),
-                                      ],
-                                    )
-                                  : const LinearGradient(
-                                      colors: [
-                                        Color(0xFFE0F2FE),
-                                        Color(0xFFBAE6FD),
-                                      ],
-                                    ))
-                            : widget.isActiveToday
-                            ? (isDark
-                                  ? const LinearGradient(
-                                      colors: [
-                                        Color(0xFF7C2D12),
-                                        Color(0xFF9A3412),
-                                      ],
-                                    )
-                                  : const LinearGradient(
-                                      colors: [
-                                        Color(0xFFFFF7ED),
-                                        Color(0xFFFFEDD5),
-                                      ],
-                                    ))
-                            : (isDark
-                                  ? const LinearGradient(
-                                      colors: [
-                                        Color(0xFF374151),
-                                        Color(0xFF1F2937),
-                                      ],
-                                    )
-                                  : const LinearGradient(
-                                      colors: [
-                                        Color(0xFFF3F4F6),
-                                        Color(0xFFE5E7EB),
-                                      ],
-                                    )),
-                        border: Border.all(
-                          color: widget.isFrozen
-                              ? const Color(0xFF0EA5E9)
-                              : widget.isActiveToday
-                              ? (isDark
-                                    ? const Color(0xFFF97316)
-                                    : const Color(0xFFFB923C))
-                              : (isDark
-                                    ? const Color(0xFF4B5563)
-                                    : const Color(0xFFD1D5DB)),
-                          width: 3.5,
+
+                    // SAMI mascot with celebratory bounce animation
+                    AnimatedBuilder(
+                      animation: _pulseController,
+                      builder: (context, child) {
+                        final bounceY = (math.sin(_pulseController.value * math.pi)) * -10.0;
+                        final scale = 1.0 + (_pulseController.value * 0.06);
+                        return Transform.translate(
+                          offset: Offset(0, bounceY),
+                          child: Transform.scale(
+                            scale: scale,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: Container(
+                        constraints: const BoxConstraints(
+                          maxWidth: 130,
+                          maxHeight: 120,
                         ),
-                        boxShadow: (widget.isActiveToday || widget.isFrozen)
-                            ? [
-                                BoxShadow(
-                                  color:
-                                      (widget.isFrozen
-                                              ? const Color(0xFF0EA5E9)
-                                              : const Color(0xFFF97316))
-                                          .withValues(alpha: 0.35),
-                                  blurRadius: 16,
-                                  spreadRadius: 2,
-                                ),
-                              ]
-                            : [],
+                        child: Image.asset(
+                          widget.isActiveToday
+                              ? 'assets/images/sami_celebrando.png'
+                              : 'assets/images/sami_bienvenida.png',
+                          fit: BoxFit.contain,
+                        ),
                       ),
-                      child: AnimatedBuilder(
-                        animation: _pulseController,
-                        builder: (context, child) {
-                          return Transform.scale(
-                            scale: (widget.isActiveToday || widget.isFrozen)
-                                ? 1.0 + (_pulseController.value * 0.18)
-                                : 1.0,
-                            child: Icon(
-                              widget.isFrozen
-                                  ? LucideIcons.snowflake
-                                  : LucideIcons.flame,
-                              size: 52,
-                              color: widget.isFrozen
-                                  ? const Color(0xFF0EA5E9)
-                                  : widget.isActiveToday
-                                  ? (isDark
-                                        ? const Color(0xFFFB923C)
-                                        : const Color(0xFFEA580C))
-                                  : (isDark
-                                        ? Colors.grey[500]
-                                        : Colors.grey[400]),
+                    ),
+
+                    // Flame Badge Overlay on lower right of SAMI
+                    Positioned(
+                      bottom: -4,
+                      right: 14,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: widget.isFrozen
+                              ? const LinearGradient(colors: [Color(0xFF38BDF8), Color(0xFF0284C7)])
+                              : widget.isActiveToday
+                                  ? const LinearGradient(colors: [Color(0xFFF97316), Color(0xFFEA580C)])
+                                  : const LinearGradient(colors: [Color(0xFF6B7280), Color(0xFF4B5563)]),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (widget.isActiveToday ? const Color(0xFFEA580C) : Colors.black)
+                                  .withValues(alpha: 0.35),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
-                          );
-                        },
+                          ],
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                        child: Icon(
+                          widget.isFrozen ? LucideIcons.snowflake : LucideIcons.flame,
+                          size: 18,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],

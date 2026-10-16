@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:math' as math;
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -210,6 +211,26 @@ class _PremiumModalState extends ConsumerState<PremiumModal>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // SAMI Mascot saving hero
+          AnimatedBuilder(
+            animation: _bounceCtrl,
+            builder: (context, child) {
+              final floatY = (math.sin(_bounceCtrl.value * math.pi)) * 6.0;
+              return Transform.translate(
+                offset: Offset(0, -floatY),
+                child: child,
+              );
+            },
+            child: Container(
+              height: 95,
+              margin: const EdgeInsets.only(bottom: 14),
+              child: Image.asset(
+                'assets/images/sami_ahorro.png',
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+
           // Header with Price
           Stack(
             clipBehavior: Clip.none,
@@ -447,18 +468,25 @@ class _PremiumModalState extends ConsumerState<PremiumModal>
             scale: Tween<double>(begin: 0.5, end: 1.0).animate(
               CurvedAnimation(parent: _bounceCtrl, curve: Curves.elasticOut),
             ),
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF59E0B).withOpacity(0.2),
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFF59E0B), width: 4),
-              ),
-              child: const Icon(
-                LucideIcons.crown,
-                color: Color(0xFFF59E0B),
-                size: 60,
-              ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFF59E0B), width: 3),
+                  ),
+                ),
+                Image.asset(
+                  'assets/images/sami_celebrando.png',
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.contain,
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 32),

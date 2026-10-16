@@ -13,8 +13,9 @@ class SplashLoadingScreen extends ConsumerStatefulWidget {
 }
 
 class _SplashLoadingScreenState extends ConsumerState<SplashLoadingScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _controller;
+  late AnimationController _waveController;
   late Animation<double> _samiScaleAnimation;
   late Animation<double> _samiFadeAnimation;
   late Animation<double> _logoFadeAnimation;
@@ -26,32 +27,38 @@ class _SplashLoadingScreenState extends ConsumerState<SplashLoadingScreen>
   void initState() {
     super.initState();
 
-    // 3-second splash loading duration
+    // 5-second splash loading duration as requested
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3000),
+      duration: const Duration(milliseconds: 5000),
     );
 
-    // SAMI entrance: 0ms to 600ms (0.0 to 0.20)
-    _samiScaleAnimation = Tween<double>(begin: 0.7, end: 1.0).animate(
+    // Fast repeating controller for SAMI's hand waving animation (~500ms cycle)
+    _waveController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 550),
+    )..repeat(reverse: true);
+
+    // SAMI entrance: 0ms to 700ms
+    _samiScaleAnimation = Tween<double>(begin: 0.65, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.22, curve: Curves.easeOutBack),
+        curve: const Interval(0.0, 0.16, curve: Curves.easeOutBack),
       ),
     );
 
     _samiFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.16, curve: Curves.easeOut),
+        curve: const Interval(0.0, 0.12, curve: Curves.easeOut),
       ),
     );
 
-    // QUIVO logo entrance: 400ms to 900ms (0.13 to 0.30)
+    // QUIVO logo entrance: 500ms to 1200ms
     _logoFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.14, 0.30, curve: Curves.easeOut),
+        curve: const Interval(0.10, 0.24, curve: Curves.easeOut),
       ),
     );
 
@@ -61,23 +68,23 @@ class _SplashLoadingScreenState extends ConsumerState<SplashLoadingScreen>
     ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.14, 0.32, curve: Curves.easeOutCubic),
+        curve: const Interval(0.10, 0.26, curve: Curves.easeOutCubic),
       ),
     );
 
-    // Slogan entrance: 700ms to 1200ms (0.23 to 0.40)
+    // Slogan entrance: 1000ms to 1800ms
     _sloganFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.24, 0.40, curve: Curves.easeOut),
+        curve: const Interval(0.20, 0.35, curve: Curves.easeOut),
       ),
     );
 
-    // Progress bar fills linearly from 0.0 to 1.0 across full 3 seconds
+    // Progress bar fills smoothly from 0.0 to 1.0 across full 5 seconds
     _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.05, 0.95, curve: Curves.easeInOutCubic),
+        curve: const Interval(0.04, 0.96, curve: Curves.easeInOutCubic),
       ),
     );
 
@@ -102,6 +109,7 @@ class _SplashLoadingScreenState extends ConsumerState<SplashLoadingScreen>
 
   @override
   void dispose() {
+    _waveController.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -137,23 +145,23 @@ class _SplashLoadingScreenState extends ConsumerState<SplashLoadingScreen>
 
           // Ambient radial glows in background
           Positioned(
-            top: MediaQuery.of(context).size.height * 0.28,
+            top: MediaQuery.of(context).size.height * 0.26,
             left: 0,
             right: 0,
             child: Center(
               child: AnimatedBuilder(
                 animation: _controller,
                 builder: (context, child) {
-                  final glowPulse = 0.85 + 0.15 * math.sin(_controller.value * 4 * math.pi);
+                  final glowPulse = 0.85 + 0.15 * math.sin(_controller.value * 6 * math.pi);
                   return Container(
-                    width: 280 * glowPulse,
-                    height: 280 * glowPulse,
+                    width: 290 * glowPulse,
+                    height: 290 * glowPulse,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
                         colors: [
-                          const Color(0xFF00E5FF).withValues(alpha: 0.14),
-                          const Color(0xFF10B981).withValues(alpha: 0.08),
+                          const Color(0xFF00E5FF).withValues(alpha: 0.16),
+                          const Color(0xFF10B981).withValues(alpha: 0.09),
                           Colors.transparent,
                         ],
                         stops: const [0.0, 0.55, 1.0],
@@ -172,18 +180,24 @@ class _SplashLoadingScreenState extends ConsumerState<SplashLoadingScreen>
               children: [
                 const Spacer(flex: 3),
 
-                // SAMI Mascot with gentle breathing & floating animation
+                // SAMI Mascot with active hand-waving and floating animation
                 AnimatedBuilder(
-                  animation: _controller,
+                  animation: Listenable.merge([_controller, _waveController]),
                   builder: (context, child) {
-                    final floatY = math.sin(_controller.value * 3 * math.pi) * 8.0;
-                    final tilt = math.sin(_controller.value * 3 * math.pi) * 0.025;
+                    // Floating vertical movement
+                    final floatY = math.sin(_controller.value * 5 * math.pi) * 8.0;
+                    // Rhythmic hand wave rotation: pivots around the lower center to swing the raised hand back and forth!
+                    final waveAngle = (math.sin(_waveController.value * math.pi) - 0.5) * 0.18;
+                    // Subtle hand bounce
+                    final handPulse = 1.0 + 0.04 * math.sin(_waveController.value * math.pi);
+
                     return Transform.translate(
                       offset: Offset(0, floatY),
-                      child: Transform.rotate(
-                        angle: tilt,
-                        child: Transform.scale(
-                          scale: _samiScaleAnimation.value,
+                      child: Transform.scale(
+                        scale: _samiScaleAnimation.value * handPulse,
+                        child: Transform.rotate(
+                          angle: waveAngle,
+                          alignment: const Alignment(-0.2, 0.7), // Pivots near SAMI's waist/shoulder
                           child: Opacity(
                             opacity: _samiFadeAnimation.value.clamp(0.0, 1.0),
                             child: child,
@@ -193,16 +207,48 @@ class _SplashLoadingScreenState extends ConsumerState<SplashLoadingScreen>
                     );
                   },
                   child: Center(
-                    child: Container(
-                      constraints: const BoxConstraints(
-                        maxWidth: 240,
-                        maxHeight: 180,
-                      ),
-                      child: Image.asset(
-                        'assets/images/sami_bienvenida.png',
-                        fit: BoxFit.contain,
-                        filterQuality: FilterQuality.high,
-                      ),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          constraints: const BoxConstraints(
+                            maxWidth: 245,
+                            maxHeight: 185,
+                          ),
+                          child: Image.asset(
+                            'assets/images/sami_bienvenida.png',
+                            fit: BoxFit.contain,
+                            filterQuality: FilterQuality.high,
+                          ),
+                        ),
+                        // Animated waving stars / sparkles near waving hand
+                        Positioned(
+                          top: 10,
+                          left: 12,
+                          child: AnimatedBuilder(
+                            animation: _waveController,
+                            builder: (context, _) {
+                              final sparkScale = 0.8 + 0.35 * _waveController.value;
+                              return Transform.scale(
+                                scale: sparkScale,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
+                                  ),
+                                  child: const Icon(
+                                    Icons.auto_awesome,
+                                    size: 16,
+                                    color: Color(0xFF38BDF8),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -261,26 +307,26 @@ class _SplashLoadingScreenState extends ConsumerState<SplashLoadingScreen>
 
                 const Spacer(flex: 3),
 
-                // Modern glowing progress bar at bottom
+                // Modern glowing progress bar at bottom (5 seconds)
                 AnimatedBuilder(
                   animation: _controller,
                   builder: (context, child) {
                     return Opacity(
-                      opacity: _controller.value > 0.08 ? 1.0 : 0.0,
+                      opacity: _controller.value > 0.05 ? 1.0 : 0.0,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            width: 170,
-                            height: 4,
+                            width: 180,
+                            height: 4.5,
                             decoration: BoxDecoration(
                               color: const Color(0xFF1E293B),
-                              borderRadius: BorderRadius.circular(2),
+                              borderRadius: BorderRadius.circular(3),
                             ),
                             alignment: Alignment.centerLeft,
                             child: Container(
-                              width: 170 * _progressAnimation.value.clamp(0.0, 1.0),
-                              height: 4,
+                              width: 180 * _progressAnimation.value.clamp(0.0, 1.0),
+                              height: 4.5,
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
                                   colors: [
@@ -289,11 +335,11 @@ class _SplashLoadingScreenState extends ConsumerState<SplashLoadingScreen>
                                     Color(0xFF38BDF8),
                                   ],
                                 ),
-                                borderRadius: BorderRadius.circular(2),
+                                borderRadius: BorderRadius.circular(3),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF06B6D4).withValues(alpha: 0.6),
-                                    blurRadius: 8,
+                                    color: const Color(0xFF06B6D4).withValues(alpha: 0.65),
+                                    blurRadius: 10,
                                     offset: const Offset(0, 1),
                                   ),
                                 ],

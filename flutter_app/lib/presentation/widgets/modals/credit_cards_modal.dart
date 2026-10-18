@@ -300,17 +300,39 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
                       AddCreditCardModal.show(context);
                     },
                     child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.1)
-                            : Colors.black.withValues(alpha: 0.05),
-                        shape: BoxShape.circle,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 9,
                       ),
-                      child: Icon(
-                        LucideIcons.plus,
-                        color: isDark ? Colors.white : Colors.black,
-                        size: 24,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF06B6D4), Color(0xFF2563EB)],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF06B6D4).withValues(
+                              alpha: 0.35,
+                            ),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(LucideIcons.plus, color: Colors.white, size: 16),
+                          SizedBox(width: 6),
+                          Text(
+                            'Nueva Tarjeta',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -325,28 +347,99 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
                 data: (cards) {
                   if (cards.isEmpty) {
                     return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            LucideIcons.creditCard,
-                            size: 80,
-                            color: Colors.grey.withValues(alpha: 0.3),
-                          ),
-                          const SizedBox(height: 24),
-                          const Text(
-                            'Tu billetera está vacía',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: (isDark
+                                        ? const Color(0xFF06B6D4)
+                                        : const Color(0xFF2563EB))
+                                    .withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                LucideIcons.creditCard,
+                                size: 64,
+                                color: isDark
+                                    ? const Color(0xFF06B6D4)
+                                    : const Color(0xFF2563EB),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Agrega una tarjeta para gestionar tus créditos.',
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        ],
+                            const SizedBox(height: 20),
+                            Text(
+                              'Tu billetera está vacía',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Agrega tu primera tarjeta para controlar tus límites, fechas de corte y de pago.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: isDark ? Colors.white70 : Colors.grey[600],
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF06B6D4),
+                                    Color(0xFF2563EB),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF06B6D4).withValues(
+                                      alpha: 0.35,
+                                    ),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  HapticFeedback.mediumImpact();
+                                  AddCreditCardModal.show(context);
+                                },
+                                icon: const Icon(
+                                  LucideIcons.plus,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                                label: const Text(
+                                  'Crear Mi Primera Tarjeta',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }

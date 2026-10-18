@@ -19,9 +19,9 @@ class AddCreditCardModal extends ConsumerStatefulWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.88,
+        initialChildSize: 0.90,
         minChildSize: 0.50,
-        maxChildSize: 0.94,
+        maxChildSize: 0.95,
         builder: (_, scrollController) => AddCreditCardModal(
           existingCard: existingCard,
         ),
@@ -101,22 +101,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
     },
   ];
 
-  final List<Map<String, dynamic>> _networks = [
-    {'name': 'Visa', 'icon': '💎', 'label': 'VISA'},
-    {'name': 'Mastercard', 'icon': '🔴', 'label': 'MASTERCARD'},
-    {'name': 'Amex', 'icon': '🛡️', 'label': 'AMEX'},
-    {'name': 'Otro', 'icon': '💳', 'label': 'OTRO'},
-  ];
-
-  final List<String> _bankSuggestions = [
-    'BBVA',
-    'Nu',
-    'Santander',
-    'Citibanamex',
-    'Mercado Pago',
-    'Banorte',
-    'Amex',
-  ];
+  final List<String> _networks = ['Visa', 'Mastercard', 'Amex', 'Otra'];
 
   final List<double> _quickLimitIncrements = [
     1000,
@@ -139,10 +124,12 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
       _selectedColor = card.color;
     } else {
       _nameController.text = '';
-      _limitController.text = '15000';
+      _limitController.text = '10000';
       _balanceController.text = '0';
       _cutOffDay = 15;
       _paymentDay = 5;
+      _network = 'Visa';
+      _selectedColor = const Color(0xFF1E3A8A);
     }
   }
 
@@ -204,7 +191,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
             content: Text(
               widget.existingCard != null
                   ? '¡Tarjeta "$name" actualizada con éxito! 💳✨'
-                  : '¡Tarjeta "$name" agregada con éxito! 🚀💳',
+                  : '¡Tarjeta "$name" agregada a tu billetera! 🚀💳',
             ),
             backgroundColor: const Color(0xFF10B981),
             behavior: SnackBarBehavior.floating,
@@ -226,225 +213,600 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
     }
   }
 
-  Widget _buildLiveCardPreview(String currencyCode) {
-    final limitVal = double.tryParse(_limitController.text) ?? 0.0;
-    final nameVal = _nameController.text.trim().isEmpty
-        ? 'MI TARJETA'
-        : _nameController.text.trim().toUpperCase();
-
-    // Dark secondary gradient color
-    final c2 = Color.lerp(_selectedColor, Colors.black, 0.45)!;
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final user = ref.watch(authProvider).user;
+    final currencyCode = user?.currency ?? 'GTQ';
+    final sym = CurrencyFormatter.getSymbol(currencyCode);
 
     return Container(
-      width: double.infinity,
-      height: 205,
-      margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [_selectedColor, c2],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
+        color: isDark ? const Color(0xFF0F172A) : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         boxShadow: [
           BoxShadow(
-            color: _selectedColor.withValues(alpha: 0.45),
+            color: Colors.black.withValues(alpha: 0.35),
             blurRadius: 24,
-            offset: const Offset(0, 10),
+            offset: const Offset(0, -6),
           ),
         ],
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.25),
-          width: 1.5,
-        ),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
+      child: Column(
         children: [
-          // Holographic diagonal light streak
-          Positioned(
-            top: -40,
-            right: 40,
-            child: Transform.rotate(
-              angle: -0.45,
-              child: Container(
-                width: 90,
-                height: 320,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.transparent,
-                      Colors.white.withValues(alpha: 0.09),
-                      Colors.white.withValues(alpha: 0.16),
-                      Colors.transparent,
-                    ],
-                    stops: const [0.0, 0.4, 0.6, 1.0],
-                  ),
-                ),
-              ),
+          // Drag handle
+          Container(
+            margin: const EdgeInsets.only(top: 12, bottom: 8),
+            height: 4.5,
+            width: 44,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+              borderRadius: BorderRadius.circular(3),
             ),
           ),
 
-          // Watermark icon
-          Positioned(
-            right: -25,
-            bottom: -25,
-            child: Icon(
-              LucideIcons.creditCard,
-              size: 160,
-              color: Colors.white.withValues(alpha: 0.05),
-            ),
-          ),
-
+          // Header
           Padding(
-            padding: const EdgeInsets.all(22),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.fromLTRB(24, 6, 20, 14),
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Top row: Gold Chip, Contactless icon & Network badge
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        // Realistic Gold EMV Chip
-                        Container(
-                          width: 44,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFFDF00), Color(0xFFD4AF37), Color(0xFFAA771C)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(7),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.3),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Container(
-                              width: 32,
-                              height: 22,
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: const Color(0xFF5D4037).withValues(alpha: 0.5),
-                                  width: 1,
-                                ),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Icon(
-                          LucideIcons.wifi,
-                          color: Colors.white.withValues(alpha: 0.85),
-                          size: 20,
-                        ),
-                      ],
-                    ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.18),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF06B6D4), Color(0xFF2563EB)],
+                        ),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        _network.toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 12,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                // Middle: Cardholder Name & Masked Number
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      nameVal,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 19,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.8,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black45,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF06B6D4).withValues(alpha: 0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '•••• •••• •••• 8842',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.75),
-                        fontSize: 13,
-                        letterSpacing: 2.2,
-                        fontFamily: 'monospace',
-                        fontWeight: FontWeight.w600,
+                      child: const Icon(
+                        LucideIcons.creditCard,
+                        color: Colors.white,
+                        size: 22,
                       ),
                     ),
-                  ],
-                ),
-
-                // Bottom row: Limit and Billing Days
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
+                    const SizedBox(width: 14),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'LÍMITE TOTAL',
+                          widget.existingCard != null
+                              ? 'Editar Tarjeta'
+                              : 'Nueva Tarjeta de Crédito',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.7),
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.6,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          CurrencyFormatter.format(limitVal, currencyCode),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                            fontSize: 19,
                             fontWeight: FontWeight.w900,
+                            letterSpacing: -0.3,
                           ),
                         ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        _buildMiniDatePill('CORTE', 'Día $_cutOffDay', const Color(0xFF38BDF8)),
-                        const SizedBox(width: 8),
-                        _buildMiniDatePill('PAGO', 'Día $_paymentDay', const Color(0xFF34D399)),
+                        Text(
+                          widget.existingCard != null
+                              ? 'Personaliza límites, fechas y estilo'
+                              : 'Configura tu plástico y calendario de pago',
+                          style: TextStyle(
+                            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                            fontSize: 12,
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                      ),
+                    ),
+                    child: Icon(
+                      LucideIcons.x,
+                      size: 18,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+            height: 1,
+          ),
+
+          // Scrollable Form Body
+          Expanded(
+            child: ListView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+              children: [
+                // 1. LIVE CARD HERO PREVIEW
+                _buildLiveCardHero(currencyCode),
+
+                const SizedBox(height: 20),
+
+                // 2. CARD INFORMATION
+                _buildSectionHeader('INFORMACIÓN DE LA TARJETA', LucideIcons.tag, isDark),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.6) : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Nombre de la Tarjeta o Banco',
+                        style: TextStyle(
+                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _nameController,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                        onChanged: (_) => setState(() {}),
+                        decoration: InputDecoration(
+                          hintText: 'Ej. Visa Clásica, BAC Oro, Tarjeta Promerica',
+                          hintStyle: TextStyle(
+                            color: isDark ? const Color(0xFF475569) : const Color(0xFF94A3B8),
+                            fontSize: 13,
+                          ),
+                          filled: true,
+                          fillColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+                          prefixIcon: Icon(
+                            LucideIcons.creditCard,
+                            size: 18,
+                            color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(
+                              color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(
+                              color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: Color(0xFF06B6D4), width: 1.5),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      Text(
+                        'Franquicia / Red de Pago',
+                        style: TextStyle(
+                          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Modern Pill Segmented Control
+                      Row(
+                        children: _networks.map((net) {
+                          final isSelected = _network.toLowerCase() == net.toLowerCase();
+                          return Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                setState(() => _network = net);
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 160),
+                                margin: const EdgeInsets.symmetric(horizontal: 3),
+                                padding: const EdgeInsets.symmetric(vertical: 9),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? const Color(0xFF06B6D4)
+                                      : (isDark ? const Color(0xFF0F172A) : Colors.white),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? const Color(0xFF06B6D4)
+                                        : (isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
+                                    width: isSelected ? 1.5 : 1.0,
+                                  ),
+                                  boxShadow: isSelected
+                                      ? [
+                                          BoxShadow(
+                                            color: const Color(0xFF06B6D4).withValues(alpha: 0.35),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    net,
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? Colors.white
+                                          : (isDark ? Colors.white70 : const Color(0xFF334155)),
+                                      fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // 3. LIMITS & CURRENT BALANCE
+                _buildSectionHeader('LÍMITE Y SALDO DEUDOR', LucideIcons.coins, isDark),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.6) : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Límite de Crédito ($sym)',
+                                  style: TextStyle(
+                                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                TextFormField(
+                                  controller: _limitController,
+                                  keyboardType: TextInputType.number,
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : Colors.black,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 18,
+                                  ),
+                                  onChanged: (_) => setState(() {}),
+                                  decoration: InputDecoration(
+                                    hintText: '0',
+                                    filled: true,
+                                    fillColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: BorderSide(
+                                        color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: BorderSide(
+                                        color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(color: Color(0xFF06B6D4), width: 1.5),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Deuda Actual ($sym)',
+                                  style: TextStyle(
+                                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                TextFormField(
+                                  controller: _balanceController,
+                                  keyboardType: TextInputType.number,
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : Colors.black,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 18,
+                                  ),
+                                  onChanged: (_) => setState(() {}),
+                                  decoration: InputDecoration(
+                                    hintText: '0',
+                                    filled: true,
+                                    fillColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: BorderSide(
+                                        color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: BorderSide(
+                                        color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: const BorderSide(color: Color(0xFF06B6D4), width: 1.5),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      // Quick Limit Increment Chips
+                      Wrap(
+                        spacing: 8,
+                        children: _quickLimitIncrements.map((inc) {
+                          return GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              final current = double.tryParse(_limitController.text) ?? 0.0;
+                              setState(() {
+                                _limitController.text = (current + inc).toStringAsFixed(0);
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.15 : 0.10),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                                ),
+                              ),
+                              child: Text(
+                                '+$sym${inc.toStringAsFixed(0)}',
+                                style: const TextStyle(
+                                  color: Color(0xFF10B981),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // 4. BILLING CALENDAR: CORTE & PAGO
+                _buildSectionHeader('CALENDARIO DE CORTE Y PAGO', LucideIcons.calendarCheck, isDark),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.6) : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Día de Corte
+                      _buildDayStripRow(
+                        title: 'Día de Corte',
+                        subtitle: 'Cierra tu periodo de compras del mes',
+                        selectedDay: _cutOffDay,
+                        color: const Color(0xFF38BDF8),
+                        onSelect: (d) => setState(() => _cutOffDay = d),
+                        isDark: isDark,
+                      ),
+
+                      const SizedBox(height: 16),
+                      Divider(color: isDark ? const Color(0xFF334155).withValues(alpha: 0.5) : const Color(0xFFE2E8F0)),
+                      const SizedBox(height: 16),
+
+                      // Día de Pago
+                      _buildDayStripRow(
+                        title: 'Día Límite de Pago',
+                        subtitle: 'Último día para pagar sin intereses',
+                        selectedDay: _paymentDay,
+                        color: const Color(0xFF34D399),
+                        onSelect: (d) => setState(() => _paymentDay = d),
+                        isDark: isDark,
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // Financing Window Banner
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF06B6D4).withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: const Color(0xFF06B6D4).withValues(alpha: 0.25),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Text('💡', style: TextStyle(fontSize: 18)),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _buildFinancingText(),
+                                style: TextStyle(
+                                  color: isDark ? const Color(0xFF67E8F9) : const Color(0xFF0E7490),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // 5. COLOR & THEME SELECTOR
+                _buildSectionHeader('COLOR Y ESTILO DEL PLÁSTICO', LucideIcons.palette, isDark),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 60,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _cardThemes.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                    itemBuilder: (context, idx) {
+                      final theme = _cardThemes[idx];
+                      final color = theme['color'] as Color;
+                      final c2 = theme['c2'] as Color;
+                      final isSelected = _selectedColor.value == color.value;
+
+                      return GestureDetector(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _selectedColor = color);
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          width: isSelected ? 56 : 48,
+                          height: isSelected ? 56 : 48,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [color, c2],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.25),
+                              width: isSelected ? 2.5 : 1.0,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: color.withValues(alpha: isSelected ? 0.6 : 0.2),
+                                blurRadius: isSelected ? 12 : 6,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: isSelected
+                              ? const Center(
+                                  child: Icon(LucideIcons.check, size: 22, color: Colors.white),
+                                )
+                              : null,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // 6. SUBMIT BUTTON
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF06B6D4), Color(0xFF2563EB)],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF06B6D4).withValues(alpha: 0.35),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: _isSaving ? null : _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: _isSaving
+                        ? const SizedBox(
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
+                          )
+                        : Text(
+                            widget.existingCard != null
+                                ? 'Guardar Cambios'
+                                : 'Crear Tarjeta de Crédito',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 30),
               ],
             ),
           ),
@@ -453,45 +815,33 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
     );
   }
 
-  Widget _buildMiniDatePill(String label, String value, Color accent) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.35),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-      ),
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
-              fontSize: 8,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.5,
-            ),
+  Widget _buildSectionHeader(String title, IconData icon, bool isDark) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 15,
+          color: isDark ? const Color(0xFF06B6D4) : const Color(0xFF0284C7),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: TextStyle(
+            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.6,
           ),
-          const SizedBox(height: 1),
-          Text(
-            value,
-            style: TextStyle(
-              color: accent,
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildInlineDaySelector({
+  Widget _buildDayStripRow({
     required String title,
     required String subtitle,
-    required IconData icon,
-    required Color color,
     required int selectedDay,
+    required Color color,
     required ValueChanged<int> onSelect,
     required bool isDark,
   }) {
@@ -501,44 +851,31 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
                   ),
-                  child: Icon(icon, color: color, size: 15),
                 ),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: isDark ? Colors.white : const Color(0xFF0F172A),
-                        fontWeight: FontWeight.w800,
-                        fontSize: 13,
-                      ),
-                    ),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
-                        fontSize: 10.5,
-                      ),
-                    ),
-                  ],
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                    fontSize: 11,
+                  ),
                 ),
               ],
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: color.withValues(alpha: 0.35)),
               ),
               child: Text(
@@ -553,16 +890,14 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
           ],
         ),
         const SizedBox(height: 10),
-
-        // Smooth horizontal inline day strip (1 to 31)
         SizedBox(
           height: 44,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             itemCount: 31,
-            itemBuilder: (context, index) {
-              final day = index + 1;
+            itemBuilder: (context, idx) {
+              final day = idx + 1;
               final isSelected = selectedDay == day;
               return GestureDetector(
                 onTap: () {
@@ -570,33 +905,26 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                   onSelect(day);
                 },
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
+                  duration: const Duration(milliseconds: 160),
                   width: 40,
                   margin: const EdgeInsets.only(right: 8),
                   decoration: BoxDecoration(
-                    gradient: isSelected
-                        ? LinearGradient(
-                            colors: [color, Color.lerp(color, Colors.black, 0.25)!],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          )
-                        : null,
                     color: isSelected
-                        ? null
-                        : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                        ? color
+                        : (isDark ? const Color(0xFF0F172A) : Colors.white),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected
                           ? color
-                          : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                      width: isSelected ? 1.8 : 1.0,
+                          : (isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
+                      width: isSelected ? 1.5 : 1.0,
                     ),
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
                               color: color.withValues(alpha: 0.35),
                               blurRadius: 8,
-                              offset: const Offset(0, 3),
+                              offset: const Offset(0, 2),
                             ),
                           ]
                         : null,
@@ -607,7 +935,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                       style: TextStyle(
                         color: isSelected
                             ? Colors.white
-                            : (isDark ? Colors.grey[300] : const Color(0xFF334155)),
+                            : (isDark ? Colors.white70 : const Color(0xFF334155)),
                         fontSize: 13,
                         fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
                       ),
@@ -622,545 +950,179 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final user = ref.watch(authProvider).user;
-    final currencyCode = user?.currency ?? 'USD';
-    final currencySymbol = CurrencyFormatter.getSymbol(currencyCode);
+  Widget _buildLiveCardHero(String currencyCode) {
+    final theme = _cardThemes.firstWhere(
+      (t) => (t['color'] as Color).value == _selectedColor.value,
+      orElse: () => _cardThemes[1],
+    );
+    final c1 = theme['color'] as Color;
+    final c2 = theme['c2'] as Color;
+    final nameVal = _nameController.text.trim().isEmpty ? 'MI TARJETA' : _nameController.text.trim().toUpperCase();
+    final limitVal = double.tryParse(_limitController.text) ?? 0.0;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
+    return AspectRatio(
+      aspectRatio: 1.586,
       child: Container(
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+            colors: [c1, c2],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.25),
+            width: 1.2,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.35),
+              color: c1.withValues(alpha: 0.45),
               blurRadius: 24,
-              offset: const Offset(0, -6),
+              offset: const Offset(0, 10),
             ),
           ],
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Top Drag handle
-            Container(
-              margin: const EdgeInsets.only(top: 12, bottom: 8),
-              height: 4.5,
-              width: 44,
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
-                borderRadius: BorderRadius.circular(3),
-              ),
-            ),
-
-            // Header bar
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 6, 20, 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF3B82F6), Color(0xFF06B6D4)],
-                          ),
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF3B82F6).withValues(alpha: 0.35),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          LucideIcons.creditCard,
-                          color: Colors.white,
-                          size: 22,
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.existingCard != null
-                                ? 'Editar Tarjeta'
-                                : 'Nueva Tarjeta de Crédito',
-                            style: TextStyle(
-                              color: isDark ? Colors.white : const Color(0xFF0F172A),
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          Text(
-                            widget.existingCard != null
-                                ? 'Personaliza límites, fechas y estilo'
-                                : 'Configura tu plástico financiero',
-                            style: TextStyle(
-                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      LucideIcons.x,
-                      color: isDark ? Colors.grey[300] : Colors.grey[700],
-                      size: 20,
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                    style: IconButton.styleFrom(
-                      backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Divider(
-              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
-              height: 1,
-            ),
-
-            // Form Body
-            Expanded(
-              child: ListView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                children: [
-                  // 1. LIVE CARD PREVIEW
-                  _buildLiveCardPreview(currencyCode),
-
-                  // 2. CARD NAME & BANK SUGGESTIONS
-                  _buildSectionTitle('NOMBRE O IDENTIFICADOR', LucideIcons.tag, isDark),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _nameController,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                    onChanged: (_) => setState(() {}),
-                    decoration: _inputDecoration(
-                      'Ej. BBVA Oro, Nu Débito/Crédito, Liverpool',
-                      LucideIcons.creditCard,
-                      isDark,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Quick Suggestions Chips
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: _bankSuggestions.map((bank) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 6),
-                          child: ActionChip(
-                            label: Text(
-                              bank,
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
-                              ),
-                            ),
-                            backgroundColor: isDark
-                                ? const Color(0xFF0369A1).withValues(alpha: 0.15)
-                                : const Color(0xFFE0F2FE),
-                            side: BorderSide(
-                              color: isDark
-                                  ? const Color(0xFF0369A1).withValues(alpha: 0.4)
-                                  : const Color(0xFFBAE6FD),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                            onPressed: () {
-                              HapticFeedback.lightImpact();
-                              setState(() {
-                                _nameController.text = bank;
-                              });
-                            },
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 22),
-
-                  // 3. PAYMENT NETWORK (Visa, Mastercard, Amex, Otro)
-                  _buildSectionTitle('FRANQUICIA / RED DE PAGO', LucideIcons.globe, isDark),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: _networks.map((net) {
-                      final isSelected = _network == net['name'];
-                      return Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            setState(() => _network = net['name']);
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? (isDark
-                                      ? const Color(0xFF0369A1).withValues(alpha: 0.3)
-                                      : const Color(0xFFE0F2FE))
-                                  : (isDark ? const Color(0xFF1E293B) : Colors.white),
-                              border: Border.all(
-                                color: isSelected
-                                    ? const Color(0xFF0284C7)
-                                    : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                                width: isSelected ? 2 : 1,
-                              ),
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: isSelected
-                                  ? [
-                                      BoxShadow(
-                                        color: const Color(0xFF0284C7).withValues(alpha: 0.25),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ]
-                                  : null,
-                            ),
-                            child: Column(
-                              children: [
-                                Text(net['icon'], style: const TextStyle(fontSize: 18)),
-                                const SizedBox(height: 4),
-                                Text(
-                                  net['label'],
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? const Color(0xFF0284C7)
-                                        : (isDark ? Colors.grey[400] : Colors.grey[600]),
-                                    fontSize: 10,
-                                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 22),
-
-                  // 4. CREDIT LIMIT & CURRENT DEBT
-                  _buildSectionTitle('LÍMITE Y SALDO DEUDOR', LucideIcons.wallet, isDark),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Límite de Crédito ($currencySymbol)',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: isDark ? Colors.grey[400] : Colors.grey[600],
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            TextFormField(
-                              controller: _limitController,
-                              keyboardType: TextInputType.number,
-                              style: TextStyle(
-                                color: isDark ? Colors.white : Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                              onChanged: (_) => setState(() {}),
-                              decoration: _inputDecoration(
-                                'Ej. 15000',
-                                LucideIcons.trendingUp,
-                                isDark,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Deuda / Saldo Actual ($currencySymbol)',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: isDark ? Colors.grey[400] : Colors.grey[600],
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            TextFormField(
-                              controller: _balanceController,
-                              keyboardType: TextInputType.number,
-                              style: TextStyle(
-                                color: isDark ? Colors.white : Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                              decoration: _inputDecoration(
-                                '0.00',
-                                LucideIcons.trendingDown,
-                                isDark,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  // Quick Limit Adders
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: _quickLimitIncrements.map((inc) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 6),
-                          child: ActionChip(
-                            label: Text(
-                              '+$currencySymbol${inc.toStringAsFixed(0)}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: isDark ? const Color(0xFF34D399) : const Color(0xFF059669),
-                              ),
-                            ),
-                            backgroundColor: isDark
-                                ? const Color(0xFF065F46).withValues(alpha: 0.2)
-                                : const Color(0xFFD1FAE5),
-                            side: BorderSide(
-                              color: isDark
-                                  ? const Color(0xFF059669).withValues(alpha: 0.4)
-                                  : const Color(0xFFA7F3D0),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                            onPressed: () {
-                              HapticFeedback.lightImpact();
-                              final cur = double.tryParse(_limitController.text) ?? 0.0;
-                              setState(() {
-                                _limitController.text = (cur + inc).toStringAsFixed(0);
-                              });
-                            },
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 5. INLINE BILLING DAYS (CORTE Y PAGO - NO NESTED MODALS!)
-                  _buildSectionTitle('CICLO DE FACTURACIÓN Y RECORDATORIOS', LucideIcons.calendarClock, isDark),
-                  const SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                      border: Border.all(
-                        color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      children: [
-                        // Día de Corte selector
-                        _buildInlineDaySelector(
-                          title: 'Día de Corte',
-                          subtitle: 'Cierre del período mensual',
-                          icon: LucideIcons.scissors,
-                          color: const Color(0xFF38BDF8),
-                          selectedDay: _cutOffDay,
-                          onSelect: (day) => setState(() => _cutOffDay = day),
-                          isDark: isDark,
-                        ),
-                        const SizedBox(height: 16),
-                        Divider(
-                          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                          height: 1,
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Día de Pago selector
-                        _buildInlineDaySelector(
-                          title: 'Día Límite de Pago',
-                          subtitle: 'Paga a tiempo para evitar intereses',
-                          icon: LucideIcons.checkCircle2,
-                          color: const Color(0xFF34D399),
-                          selectedDay: _paymentDay,
-                          onSelect: (day) => setState(() => _paymentDay = day),
-                          isDark: isDark,
-                        ),
-                        const SizedBox(height: 14),
-
-                        // Notification notice pill
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(LucideIcons.bellRing, color: Color(0xFFF59E0B), size: 18),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  'QUIVO te notificará automáticamente 2 días antes y el mismo día de tu corte y pago.',
-                                  style: TextStyle(
-                                    color: isDark ? const Color(0xFFFCD34D) : const Color(0xFFB45309),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    height: 1.3,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 6. COLOR THEME PRESETS
-                  _buildSectionTitle('COLOR Y TEXTURA DE LA TARJETA', LucideIcons.palette, isDark),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    height: 52,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: _cardThemes.length,
-                      itemBuilder: (context, index) {
-                        final theme = _cardThemes[index];
-                        final Color color = theme['color'];
-                        final isSelected = _selectedColor == color;
-                        return GestureDetector(
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            setState(() => _selectedColor = color);
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            width: 50,
-                            height: 50,
-                            margin: const EdgeInsets.only(right: 12),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [color, theme['c2'] as Color],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected ? Colors.white : Colors.white24,
-                                width: isSelected ? 3.5 : 1.0,
-                              ),
-                              boxShadow: [
-                                if (isSelected)
-                                  BoxShadow(
-                                    color: color.withValues(alpha: 0.7),
-                                    blurRadius: 14,
-                                    offset: const Offset(0, 4),
-                                  ),
-                              ],
-                            ),
-                            child: isSelected
-                                ? const Icon(LucideIcons.check, color: Colors.white, size: 22)
-                                : null,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // 7. PRIMARY ACTION BUTTON
-                  SizedBox(
-                    width: double.infinity,
-                    child: DecoratedBox(
+            // Top Row: Metallic EMV Chip + Contactless + Franchise Badge
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    // Metallic Gold Chip
+                    Container(
+                      width: 42,
+                      height: 30,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF10B981), Color(0xFF059669)],
+                          colors: [Color(0xFFFFDF00), Color(0xFFD4AF37), Color(0xFFAA771C)],
                         ),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(6),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.4),
-                            blurRadius: 16,
-                            offset: const Offset(0, 6),
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                      child: ElevatedButton(
-                        onPressed: _isSaving ? null : _save,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                      child: Center(
+                        child: Container(
+                          width: 30,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: const Color(0xFF5D4037).withValues(alpha: 0.5),
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(3),
                           ),
                         ),
-                        child: _isSaving
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2.5,
-                                ),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(LucideIcons.sparkles, color: Colors.white, size: 20),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    widget.existingCard != null
-                                        ? 'GUARDAR CAMBIOS EN TARJETA'
-                                        : 'CREAR TARJETA DE CRÉDITO',
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w900,
-                                      color: Colors.white,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
                       ),
                     ),
+                    const SizedBox(width: 10),
+                    Icon(
+                      LucideIcons.wifi,
+                      color: Colors.white.withValues(alpha: 0.8),
+                      size: 18,
+                    ),
+                  ],
+                ),
+                // Network Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                    ),
                   ),
-                  const SizedBox(height: 24),
-                ],
-              ),
+                  child: Text(
+                    _network.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // Middle: Name & Masked Number
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  nameVal,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.6,
+                    shadows: [
+                      Shadow(color: Colors.black45, blurRadius: 4, offset: Offset(0, 2)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '•••• •••• •••• 8842',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    fontSize: 12,
+                    letterSpacing: 2.0,
+                    fontFamily: 'monospace',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+
+            // Bottom: Limit & Dates
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'LÍMITE TOTAL',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      CurrencyFormatter.format(limitVal, currencyCode),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    _buildHeroDateBadge('CORTE', 'Día $_cutOffDay', const Color(0xFF38BDF8)),
+                    const SizedBox(width: 6),
+                    _buildHeroDateBadge('PAGO', 'Día $_paymentDay', const Color(0xFF34D399)),
+                  ],
+                ),
+              ],
             ),
           ],
         ),
@@ -1168,59 +1130,40 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
     );
   }
 
-  Widget _buildSectionTitle(String title, IconData icon, bool isDark) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 15,
-          color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: TextStyle(
-            color: isDark ? Colors.grey[300] : const Color(0xFF334155),
-            fontSize: 11.5,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.8,
+  Widget _buildHeroDateBadge(String tag, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            tag,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 7.5,
+              fontWeight: FontWeight.w800,
+            ),
           ),
-        ),
-      ],
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  InputDecoration _inputDecoration(String hint, IconData icon, bool isDark) {
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: TextStyle(
-        color: isDark ? Colors.grey[500] : Colors.grey[400],
-        fontSize: 13.5,
-      ),
-      prefixIcon: Icon(
-        icon,
-        color: isDark ? Colors.grey[400] : Colors.grey[500],
-        size: 18,
-      ),
-      filled: true,
-      fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-        ),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFF0284C7), width: 2),
-      ),
-    );
+  String _buildFinancingText() {
+    int days = _paymentDay - _cutOffDay;
+    if (days <= 0) days += 30;
+    return 'Cuentas con $days días entre tu corte y tu pago para liquidar sin intereses.';
   }
 }

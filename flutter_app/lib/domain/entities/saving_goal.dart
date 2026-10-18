@@ -9,7 +9,8 @@ class SavingGoal {
   final bool isAutoDeduct;
   final double? autoDeductAmount;
   final String? autoDeductFrequency; // 'weekly', 'biweekly', 'monthly'
-  final int? autoDeductDay; // 1-31 for month, 1-7 for week
+  final int? autoDeductDay; // 1-31 for month, 1-7 for week, 1-15 for biweekly
+  final int? autoDeductDay2; // 16-31 for biweekly second deduction
   final DateTime? lastAutoDeductDate;
 
   SavingGoal({
@@ -24,6 +25,7 @@ class SavingGoal {
     this.autoDeductAmount,
     this.autoDeductFrequency,
     this.autoDeductDay,
+    this.autoDeductDay2,
     this.lastAutoDeductDate,
   });
 
@@ -40,6 +42,7 @@ class SavingGoal {
       'autoDeductAmount': autoDeductAmount,
       'autoDeductFrequency': autoDeductFrequency,
       'autoDeductDay': autoDeductDay,
+      'autoDeductDay2': autoDeductDay2,
       'lastAutoDeductDate': lastAutoDeductDate?.toIso8601String(),
     };
   }
@@ -61,6 +64,7 @@ class SavingGoal {
           : null,
       autoDeductFrequency: map['autoDeductFrequency'],
       autoDeductDay: map['autoDeductDay'],
+      autoDeductDay2: map['autoDeductDay2'],
       lastAutoDeductDate: map['lastAutoDeductDate'] != null
           ? DateTime.tryParse(map['lastAutoDeductDate'])
           : null,
@@ -79,6 +83,7 @@ class SavingGoal {
     double? autoDeductAmount,
     String? autoDeductFrequency,
     int? autoDeductDay,
+    int? autoDeductDay2,
     DateTime? lastAutoDeductDate,
   }) {
     return SavingGoal(
@@ -93,6 +98,7 @@ class SavingGoal {
       autoDeductAmount: autoDeductAmount ?? this.autoDeductAmount,
       autoDeductFrequency: autoDeductFrequency ?? this.autoDeductFrequency,
       autoDeductDay: autoDeductDay ?? this.autoDeductDay,
+      autoDeductDay2: autoDeductDay2 ?? this.autoDeductDay2,
       lastAutoDeductDate: lastAutoDeductDate ?? this.lastAutoDeductDate,
     );
   }

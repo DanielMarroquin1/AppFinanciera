@@ -358,10 +358,10 @@ class RecurringTransactionService {
         if (goal.autoDeductFrequency == 'monthly') {
           if (current.day == goal.autoDeductDay) shouldAdd = true;
         } else if (goal.autoDeductFrequency == 'biweekly') {
-          final day2 = (goal.autoDeductDay! + 15) > 30
-              ? (goal.autoDeductDay! + 15 - 30)
-              : (goal.autoDeductDay! + 15);
-          if (current.day == goal.autoDeductDay || current.day == day2) {
+          final day1 = goal.autoDeductDay ?? 1;
+          final day2 = goal.autoDeductDay2 ??
+              ((day1 + 15) > 31 ? 30 : (day1 + 15));
+          if (current.day == day1 || current.day == day2) {
             shouldAdd = true;
           }
         } else if (goal.autoDeductFrequency == 'weekly') {

@@ -60,6 +60,7 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
   bool _isAutoDeduct = false;
   String _autoDeductFrequency = 'monthly'; // 'weekly', 'biweekly', 'monthly'
   int _autoDeductDay = 1;
+  int _autoDeductDay2 = 16;
 
   @override
   void initState() {
@@ -80,6 +81,7 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
     );
     _autoDeductFrequency = widget.goalToEdit?.autoDeductFrequency ?? 'monthly';
     _autoDeductDay = widget.goalToEdit?.autoDeductDay ?? 1;
+    _autoDeductDay2 = widget.goalToEdit?.autoDeductDay2 ?? 16;
   }
 
   @override
@@ -582,30 +584,183 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                               ],
                             ),
                             const SizedBox(height: 16),
-                            Text(
-                              _autoDeductFrequency == 'weekly'
-                                  ? 'Día de la semana'
-                                  : (_autoDeductFrequency == 'biweekly'
-                                      ? 'Día inicial de la quincena (1 - 15)'
-                                      : 'Día del mes (1 - 31)'),
-                              style: TextStyle(
-                                color: isDark
-                                    ? const Color(0xFF94A3B8)
-                                    : const Color(0xFF64748B),
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
+                            if (_autoDeductFrequency == 'weekly') ...[
+                              Text(
+                                'Día de la semana',
+                                style: TextStyle(
+                                  color: isDark
+                                      ? const Color(0xFF94A3B8)
+                                      : const Color(0xFF64748B),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            if (_autoDeductFrequency == 'weekly')
-                              _buildWeeklySelector(isDark)
-                            else
-                              _buildDayStrip(
-                                maxDay: _autoDeductFrequency == 'biweekly'
-                                    ? 15
-                                    : 31,
+                              const SizedBox(height: 10),
+                              _buildWeeklySelector(isDark),
+                            ] else if (_autoDeductFrequency == 'biweekly') ...[
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Primer Descuento (Día 1 al 15)',
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? const Color(0xFF94A3B8)
+                                          : const Color(0xFF64748B),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFF10B981,
+                                      ).withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      'Día $_autoDeductDay',
+                                      style: const TextStyle(
+                                        color: Color(0xFF10B981),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              _buildDayRangeStrip(
+                                startDay: 1,
+                                endDay: 15,
+                                selectedDay: _autoDeductDay,
+                                onSelected: (d) =>
+                                    setState(() => _autoDeductDay = d),
                                 isDark: isDark,
                               ),
+                              const SizedBox(height: 14),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Segundo Descuento (Día 16 al 31)',
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? const Color(0xFF94A3B8)
+                                          : const Color(0xFF64748B),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFF10B981,
+                                      ).withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      'Día $_autoDeductDay2',
+                                      style: const TextStyle(
+                                        color: Color(0xFF10B981),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              _buildDayRangeStrip(
+                                startDay: 16,
+                                endDay: 31,
+                                selectedDay: _autoDeductDay2,
+                                onSelected: (d) =>
+                                    setState(() => _autoDeductDay2 = d),
+                                isDark: isDark,
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  _buildQuincenaPresetChip(
+                                    'Días 1 y 16',
+                                    1,
+                                    16,
+                                    isDark,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  _buildQuincenaPresetChip(
+                                    'Días 15 y 30',
+                                    15,
+                                    30,
+                                    isDark,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  _buildQuincenaPresetChip(
+                                    'Días 15 y 31',
+                                    15,
+                                    31,
+                                    isDark,
+                                  ),
+                                ],
+                              ),
+                            ] else ...[
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Día del mes (1 - 31)',
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? const Color(0xFF94A3B8)
+                                          : const Color(0xFF64748B),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFF10B981,
+                                      ).withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      'Día $_autoDeductDay',
+                                      style: const TextStyle(
+                                        color: Color(0xFF10B981),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              _buildDayRangeStrip(
+                                startDay: 1,
+                                endDay: 31,
+                                selectedDay: _autoDeductDay,
+                                onSelected: (d) =>
+                                    setState(() => _autoDeductDay = d),
+                                isDark: isDark,
+                              ),
+                            ],
                             const SizedBox(height: 14),
                             // SAMI tip banner
                             Container(
@@ -716,6 +871,10 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                                     ? _autoDeductFrequency
                                     : null,
                                 autoDeductDay: isAuto ? _autoDeductDay : null,
+                                autoDeductDay2:
+                                    (isAuto && _autoDeductFrequency == 'biweekly')
+                                        ? _autoDeductDay2
+                                        : null,
                               );
                               await ref
                                   .read(savingGoalsProvider.notifier)
@@ -742,6 +901,10 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                                     ? _autoDeductFrequency
                                     : null,
                                 autoDeductDay: isAuto ? _autoDeductDay : null,
+                                autoDeductDay2:
+                                    (isAuto && _autoDeductFrequency == 'biweekly')
+                                        ? _autoDeductDay2
+                                        : null,
                               );
 
                               await ref
@@ -914,20 +1077,27 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
     );
   }
 
-  Widget _buildDayStrip({required int maxDay, required bool isDark}) {
+  Widget _buildDayRangeStrip({
+    required int startDay,
+    required int endDay,
+    required int selectedDay,
+    required ValueChanged<int> onSelected,
+    required bool isDark,
+  }) {
+    final count = endDay - startDay + 1;
     return SizedBox(
       height: 48,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: maxDay,
+        itemCount: count,
         separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, idx) {
-          final day = idx + 1;
-          final isSelected = _autoDeductDay == day;
+          final day = startDay + idx;
+          final isSelected = selectedDay == day;
           return GestureDetector(
             onTap: () {
               HapticFeedback.selectionClick();
-              setState(() => _autoDeductDay = day);
+              onSelected(day);
             },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
@@ -974,6 +1144,57 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
     );
   }
 
+  Widget _buildQuincenaPresetChip(
+    String label,
+    int day1,
+    int day2,
+    bool isDark,
+  ) {
+    final isSelected = _autoDeductDay == day1 && _autoDeductDay2 == day2;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() {
+            _autoDeductDay = day1;
+            _autoDeductDay2 = day2;
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? const Color(0xFF10B981).withOpacity(0.2)
+                : (isDark ? const Color(0xFF0F172A) : Colors.white),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected
+                  ? const Color(0xFF10B981)
+                  : (isDark
+                        ? const Color(0xFF334155)
+                        : const Color(0xFFCBD5E1)),
+            ),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected
+                    ? const Color(0xFF10B981)
+                    : (isDark
+                          ? const Color(0xFF94A3B8)
+                          : const Color(0xFF64748B)),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   String _buildSummaryText(String sym) {
     final amt = _autoDeductAmountController.text.trim().isNotEmpty
         ? '$sym${_autoDeductAmountController.text}'
@@ -983,8 +1204,7 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
       final dayName = (_autoDeductDay >= 1 && _autoDeductDay <= 7) ? names[_autoDeductDay] : 'Lunes';
       return 'SAMI descontará $amt cada semana los $dayName y lo sumará a esta meta.';
     } else if (_autoDeductFrequency == 'biweekly') {
-      final day2 = _autoDeductDay + 15;
-      return 'SAMI descontará $amt cada quincena (días $_autoDeductDay y $day2) y lo sumará a esta meta.';
+      return 'SAMI descontará $amt cada quincena (días $_autoDeductDay y $_autoDeductDay2) y lo sumará a esta meta.';
     } else {
       return 'SAMI descontará $amt cada mes el día $_autoDeductDay y lo sumará a esta meta.';
     }

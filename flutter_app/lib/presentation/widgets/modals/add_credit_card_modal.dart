@@ -1,7 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import '../common/shake_widget.dart';
-import '../common/custom_snackbar.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../domain/entities/credit_card.dart';
@@ -20,10 +19,12 @@ class AddCreditCardModal extends ConsumerStatefulWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.92,
-        minChildSize: 0.5,
-        maxChildSize: 0.96,
-        builder: (_, __) => AddCreditCardModal(existingCard: existingCard),
+        initialChildSize: 0.88,
+        minChildSize: 0.50,
+        maxChildSize: 0.94,
+        builder: (_, scrollController) => AddCreditCardModal(
+          existingCard: existingCard,
+        ),
       ),
     );
   }
@@ -36,40 +37,92 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
   final _nameController = TextEditingController();
   final _limitController = TextEditingController();
   final _balanceController = TextEditingController();
-  final _nameShakeKey = GlobalKey<ShakeWidgetState>();
-  final _limitShakeKey = GlobalKey<ShakeWidgetState>();
-  final _cutOffShakeKey = GlobalKey<ShakeWidgetState>();
-  final _paymentShakeKey = GlobalKey<ShakeWidgetState>();
 
   int _cutOffDay = 15;
-  int _paymentDay = 1;
+  int _paymentDay = 5;
   String _network = 'Visa';
   Color _selectedColor = const Color(0xFF1E3A8A);
   bool _isSaving = false;
 
-  final List<Color> _colors = [
-    const Color(0xFF0F172A), // Obsidian Black
-    const Color(0xFF1E3A8A), // Deep Blue
-    const Color(0xFF312E81), // Midnight Indigo
-    const Color(0xFF4C1D95), // Purple VIP
-    const Color(0xFF7E22CE), // Neon Purple
-    const Color(0xFFBE185D), // Magenta Rose
-    const Color(0xFFE11D48), // Ruby Red
-    const Color(0xFFB91C1C), // Crimson Red
-    const Color(0xFFB45309), // Amber Gold
-    const Color(0xFFD97706), // Sunset Orange
-    const Color(0xFF047857), // Emerald Green
-    const Color(0xFF065F46), // Forest Green
-    const Color(0xFF0284C7), // Sky Blue
-    const Color(0xFF0F766E), // Teal Ocean
-    const Color(0xFF374151), // Titanium Silver
-    const Color(0xFF64748B), // Slate Grey
+  final List<Map<String, dynamic>> _cardThemes = [
+    {
+      'name': 'Obsidian',
+      'color': const Color(0xFF0F172A),
+      'c2': const Color(0xFF020617),
+      'label': 'Obsidiana',
+    },
+    {
+      'name': 'Deep Navy',
+      'color': const Color(0xFF1E3A8A),
+      'c2': const Color(0xFF0C1D4A),
+      'label': 'Zafiro',
+    },
+    {
+      'name': 'Royal Indigo',
+      'color': const Color(0xFF312E81),
+      'c2': const Color(0xFF1E1B4B),
+      'label': 'Índigo',
+    },
+    {
+      'name': 'VIP Purple',
+      'color': const Color(0xFF581C87),
+      'c2': const Color(0xFF3B0764),
+      'label': 'Amatista',
+    },
+    {
+      'name': 'Emerald VIP',
+      'color': const Color(0xFF064E3B),
+      'c2': const Color(0xFF022C22),
+      'label': 'Esmeralda',
+    },
+    {
+      'name': 'Ruby Red',
+      'color': const Color(0xFF881337),
+      'c2': const Color(0xFF4C0519),
+      'label': 'Rubí',
+    },
+    {
+      'name': 'Amber Sunset',
+      'color': const Color(0xFF78350F),
+      'c2': const Color(0xFF451A03),
+      'label': 'Ámbar',
+    },
+    {
+      'name': 'Cyber Teal',
+      'color': const Color(0xFF134E4A),
+      'c2': const Color(0xFF042F2E),
+      'label': 'Turquesa',
+    },
+    {
+      'name': 'Titanium',
+      'color': const Color(0xFF334155),
+      'c2': const Color(0xFF1E293B),
+      'label': 'Titanio',
+    },
   ];
 
   final List<Map<String, dynamic>> _networks = [
     {'name': 'Visa', 'icon': '💎', 'label': 'VISA'},
     {'name': 'Mastercard', 'icon': '🔴', 'label': 'MASTERCARD'},
+    {'name': 'Amex', 'icon': '🛡️', 'label': 'AMEX'},
     {'name': 'Otro', 'icon': '💳', 'label': 'OTRO'},
+  ];
+
+  final List<String> _bankSuggestions = [
+    'BBVA',
+    'Nu',
+    'Santander',
+    'Citibanamex',
+    'Mercado Pago',
+    'Banorte',
+    'Amex',
+  ];
+
+  final List<double> _quickLimitIncrements = [
+    1000,
+    5000,
+    10000,
+    20000,
   ];
 
   @override
@@ -78,16 +131,18 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
     if (widget.existingCard != null) {
       final card = widget.existingCard!;
       _nameController.text = card.name;
-      _limitController.text = card.limit.toStringAsFixed(0);
+      _limitController.text = card.limit > 0 ? card.limit.toStringAsFixed(0) : '';
       _balanceController.text = card.currentBalance.toStringAsFixed(0);
-      _cutOffDay = card.cutOffDay;
-      _paymentDay = card.paymentDay;
+      _cutOffDay = card.cutOffDay.clamp(1, 31);
+      _paymentDay = card.paymentDay.clamp(1, 31);
       _network = card.network;
       _selectedColor = card.color;
     } else {
       _nameController.text = '';
-      _limitController.text = '5000';
+      _limitController.text = '15000';
       _balanceController.text = '0';
+      _cutOffDay = 15;
+      _paymentDay = 5;
     }
   }
 
@@ -100,15 +155,16 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
   }
 
   Future<void> _save() async {
-    if (_nameController.text.trim().isEmpty ||
-        _limitController.text.trim().isEmpty) {
+    final name = _nameController.text.trim();
+    final limitStr = _limitController.text.trim();
+
+    if (name.isEmpty || limitStr.isEmpty) {
+      HapticFeedback.mediumImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          dismissDirection: DismissDirection.horizontal,
-          content: Text(
-            'Por favor ingresa un nombre y un límite para la tarjeta.',
-          ),
-          backgroundColor: Colors.red,
+          content: Text('Por favor ingresa un nombre y el límite de tu tarjeta.'),
+          backgroundColor: Color(0xFFDC2626),
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
@@ -116,16 +172,12 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
 
     setState(() => _isSaving = true);
 
-    final limit = double.tryParse(_limitController.text) ?? 0.0;
-    final balance = widget.existingCard != null
-        ? widget.existingCard!.currentBalance
-        : (double.tryParse(_balanceController.text) ?? 0.0);
+    final limit = double.tryParse(limitStr) ?? 0.0;
+    final balance = double.tryParse(_balanceController.text.trim()) ?? 0.0;
 
     final card = CreditCard(
       id: widget.existingCard?.id ?? '',
-      name: _nameController.text.trim().isEmpty
-          ? 'MI TARJETA'
-          : _nameController.text.trim(),
+      name: name,
       limit: limit,
       currentBalance: balance,
       cutOffDay: _cutOffDay,
@@ -149,11 +201,10 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            dismissDirection: DismissDirection.horizontal,
             content: Text(
               widget.existingCard != null
-                  ? '¡Tarjeta actualizada con éxito! 💳✨'
-                  : '¡Nueva tarjeta configurada con éxito! 🚀💳',
+                  ? '¡Tarjeta "$name" actualizada con éxito! 💳✨'
+                  : '¡Tarjeta "$name" agregada con éxito! 🚀💳',
             ),
             backgroundColor: const Color(0xFF10B981),
             behavior: SnackBarBehavior.floating,
@@ -164,9 +215,9 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            dismissDirection: DismissDirection.horizontal,
-            content: Text('Error al guardar: $e'),
-            backgroundColor: Colors.red,
+            content: Text('Error al guardar tarjeta: $e'),
+            backgroundColor: const Color(0xFFDC2626),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -181,104 +232,131 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
         ? 'MI TARJETA'
         : _nameController.text.trim().toUpperCase();
 
+    // Dark secondary gradient color
+    final c2 = Color.lerp(_selectedColor, Colors.black, 0.45)!;
+
     return Container(
       width: double.infinity,
-      height: 200,
+      height: 205,
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            _selectedColor,
-            Color.lerp(_selectedColor, Colors.black, 0.4)!,
-          ],
+          colors: [_selectedColor, c2],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: _selectedColor.withValues(alpha: 0.4),
-            blurRadius: 20,
+            color: _selectedColor.withValues(alpha: 0.45),
+            blurRadius: 24,
             offset: const Offset(0, 10),
           ),
         ],
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: Colors.white.withValues(alpha: 0.25),
           width: 1.5,
         ),
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          // Background decorative watermark
+          // Holographic diagonal light streak
           Positioned(
-            right: -20,
-            bottom: -20,
+            top: -40,
+            right: 40,
+            child: Transform.rotate(
+              angle: -0.45,
+              child: Container(
+                width: 90,
+                height: 320,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      Colors.white.withValues(alpha: 0.09),
+                      Colors.white.withValues(alpha: 0.16),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.4, 0.6, 1.0],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Watermark icon
+          Positioned(
+            right: -25,
+            bottom: -25,
             child: Icon(
               LucideIcons.creditCard,
               size: 160,
               color: Colors.white.withValues(alpha: 0.05),
             ),
           ),
+
           Padding(
             padding: const EdgeInsets.all(22),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Top row: Chip and Network
+                // Top row: Gold Chip, Contactless icon & Network badge
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
+                        // Realistic Gold EMV Chip
                         Container(
                           width: 44,
                           height: 32,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFFFFD700), Color(0xFFB8860B)],
+                              colors: [Color(0xFFFFDF00), Color(0xFFD4AF37), Color(0xFFAA771C)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.4),
-                              width: 1,
-                            ),
+                            borderRadius: BorderRadius.circular(7),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: Center(
                             child: Container(
-                              width: 28,
-                              height: 18,
+                              width: 32,
+                              height: 22,
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: Colors.black.withValues(alpha: 0.3),
+                                  color: const Color(0xFF5D4037).withValues(alpha: 0.5),
                                   width: 1,
                                 ),
-                                borderRadius: BorderRadius.circular(3),
+                                borderRadius: BorderRadius.circular(4),
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                         Icon(
                           LucideIcons.wifi,
-                          color: Colors.white.withValues(alpha: 0.8),
+                          color: Colors.white.withValues(alpha: 0.85),
                           size: 20,
                         ),
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: Colors.white.withValues(alpha: 0.3),
+                          width: 1,
                         ),
                       ),
                       child: Text(
@@ -286,7 +364,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w900,
-                          fontSize: 13,
+                          fontSize: 12,
                           letterSpacing: 1.5,
                         ),
                       ),
@@ -294,7 +372,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                   ],
                 ),
 
-                // Middle: Card Name & Number mask
+                // Middle: Cardholder Name & Masked Number
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -302,9 +380,9 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                       nameVal,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.0,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.8,
                         shadows: [
                           Shadow(
                             color: Colors.black45,
@@ -318,18 +396,19 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '•••• •••• •••• 1234',
+                      '•••• •••• •••• 8842',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 14,
-                        letterSpacing: 2.5,
+                        color: Colors.white.withValues(alpha: 0.75),
+                        fontSize: 13,
+                        letterSpacing: 2.2,
                         fontFamily: 'monospace',
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
 
-                // Bottom row: Limit and Billing info
+                // Bottom row: Limit and Billing Days
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -338,12 +417,12 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'LÍMITE ASIGNADO',
+                          'LÍMITE TOTAL',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.7),
                             fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.6,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -359,9 +438,9 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                     ),
                     Row(
                       children: [
-                        _buildMiniDatePill('CORTE', 'Día $_cutOffDay'),
+                        _buildMiniDatePill('CORTE', 'Día $_cutOffDay', const Color(0xFF38BDF8)),
                         const SizedBox(width: 8),
-                        _buildMiniDatePill('PAGO', 'Día $_paymentDay'),
+                        _buildMiniDatePill('PAGO', 'Día $_paymentDay', const Color(0xFF34D399)),
                       ],
                     ),
                   ],
@@ -374,12 +453,12 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
     );
   }
 
-  Widget _buildMiniDatePill(String label, String value) {
+  Widget _buildMiniDatePill(String label, String value, Color accent) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.black.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
       ),
       child: Column(
@@ -390,12 +469,14 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
               color: Colors.white.withValues(alpha: 0.7),
               fontSize: 8,
               fontWeight: FontWeight.w800,
+              letterSpacing: 0.5,
             ),
           ),
+          const SizedBox(height: 1),
           Text(
             value,
-            style: const TextStyle(
-              color: Color(0xFF10B981),
+            style: TextStyle(
+              color: accent,
               fontSize: 11,
               fontWeight: FontWeight.w900,
             ),
@@ -405,49 +486,181 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
     );
   }
 
+  Widget _buildInlineDaySelector({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required int selectedDay,
+    required ValueChanged<int> onSelect,
+    required bool isDark,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 15),
+                ),
+                const SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        fontSize: 10.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: color.withValues(alpha: 0.35)),
+              ),
+              child: Text(
+                'Día $selectedDay',
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+
+        // Smooth horizontal inline day strip (1 to 31)
+        SizedBox(
+          height: 44,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: 31,
+            itemBuilder: (context, index) {
+              final day = index + 1;
+              final isSelected = selectedDay == day;
+              return GestureDetector(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  onSelect(day);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: 40,
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    gradient: isSelected
+                        ? LinearGradient(
+                            colors: [color, Color.lerp(color, Colors.black, 0.25)!],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          )
+                        : null,
+                    color: isSelected
+                        ? null
+                        : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected
+                          ? color
+                          : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                      width: isSelected ? 1.8 : 1.0,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: color.withValues(alpha: 0.35),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$day',
+                      style: TextStyle(
+                        color: isSelected
+                            ? Colors.white
+                            : (isDark ? Colors.grey[300] : const Color(0xFF334155)),
+                        fontSize: 13,
+                        fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final user = ref.watch(authProvider).user;
     final currencyCode = user?.currency ?? 'USD';
+    final currencySymbol = CurrencyFormatter.getSymbol(currencyCode);
 
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.9,
-        ),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
+              color: Colors.black.withValues(alpha: 0.35),
+              blurRadius: 24,
+              offset: const Offset(0, -6),
             ),
           ],
         ),
         child: Column(
           children: [
-            // Drag handle
+            // Top Drag handle
             Container(
-              margin: const EdgeInsets.only(top: 14, bottom: 8),
-              height: 5,
-              width: 48,
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              height: 4.5,
+              width: 44,
               decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF334155)
-                    : const Color(0xFFCBD5E1),
+                color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
 
-            // Header
+            // Header bar
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.fromLTRB(24, 6, 20, 12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -457,16 +670,14 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF4F46E5), Color(0xFF6366F1)],
+                            colors: [Color(0xFF3B82F6), Color(0xFF06B6D4)],
                           ),
                           borderRadius: BorderRadius.circular(14),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(
-                                0xFF4F46E5,
-                              ).withValues(alpha: 0.3),
+                              color: const Color(0xFF3B82F6).withValues(alpha: 0.35),
                               blurRadius: 10,
-                              offset: const Offset(0, 4),
+                              offset: const Offset(0, 3),
                             ),
                           ],
                         ),
@@ -482,24 +693,20 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                         children: [
                           Text(
                             widget.existingCard != null
-                                ? 'Configurar Tarjeta'
-                                : 'Nueva Tarjeta Studio',
+                                ? 'Editar Tarjeta'
+                                : 'Nueva Tarjeta de Crédito',
                             style: TextStyle(
-                              color: isDark
-                                  ? Colors.white
-                                  : const Color(0xFF0F172A),
-                              fontSize: 20,
+                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              fontSize: 18,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
                           Text(
                             widget.existingCard != null
-                                ? 'Modifica los parámetros e imagen'
-                                : 'Diseña tu tarjeta inteligente',
+                                ? 'Personaliza límites, fechas y estilo'
+                                : 'Configura tu plástico financiero',
                             style: TextStyle(
-                              color: isDark
-                                  ? Colors.grey[400]
-                                  : Colors.grey[600],
+                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                               fontSize: 12,
                             ),
                           ),
@@ -510,13 +717,12 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                   IconButton(
                     icon: Icon(
                       LucideIcons.x,
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      color: isDark ? Colors.grey[300] : Colors.grey[700],
+                      size: 20,
                     ),
                     onPressed: () => Navigator.pop(context),
                     style: IconButton.styleFrom(
-                      backgroundColor: isDark
-                          ? const Color(0xFF1E293B)
-                          : const Color(0xFFE2E8F0),
+                      backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -533,101 +739,119 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
             // Form Body
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.all(24),
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
                 children: [
-                  // LIVE PREVIEW
+                  // 1. LIVE CARD PREVIEW
                   _buildLiveCardPreview(currencyCode),
 
-                  // CARD NAME
-                  _buildSectionTitle(
-                    'IDENTIFICADOR DE LA TARJETA',
-                    LucideIcons.tag,
-                    isDark,
-                  ),
-                  const SizedBox(height: 10),
+                  // 2. CARD NAME & BANK SUGGESTIONS
+                  _buildSectionTitle('NOMBRE O IDENTIFICADOR', LucideIcons.tag, isDark),
+                  const SizedBox(height: 8),
                   TextFormField(
                     controller: _nameController,
                     style: TextStyle(
                       color: isDark ? Colors.white : Colors.black,
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 15,
                     ),
                     onChanged: (_) => setState(() {}),
                     decoration: _inputDecoration(
-                      'Ej. Tarjeta de Juan, Mi tarjeta de compras',
+                      'Ej. BBVA Oro, Nu Débito/Crédito, Liverpool',
                       LucideIcons.creditCard,
                       isDark,
                     ),
                   ),
-                  const SizedBox(height: 24),
-
-                  // NETWORK SELECTOR
-                  _buildSectionTitle(
-                    'FRANQUICIA / RED DE PAGO',
-                    LucideIcons.globe,
-                    isDark,
+                  const SizedBox(height: 8),
+                  // Quick Suggestions Chips
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: _bankSuggestions.map((bank) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: ActionChip(
+                            label: Text(
+                              bank,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+                              ),
+                            ),
+                            backgroundColor: isDark
+                                ? const Color(0xFF0369A1).withValues(alpha: 0.15)
+                                : const Color(0xFFE0F2FE),
+                            side: BorderSide(
+                              color: isDark
+                                  ? const Color(0xFF0369A1).withValues(alpha: 0.4)
+                                  : const Color(0xFFBAE6FD),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              setState(() {
+                                _nameController.text = bank;
+                              });
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 22),
+
+                  // 3. PAYMENT NETWORK (Visa, Mastercard, Amex, Otro)
+                  _buildSectionTitle('FRANQUICIA / RED DE PAGO', LucideIcons.globe, isDark),
+                  const SizedBox(height: 8),
                   Row(
                     children: _networks.map((net) {
                       final isSelected = _network == net['name'];
                       return Expanded(
                         child: GestureDetector(
-                          onTap: () => setState(() => _network = net['name']),
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            setState(() => _network = net['name']);
+                          },
                           child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            margin: const EdgeInsets.only(right: 8),
+                            duration: const Duration(milliseconds: 180),
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? (isDark
-                                        ? const Color(
-                                            0xFF4F46E5,
-                                          ).withValues(alpha: 0.25)
-                                        : const Color(0xFFEEF2FF))
-                                  : (isDark
-                                        ? const Color(0xFF1E293B)
-                                        : Colors.white),
+                                      ? const Color(0xFF0369A1).withValues(alpha: 0.3)
+                                      : const Color(0xFFE0F2FE))
+                                  : (isDark ? const Color(0xFF1E293B) : Colors.white),
                               border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFF6366F1)
-                                    : (isDark
-                                          ? const Color(0xFF334155)
-                                          : const Color(0xFFE2E8F0)),
+                                    ? const Color(0xFF0284C7)
+                                    : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
                                 width: isSelected ? 2 : 1,
                               ),
                               borderRadius: BorderRadius.circular(14),
                               boxShadow: isSelected
                                   ? [
                                       BoxShadow(
-                                        color: const Color(
-                                          0xFF6366F1,
-                                        ).withValues(alpha: 0.2),
+                                        color: const Color(0xFF0284C7).withValues(alpha: 0.25),
                                         blurRadius: 8,
-                                        offset: const Offset(0, 4),
+                                        offset: const Offset(0, 3),
                                       ),
                                     ]
                                   : null,
                             ),
                             child: Column(
                               children: [
-                                Text(
-                                  net['icon'],
-                                  style: const TextStyle(fontSize: 20),
-                                ),
+                                Text(net['icon'], style: const TextStyle(fontSize: 18)),
                                 const SizedBox(height: 4),
                                 Text(
                                   net['label'],
                                   style: TextStyle(
                                     color: isSelected
-                                        ? const Color(0xFF6366F1)
-                                        : (isDark
-                                              ? Colors.grey[400]
-                                              : Colors.grey[600]),
+                                        ? const Color(0xFF0284C7)
+                                        : (isDark ? Colors.grey[400] : Colors.grey[600]),
                                     fontSize: 10,
-                                    fontWeight: isSelected
-                                        ? FontWeight.w900
-                                        : FontWeight.w600,
+                                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
                                   ),
                                 ),
                               ],
@@ -637,144 +861,179 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                       );
                     }).toList(),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 22),
 
-                  // LIMIT AND BALANCE
-                  _buildSectionTitle(
-                    'LÍMITE Y SALDO INICIAL',
-                    LucideIcons.banknote,
-                    isDark,
-                  ),
-                  const SizedBox(height: 10),
+                  // 4. CREDIT LIMIT & CURRENT DEBT
+                  _buildSectionTitle('LÍMITE Y SALDO DEUDOR', LucideIcons.wallet, isDark),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
                       Expanded(
-                        child: TextFormField(
-                          controller: _limitController,
-                          keyboardType: TextInputType.number,
-                          style: TextStyle(
-                            color: isDark ? Colors.white : Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                          onChanged: (_) => setState(() {}),
-                          decoration: _inputDecoration(
-                            'Límite Asignado',
-                            LucideIcons.trendingUp,
-                            isDark,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Límite de Crédito ($currencySymbol)',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            TextFormField(
+                              controller: _limitController,
+                              keyboardType: TextInputType.number,
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              onChanged: (_) => setState(() {}),
+                              decoration: _inputDecoration(
+                                'Ej. 15000',
+                                LucideIcons.trendingUp,
+                                isDark,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      if (widget.existingCard == null) ...[
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _balanceController,
-                            keyboardType: TextInputType.number,
-                            style: TextStyle(
-                              color: isDark ? Colors.white : Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Deuda / Saldo Actual ($currencySymbol)',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? Colors.grey[400] : Colors.grey[600],
+                              ),
                             ),
-                            decoration: _inputDecoration(
-                              'Deuda Actual',
-                              LucideIcons.trendingDown,
-                              isDark,
+                            const SizedBox(height: 6),
+                            TextFormField(
+                              controller: _balanceController,
+                              keyboardType: TextInputType.number,
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              decoration: _inputDecoration(
+                                '0.00',
+                                LucideIcons.trendingDown,
+                                isDark,
+                              ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ],
+                  ),
+                  const SizedBox(height: 8),
+                  // Quick Limit Adders
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: _quickLimitIncrements.map((inc) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: ActionChip(
+                            label: Text(
+                              '+$currencySymbol${inc.toStringAsFixed(0)}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? const Color(0xFF34D399) : const Color(0xFF059669),
+                              ),
+                            ),
+                            backgroundColor: isDark
+                                ? const Color(0xFF065F46).withValues(alpha: 0.2)
+                                : const Color(0xFFD1FAE5),
+                            side: BorderSide(
+                              color: isDark
+                                  ? const Color(0xFF059669).withValues(alpha: 0.4)
+                                  : const Color(0xFFA7F3D0),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              final cur = double.tryParse(_limitController.text) ?? 0.0;
+                              setState(() {
+                                _limitController.text = (cur + inc).toStringAsFixed(0);
+                              });
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
                   const SizedBox(height: 24),
 
-                  // CUT OFF AND PAYMENT DAYS
-                  _buildSectionTitle(
-                    'CICLO DE FACTURACIÓN Y ALERTAS',
-                    LucideIcons.calendarClock,
-                    isDark,
-                  ),
+                  // 5. INLINE BILLING DAYS (CORTE Y PAGO - NO NESTED MODALS!)
+                  _buildSectionTitle('CICLO DE FACTURACIÓN Y RECORDATORIOS', LucideIcons.calendarClock, isDark),
                   const SizedBox(height: 10),
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF1E293B) : Colors.white,
                       border: Border.all(
-                        color: isDark
-                            ? const Color(0xFF334155)
-                            : const Color(0xFFE2E8F0),
+                        color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
                       ),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Column(
                       children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildDaySelector(
-                                title: 'DÍA DE CORTE',
-                                subtitle: 'Cierre del mes',
-                                icon: LucideIcons.scissors,
-                                color: const Color(0xFF3B82F6),
-                                currentDay: _cutOffDay,
-                                onChanged: (v) =>
-                                    setState(() => _cutOffDay = v),
-                                isDark: isDark,
-                              ),
-                            ),
-                            Container(
-                              width: 1,
-                              height: 60,
-                              color: isDark
-                                  ? const Color(0xFF334155)
-                                  : const Color(0xFFE2E8F0),
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
-                            ),
-                            Expanded(
-                              child: _buildDaySelector(
-                                title: 'DÍA DE PAGO',
-                                subtitle: 'Límite sin interés',
-                                icon: LucideIcons.checkCircle2,
-                                color: const Color(0xFF10B981),
-                                currentDay: _paymentDay,
-                                onChanged: (v) =>
-                                    setState(() => _paymentDay = v),
-                                isDark: isDark,
-                              ),
-                            ),
-                          ],
+                        // Día de Corte selector
+                        _buildInlineDaySelector(
+                          title: 'Día de Corte',
+                          subtitle: 'Cierre del período mensual',
+                          icon: LucideIcons.scissors,
+                          color: const Color(0xFF38BDF8),
+                          selectedDay: _cutOffDay,
+                          onSelect: (day) => setState(() => _cutOffDay = day),
+                          isDark: isDark,
+                        ),
+                        const SizedBox(height: 16),
+                        Divider(
+                          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                          height: 1,
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Día de Pago selector
+                        _buildInlineDaySelector(
+                          title: 'Día Límite de Pago',
+                          subtitle: 'Paga a tiempo para evitar intereses',
+                          icon: LucideIcons.checkCircle2,
+                          color: const Color(0xFF34D399),
+                          selectedDay: _paymentDay,
+                          onSelect: (day) => setState(() => _paymentDay = day),
+                          isDark: isDark,
                         ),
                         const SizedBox(height: 14),
+
+                        // Notification notice pill
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(
-                              0xFFF59E0B,
-                            ).withValues(alpha: 0.1),
+                            color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(
-                                0xFFF59E0B,
-                              ).withValues(alpha: 0.3),
+                              color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
                             children: [
-                              const Icon(
-                                LucideIcons.bellRing,
-                                color: Color(0xFFF59E0B),
-                                size: 18,
-                              ),
+                              const Icon(LucideIcons.bellRing, color: Color(0xFFF59E0B), size: 18),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  'Te notificaremos automáticamente 2 días antes, 1 día antes y el mismo día de corte y de pago.',
+                                  'QUIVO te notificará automáticamente 2 días antes y el mismo día de tu corte y pago.',
                                   style: TextStyle(
-                                    color: isDark
-                                        ? const Color(0xFFFCD34D)
-                                        : const Color(0xFFB45309),
+                                    color: isDark ? const Color(0xFFFCD34D) : const Color(0xFFB45309),
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                     height: 1.3,
@@ -789,61 +1048,60 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                   ),
                   const SizedBox(height: 24),
 
-                  // COLOR PALETTE SWATCHES
-                  _buildSectionTitle(
-                    'COLOR DE ESTILO STUDIO',
-                    LucideIcons.palette,
-                    isDark,
-                  ),
-                  const SizedBox(height: 12),
+                  // 6. COLOR THEME PRESETS
+                  _buildSectionTitle('COLOR Y TEXTURA DE LA TARJETA', LucideIcons.palette, isDark),
+                  const SizedBox(height: 10),
                   SizedBox(
                     height: 52,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      itemCount: _colors.length,
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: _cardThemes.length,
                       itemBuilder: (context, index) {
-                        final color = _colors[index];
+                        final theme = _cardThemes[index];
+                        final Color color = theme['color'];
                         final isSelected = _selectedColor == color;
                         return GestureDetector(
-                          onTap: () => setState(() => _selectedColor = color),
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            setState(() => _selectedColor = color);
+                          },
                           child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
+                            duration: const Duration(milliseconds: 180),
                             width: 50,
                             height: 50,
-                            margin: const EdgeInsets.only(right: 14),
+                            margin: const EdgeInsets.only(right: 12),
                             decoration: BoxDecoration(
-                              color: color,
+                              gradient: LinearGradient(
+                                colors: [color, theme['c2'] as Color],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: isSelected
-                                    ? Colors.white
-                                    : Colors.transparent,
-                                width: 3,
+                                color: isSelected ? Colors.white : Colors.white24,
+                                width: isSelected ? 3.5 : 1.0,
                               ),
                               boxShadow: [
                                 if (isSelected)
                                   BoxShadow(
-                                    color: color.withValues(alpha: 0.6),
-                                    blurRadius: 12,
+                                    color: color.withValues(alpha: 0.7),
+                                    blurRadius: 14,
                                     offset: const Offset(0, 4),
                                   ),
                               ],
                             ),
                             child: isSelected
-                                ? const Icon(
-                                    LucideIcons.check,
-                                    color: Colors.white,
-                                    size: 22,
-                                  )
+                                ? const Icon(LucideIcons.check, color: Colors.white, size: 22)
                                 : null,
                           ),
                         );
                       },
                     ),
                   ),
-                  const SizedBox(height: 36),
+                  const SizedBox(height: 32),
 
-                  // SAVE BUTTON
+                  // 7. PRIMARY ACTION BUTTON
                   SizedBox(
                     width: double.infinity,
                     child: DecoratedBox(
@@ -854,9 +1112,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(
-                              0xFF10B981,
-                            ).withValues(alpha: 0.4),
+                            color: const Color(0xFF10B981).withValues(alpha: 0.4),
                             blurRadius: 16,
                             offset: const Offset(0, 6),
                           ),
@@ -867,15 +1123,15 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
-                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          padding: const EdgeInsets.symmetric(vertical: 18),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
                         child: _isSaving
                             ? const SizedBox(
-                                width: 24,
-                                height: 24,
+                                width: 22,
+                                height: 22,
                                 child: CircularProgressIndicator(
                                   color: Colors.white,
                                   strokeWidth: 2.5,
@@ -884,21 +1140,17 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                             : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(
-                                    LucideIcons.sparkles,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
+                                  const Icon(LucideIcons.sparkles, color: Colors.white, size: 20),
                                   const SizedBox(width: 10),
                                   Text(
                                     widget.existingCard != null
                                         ? 'GUARDAR CAMBIOS EN TARJETA'
-                                        : 'CREAR TARJETA STUDIO',
+                                        : 'CREAR TARJETA DE CRÉDITO',
                                     style: const TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 15,
                                       fontWeight: FontWeight.w900,
                                       color: Colors.white,
-                                      letterSpacing: 0.8,
+                                      letterSpacing: 0.5,
                                     ),
                                   ),
                                 ],
@@ -921,15 +1173,15 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
       children: [
         Icon(
           icon,
-          size: 16,
-          color: isDark ? const Color(0xFF6366F1) : const Color(0xFF4F46E5),
+          size: 15,
+          color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
         ),
         const SizedBox(width: 8),
         Text(
           title,
           style: TextStyle(
             color: isDark ? Colors.grey[300] : const Color(0xFF334155),
-            fontSize: 12,
+            fontSize: 11.5,
             fontWeight: FontWeight.w800,
             letterSpacing: 0.8,
           ),
@@ -943,16 +1195,16 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
       hintText: hint,
       hintStyle: TextStyle(
         color: isDark ? Colors.grey[500] : Colors.grey[400],
-        fontSize: 14,
+        fontSize: 13.5,
       ),
       prefixIcon: Icon(
         icon,
         color: isDark ? Colors.grey[400] : Colors.grey[500],
-        size: 20,
+        size: 18,
       ),
       filled: true,
       fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(
@@ -967,168 +1219,8 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+        borderSide: const BorderSide(color: Color(0xFF0284C7), width: 2),
       ),
-    );
-  }
-
-  Widget _buildDaySelector({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-    required int currentDay,
-    required ValueChanged<int> onChanged,
-    required bool isDark,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, color: color, size: 16),
-            const SizedBox(width: 6),
-            Text(
-              title,
-              style: TextStyle(
-                color: isDark ? Colors.grey[300] : Colors.grey[800],
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 2),
-        Text(
-          subtitle,
-          style: TextStyle(
-            color: isDark ? Colors.grey[400] : Colors.grey[600],
-            fontSize: 10,
-          ),
-        ),
-        const SizedBox(height: 8),
-        InkWell(
-          onTap: () {
-            showModalBottomSheet(
-              context: context,
-              backgroundColor: Colors.transparent,
-              builder: (ctx) => Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(32),
-                  ),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 5,
-                      margin: const EdgeInsets.only(bottom: 24),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF334155)
-                            : const Color(0xFFE2E8F0),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                    Text(
-                      'Selecciona el $title',
-                      style: TextStyle(
-                        color: isDark ? Colors.white : Colors.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      height: 300,
-                      child: GridView.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 7,
-                              crossAxisSpacing: 8,
-                              mainAxisSpacing: 8,
-                            ),
-                        itemCount: 31,
-                        itemBuilder: (context, index) {
-                          final day = index + 1;
-                          final isSelected = day == currentDay;
-                          return GestureDetector(
-                            onTap: () {
-                              onChanged(day);
-                              Navigator.pop(ctx);
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? color
-                                    : (isDark
-                                          ? const Color(0xFF0F172A)
-                                          : const Color(0xFFF1F5F9)),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? color
-                                      : (isDark
-                                            ? const Color(0xFF334155)
-                                            : const Color(0xFFE2E8F0)),
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  day.toString(),
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? Colors.white
-                                        : (isDark
-                                              ? Colors.white
-                                              : Colors.black),
-                                    fontWeight: isSelected
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withValues(alpha: 0.4)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Día $currentDay',
-                  style: TextStyle(
-                    color: isDark ? Colors.white : Colors.black,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
-                  ),
-                ),
-                Icon(LucideIcons.calendarDays, size: 18, color: color),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

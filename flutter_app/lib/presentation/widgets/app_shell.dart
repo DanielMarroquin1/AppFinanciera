@@ -202,15 +202,22 @@ class _AppShellState extends ConsumerState<AppShell>
                                   ) {
                                     final curved = CurvedAnimation(
                                       parent: animation,
-                                      curve: Curves.easeOutCubic,
+                                      curve: Curves.easeOutBack,
                                       reverseCurve: Curves.easeInCubic,
                                     );
-                                    return SlideTransition(
-                                      position: Tween<Offset>(
-                                        begin: const Offset(0, 1.0),
-                                        end: Offset.zero,
+                                    return ScaleTransition(
+                                      scale: Tween<double>(
+                                        begin: 0.88,
+                                        end: 1.0,
                                       ).animate(curved),
-                                      child: child,
+                                      child: FadeTransition(
+                                        opacity: CurvedAnimation(
+                                          parent: animation,
+                                          curve: Curves.easeOut,
+                                          reverseCurve: Curves.easeIn,
+                                        ),
+                                        child: child,
+                                      ),
                                     );
                                   },
                             );

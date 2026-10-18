@@ -5,6 +5,7 @@ import '../../domain/entities/transaction.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/entities/notification.dart';
 import '../../domain/entities/credit_card.dart';
+import '../../domain/entities/saving_goal.dart';
 import '../utils/currency_formatter.dart';
 import 'local_notification_service.dart';
 
@@ -304,6 +305,159 @@ class RecurringTransactionService {
             .collection('debts')
             .doc(debt.id);
         batch.update(debtRef, {'paidInstallments': newDebt.paidInstallments});
+      }
+    }
+
+    // Evaluate Saving Goals with isAutoDeduct == true
+    List<DocumentSnapshot> goalDocs = [];
+    if (user.email != null && user.email!.isNotEmpty) {
+      try {
+        final emailGoalsSnap = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.email)
+            .collection('saving_goals')
+            .where('isAutoDeduct', isEqualTo: true)
+            .get();
+        goalDocs.addAll(emailGoalsSnap.docs);
+      } catch (_) {}
+    }
+    try {
+      final uidGoalsSnap = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('saving_goals')
+          .where('isAutoDeduct', isEqualTo: true)
+          .get();
+      for (var d in uidGoalsSnap.docs) {
+        if (!goalDocs.any((g) => g.id == d.id)) {
+          goalDocs.add(d);
+        }
+      }
+    } catch (_) {}
+
+    for (var doc in goalDocs) {
+      final data = doc.data() as Map<String, dynamic>?;
+      if (data == null) continue;
+      final goal = SavingGoal.fromMap(data, doc.id);
+
+      if (goal.autoDeductAmount == null || goal.autoDeductAmount! <= 0) continue;
+      if (goal.autoDeductFrequency == null || goal.autoDeductDay == null) continue;
+      if (goal.currentAmount >= goal.targetAmount) continue; // Goal already reached
+
+      DateTime templateDate = goal.lastAutoDeductDate ?? lastCheck;
+      DateTime start = lastCheck.isBefore(templateDate) ? templateDate : lastCheck;
+      DateTime current = start.add(const Duration(days: 1));
+
+      double addedToGoal = 0.0;
+      DateTime? latestDeductDate;
+
+      while (!current.isAfter(today) &&
+          (goal.currentAmount + addedToGoal) < goal.targetAmount) {
+        bool shouldAdd = false;
+
+        if (goal.autoDeductFrequency == 'monthly') {
+          if (current.day == goal.autoDeductDay) shouldAdd = true;
+        } else if (goal.autoDeductFrequency == 'biweekly') {
+          final day2 = (goal.autoDeductDay! + 15) > 30
+              ? (goal.autoDeductDay! + 15 - 30)
+              : (goal.autoDeductDay! + 15);
+          if (current.day == goal.autoDeductDay || current.day == day2) {
+            shouldAdd = true;
+          }
+        } else if (goal.autoDeductFrequency == 'weekly') {
+          if (current.weekday == goal.autoDeductDay) shouldAdd = true;
+        }
+
+        if (shouldAdd) {
+          final targetDesc = 'Ahorro Automático: ${goal.name}';
+          final alreadyExists = existingNormal.any(
+            (t) =>
+                t.description == targetDesc &&
+                t.date.year == current.year &&
+                t.date.month == current.month &&
+                t.date.day == current.day,
+          );
+          if (alreadyExists) {
+            shouldAdd = false;
+          }
+        }
+
+        if (shouldAdd) {
+          final deductAmount = goal.autoDeductAmount!;
+          final remaining = goal.targetAmount - (goal.currentAmount + addedToGoal);
+          final actualDeduct =
+              deductAmount > remaining ? remaining : deductAmount;
+
+          // Create the expense transaction
+          final newTx = TransactionModel(
+            id: '',
+            userId: user.uid,
+            amount: actualDeduct,
+            type: 'expense',
+            category: 'Ahorro',
+            description: 'Ahorro Automático: ${goal.name}',
+            date: current,
+            isFixed: false,
+          );
+
+          final docRef = FirebaseFirestore.instance
+              .collection('transactions')
+              .doc();
+          batch.set(docRef, newTx.toFirestore());
+
+          // In-app notification
+          final notifRef = FirebaseFirestore.instance
+              .collection('notifications')
+              .doc();
+          final notif = NotificationModel(
+            id: notifRef.id,
+            userId: user.uid,
+            title: '🌱 Ahorro Automático Aplicado',
+            body:
+                'Se descontaron ${actualDeduct.toStringAsFixed(2)} y se abonaron a tu meta "${goal.name}".',
+            createdAt: DateTime.now(),
+            isRead: false,
+            type: 'savings',
+            relatedId: docRef.id,
+            category: 'Ahorro',
+          );
+          batch.set(notifRef, notif.toFirestore());
+          LocalNotificationService.showNotification(
+            title: notif.title,
+            body: notif.body,
+            id: notif.id.hashCode.abs() % 100000,
+          );
+
+          if (user.email != null) {
+            final mailRef = FirebaseFirestore.instance.collection('mail').doc();
+            batch.set(mailRef, {
+              'to': user.email,
+              'message': {
+                'subject': 'Ahorro Automático Registrado',
+                'text':
+                    'Se han abonado ${actualDeduct.toStringAsFixed(2)} a tu meta "${goal.name}".',
+                'html':
+                    '<p>🌱 Se ha transferido automáticamente <strong>${actualDeduct.toStringAsFixed(2)}</strong> a tu meta <strong>"${goal.name}"</strong>.</p>',
+              },
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+          }
+
+          addedToGoal += actualDeduct;
+          latestDeductDate = current;
+          addedCount++;
+        }
+
+        current = current.add(const Duration(days: 1));
+      }
+
+      // Update goal's currentAmount and lastAutoDeductDate in batch
+      if (addedToGoal > 0) {
+        batch.update(doc.reference, {
+          'currentAmount': goal.currentAmount + addedToGoal,
+          if (latestDeductDate != null)
+            'lastAutoDeductDate': latestDeductDate.toIso8601String(),
+        });
       }
     }
 

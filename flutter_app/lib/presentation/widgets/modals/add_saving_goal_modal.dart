@@ -55,7 +55,11 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
 
   late TextEditingController _nameController;
   late TextEditingController _amountController;
+  late TextEditingController _autoDeductAmountController;
   late String selectedIcon;
+  bool _isAutoDeduct = false;
+  String _autoDeductFrequency = 'monthly'; // 'weekly', 'biweekly', 'monthly'
+  int _autoDeductDay = 1;
 
   @override
   void initState() {
@@ -68,12 +72,21 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
           : "",
     );
     selectedIcon = widget.initialIcon ?? "🎯";
+    _isAutoDeduct = widget.goalToEdit?.isAutoDeduct ?? false;
+    _autoDeductAmountController = TextEditingController(
+      text: widget.goalToEdit?.autoDeductAmount != null
+          ? widget.goalToEdit!.autoDeductAmount.toString()
+          : "",
+    );
+    _autoDeductFrequency = widget.goalToEdit?.autoDeductFrequency ?? 'monthly';
+    _autoDeductDay = widget.goalToEdit?.autoDeductDay ?? 1;
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _amountController.dispose();
+    _autoDeductAmountController.dispose();
     super.dispose();
   }
 
@@ -353,6 +366,285 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                         },
                       ),
                     ),
+                    const SizedBox(height: 24),
+
+                    // SECTION: Ahorro Automático
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF1E293B).withOpacity(0.7)
+                            : const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: _isAutoDeduct
+                              ? const Color(0xFF10B981).withOpacity(0.5)
+                              : (isDark
+                                    ? const Color(0xFF334155)
+                                    : const Color(0xFFE2E8F0)),
+                          width: _isAutoDeduct ? 1.5 : 1.0,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: _isAutoDeduct
+                                        ? const [
+                                            Color(0xFF10B981),
+                                            Color(0xFF059669),
+                                          ]
+                                        : [
+                                            isDark
+                                                ? const Color(0xFF334155)
+                                                : const Color(0xFFCBD5E1),
+                                            isDark
+                                                ? const Color(0xFF1E293B)
+                                                : const Color(0xFF94A3B8),
+                                          ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: const Icon(
+                                  LucideIcons.repeat,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Ahorro Automático',
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? Colors.white
+                                            : Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Descontar periódicamente para esta meta',
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? const Color(0xFF94A3B8)
+                                            : const Color(0xFF64748B),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Switch.adaptive(
+                                value: _isAutoDeduct,
+                                activeColor: const Color(0xFF10B981),
+                                onChanged: (val) {
+                                  HapticFeedback.lightImpact();
+                                  setState(() {
+                                    _isAutoDeduct = val;
+                                    if (val &&
+                                        _autoDeductAmountController
+                                            .text
+                                            .isEmpty) {
+                                      final target =
+                                          double.tryParse(
+                                            _amountController.text,
+                                          ) ??
+                                          0.0;
+                                      if (target > 0) {
+                                        _autoDeductAmountController.text =
+                                            (target * 0.1).toStringAsFixed(0);
+                                      }
+                                    }
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                          if (_isAutoDeduct) ...[
+                            const SizedBox(height: 18),
+                            Divider(
+                              color: isDark
+                                  ? const Color(0xFF334155).withOpacity(0.5)
+                                  : const Color(0xFFE2E8F0),
+                              height: 1,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Monto a descontar por ciclo',
+                              style: TextStyle(
+                                color: isDark
+                                    ? const Color(0xFF94A3B8)
+                                    : const Color(0xFF64748B),
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? const Color(0xFF0F172A)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isDark
+                                      ? const Color(0xFF334155)
+                                      : const Color(0xFFE2E8F0),
+                                ),
+                              ),
+                              child: TextField(
+                                controller: _autoDeductAmountController,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
+                                style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                decoration: InputDecoration(
+                                  prefixIcon: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          sym,
+                                          style: const TextStyle(
+                                            color: Color(0xFF10B981),
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  hintText: '0.00',
+                                  hintStyle: TextStyle(
+                                    color: isDark
+                                        ? const Color(0xFF475569)
+                                        : const Color(0xFF94A3B8),
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Frecuencia del descuento',
+                              style: TextStyle(
+                                color: isDark
+                                    ? const Color(0xFF94A3B8)
+                                    : const Color(0xFF64748B),
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                _buildFrequencyChip(
+                                  'weekly',
+                                  'Semanal',
+                                  LucideIcons.calendar,
+                                  isDark,
+                                ),
+                                const SizedBox(width: 8),
+                                _buildFrequencyChip(
+                                  'biweekly',
+                                  'Quincenal',
+                                  LucideIcons.calendarDays,
+                                  isDark,
+                                ),
+                                const SizedBox(width: 8),
+                                _buildFrequencyChip(
+                                  'monthly',
+                                  'Mensual',
+                                  LucideIcons.calendarRange,
+                                  isDark,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _autoDeductFrequency == 'weekly'
+                                  ? 'Día de la semana'
+                                  : (_autoDeductFrequency == 'biweekly'
+                                      ? 'Día inicial de la quincena (1 - 15)'
+                                      : 'Día del mes (1 - 31)'),
+                              style: TextStyle(
+                                color: isDark
+                                    ? const Color(0xFF94A3B8)
+                                    : const Color(0xFF64748B),
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            if (_autoDeductFrequency == 'weekly')
+                              _buildWeeklySelector(isDark)
+                            else
+                              _buildDayStrip(
+                                maxDay: _autoDeductFrequency == 'biweekly'
+                                    ? 15
+                                    : 31,
+                                isDark: isDark,
+                              ),
+                            const SizedBox(height: 14),
+                            // SAMI tip banner
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: const Color(
+                                    0xFF10B981,
+                                  ).withOpacity(0.25),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Text(
+                                    '🌱',
+                                    style: TextStyle(fontSize: 20),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      _buildSummaryText(sym),
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? const Color(0xFF6EE7B7)
+                                            : const Color(0xFF065F46),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 40),
 
                     Container(
@@ -394,6 +686,23 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                             return;
                           }
 
+                          final isAuto = _isAutoDeduct;
+                          final autoAmount = isAuto
+                              ? (double.tryParse(
+                                      _autoDeductAmountController.text,
+                                    ) ??
+                                    0.0)
+                              : null;
+
+                          if (isAuto &&
+                              (autoAmount == null || autoAmount <= 0)) {
+                            CustomSnackBar.showError(
+                              context,
+                              'Por favor, ingresa un monto válido para el descuento automático.',
+                            );
+                            return;
+                          }
+
                           final user = ref.read(authProvider).user;
                           if (user != null) {
                             if (widget.goalToEdit != null) {
@@ -401,6 +710,12 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                                 name: name,
                                 targetAmount: amount,
                                 icon: selectedIcon,
+                                isAutoDeduct: isAuto,
+                                autoDeductAmount: autoAmount,
+                                autoDeductFrequency: isAuto
+                                    ? _autoDeductFrequency
+                                    : null,
+                                autoDeductDay: isAuto ? _autoDeductDay : null,
                               );
                               await ref
                                   .read(savingGoalsProvider.notifier)
@@ -421,6 +736,12 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                                 currentAmount: 0.0,
                                 icon: selectedIcon,
                                 userId: user.email,
+                                isAutoDeduct: isAuto,
+                                autoDeductAmount: autoAmount,
+                                autoDeductFrequency: isAuto
+                                    ? _autoDeductFrequency
+                                    : null,
+                                autoDeductDay: isAuto ? _autoDeductDay : null,
                               );
 
                               await ref
@@ -470,5 +791,202 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
         ),
       ),
     );
+  }
+
+  Widget _buildFrequencyChip(
+    String key,
+    String label,
+    IconData icon,
+    bool isDark,
+  ) {
+    final isSelected = _autoDeductFrequency == key;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() {
+            _autoDeductFrequency = key;
+            if (key == 'weekly' && _autoDeductDay > 7) {
+              _autoDeductDay = 1;
+            } else if (key == 'biweekly' && _autoDeductDay > 15) {
+              _autoDeductDay = 1;
+            }
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? const Color(0xFF10B981).withOpacity(0.2)
+                : (isDark ? const Color(0xFF0F172A) : Colors.white),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? const Color(0xFF10B981)
+                  : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+              width: isSelected ? 1.5 : 1.0,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected
+                    ? const Color(0xFF10B981)
+                    : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: isSelected
+                      ? (isDark ? Colors.white : const Color(0xFF065F46))
+                      : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWeeklySelector(bool isDark) {
+    final days = [
+      {'val': 1, 'name': 'Lun'},
+      {'val': 2, 'name': 'Mar'},
+      {'val': 3, 'name': 'Mié'},
+      {'val': 4, 'name': 'Jue'},
+      {'val': 5, 'name': 'Vie'},
+      {'val': 6, 'name': 'Sáb'},
+      {'val': 7, 'name': 'Dom'},
+    ];
+    return Row(
+      children: days.map((d) {
+        final val = d['val'] as int;
+        final name = d['name'] as String;
+        final isSelected = _autoDeductDay == val;
+        return Expanded(
+          child: GestureDetector(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              setState(() => _autoDeductDay = val);
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? const Color(0xFF10B981)
+                    : (isDark ? const Color(0xFF0F172A) : Colors.white),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isSelected
+                      ? const Color(0xFF10B981)
+                      : (isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFFE2E8F0)),
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  name,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark
+                              ? const Color(0xFF94A3B8)
+                              : const Color(0xFF64748B)),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildDayStrip({required int maxDay, required bool isDark}) {
+    return SizedBox(
+      height: 48,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: maxDay,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, idx) {
+          final day = idx + 1;
+          final isSelected = _autoDeductDay == day;
+          return GestureDetector(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              setState(() => _autoDeductDay = day);
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: 44,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? const Color(0xFF10B981)
+                    : (isDark ? const Color(0xFF0F172A) : Colors.white),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected
+                      ? const Color(0xFF10B981)
+                      : (isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFFE2E8F0)),
+                  width: isSelected ? 1.5 : 1.0,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFF10B981).withOpacity(0.35),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Center(
+                child: Text(
+                  '$day',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark ? Colors.white70 : const Color(0xFF334155)),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  String _buildSummaryText(String sym) {
+    final amt = _autoDeductAmountController.text.trim().isNotEmpty
+        ? '$sym${_autoDeductAmountController.text}'
+        : '${sym}0.00';
+    if (_autoDeductFrequency == 'weekly') {
+      final names = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+      final dayName = (_autoDeductDay >= 1 && _autoDeductDay <= 7) ? names[_autoDeductDay] : 'Lunes';
+      return 'SAMI descontará $amt cada semana los $dayName y lo sumará a esta meta.';
+    } else if (_autoDeductFrequency == 'biweekly') {
+      final day2 = _autoDeductDay + 15;
+      return 'SAMI descontará $amt cada quincena (días $_autoDeductDay y $day2) y lo sumará a esta meta.';
+    } else {
+      return 'SAMI descontará $amt cada mes el día $_autoDeductDay y lo sumará a esta meta.';
+    }
   }
 }

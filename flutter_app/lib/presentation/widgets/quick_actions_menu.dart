@@ -40,7 +40,6 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
   Widget build(BuildContext context) {
     final loc = ref.watch(localizationProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final size = MediaQuery.of(context).size;
 
     final actions = [
       {
@@ -112,75 +111,69 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
             ),
           ),
 
-          // Docked Bottom Sheet
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: GestureDetector(
-              onVerticalDragEnd: (details) {
-                if (details.primaryVelocity != null &&
-                    details.primaryVelocity! > 200) {
-                  _handleDismiss();
-                }
-              },
-              child: Container(
-                width: double.infinity,
-                constraints: BoxConstraints(
-                  maxWidth: 520,
-                  maxHeight: size.height * 0.90,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: isDark
-                        ? [
-                            const Color(0xFF0F172A),
-                            const Color(0xFF0A101D),
-                            const Color(0xFF060913),
-                          ]
-                        : [
-                            Colors.white,
-                            const Color(0xFFF8FAFC),
-                            const Color(0xFFF1F5F9),
-                          ],
-                  ),
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(36),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.65 : 0.22),
-                      blurRadius: 40,
-                      offset: const Offset(0, -12),
+          // Floating Window Card (Ventana Flotante Centrada)
+          Center(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: isDark
+                          ? [
+                              const Color(0xFF131D36),
+                              const Color(0xFF0C1324),
+                              const Color(0xFF070B16),
+                            ]
+                          : [
+                              Colors.white,
+                              const Color(0xFFF8FAFC),
+                              const Color(0xFFF1F5F9),
+                            ],
                     ),
-                    if (isDark)
+                    borderRadius: BorderRadius.circular(32),
+                    border: Border.all(
+                      color: isDark
+                          ? const Color(0xFF06B6D4).withValues(alpha: 0.35)
+                          : Colors.black.withValues(alpha: 0.1),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF06B6D4).withValues(alpha: 0.12),
-                        blurRadius: 30,
-                        offset: const Offset(0, -2),
+                        color: Colors.black.withValues(alpha: isDark ? 0.65 : 0.20),
+                        blurRadius: 40,
+                        offset: const Offset(0, 16),
                       ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Glowing Top Accent Line (Cyan -> Purple -> Emerald)
-                    Container(
-                      height: 3.5,
-                      width: double.infinity,
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(36),
+                      if (isDark)
+                        BoxShadow(
+                          color: const Color(0xFF06B6D4).withValues(alpha: 0.20),
+                          blurRadius: 35,
+                          offset: const Offset(0, 4),
                         ),
-                        gradient: LinearGradient(
-                          colors: [
-                            Color(0xFF06B6D4),
-                            Color(0xFF8B5CF6),
-                            Color(0xFF10B981),
-                          ],
+                    ],
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Top Iridescent Glowing Accent Line
+                      Container(
+                        height: 4,
+                        width: double.infinity,
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Color(0xFF06B6D4),
+                              Color(0xFF8B5CF6),
+                              Color(0xFF10B981),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
 
                     SafeArea(
                       top: false,
@@ -384,9 +377,10 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
               ),
             ),
           ),
-        ],
-      ),
-    );
+        ),
+      ],
+    ),
+  );
   }
 }
 

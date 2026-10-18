@@ -9,8 +9,8 @@ class LocalNotificationService {
       FlutterLocalNotificationsPlugin();
   static bool _initialized = false;
 
-  /// Inicializa el servicio de notificaciones locales para Android e iOS
   static Future<void> init() async {
+    if (kIsWeb) return;
     if (_initialized) return;
     try {
       tz.initializeTimeZones();
@@ -34,6 +34,17 @@ class LocalNotificationService {
         },
       );
 
+      // Solicitar permisos en iOS / iPadOS
+      final iosImplementation = _plugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >();
+      await iosImplementation?.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
       // Crear canal de alta importancia en Android
       const androidChannel = AndroidNotificationChannel(
         'finanza_high_importance_channel',
@@ -51,6 +62,7 @@ class LocalNotificationService {
           >();
       await androidImplementation?.createNotificationChannel(androidChannel);
       await androidImplementation?.requestNotificationsPermission();
+      await androidImplementation?.requestExactAlarmsPermission();
 
       _initialized = true;
     } catch (e) {

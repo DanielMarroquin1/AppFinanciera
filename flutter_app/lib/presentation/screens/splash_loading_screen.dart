@@ -99,12 +99,8 @@ class _SplashLoadingScreenState extends ConsumerState<SplashLoadingScreen>
 
   void _navigateNext() {
     if (!mounted) return;
-    final isAuth = ref.read(authProvider).isAuthenticated;
-    if (isAuth) {
-      context.go('/dashboard');
-    } else {
-      context.go('/login');
-    }
+    // Always require login after the 5-second splash screen
+    context.go('/login');
   }
 
   @override

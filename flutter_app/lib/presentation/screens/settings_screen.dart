@@ -1005,7 +1005,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 (v) => setModalState(() => dailyReminders = v),
                 LucideIcons.clock,
               ),
-              const SizedBox(height: 24),
+              // Botón para probar notificación de inmediato
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await LocalNotificationService.showNotification(
+                      title: 'QUIVO Notificaciones 🔔',
+                      body: '¡Excelente! Las notificaciones están funcionando perfectamente en tu dispositivo.',
+                      id: 99999,
+                    );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Notificación de prueba enviada al sistema.'),
+                          backgroundColor: Color(0xFF10B981),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(LucideIcons.bellRing, size: 18),
+                  label: const Text('Probar Notificación Ahora'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF38BDF8),
+                    side: const BorderSide(color: Color(0xFF38BDF8)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

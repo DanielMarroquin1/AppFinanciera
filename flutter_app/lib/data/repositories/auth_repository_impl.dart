@@ -15,6 +15,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final firebase_auth.FirebaseAuth _firebaseAuth =
       firebase_auth.FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static bool _isGoogleSignInInitialized = false;
 
   AuthRepositoryImpl(this.prefs);
 
@@ -173,11 +174,21 @@ class AuthRepositoryImpl implements AuthRepository {
           );
         }
 
-        // google_sign_in v7 API: inicializar con Web Client ID del proyecto Firebase
-        await googleSignIn.initialize(
-          serverClientId:
-              '164540827567-tvoqns335s6nu100chit15d3q99137bt.apps.googleusercontent.com',
-        );
+        if (!_isGoogleSignInInitialized) {
+          try {
+            await googleSignIn.initialize(
+              clientId: defaultTargetPlatform == TargetPlatform.iOS
+                  ? '164540827567-mhrs4kjvaa0d1dkrggful1f3lu0hma40.apps.googleusercontent.com'
+                  : null,
+              serverClientId:
+                  '164540827567-tvoqns335s6nu100chit15d3q99137bt.apps.googleusercontent.com',
+            );
+            _isGoogleSignInInitialized = true;
+          } catch (initErr) {
+            debugPrint('GoogleSignIn.initialize info: $initErr');
+            _isGoogleSignInInitialized = true;
+          }
+        }
 
         try {
           final dynamic googleUser = await googleSignIn.authenticate();
@@ -200,10 +211,18 @@ class AuthRepositoryImpl implements AuthRepository {
 
           userCredential = await _firebaseAuth.signInWithCredential(credential);
         } catch (e) {
-          // User cancelled or other error
+          debugPrint('Error en loginWithGoogle móvil: $e');
+          // Si el usuario canceló la selección de cuenta
+          final errStr = e.toString().toLowerCase();
+          if (errStr.contains('cancel') || errStr.contains('canceled') || errStr.contains('cancelled')) {
+            throw firebase_auth.FirebaseAuthException(
+              code: 'sign-in-cancelled',
+              message: 'Inicio de sesión cancelado por el usuario.',
+            );
+          }
           throw firebase_auth.FirebaseAuthException(
-            code: 'sign-in-cancelled',
-            message: 'Inicio de sesión con Google cancelado o falló: $e',
+            code: 'sign-in-failed',
+            message: 'Error al iniciar sesión con Google en este dispositivo: $e',
           );
         }
       }

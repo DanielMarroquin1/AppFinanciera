@@ -15,19 +15,44 @@ class SessionTimeoutManager extends ConsumerStatefulWidget {
       _SessionTimeoutManagerState();
 }
 
-class _SessionTimeoutManagerState extends ConsumerState<SessionTimeoutManager> {
+class _SessionTimeoutManagerState extends ConsumerState<SessionTimeoutManager>
+    with WidgetsBindingObserver {
   Timer? _inactivityTimer;
+  DateTime? _pausedTime;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _resetTimer();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _inactivityTimer?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
+      _pausedTime = DateTime.now();
+    } else if (state == AppLifecycleState.resumed) {
+      if (_pausedTime != null) {
+        final elapsed = DateTime.now().difference(_pausedTime!);
+        _pausedTime = null;
+        final authState = ref.read(authProvider);
+        // Si el usuario sale de la app estando autenticado por más de 4s,
+        // reinicia la protección enviando a la pantalla de carga y login
+        if (authState.isAuthenticated && elapsed.inSeconds >= 4) {
+          final context = AppRouter.rootNavigatorKey.currentContext;
+          if (context != null && context.mounted) {
+            GoRouter.of(context).go('/splash');
+          }
+        }
+      }
+    }
   }
 
   void _resetTimer() {

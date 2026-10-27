@@ -52,6 +52,10 @@ class _MyAppState extends ConsumerState<MyApp> {
   void initState() {
     super.initState();
     Future.microtask(() => BankNotificationListenerService.startListening(ref));
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await LocalNotificationService.requestPermissions();
+      await LocalNotificationService.scheduleDailyTransactionReminders();
+    });
   }
 
   @override
@@ -74,6 +78,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
+          enableFeedback: true,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -82,6 +87,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
+        enableFeedback: true,
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: primaryColor,
@@ -111,6 +117,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
+          enableFeedback: true,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -119,6 +126,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
+        enableFeedback: true,
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: primaryColor,

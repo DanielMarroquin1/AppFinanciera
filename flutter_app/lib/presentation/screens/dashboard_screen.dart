@@ -41,6 +41,7 @@ import '../widgets/common/micro_insights_widget.dart';
 import '../../core/services/recurrence_service.dart';
 import '../../core/services/recurring_transaction_service.dart';
 import '../../core/services/local_notification_service.dart';
+import '../../core/utils/app_haptics.dart';
 
 final showTutorialTrigger = ValueNotifier<bool>(false);
 
@@ -80,6 +81,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
         final authUid = FirebaseAuth.instance.currentUser?.uid;
         if (authUid != null) RecurrenceService.processRecurrences(authUid);
         RecurringTransactionService.evaluateRecurringTransactions();
+        LocalNotificationService.requestPermissions();
         LocalNotificationService.scheduleDailyTransactionReminders();
       }
     });
@@ -440,7 +442,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        InkWell(
+                        BounceTap(
+                          scaleDown: 0.90,
+                          hapticType: HapticType.medium,
                           onTap: () {
                             StreakModal.show(
                               context,
@@ -449,7 +453,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                               isFrozen: isFrozenGrace,
                             );
                           },
-                          borderRadius: BorderRadius.circular(16),
                           child: AnimatedBuilder(
                             animation: _fireAnimController,
                             builder: (context, child) {
@@ -596,9 +599,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      InkWell(
+                      BounceTap(
+                        scaleDown: 0.88,
+                        hapticType: HapticType.light,
                         onTap: () => NotificationsModal.show(context),
-                        borderRadius: BorderRadius.circular(16),
                         child: Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
@@ -2213,7 +2217,10 @@ class _AnimatedQuickActionItemState extends State<AnimatedQuickActionItem>
         child: SlideTransition(
           position: _slideAnimation,
           child: GestureDetector(
-            onTapDown: (_) => _pressController.forward(),
+            onTapDown: (_) {
+              AppHaptics.lightImpact();
+              _pressController.forward();
+            },
             onTapUp: (_) {
               _pressController.reverse();
               widget.onTap();

@@ -11,6 +11,7 @@ import '../../presentation/widgets/modals/ai_chat_modal.dart';
 import '../../presentation/widgets/modals/add_saving_goal_modal.dart';
 import '../../presentation/widgets/rewards_shop_modal.dart';
 import '../../presentation/widgets/modals/notifications_modal.dart';
+import '../../core/utils/app_haptics.dart';
 import '../../presentation/widgets/modals/category_budget_modal.dart';
 import '../../presentation/widgets/modals/premium_paywall_dialog.dart';
 import '../../presentation/widgets/modals/pdf_report_modal.dart';
@@ -174,10 +175,11 @@ class _AppShellState extends ConsumerState<AppShell>
                       ),
 
                       // Center FAB
-                      GestureDetector(
+                      BounceTap(
                         key: TutorialKeys.centerFabKey,
+                        scaleDown: 0.90,
+                        hapticType: HapticType.medium,
                         onTap: () async {
-                          HapticFeedback.mediumImpact();
                           _fabController.forward();
                           bool keepMenuOpen = true;
                           while (keepMenuOpen && context.mounted) {
@@ -347,11 +349,11 @@ class _AppShellState extends ConsumerState<AppShell>
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    return GestureDetector(
+    return BounceTap(
       key: key,
-      behavior: HitTestBehavior.opaque,
+      scaleDown: 0.88,
+      hapticType: HapticType.selection,
       onTap: () {
-        if (!isSelected) HapticFeedback.lightImpact();
         context.go(route);
       },
       child: SizedBox(

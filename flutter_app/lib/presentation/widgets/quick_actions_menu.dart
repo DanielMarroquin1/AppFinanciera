@@ -332,11 +332,11 @@ class _HumanQuickActionTileState extends State<_HumanQuickActionTile>
   }
 
   void _onTapDown(TapDownDetails _) {
+    HapticFeedback.lightImpact();
     _pressController.forward();
   }
 
   void _onTapUp(TapUpDetails _) async {
-    HapticFeedback.lightImpact();
     await _pressController.reverse();
     widget.onTap();
   }

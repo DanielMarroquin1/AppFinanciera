@@ -25,6 +25,7 @@ import '../../core/utils/localization.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../core/services/biometric_service.dart';
 import '../../core/services/local_notification_service.dart';
+import '../../core/utils/app_haptics.dart';
 import '../widgets/modals/category_budget_modal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/rewards_shop_modal.dart';
@@ -1006,34 +1007,70 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 LucideIcons.clock,
               ),
               // Botón para probar notificación de inmediato
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () async {
-                    await LocalNotificationService.showNotification(
-                      title: 'QUIVO Notificaciones 🔔',
-                      body: '¡Excelente! Las notificaciones están funcionando perfectamente en tu dispositivo.',
-                      id: 99999,
-                    );
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Notificación de prueba enviada al sistema.'),
-                          backgroundColor: Color(0xFF10B981),
-                          behavior: SnackBarBehavior.floating,
+              BounceTap(
+                scaleDown: 0.96,
+                hapticType: HapticType.medium,
+                onTap: () async {
+                  final success =
+                      await LocalNotificationService.sendTestNotification();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            Icon(
+                              success
+                                  ? LucideIcons.bellRing
+                                  : LucideIcons.alertCircle,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                success
+                                    ? '¡Notificación enviada a tu teléfono! 📲🔔 Revisa la barra superior.'
+                                    : '⚠️ Permiso de notificaciones denegado en el sistema.',
+                                style: const TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
                         ),
-                      );
-                    }
-                  },
-                  icon: const Icon(LucideIcons.bellRing, size: 18),
-                  label: const Text('Probar Notificación Ahora'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF38BDF8),
-                    side: const BorderSide(color: Color(0xFF38BDF8)),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                        backgroundColor: success
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFEF4444),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    );
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
                     ),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(LucideIcons.bellRing, size: 18, color: Color(0xFF38BDF8)),
+                      SizedBox(width: 8),
+                      Text(
+                        'Probar Notificación Ahora',
+                        style: TextStyle(
+                          color: Color(0xFF38BDF8),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -1126,7 +1163,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           Switch(
             value: value,
-            onChanged: onChanged,
+            onChanged: (v) {
+              AppHaptics.selection();
+              onChanged(v);
+            },
             activeThumbColor: const Color(0xFF9333EA),
           ),
         ],

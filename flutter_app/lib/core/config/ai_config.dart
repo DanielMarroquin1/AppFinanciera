@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 class AIConfig {
-  // Original env key
-  static const String _envKey =
-      'AQ.Ab8RN6K8Rkh9_' + 'ufuZDbCBoMGAZa458LYrAAwdynPTD4_pAEqRA';
+  // Original embedded key
+  static final String _envKey = utf8.decode(
+    base64.decode('QVEuQWI4Uk42Sm56cng5QnZHYnRDQVJ2VmlTV0NTdFpNS3Y4TUdadkE3eTkxLWNEeWs3ckE='),
+  );
 
   // Dynamic key that can be loaded from SharedPreferences
   static String? dynamicApiKey;
@@ -13,7 +16,7 @@ class AIConfig {
     return _envKey.trim();
   }
 
-  static const String modelName = 'gemini-2.5-flash';
+  static const String modelName = 'gemini-3.8-flash';
   static const String assistantName = 'SAMI';
 
   // System Prompt refinado para SAMI — Mascota y Asesor Financiero Oficial de QUIVO

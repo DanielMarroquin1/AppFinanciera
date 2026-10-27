@@ -12,5 +12,6 @@ Thumbs.db
 **/key.properties
 **/*.keystore
 **/*.jks
+stress-testing/
 
 

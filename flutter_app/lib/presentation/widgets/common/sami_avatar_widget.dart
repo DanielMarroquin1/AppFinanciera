@@ -87,7 +87,7 @@ class SamiAvatarWidget extends StatelessWidget {
               child: Image.asset(
                 outfit.imageAsset,
                 fit: BoxFit.contain,
-                filterQuality: FilterQuality.medium,
+                filterQuality: FilterQuality.high,
                 errorBuilder: (context, error, stackTrace) {
                   return Center(
                     child: Text(

@@ -212,7 +212,7 @@ class _StreakModalState extends ConsumerState<StreakModal>
                   ),
                 ),
 
-                // 3D Duolingo Flame Hero Visual
+                // 3D QUIVO Financial Flame Hero Visual
                 Stack(
                   alignment: Alignment.center,
                   children: [
@@ -224,14 +224,14 @@ class _StreakModalState extends ConsumerState<StreakModal>
                         return Transform.scale(
                           scale: glowScale,
                           child: Container(
-                            width: 160,
-                            height: 160,
+                            width: 165,
+                            height: 165,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: RadialGradient(
                                 colors: [
                                   (widget.isFrozen
-                                          ? const Color(0xFF38BDF8)
+                                          ? const Color(0xFF00E5FF)
                                           : const Color(0xFFFF9600))
                                       .withValues(
                                         alpha: 0.35 *
@@ -247,14 +247,14 @@ class _StreakModalState extends ConsumerState<StreakModal>
                       },
                     ),
 
-                    // Floating 3D Flame
+                    // Floating 3D QUIVO Flame
                     AnimatedBuilder(
                       animation: _bobController,
                       builder: (context, child) {
                         final bobY = math.sin(_bobController.value * math.pi) * -7.0;
                         return CustomPaint(
-                          size: const Size(150, 175),
-                          painter: _DuolingoFlamePainter(
+                          size: const Size(160, 185),
+                          painter: _QuivoFlamePainter(
                             bobOffset: bobY,
                             isActive: widget.isActiveToday,
                             isFrozen: widget.isFrozen,
@@ -588,14 +588,14 @@ class _WeeklyCapsuleStrip extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// 3D DUOLINGO FLAME PAINTER
+// 3D QUIVO FINANCIAL FLAME PAINTER (Llama de la Fortuna QUIVO)
 // ---------------------------------------------------------------------------
-class _DuolingoFlamePainter extends CustomPainter {
+class _QuivoFlamePainter extends CustomPainter {
   final double bobOffset;
   final bool isActive;
   final bool isFrozen;
 
-  _DuolingoFlamePainter({
+  _QuivoFlamePainter({
     required this.bobOffset,
     required this.isActive,
     required this.isFrozen,
@@ -606,84 +606,106 @@ class _DuolingoFlamePainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    // 1. Dark oval pedestal shadow at the base
-    final pedestalPaint = Paint()
-      ..color = const Color(0xFF16252D)
-      ..style = PaintingStyle.fill;
+    // 1. High-tech floating energy disc at base
+    final baseCenter = Offset(w * 0.50, h * 0.93);
+    final baseGlowPaint = Paint()
+      ..color = (isFrozen ? const Color(0xFF00E5FF) : const Color(0xFFFF9600))
+          .withValues(alpha: 0.25)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
     canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(w * 0.50, h * 0.94),
-        width: w * 0.72,
-        height: h * 0.16,
-      ),
-      pedestalPaint,
+      Rect.fromCenter(center: baseCenter, width: w * 0.80, height: h * 0.20),
+      baseGlowPaint,
     );
 
-    // Apply floating bob animation offset to flame
+    final baseRimPaint = Paint()
+      ..color = (isFrozen ? const Color(0xFF38BDF8) : const Color(0xFFFFD54F))
+          .withValues(alpha: 0.7)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+    canvas.drawOval(
+      Rect.fromCenter(center: baseCenter, width: w * 0.72, height: h * 0.16),
+      baseRimPaint,
+    );
+
+    // Apply floating bob animation offset to the flame
     canvas.save();
     canvas.translate(0, bobOffset);
 
-    // 2. Outer Flame Contour (Golden Yellow Rim)
+    // 2. Outer Flame Body - Dynamic Symmetrical Crest with Soaring Center and Twin Wings
     final outerPath = Path();
-    outerPath.moveTo(w * 0.50, h * 0.88);
-    // bottom-left curve
-    outerPath.cubicTo(w * 0.26, h * 0.88, w * 0.12, h * 0.74, w * 0.12, h * 0.58);
-    // up to left tongue peak
-    outerPath.cubicTo(w * 0.12, h * 0.44, w * 0.16, h * 0.28, w * 0.22, h * 0.21);
-    // round left peak
-    outerPath.cubicTo(w * 0.26, h * 0.18, w * 0.31, h * 0.21, w * 0.33, h * 0.27);
-    // valley between flame peaks
-    outerPath.cubicTo(w * 0.36, h * 0.37, w * 0.44, h * 0.46, w * 0.52, h * 0.36);
-    // up to tall right peak
-    outerPath.cubicTo(w * 0.58, h * 0.24, w * 0.67, h * 0.08, w * 0.74, h * 0.04);
-    // round top peak
-    outerPath.cubicTo(w * 0.79, h * 0.02, w * 0.84, h * 0.08, w * 0.86, h * 0.16);
-    // right flank down
-    outerPath.cubicTo(w * 0.92, h * 0.32, w * 0.88, h * 0.56, w * 0.84, h * 0.68);
-    // curve back into bottom
-    outerPath.cubicTo(w * 0.80, h * 0.82, w * 0.68, h * 0.88, w * 0.50, h * 0.88);
+    outerPath.moveTo(w * 0.50, h * 0.05); // Central sharp spire
+    // Right side curve down to saddle
+    outerPath.cubicTo(w * 0.58, h * 0.22, w * 0.65, h * 0.32, w * 0.68, h * 0.42);
+    // Right wing peak
+    outerPath.cubicTo(w * 0.78, h * 0.30, w * 0.88, h * 0.38, w * 0.90, h * 0.52);
+    // Right flank sweeping down
+    outerPath.cubicTo(w * 0.92, h * 0.68, w * 0.82, h * 0.86, w * 0.50, h * 0.89);
+    // Left flank sweeping up
+    outerPath.cubicTo(w * 0.18, h * 0.86, w * 0.08, h * 0.68, w * 0.10, h * 0.52);
+    // Left wing peak
+    outerPath.cubicTo(w * 0.12, h * 0.38, w * 0.22, h * 0.30, w * 0.32, h * 0.42);
+    // Left side curve back to central spire
+    outerPath.cubicTo(w * 0.35, h * 0.32, w * 0.42, h * 0.22, w * 0.50, h * 0.05);
     outerPath.close();
 
+    // Outer Gradient (Molten Orange-Ruby or Glacial Cyan)
+    final outerGradient = isFrozen
+        ? const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFBAE6FD), Color(0xFF0284C7), Color(0xFF0369A1)],
+          )
+        : const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFFD54F), // Amber-Gold at the tip
+              Color(0xFFFF6D00), // Molten Orange
+              Color(0xFFE11D48), // Deep Ruby Red
+              Color(0xFF9F1239),
+            ],
+            stops: [0.0, 0.35, 0.75, 1.0],
+          );
+
     final outerPaint = Paint()
-      ..color = isFrozen ? const Color(0xFF7DD3FC) : const Color(0xFFFFCC00)
+      ..shader = outerGradient.createShader(Rect.fromLTWH(0, 0, w, h))
       ..style = PaintingStyle.fill;
     canvas.drawPath(outerPath, outerPaint);
 
-    // 3. Inner Flame Body (Fiery Red-Orange Gradient)
+    // Outer Rim Stroke (Golden energy edge)
+    final borderPaint = Paint()
+      ..color = (isFrozen ? const Color(0xFFE0F2FE) : const Color(0xFFFFE082))
+          .withValues(alpha: 0.9)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+    canvas.drawPath(outerPath, borderPaint);
+
+    // 3. Inner Dynamic Flame Layer (Sculpted Core)
     final innerPath = Path();
-    innerPath.moveTo(w * 0.50, h * 0.83);
-    // bottom-left
-    innerPath.cubicTo(w * 0.30, h * 0.83, w * 0.19, h * 0.70, w * 0.19, h * 0.57);
-    // left inner tongue
-    innerPath.cubicTo(w * 0.19, h * 0.45, w * 0.22, h * 0.34, w * 0.27, h * 0.28);
-    innerPath.cubicTo(w * 0.29, h * 0.26, w * 0.33, h * 0.28, w * 0.35, h * 0.34);
-    // valley
-    innerPath.cubicTo(w * 0.38, h * 0.42, w * 0.45, h * 0.48, w * 0.52, h * 0.40);
-    // tall inner peak
-    innerPath.cubicTo(w * 0.58, h * 0.30, w * 0.65, h * 0.18, w * 0.72, h * 0.12);
-    innerPath.cubicTo(w * 0.76, h * 0.09, w * 0.80, h * 0.14, w * 0.81, h * 0.22);
-    // right flank
-    innerPath.cubicTo(w * 0.85, h * 0.36, w * 0.81, h * 0.56, w * 0.77, h * 0.66);
-    // back to bottom
-    innerPath.cubicTo(w * 0.73, h * 0.78, w * 0.64, h * 0.83, w * 0.50, h * 0.83);
+    innerPath.moveTo(w * 0.50, h * 0.16);
+    innerPath.cubicTo(w * 0.56, h * 0.28, w * 0.62, h * 0.38, w * 0.64, h * 0.46);
+    innerPath.cubicTo(w * 0.72, h * 0.40, w * 0.78, h * 0.46, w * 0.80, h * 0.56);
+    innerPath.cubicTo(w * 0.82, h * 0.70, w * 0.72, h * 0.82, w * 0.50, h * 0.84);
+    innerPath.cubicTo(w * 0.28, h * 0.82, w * 0.18, h * 0.70, w * 0.20, h * 0.56);
+    innerPath.cubicTo(w * 0.22, h * 0.46, w * 0.28, h * 0.40, w * 0.36, h * 0.46);
+    innerPath.cubicTo(w * 0.38, h * 0.38, w * 0.44, h * 0.28, w * 0.50, h * 0.16);
     innerPath.close();
 
     final innerGradient = isFrozen
         ? const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
+            colors: [Color(0xFFE0F2FE), Color(0xFF38BDF8)],
           )
         : const LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFFF8500),
-              Color(0xFFFF3B30),
-              Color(0xFFFF2D55),
-              Color(0xFFFF6B00),
+              Color(0xFFFFF9C4), // Bright light yellow
+              Color(0xFFFFB300), // Rich amber
+              Color(0xFFFF5722), // Fire coral
             ],
-            stops: [0.0, 0.42, 0.75, 1.0],
+            stops: [0.0, 0.45, 1.0],
           );
 
     final innerPaint = Paint()
@@ -691,60 +713,75 @@ class _DuolingoFlamePainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     canvas.drawPath(innerPath, innerPaint);
 
-    // 4. Soft pinkish crescent accent on left flame tongue (Image 2 detail)
-    if (!isFrozen) {
-      final accentPath = Path();
-      accentPath.moveTo(w * 0.23, h * 0.36);
-      accentPath.cubicTo(w * 0.20, h * 0.46, w * 0.22, h * 0.58, w * 0.28, h * 0.64);
-      accentPath.cubicTo(w * 0.24, h * 0.58, w * 0.24, h * 0.46, w * 0.28, h * 0.38);
-      accentPath.close();
+    // 4. Centerpiece: Radiant Golden Coin Core ("🪙" QUIVO Emblem)
+    final coinCenter = Offset(w * 0.50, h * 0.62);
+    final coinRadius = w * 0.18;
 
-      final accentPaint = Paint()
-        ..color = const Color(0xFFFF8A95).withValues(alpha: 0.65)
-        ..style = PaintingStyle.fill;
-      canvas.drawPath(accentPath, accentPaint);
-    }
-
-    // 5. Center Glowing White Droplet
-    // Diffuse warm halo behind droplet
-    final glowPaint = Paint()
+    // Diffuse radial bloom behind coin
+    final coinGlowPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          Colors.white.withValues(alpha: 0.85),
-          const Color(0xFFFFD54F).withValues(alpha: 0.35),
+          (isFrozen ? const Color(0xFF00E5FF) : const Color(0xFFFFD54F))
+              .withValues(alpha: 0.8),
           Colors.transparent,
         ],
-        stops: const [0.0, 0.5, 1.0],
-      ).createShader(
-        Rect.fromCircle(
-          center: Offset(w * 0.50, h * 0.67),
-          radius: w * 0.22,
-        ),
-      );
-    canvas.drawCircle(Offset(w * 0.50, h * 0.67), w * 0.22, glowPaint);
+      ).createShader(Rect.fromCircle(center: coinCenter, radius: coinRadius * 1.8));
+    canvas.drawCircle(coinCenter, coinRadius * 1.8, coinGlowPaint);
 
-    // Crisp white droplet shape
-    final dropletPath = Path();
-    dropletPath.moveTo(w * 0.50, h * 0.53);
-    // left curve
-    dropletPath.cubicTo(w * 0.44, h * 0.61, w * 0.38, h * 0.67, w * 0.38, h * 0.72);
-    // round bottom
-    dropletPath.cubicTo(w * 0.38, h * 0.79, w * 0.43, h * 0.82, w * 0.50, h * 0.82);
-    dropletPath.cubicTo(w * 0.57, h * 0.82, w * 0.62, h * 0.79, w * 0.62, h * 0.72);
-    // right curve back up
-    dropletPath.cubicTo(w * 0.62, h * 0.67, w * 0.56, h * 0.61, w * 0.50, h * 0.53);
-    dropletPath.close();
-
-    final dropletPaint = Paint()
-      ..color = Colors.white
+    // Outer coin rim
+    final coinRimPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: isFrozen
+            ? const [Color(0xFFE0F2FE), Color(0xFF0284C7)]
+            : const [Color(0xFFFFF176), Color(0xFFFF8F00)],
+      ).createShader(Rect.fromCircle(center: coinCenter, radius: coinRadius))
       ..style = PaintingStyle.fill;
-    canvas.drawPath(dropletPath, dropletPaint);
+    canvas.drawCircle(coinCenter, coinRadius, coinRimPaint);
+
+    // Inner embossed coin disc
+    final coinInnerPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: isFrozen
+            ? const [Color(0xFF38BDF8), Color(0xFF0369A1)]
+            : const [Color(0xFFFFD54F), Color(0xFFFF6F00)],
+      ).createShader(Rect.fromCircle(center: coinCenter, radius: coinRadius * 0.82))
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(coinCenter, coinRadius * 0.82, coinInnerPaint);
+
+    // Golden "Q" Emblem in center of the coin
+    final emblemPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.2
+      ..strokeCap = StrokeCap.round;
+
+    final qRect = Rect.fromCircle(center: coinCenter, radius: coinRadius * 0.42);
+    canvas.drawOval(qRect, emblemPaint);
+    canvas.drawLine(
+      Offset(coinCenter.dx + coinRadius * 0.15, coinCenter.dy + coinRadius * 0.15),
+      Offset(coinCenter.dx + coinRadius * 0.42, coinCenter.dy + coinRadius * 0.42),
+      emblemPaint,
+    );
+
+    // Specular shine on upper left of coin
+    final shinePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.7)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(
+      Offset(coinCenter.dx - coinRadius * 0.4, coinCenter.dy - coinRadius * 0.4),
+      coinRadius * 0.18,
+      shinePaint,
+    );
 
     canvas.restore();
   }
 
   @override
-  bool shouldRepaint(covariant _DuolingoFlamePainter oldDelegate) {
+  bool shouldRepaint(covariant _QuivoFlamePainter oldDelegate) {
     return oldDelegate.bobOffset != bobOffset ||
         oldDelegate.isActive != isActive ||
         oldDelegate.isFrozen != isFrozen;

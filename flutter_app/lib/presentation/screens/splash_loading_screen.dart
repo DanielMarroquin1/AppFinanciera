@@ -209,11 +209,11 @@ class _SplashLoadingScreenState extends ConsumerState<SplashLoadingScreen>
                       children: [
                         Container(
                           constraints: const BoxConstraints(
-                            maxWidth: 245,
-                            maxHeight: 185,
+                            maxWidth: 250,
+                            maxHeight: 230,
                           ),
                           child: Image.asset(
-                            'assets/images/sami_bienvenida.png',
+                            'assets/images/sami_3d_front.png',
                             fit: BoxFit.contain,
                             filterQuality: FilterQuality.high,
                           ),

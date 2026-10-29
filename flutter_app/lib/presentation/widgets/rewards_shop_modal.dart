@@ -5,6 +5,9 @@ import '../providers/auth_provider.dart';
 import '../providers/color_palette_provider.dart';
 import '../../core/utils/localization.dart';
 import '../../core/services/ad_service.dart';
+import '../../core/utils/app_haptics.dart';
+import '../../domain/entities/sami_outfit.dart';
+import 'common/sami_avatar_widget.dart';
 
 class RewardsShopModal extends ConsumerStatefulWidget {
   const RewardsShopModal({super.key, this.points});
@@ -40,81 +43,16 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
     return [
       {
         'id': 'avatars',
-        'title': loc.get('shop_cat_avatars_title'),
-        'subtitle': loc.get('shop_cat_avatars_sub'),
-        'color': [const Color(0xFF8B5CF6), const Color(0xFFD946EF)],
-        'items': [
-          {
-            'id': 'avatar1',
-            'name': loc.get('item_avatar1_name'),
-            'desc': loc.get('item_avatar1_desc'),
-            'icon': '🦸',
-            'cost': 50,
-          },
-          {
-            'id': 'avatar2',
-            'name': loc.get('item_avatar2_name'),
-            'desc': loc.get('item_avatar2_desc'),
-            'icon': '🧙',
-            'cost': 50,
-          },
-          {
-            'id': 'avatar3',
-            'name': loc.get('item_avatar3_name'),
-            'desc': loc.get('item_avatar3_desc'),
-            'icon': '👑',
-            'cost': 75,
-          },
-          {
-            'id': 'avatar4',
-            'name': loc.get('item_avatar4_name'),
-            'desc': loc.get('item_avatar4_desc'),
-            'icon': '🥷',
-            'cost': 75,
-          },
-          {
-            'id': 'avatar5',
-            'name': loc.get('item_avatar5_name'),
-            'desc': loc.get('item_avatar5_desc'),
-            'icon': '🧑‍🚀',
-            'cost': 100,
-          },
-          {
-            'id': 'avatar6',
-            'name': loc.get('item_avatar6_name'),
-            'desc': loc.get('item_avatar6_desc'),
-            'icon': '💎',
-            'cost': 150,
-          },
-          {
-            'id': 'avatar7',
-            'name': loc.get('item_avatar7_name'),
-            'desc': loc.get('item_avatar7_desc'),
-            'icon': '🐳',
-            'cost': 150,
-          },
-          {
-            'id': 'avatar8',
-            'name': loc.get('item_avatar8_name'),
-            'desc': loc.get('item_avatar8_desc'),
-            'icon': '⚔️',
-            'cost': 200,
-          },
-          {
-            'id': 'avatar9',
-            'name': loc.get('item_avatar9_name'),
-            'desc': loc.get('item_avatar9_desc'),
-            'icon': '🐉',
-            'cost': 250,
-          },
-          {
-            'id': 'avatar10',
-            'name': loc.get('item_avatar10_name'),
-            'desc': loc.get('item_avatar10_desc'),
-            'icon': '🔥',
-            'cost': 300,
-          },
-        ],
+        'title': 'Atuendos de SAMI',
+        'subtitle': 'Ropa, gorras y accesorios exclusivos para tu avatar',
+        'color': [const Color(0xFF10B981), const Color(0xFF06B6D4)],
+        'items': SamiOutfit.allOutfits.where((o) => !o.isFree).map((outfit) => {
+          'id': outfit.id,
+          'name': outfit.name,
+          'desc': '${outfit.subtitle} • ${outfit.description}',
+          'icon': outfit.accessoryEmoji,
+          'cost': outfit.cost,
+        }).toList(),
       },
       {
         'id': 'themes',
@@ -893,12 +831,21 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                                 ),
                                         ),
                                       ),
-                                      child: Center(
-                                        child: Text(
-                                          item['icon'] as String,
-                                          style: const TextStyle(fontSize: 34),
-                                        ),
-                                      ),
+                                      child: isAvatar
+                                          ? Center(
+                                              child: SamiAvatarWidget(
+                                                avatarId: itemId,
+                                                size: 52,
+                                                isDark: isDark,
+                                                showAccessoryBadge: false,
+                                              ),
+                                            )
+                                          : Center(
+                                              child: Text(
+                                                item['icon'] as String,
+                                                style: const TextStyle(fontSize: 34),
+                                              ),
+                                            ),
                                     ),
                                     const SizedBox(width: 16),
                                     Expanded(
@@ -1008,23 +955,18 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                                     if (isEquipped) return;
                                     if (isUnlocked) {
                                       if (category['id'] == 'avatars') {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            dismissDirection:
-                                                DismissDirection.horizontal,
-                                            content: Text(
-                                              loc.get(
-                                                'shop_snack_avatar_unlocked',
-                                              ),
+                                        await ref.read(authProvider.notifier).equipAvatar(itemId);
+                                        AppHaptics.success();
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('✨ ¡Equipaste "${item["name"]}" como tu avatar!'),
+                                              backgroundColor: const Color(0xFF10B981),
+                                              behavior: SnackBarBehavior.floating,
                                             ),
-                                            backgroundColor: const Color(
-                                              0xFF6366F1,
-                                            ),
-                                            behavior: SnackBarBehavior.floating,
-                                          ),
-                                        );
+                                          );
+                                        }
+                                        return;
                                       } else if (category['id'] == 'themes') {
                                         if (context.mounted) {
                                           ScaffoldMessenger.of(

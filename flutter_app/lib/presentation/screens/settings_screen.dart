@@ -207,7 +207,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   child: Row(
                     children: [
                       Animated3DAvatar(
-                        emoji: user?.avatarEmoji ?? '👤',
+                        avatarId: user?.currentAvatar ?? user?.avatarEmoji ?? 'sami_default',
                         size: 72,
                         isDark: isDark,
                       ),

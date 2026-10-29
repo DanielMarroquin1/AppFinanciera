@@ -396,7 +396,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                 child: Row(
                   children: [
                     Animated3DAvatar(
-                      emoji: user?.avatarEmoji ?? '👤',
+                      avatarId: user?.currentAvatar ?? user?.avatarEmoji ?? 'sami_default',
                       size: 52,
                       isDark: isDark,
                       onTap: () => Scaffold.of(context).openDrawer(),

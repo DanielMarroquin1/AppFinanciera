@@ -315,7 +315,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                         clipBehavior: Clip.none,
                         children: [
                           Animated3DAvatar(
-                            emoji: selectedEmoji,
+                            avatarId: selectedAvatarId,
                             size: 120,
                             isDark: isDark,
                           ),

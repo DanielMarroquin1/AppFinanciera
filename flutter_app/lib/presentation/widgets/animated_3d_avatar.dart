@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'common/sami_avatar_widget.dart';
 
 class Animated3DAvatar extends StatefulWidget {
-  final String emoji;
+  final String? avatarId;
+  final String? emoji;
   final double size;
   final VoidCallback? onTap;
   final bool isDark;
 
   const Animated3DAvatar({
     super.key,
-    required this.emoji,
+    this.avatarId,
+    this.emoji,
     required this.size,
     required this.isDark,
     this.onTap,
@@ -44,6 +47,8 @@ class _Animated3DAvatarState extends State<Animated3DAvatar>
 
   @override
   Widget build(BuildContext context) {
+    final effectiveId = widget.avatarId ?? widget.emoji ?? 'sami_default';
+
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) {
@@ -57,69 +62,14 @@ class _Animated3DAvatarState extends State<Animated3DAvatar>
           return Transform.translate(
             offset: Offset(0, _isPressed ? 0 : _floatAnimation.value),
             child: AnimatedScale(
-              scale: _isPressed ? 0.9 : 1.0,
-              duration: const Duration(milliseconds: 150),
+              scale: _isPressed ? 0.92 : 1.0,
+              duration: const Duration(milliseconds: 140),
               curve: Curves.easeOutBack,
-              child: Container(
-                width: widget.size,
-                height: widget.size,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: widget.isDark
-                        ? [const Color(0xFF334155), const Color(0xFF0F172A)]
-                        : [Colors.white, const Color(0xFFE2E8F0)],
-                  ),
-                  border: Border.all(
-                    color: widget.isDark
-                        ? Colors.white.withValues(alpha: 0.15)
-                        : Colors.white,
-                    width: widget.size * 0.04,
-                  ),
-                  boxShadow: [
-                    // Sombra principal (3D flotante)
-                    BoxShadow(
-                      color: Colors.black.withValues(
-                        alpha: widget.isDark ? 0.5 : 0.15,
-                      ),
-                      blurRadius: _isPressed ? 8 : 20,
-                      offset: Offset(0, _isPressed ? 4 : 10),
-                    ),
-                    // Highlight interior superior izquierdo (luz)
-                    BoxShadow(
-                      color: widget.isDark
-                          ? Colors.white.withValues(alpha: 0.1)
-                          : Colors.white,
-                      blurRadius: 10,
-                      offset: const Offset(-2, -2),
-                    ),
-                    // Sombra interior inferior derecha (profundidad)
-                    BoxShadow(
-                      color: widget.isDark
-                          ? Colors.black.withValues(alpha: 0.5)
-                          : const Color(0xFF94A3B8).withValues(alpha: 0.4),
-                      blurRadius: 10,
-                      offset: const Offset(4, 4),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    widget.emoji,
-                    style: TextStyle(
-                      fontSize: widget.size * 0.5,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withValues(alpha: 0.25),
-                          blurRadius: 8,
-                          offset: const Offset(2, 4),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+              child: SamiAvatarWidget(
+                avatarId: effectiveId,
+                size: widget.size,
+                isDark: widget.isDark,
+                showAccessoryBadge: true,
               ),
             ),
           );

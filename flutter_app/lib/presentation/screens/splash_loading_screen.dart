@@ -207,16 +207,25 @@ class _SplashLoadingScreenState extends ConsumerState<SplashLoadingScreen>
                       clipBehavior: Clip.none,
                       alignment: Alignment.center,
                       children: [
-                        Container(
-                          constraints: const BoxConstraints(
-                            maxWidth: 250,
-                            maxHeight: 230,
-                          ),
-                          child: Image.asset(
-                            'assets/images/sami_3d_front.png',
-                            fit: BoxFit.contain,
-                            filterQuality: FilterQuality.high,
-                          ),
+                        // SAMI Mascot in HD with natural gestures and expressions
+                        AnimatedBuilder(
+                          animation: _waveController,
+                          builder: (context, _) {
+                            final bool isWinking = (_waveController.value > 0.82);
+                            return Container(
+                              constraints: const BoxConstraints(
+                                maxWidth: 250,
+                                maxHeight: 230,
+                              ),
+                              child: Image.asset(
+                                isWinking
+                                    ? 'assets/images/sami_3d_front.png'
+                                    : 'assets/images/sami_3d_front_open.png',
+                                fit: BoxFit.contain,
+                                filterQuality: FilterQuality.high,
+                              ),
+                            );
+                          },
                         ),
                         // Animated waving stars / sparkles near waving hand
                         Positioned(

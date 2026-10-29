@@ -367,39 +367,99 @@ class _StreakModalState extends ConsumerState<StreakModal>
                 ),
                 const SizedBox(height: 14),
 
-                // SAMI Encouragement Badge (Preserves Mascot presence)
+                // SAMI Encouragement Card (High-Definition Master Asset, zero pixelation)
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
-                    vertical: 8,
+                    vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF17252D),
-                    borderRadius: BorderRadius.circular(14),
+                    color: const Color(0xFF16252E),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: const Color(0xFF283B46),
-                      width: 1,
+                      color: const Color(0xFF263C4A),
+                      width: 1.2,
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.25),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Image.asset(
-                        widget.isActiveToday
-                            ? 'assets/images/sami_celebrando.png'
-                            : 'assets/images/sami_bienvenida.png',
-                        width: 24,
-                        height: 24,
+                      // High-Res SAMI Avatar Badge with glowing ring
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFF00E5FF), Color(0xFF0284C7)],
+                          ),
+                          border: Border.all(color: Colors.white, width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF00E5FF).withValues(alpha: 0.35),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/images/sami_3d_front_open.png',
+                            fit: BoxFit.cover,
+                            filterQuality: FilterQuality.high,
+                          ),
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        widget.isActiveToday
-                            ? 'SAMI: "¡Excelente disciplina financiera!"'
-                            : 'SAMI: "¡Registra un movimiento y salva tu racha!"',
-                        style: const TextStyle(
-                          color: Color(0xFF8BA0AE),
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              children: [
+                                const Text(
+                                  'SAMI',
+                                  style: TextStyle(
+                                    color: Color(0xFF00E5FF),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  widget.isActiveToday ? '✨ Racha Activa' : '🔥 Por Activar',
+                                  style: TextStyle(
+                                    color: widget.isActiveToday
+                                        ? const Color(0xFF10B981)
+                                        : const Color(0xFFFF9600),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              widget.isActiveToday
+                                  ? '¡Gran disciplina hoy! Cada día suma a tu libertad financiera.'
+                                  : '¡Registra un movimiento hoy y mantén viva tu racha!',
+                              style: const TextStyle(
+                                color: Color(0xFFD6E2E8),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                height: 1.25,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

@@ -144,17 +144,15 @@ class _StreakModalState extends ConsumerState<StreakModal>
         ? authUser!.name.trim().split(' ').first.toUpperCase()
         : 'CAMPEÓN';
 
-    // Weekday calculation (1=Lunes, 7=Domingo)
-    final now = DateTime.now();
-    final int todayWeekday = now.weekday;
-
-    // Completed days in current week (Monday to today)
-    final int completedDaysThisWeek = widget.isActiveToday
-        ? math.min(todayWeekday, math.max(1, widget.currentStreak))
-        : math.max(0, math.min(todayWeekday - 1, widget.currentStreak));
-
-    final int daysRemaining = math.max(0, 7 - completedDaysThisWeek);
-    final dayNames = ['L', 'Ma', 'Mi', 'J', 'V', 'S', 'D'];
+    // 5-day milestone cycle calculation (User gets +50 PTS every 5 days!)
+    final int currentStreak = widget.currentStreak;
+    final int cycleIndex = currentStreak <= 0 ? 0 : (currentStreak - 1) ~/ 5;
+    final int startDay = cycleIndex * 5 + 1;
+    final int endDay = startDay + 4;
+    final int completedInCycle = currentStreak <= 0
+        ? 0
+        : (currentStreak - startDay + 1).clamp(0, 5);
+    final int daysRemainingInCycle = math.max(0, 5 - completedInCycle);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -291,38 +289,47 @@ class _StreakModalState extends ConsumerState<StreakModal>
                     letterSpacing: -0.2,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
-                // Weekly Strip Header (L, Ma, Mi, J, V, S, D)
-                Row(
-                  children: List.generate(7, (index) {
-                    final bool isCompleted = index < completedDaysThisWeek;
-                    return Expanded(
-                      child: Center(
-                        child: Text(
-                          dayNames[index],
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: isCompleted
-                                ? const Color(0xFFFF9600)
-                                : const Color(0xFF6E8492),
-                          ),
+                // 5-Day Milestone Badge: "+50 PTS cada 5 días"
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFB300).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color(0xFFFFB300).withValues(alpha: 0.6),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('🪙', style: TextStyle(fontSize: 14)),
+                      SizedBox(width: 6),
+                      Text(
+                        'BONO: +50 PTS CADA 5 DÍAS',
+                        style: TextStyle(
+                          color: Color(0xFFFFD54F),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
                         ),
                       ),
-                    );
-                  }),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 16),
 
-                // Weekly Strip Indicators (Continuous Capsule + Circles + Chest)
-                _WeeklyCapsuleStrip(
-                  completedCount: completedDaysThisWeek,
-                  totalDays: 7,
+                // 5-Day Milestone Progress Track (startDay to endDay)
+                _FiveDayMilestoneTrack(
+                  startDay: startDay,
+                  completedCount: completedInCycle,
+                  isActiveToday: widget.isActiveToday,
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 18),
 
-                // Motivational Text matching Image 2
+                // Motivational Text for the 5-day cycle
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: RichText(
@@ -330,18 +337,18 @@ class _StreakModalState extends ConsumerState<StreakModal>
                     text: TextSpan(
                       style: const TextStyle(
                         color: Color(0xFFD6E2E8),
-                        fontSize: 15,
+                        fontSize: 14.5,
                         fontWeight: FontWeight.w600,
                         height: 1.35,
                       ),
-                      children: daysRemaining > 0
+                      children: daysRemainingInCycle > 0
                           ? [
                               const TextSpan(
                                 text: '¡Registra tus movimientos ',
                               ),
                               TextSpan(
                                 text:
-                                    '$daysRemaining ${daysRemaining == 1 ? "día más" : "días más"}',
+                                    '$daysRemainingInCycle ${daysRemainingInCycle == 1 ? "día más" : "días más"}',
                                 style: const TextStyle(
                                   color: Color(0xFFFF9600),
                                   fontWeight: FontWeight.w900,
@@ -349,17 +356,33 @@ class _StreakModalState extends ConsumerState<StreakModal>
                               ),
                               const TextSpan(
                                 text:
-                                    ' para recibir tu próxima recompensa por tu semana perfecta!',
+                                    ' para recibir tu cofre de ',
+                              ),
+                              const TextSpan(
+                                text: '+50 PTS',
+                                style: TextStyle(
+                                  color: Color(0xFFFFD54F),
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              const TextSpan(
+                                text: ' extra!',
                               ),
                             ]
                           : const [
                               TextSpan(
                                 text:
-                                    '¡Completaste tu semana perfecta! 🎉 ¡Reclama tu cofre semanal de recompensas!',
+                                    '¡Completaste tu ciclo de 5 días! 🎉 ¡Reclamaste tus ',
+                              ),
+                              TextSpan(
+                                text: '+50 PTS',
                                 style: TextStyle(
-                                  color: Color(0xFFFFC800),
-                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFFFFD54F),
+                                  fontWeight: FontWeight.w900,
                                 ),
+                              ),
+                              TextSpan(
+                                text: ' de racha!',
                               ),
                             ],
                     ),
@@ -548,101 +571,182 @@ class _StreakModalState extends ConsumerState<StreakModal>
 }
 
 // ---------------------------------------------------------------------------
-// WEEKLY CAPSULE STRIP (Joined Capsule for completed consecutive days)
+// 5-DAY MILESTONE TRACK (+50 PTS cada 5 días continuos)
 // ---------------------------------------------------------------------------
-class _WeeklyCapsuleStrip extends StatelessWidget {
+class _FiveDayMilestoneTrack extends StatelessWidget {
+  final int startDay;
   final int completedCount;
-  final int totalDays;
+  final bool isActiveToday;
 
-  const _WeeklyCapsuleStrip({
+  const _FiveDayMilestoneTrack({
+    required this.startDay,
     required this.completedCount,
-    required this.totalDays,
+    required this.isActiveToday,
   });
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double totalWidth = constraints.maxWidth;
-        final double slotWidth = totalWidth / totalDays;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Day numbers header row (startDay .. startDay + 4)
+        Row(
+          children: List.generate(5, (index) {
+            final int dayNum = startDay + index;
+            final bool isCompleted = index < completedCount;
+            final bool isMilestone = (index == 4);
 
-        return SizedBox(
-          height: 44,
-          child: Stack(
-            children: [
-              // 1. Continuous orange capsule spanning all completed days
-              if (completedCount > 0)
-                Positioned(
-                  left: 0,
-                  top: 1,
-                  bottom: 1,
-                  width: math.min(totalWidth, slotWidth * completedCount),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Color(0xFFFF9600),
-                          Color(0xFFFF4826),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(22),
-                      border: Border.all(
-                        color: const Color(0xFFFFCC00),
-                        width: 2.8,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFF5216).withValues(alpha: 0.4),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
+            return Expanded(
+              child: Center(
+                child: Text(
+                  isMilestone ? 'Hito $dayNum' : 'Día $dayNum',
+                  style: TextStyle(
+                    fontSize: isMilestone ? 12.5 : 12.0,
+                    fontWeight: isMilestone ? FontWeight.w900 : FontWeight.w800,
+                    color: isMilestone
+                        ? const Color(0xFFFFD54F)
+                        : (isCompleted
+                            ? const Color(0xFFFF9600)
+                            : const Color(0xFF6E8492)),
                   ),
                 ),
-
-              // 2. Individual day indicators row (Checks for completed, Circles for pending, Chest for Sunday)
-              Row(
-                children: List.generate(totalDays, (index) {
-                  final bool isCompleted = index < completedCount;
-                  final bool isSunday = index == 6;
-
-                  Widget dayChild;
-                  if (isSunday) {
-                    // Sunday is always the Treasure Chest (golden if completed, metallic slate if pending)
-                    dayChild = _TreasureChestIcon(
-                      isCompleted: isCompleted,
-                    );
-                  } else if (isCompleted) {
-                    // Dark checkmark inside continuous capsule
-                    dayChild = const Icon(
-                      LucideIcons.check,
-                      color: Color(0xFF131F24),
-                      size: 22,
-                    );
-                  } else {
-                    // Pending day: dark circular dot matching Image 2
-                    dayChild = Container(
-                      width: 36,
-                      height: 36,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF24333C),
-                        shape: BoxShape.circle,
-                      ),
-                    );
-                  }
-
-                  return Expanded(
-                    child: Center(child: dayChild),
-                  );
-                }),
               ),
-            ],
-          ),
-        );
-      },
+            );
+          }),
+        ),
+        const SizedBox(height: 10),
+
+        // 5-node continuous progress track
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final double totalWidth = constraints.maxWidth;
+            final double slotWidth = totalWidth / 5;
+
+            return SizedBox(
+              height: 54,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.centerLeft,
+                children: [
+                  // 1. Continuous orange capsule spanning completed days
+                  if (completedCount > 0)
+                    Positioned(
+                      left: 0,
+                      top: 4,
+                      bottom: 4,
+                      width: math.min(totalWidth, slotWidth * completedCount),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Color(0xFFFF9600),
+                              Color(0xFFFF4826),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: const Color(0xFFFFCC00),
+                            width: 2.8,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFF5216).withValues(alpha: 0.4),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                  // 2. Individual day indicators row (Checks for 1-4, 3D Chest with +50 PTS on 5)
+                  Row(
+                    children: List.generate(5, (index) {
+                      final bool isCompleted = index < completedCount;
+                      final bool isMilestone = (index == 4);
+
+                      Widget dayChild;
+                      if (isMilestone) {
+                        // 5th Day: The Treasure Chest with glowing +50 PTS Badge
+                        dayChild = Stack(
+                          alignment: Alignment.center,
+                          clipBehavior: Clip.none,
+                          children: [
+                            _TreasureChestIcon(isCompleted: isCompleted),
+                            // +50 PTS Gold Badge floating above/below chest
+                            Positioned(
+                              bottom: -16,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                decoration: BoxDecoration(
+                                  color: isCompleted
+                                      ? const Color(0xFFFFD54F)
+                                      : const Color(0xFF263843),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: isCompleted
+                                        ? const Color(0xFFFF9600)
+                                        : const Color(0xFFFFD54F).withValues(alpha: 0.7),
+                                    width: 1.2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.4),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  '+50 PTS',
+                                  style: TextStyle(
+                                    color: isCompleted
+                                        ? const Color(0xFF092A40)
+                                        : const Color(0xFFFFD54F),
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      } else if (isCompleted) {
+                        dayChild = const Icon(
+                          LucideIcons.check,
+                          color: Color(0xFF131F24),
+                          size: 22,
+                        );
+                      } else {
+                        dayChild = Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF24333C),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFF334652),
+                              width: 1.5,
+                            ),
+                          ),
+                        );
+                      }
+
+                      return Expanded(
+                        child: Center(child: dayChild),
+                      );
+                    }),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 10),
+      ],
     );
   }
 }

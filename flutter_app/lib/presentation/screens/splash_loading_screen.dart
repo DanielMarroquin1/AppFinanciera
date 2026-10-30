@@ -176,86 +176,100 @@ class _SplashLoadingScreenState extends ConsumerState<SplashLoadingScreen>
               children: [
                 const Spacer(flex: 3),
 
-                // SAMI Mascot with active hand-waving and floating animation
+                // SAMI Mascot with authentic character animation (independent waving hand & natural gestures)
                 AnimatedBuilder(
                   animation: Listenable.merge([_controller, _waveController]),
                   builder: (context, child) {
-                    // Floating vertical movement
-                    final floatY = math.sin(_controller.value * 5 * math.pi) * 8.0;
-                    // Rhythmic hand wave rotation: pivots around the lower center to swing the raised hand back and forth!
-                    final waveAngle = (math.sin(_waveController.value * math.pi) - 0.5) * 0.18;
-                    // Subtle hand bounce
-                    final handPulse = 1.0 + 0.04 * math.sin(_waveController.value * math.pi);
+                    // Organic grounded breathing cycle (subtle chest rise, no bouncing of the image!)
+                    final breathY = 1.0 + 0.014 * math.sin(_controller.value * 8 * math.pi);
+                    final breathX = 1.0 - 0.007 * math.sin(_controller.value * 8 * math.pi);
 
-                    return Transform.translate(
-                      offset: Offset(0, floatY),
+                    // Dynamic character hand wave angle (swings arm back and forth at shoulder joint)
+                    final armWaveAngle = math.sin(_waveController.value * 2 * math.pi) * 0.28;
+
+                    // Periodic natural blinking & winking gestures
+                    final cycleTime = (_controller.value * 5000) % 2400;
+                    final bool isBlinking = (cycleTime > 1900 && cycleTime < 2050);
+                    final bool isWinking = (_controller.value > 0.45 && _controller.value < 0.65);
+
+                    return Opacity(
+                      opacity: _samiFadeAnimation.value.clamp(0.0, 1.0),
                       child: Transform.scale(
-                        scale: _samiScaleAnimation.value * handPulse,
-                        child: Transform.rotate(
-                          angle: waveAngle,
-                          alignment: const Alignment(-0.2, 0.7), // Pivots near SAMI's waist/shoulder
-                          child: Opacity(
-                            opacity: _samiFadeAnimation.value.clamp(0.0, 1.0),
-                            child: child,
+                        scale: _samiScaleAnimation.value,
+                        child: Center(
+                          child: SizedBox(
+                            width: 250,
+                            height: 230,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              clipBehavior: Clip.none,
+                              children: [
+                                // 1. SAMI Grounded Body with organic breathing
+                                Transform.scale(
+                                  scaleY: breathY,
+                                  scaleX: breathX,
+                                  alignment: Alignment.bottomCenter,
+                                  child: Image.asset(
+                                    (isBlinking || isWinking)
+                                        ? 'assets/images/sami_3d_front.png'
+                                        : 'assets/images/sami_3d_body_nowave.png',
+                                    width: 250,
+                                    height: 230,
+                                    fit: BoxFit.contain,
+                                    filterQuality: FilterQuality.high,
+                                  ),
+                                ),
+
+                                // 2. Articulated Waving Arm & Hand (pivoting at shoulder socket)
+                                Positioned(
+                                  left: 10,
+                                  top: 55,
+                                  child: Transform.rotate(
+                                    angle: armWaveAngle,
+                                    alignment: const Alignment(0.65, 0.75), // Shoulder joint
+                                    child: Image.asset(
+                                      'assets/images/sami_3d_waving_arm.png',
+                                      width: 82,
+                                      height: 92,
+                                      fit: BoxFit.contain,
+                                      filterQuality: FilterQuality.high,
+                                    ),
+                                  ),
+                                ),
+
+                                // 3. Welcoming sparkle stars popping from waving hand
+                                Positioned(
+                                  top: 36,
+                                  left: 2,
+                                  child: AnimatedBuilder(
+                                    animation: _waveController,
+                                    builder: (context, _) {
+                                      final sparkScale = 0.8 + 0.35 * math.sin(_waveController.value * math.pi);
+                                      return Transform.scale(
+                                        scale: sparkScale,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(5),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
+                                          ),
+                                          child: const Icon(
+                                            Icons.auto_awesome,
+                                            size: 18,
+                                            color: Color(0xFF00E5FF),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     );
                   },
-                  child: Center(
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      alignment: Alignment.center,
-                      children: [
-                        // SAMI Mascot in HD with natural gestures and expressions
-                        AnimatedBuilder(
-                          animation: _waveController,
-                          builder: (context, _) {
-                            final bool isWinking = (_waveController.value > 0.82);
-                            return Container(
-                              constraints: const BoxConstraints(
-                                maxWidth: 250,
-                                maxHeight: 230,
-                              ),
-                              child: Image.asset(
-                                isWinking
-                                    ? 'assets/images/sami_3d_front.png'
-                                    : 'assets/images/sami_3d_front_open.png',
-                                fit: BoxFit.contain,
-                                filterQuality: FilterQuality.high,
-                              ),
-                            );
-                          },
-                        ),
-                        // Animated waving stars / sparkles near waving hand
-                        Positioned(
-                          top: 10,
-                          left: 12,
-                          child: AnimatedBuilder(
-                            animation: _waveController,
-                            builder: (context, _) {
-                              final sparkScale = 0.8 + 0.35 * _waveController.value;
-                              return Transform.scale(
-                                scale: sparkScale,
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
-                                  ),
-                                  child: const Icon(
-                                    Icons.auto_awesome,
-                                    size: 16,
-                                    color: Color(0xFF38BDF8),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
 
                 const SizedBox(height: 28),

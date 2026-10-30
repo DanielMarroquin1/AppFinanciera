@@ -179,17 +179,6 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
     });
   }
 
-  void _snapToAngle(double targetAngle) {
-    AppHaptics.selection();
-    if (_isAutoSpinning) {
-      _autoSpinController.stop();
-      _isAutoSpinning = false;
-    }
-    setState(() {
-      _rotationDegrees = targetAngle % 360.0;
-    });
-  }
-
   bool _isItemUnlocked(WardrobeItem item, List<String> unlocked) {
     if (item.isFree) return true;
     return unlocked.contains(item.id) ||
@@ -760,54 +749,94 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                       ),
                     ),
 
-                  // Botones de Vistas Rápidas en la base (Sin grados de rotación)
+                  // Floating 360 Touch Gesture Bar at bottom (Cleaner interaction without static buttons)
                   Positioned(
-                    bottom: 6,
+                    bottom: 8,
+                    left: 16,
+                    right: 16,
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildAngleButton('Frente', 0.0),
-                        const SizedBox(width: 6),
-                        _buildAngleButton('Perfil', 90.0),
-                        const SizedBox(width: 6),
-                        _buildAngleButton('Espalda', 180.0),
-                        const SizedBox(width: 8),
+                        // Touch hint
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF13222B).withValues(alpha: 0.85),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: const Color(0xFF243B48),
+                              width: 1,
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                LucideIcons.moveHorizontal,
+                                color: Color(0xFF00E5FF),
+                                size: 14,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                'Desliza para girar 360°',
+                                style: TextStyle(
+                                  color: Color(0xFFD6F5FF),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Auto-spin button
                         GestureDetector(
                           onTap: _toggleAutoSpin,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
+                              horizontal: 12,
+                              vertical: 5,
                             ),
                             decoration: BoxDecoration(
                               color: _isAutoSpinning
                                   ? const Color(0xFF00E5FF)
                                   : const Color(0xFF1B2B35),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(14),
                               border: Border.all(
                                 color: const Color(0xFF00E5FF),
-                                width: 1,
+                                width: 1.2,
                               ),
+                              boxShadow: _isAutoSpinning
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
+                                        blurRadius: 8,
+                                      ),
+                                    ]
+                                  : null,
                             ),
                             child: Row(
                               children: [
                                 Icon(
                                   _isAutoSpinning
                                       ? LucideIcons.pause
-                                      : LucideIcons.play,
+                                      : LucideIcons.rotateCw,
                                   color: _isAutoSpinning
                                       ? const Color(0xFF092A40)
                                       : const Color(0xFF00E5FF),
-                                  size: 11,
+                                  size: 13,
                                 ),
-                                const SizedBox(width: 4),
+                                const SizedBox(width: 5),
                                 Text(
-                                  'Girar',
+                                  _isAutoSpinning ? 'Pausar' : 'Girar Auto',
                                   style: TextStyle(
                                     color: _isAutoSpinning
                                         ? const Color(0xFF092A40)
                                         : const Color(0xFF00E5FF),
-                                    fontSize: 10,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.w900,
                                   ),
                                 ),
@@ -1157,32 +1186,10 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
       ),
     );
   }
-
-  Widget _buildAngleButton(String label, double angle) {
-    return GestureDetector(
-      onTap: () => _snapToAngle(angle),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: const Color(0xFF152530),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFF243B48), width: 1),
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFF8BA0AE),
-            fontSize: 10.5,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 // ---------------------------------------------------------------------------
-// PAINTER PARA SIMULACIÓN EN VIVO DE ROPA, ZAPATOS Y ACCESORIOS SOBRE SAMI
+// PAINTER PARA SIMULACIÓN EN VIVO DE ROPA, ZAPATOS Y ACCESORIOS MOLDEADOS
 // ---------------------------------------------------------------------------
 class _SamiApparelOverlayPainter extends CustomPainter {
   final SamiEquipment equipment;
@@ -1201,460 +1208,682 @@ class _SamiApparelOverlayPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
+
+    // 3D Trigonometric perspective angles (0 = front, 90 = right profile, 180 = back, 270 = left profile)
     final norm = (angleDegrees % 360.0 + 360.0) % 360.0;
-    final isFront = (norm < 65.0 || norm > 295.0);
-    final isBack = (norm >= 115.0 && norm < 245.0);
-    final isRight = (norm >= 65.0 && norm < 115.0);
-    final isLeft = (norm >= 245.0 && norm <= 295.0);
+    final rad = norm * math.pi / 180.0;
+    final cosVal = math.cos(rad);
+    final sinVal = math.sin(rad);
 
-    // 1. ZAPATOS (En la base de las patitas de SAMI)
-    _paintShoes(canvas, w, h, isFront, isBack, isRight, isLeft);
+    // Front/Back visibility factors (Continuous smooth transition, no jumps!)
+    final double frontWeight = math.max(0.0, cosVal);
+    final double backWeight = math.max(0.0, -cosVal);
 
-    // 2. ROPA (Sobre el torso / vientre)
-    _paintClothing(canvas, w, h, isFront, isBack, isRight, isLeft);
+    // 3D Horizontal displacement of the belly center as SAMI rotates
+    final double shiftX = sinVal * (w * 0.16);
 
-    // 3. ACCESORIOS (Bufandas, Cascos, Gorras, etc. en cuello y cabeza)
-    _paintAccessories(canvas, w, h, isFront, isBack, isRight, isLeft);
+    // Foreshortening factor (compresses features when turning into profile)
+    final double foreshorten = 0.52 + 0.48 * cosVal.abs();
+
+    // Depth-sorted rendering:
+    // 1. Back items (cape from front view, etc.)
+    _paintBackElements(canvas, w, h, frontWeight, backWeight, shiftX, foreshorten);
+
+    // 2. Shoes (sculpted to SAMI's feet)
+    _paintSculptedShoes(canvas, w, h, frontWeight, backWeight, shiftX, sinVal);
+
+    // 3. Clothing (molded smoothly to SAMI's pear body)
+    _paintSculptedClothing(canvas, w, h, frontWeight, backWeight, shiftX, foreshorten);
+
+    // 4. Accessories (toroidal scarf, helmets, crown, glasses)
+    _paintSculptedAccessories(canvas, w, h, frontWeight, backWeight, shiftX, foreshorten);
   }
 
-  void _paintShoes(
+  // -------------------------------------------------------------------------
+  // CAPE / BACK ELEMENTS (Rendered behind body when front, in front when back)
+  // -------------------------------------------------------------------------
+  void _paintBackElements(
     Canvas canvas,
     double w,
     double h,
-    bool isFront,
-    bool isBack,
-    bool isRight,
-    bool isLeft,
+    double frontWeight,
+    double backWeight,
+    double shiftX,
+    double foreshorten,
+  ) {
+    if (equipment.clothingId == 'ropa_superheroe') {
+      final capePaint = Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFE11D48), Color(0xFF9F1239), Color(0xFF4C0519)],
+        ).createShader(Rect.fromLTWH(0, h * 0.45, w, h * 0.45));
+
+      final capePath = Path();
+      if (backWeight > 0.05) {
+        // Full cape covering the back
+        final alpha = (backWeight * 255).clamp(0, 255).toInt();
+        capePaint.color = capePaint.color.withAlpha(alpha);
+
+        capePath.moveTo(w * 0.32 + shiftX, h * 0.46);
+        capePath.quadraticBezierTo(w * 0.50 + shiftX, h * 0.44, w * 0.68 + shiftX, h * 0.46);
+        capePath.quadraticBezierTo(w * 0.82 + shiftX * 0.6, h * 0.68, w * 0.80 + shiftX * 0.5, h * 0.86);
+        capePath.quadraticBezierTo(w * 0.50 + shiftX * 0.5, h * 0.90, w * 0.20 + shiftX * 0.5, h * 0.86);
+        capePath.quadraticBezierTo(w * 0.18 + shiftX * 0.6, h * 0.68, w * 0.32 + shiftX, h * 0.46);
+        capePath.close();
+        canvas.drawPath(capePath, capePaint);
+
+        // Gold clasp at back of neck
+        final claspPaint = Paint()..color = const Color(0xFFFFD54F);
+        canvas.drawCircle(Offset(w * 0.50 + shiftX, h * 0.46), 4.5, claspPaint);
+      } else if (frontWeight > 0.1) {
+        // Cape wings peeking from behind shoulders
+        final wingPath = Path();
+        // Left wing
+        wingPath.moveTo(w * 0.24, h * 0.52);
+        wingPath.quadraticBezierTo(w * 0.12, h * 0.62, w * 0.15, h * 0.76);
+        wingPath.quadraticBezierTo(w * 0.22, h * 0.70, w * 0.26, h * 0.58);
+        wingPath.close();
+        // Right wing
+        wingPath.moveTo(w * 0.76, h * 0.52);
+        wingPath.quadraticBezierTo(w * 0.88, h * 0.62, w * 0.85, h * 0.76);
+        wingPath.quadraticBezierTo(w * 0.78, h * 0.70, w * 0.74, h * 0.58);
+        wingPath.close();
+        canvas.drawPath(wingPath, capePaint);
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // SCULPTED SHOES (Molded to SAMI's round flipper paws)
+  // -------------------------------------------------------------------------
+  void _paintSculptedShoes(
+    Canvas canvas,
+    double w,
+    double h,
+    double frontWeight,
+    double backWeight,
+    double shiftX,
+    double sinVal,
   ) {
     final shoeId = equipment.shoesId;
     if (shoeId == 'zap_clasicos') return;
 
-    final feetY = h * 0.84;
-    final shoeH = h * 0.085;
-
-    Color shoeMainColor = const Color(0xFF00E5FF);
-    Color shoeAccentColor = Colors.white;
+    Color upperColor;
+    Color soleColor;
+    Color detailColor;
 
     switch (shoeId) {
       case 'zap_sneakers':
-        shoeMainColor = const Color(0xFF00E5FF); // Neon cyan
-        shoeAccentColor = Colors.white;
+        upperColor = const Color(0xFF00E5FF); // Electric cyan
+        soleColor = Colors.white;
+        detailColor = const Color(0xFF0284C7);
         break;
       case 'zap_botas':
-        shoeMainColor = const Color(0xFF8B4513); // Saddle leather
-        shoeAccentColor = const Color(0xFFFFD54F);
+        upperColor = const Color(0xFF8B4513); // Leather brown
+        soleColor = const Color(0xFF5D2E0C);
+        detailColor = const Color(0xFFFFD54F);
         break;
       case 'zap_charol':
-        shoeMainColor = const Color(0xFF1E293B); // Black patent
-        shoeAccentColor = Colors.white70;
+        upperColor = const Color(0xFF0F172A); // High-gloss tuxedo black
+        soleColor = const Color(0xFF334155);
+        detailColor = Colors.white;
         break;
       case 'zap_espaciales':
-        shoeMainColor = const Color(0xFF7C3AED); // Space purple
-        shoeAccentColor = const Color(0xFF00E5FF);
+        upperColor = const Color(0xFF7C3AED); // Space purple
+        soleColor = const Color(0xFF00E5FF);
+        detailColor = const Color(0xFFA78BFA);
         break;
       case 'zap_dorados':
-        shoeMainColor = const Color(0xFFFFD54F); // Gold
-        shoeAccentColor = const Color(0xFFFF6F00);
+        upperColor = const Color(0xFFFFD54F); // Royal gold
+        soleColor = const Color(0xFFB45309);
+        detailColor = const Color(0xFFFFF9C4);
         break;
+      default:
+        upperColor = const Color(0xFF00E5FF);
+        soleColor = Colors.white;
+        detailColor = Colors.cyan;
     }
 
-    final shoePaint = Paint()..color = shoeMainColor;
-    final accentPaint = Paint()..color = shoeAccentColor;
+    final feetY = h * 0.84;
+    final pawWidth = w * 0.17;
+    final pawHeight = h * 0.085;
 
-    if (isFront || isBack) {
-      // Pie Izquierdo
-      final leftRRect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(w * 0.30, feetY, w * 0.17, shoeH),
-        const Radius.circular(8),
-      );
-      canvas.drawRRect(leftRRect, shoePaint);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(w * 0.30, feetY + shoeH * 0.65, w * 0.17, shoeH * 0.35),
-          const Radius.circular(4),
-        ),
-        accentPaint,
-      );
+    // Shift feet naturally with 3D rotation
+    final leftX = w * 0.32 + shiftX * 0.6;
+    final rightX = w * 0.53 + shiftX * 0.6;
 
-      // Pie Derecho
-      final rightRRect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(w * 0.53, feetY, w * 0.17, shoeH),
-        const Radius.circular(8),
-      );
-      canvas.drawRRect(rightRRect, shoePaint);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(w * 0.53, feetY + shoeH * 0.65, w * 0.17, shoeH * 0.35),
-          const Radius.circular(4),
-        ),
-        accentPaint,
-      );
-    } else {
-      // Perfil
-      final sideX = isRight ? w * 0.45 : w * 0.35;
-      final sideRRect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(sideX, feetY, w * 0.22, shoeH),
-        const Radius.circular(8),
-      );
-      canvas.drawRRect(sideRRect, shoePaint);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(sideX, feetY + shoeH * 0.65, w * 0.22, shoeH * 0.35),
-          const Radius.circular(4),
-        ),
-        accentPaint,
-      );
-    }
+    final upperPaint = Paint()..color = upperColor;
+    final solePaint = Paint()..color = soleColor;
+    final detailPaint = Paint()..color = detailColor;
+
+    // Left Foot
+    _drawCurvedPawShoe(canvas, leftX, feetY, pawWidth, pawHeight, upperPaint, solePaint, detailPaint, sinVal);
+    // Right Foot
+    _drawCurvedPawShoe(canvas, rightX, feetY, pawWidth, pawHeight, upperPaint, solePaint, detailPaint, sinVal);
   }
 
-  void _paintClothing(
+  void _drawCurvedPawShoe(
+    Canvas canvas,
+    double x,
+    double y,
+    double width,
+    double height,
+    Paint upperPaint,
+    Paint solePaint,
+    Paint detailPaint,
+    double sinVal,
+  ) {
+    // Upper shoe contoured to flipper
+    final shoeRect = RRect.fromRectAndCorners(
+      Rect.fromLTWH(x, y, width, height),
+      topLeft: const Radius.circular(12),
+      topRight: const Radius.circular(12),
+      bottomLeft: const Radius.circular(8),
+      bottomRight: const Radius.circular(8),
+    );
+    canvas.drawRRect(shoeRect, upperPaint);
+
+    // Rubber sole rim along bottom
+    final soleRect = RRect.fromRectAndCorners(
+      Rect.fromLTWH(x - 1, y + height * 0.68, width + 2, height * 0.35),
+      topLeft: const Radius.circular(4),
+      topRight: const Radius.circular(4),
+      bottomLeft: const Radius.circular(8),
+      bottomRight: const Radius.circular(8),
+    );
+    canvas.drawRRect(soleRect, solePaint);
+
+    // Subtle laces or metallic buckle
+    canvas.drawCircle(Offset(x + width * 0.5, y + height * 0.35), 2.5, detailPaint);
+  }
+
+  // -------------------------------------------------------------------------
+  // SCULPTED CLOTHING (Molded around SAMI's pear body)
+  // -------------------------------------------------------------------------
+  void _paintSculptedClothing(
     Canvas canvas,
     double w,
     double h,
-    bool isFront,
-    bool isBack,
-    bool isRight,
-    bool isLeft,
+    double frontWeight,
+    double backWeight,
+    double shiftX,
+    double foreshorten,
   ) {
     final clothId = equipment.clothingId;
     if (clothId == 'ropa_clasica') return;
 
-    final chestY = h * 0.58;
-    final chestW = w * 0.38;
+    final cx = w * 0.50 + shiftX;
+    final neckY = h * 0.49;
+    final bellyY = h * 0.74;
+    final halfTopW = (w * 0.17) * foreshorten;
+    final halfBellyW = (w * 0.25) * foreshorten;
 
     switch (clothId) {
+      // 1. TRAJE EJECUTIVO
       case 'ropa_ejecutivo':
-        if (isFront) {
-          // Solapas de saco azul marino
-          final suitPaint = Paint()..color = const Color(0xFF1E3A8A);
-          final lapelPath = Path();
-          lapelPath.moveTo(w * 0.36, chestY - 10);
-          lapelPath.lineTo(w * 0.50, chestY + 28);
-          lapelPath.lineTo(w * 0.64, chestY - 10);
-          lapelPath.lineTo(w * 0.60, chestY + 36);
-          lapelPath.lineTo(w * 0.40, chestY + 36);
-          lapelPath.close();
-          canvas.drawPath(lapelPath, suitPaint);
+        // Base suit jacket curved along SAMI's pear body
+        final suitPaint = Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF1E3A8A),
+              const Color(0xFF0F172A),
+            ],
+          ).createShader(Rect.fromLTWH(cx - halfBellyW, neckY, halfBellyW * 2, bellyY - neckY));
 
-          // Cuello camisa blanca
-          final shirtPaint = Paint()..color = Colors.white;
+        final suitPath = Path();
+        suitPath.moveTo(cx - halfTopW, neckY);
+        suitPath.quadraticBezierTo(cx, neckY - 4, cx + halfTopW, neckY);
+        suitPath.quadraticBezierTo(cx + halfBellyW * 1.05, h * 0.62, cx + halfBellyW, bellyY);
+        suitPath.quadraticBezierTo(cx, bellyY + 6, cx - halfBellyW, bellyY);
+        suitPath.quadraticBezierTo(cx - halfBellyW * 1.05, h * 0.62, cx - halfTopW, neckY);
+        suitPath.close();
+        canvas.drawPath(suitPath, suitPaint);
+
+        if (frontWeight > 0.08) {
+          final alpha = (frontWeight * 255).clamp(0, 255).toInt();
+
+          // White shirt triangle inside collar
+          final shirtPaint = Paint()..color = Colors.white.withAlpha(alpha);
           final shirtPath = Path();
-          shirtPath.moveTo(w * 0.44, chestY - 10);
-          shirtPath.lineTo(w * 0.50, chestY + 6);
-          shirtPath.lineTo(w * 0.56, chestY - 10);
+          shirtPath.moveTo(cx - halfTopW * 0.45, neckY);
+          shirtPath.lineTo(cx + halfTopW * 0.45, neckY);
+          shirtPath.lineTo(cx, neckY + 28);
           shirtPath.close();
           canvas.drawPath(shirtPath, shirtPaint);
 
-          // Corbata de seda roja
-          final tiePaint = Paint()..color = const Color(0xFFDC2626);
+          // Silk red tie
+          final tiePaint = Paint()
+            ..shader = const LinearGradient(
+              colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
+            ).createShader(Rect.fromLTWH(cx - 7, neckY + 8, 14, 38));
           final tiePath = Path();
-          tiePath.moveTo(w * 0.48, chestY);
-          tiePath.lineTo(w * 0.52, chestY);
-          tiePath.lineTo(w * 0.53, chestY + 28);
-          tiePath.lineTo(w * 0.50, chestY + 34);
-          tiePath.lineTo(w * 0.47, chestY + 28);
+          tiePath.moveTo(cx - 5, neckY + 6);
+          tiePath.lineTo(cx + 5, neckY + 6);
+          tiePath.lineTo(cx + 7, neckY + 36);
+          tiePath.lineTo(cx, neckY + 44);
+          tiePath.lineTo(cx - 7, neckY + 36);
           tiePath.close();
           canvas.drawPath(tiePath, tiePaint);
-        } else if (isBack) {
-          // Espalda del saco
-          final backSuit = Paint()..color = const Color(0xFF1E3A8A);
-          canvas.drawRRect(
-            RRect.fromRectAndRadius(
-              Rect.fromLTWH(w * 0.32, chestY - 6, chestW, h * 0.22),
-              const Radius.circular(12),
-            ),
-            backSuit,
-          );
+
+          // Lapel fold edges with highlighted borders
+          final lapelStroke = Paint()
+            ..color = const Color(0xFF38BDF8).withAlpha((alpha * 0.6).toInt())
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.5;
+          canvas.drawLine(Offset(cx - halfTopW * 0.8, neckY + 2), Offset(cx - 4, neckY + 38), lapelStroke);
+          canvas.drawLine(Offset(cx + halfTopW * 0.8, neckY + 2), Offset(cx + 4, neckY + 38), lapelStroke);
+        } else if (backWeight > 0.1) {
+          // Back tailored seam
+          final seamPaint = Paint()
+            ..color = const Color(0xFF0F172A)
+            ..strokeWidth = 2.0;
+          canvas.drawLine(Offset(cx, neckY + 4), Offset(cx, bellyY - 4), seamPaint);
         }
         break;
 
+      // 2. SUDADERA STREETWEAR
       case 'ropa_sudadera':
-        // Sudadera Streetwear Cyan
-        final hoodiePaint = Paint()..color = const Color(0xFF00E5FF);
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(w * 0.30, chestY - 12, w * 0.40, h * 0.22),
-            const Radius.circular(16),
-          ),
-          hoodiePaint,
+        final hoodiePaint = Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF00E5FF), Color(0xFF0284C7)],
+          ).createShader(Rect.fromLTWH(cx - halfBellyW, neckY, halfBellyW * 2, bellyY - neckY));
+
+        final bodyPath = Path();
+        bodyPath.moveTo(cx - halfTopW, neckY);
+        bodyPath.quadraticBezierTo(cx, neckY - 6, cx + halfTopW, neckY);
+        bodyPath.quadraticBezierTo(cx + halfBellyW * 1.08, h * 0.62, cx + halfBellyW, bellyY);
+        bodyPath.quadraticBezierTo(cx, bellyY + 7, cx - halfBellyW, bellyY);
+        bodyPath.quadraticBezierTo(cx - halfBellyW * 1.08, h * 0.62, cx - halfTopW, neckY);
+        bodyPath.close();
+        canvas.drawPath(bodyPath, hoodiePaint);
+
+        // Ribbed hem at waist
+        final hemPaint = Paint()..color = const Color(0xFF0369A1);
+        final hemRect = RRect.fromRectAndRadius(
+          Rect.fromLTWH(cx - halfBellyW * 0.95, bellyY - 4, halfBellyW * 1.9, 10),
+          const Radius.circular(5),
         );
-        if (isFront) {
-          // Bolsillo canguro
-          final pocketPaint = Paint()..color = const Color(0xFF0284C7);
+        canvas.drawRRect(hemRect, hemPaint);
+
+        if (frontWeight > 0.1) {
+          final alpha = (frontWeight * 255).clamp(0, 255).toInt();
+          // Kangaroo pocket on belly
+          final pocketPaint = Paint()..color = const Color(0xFF075985).withAlpha(alpha);
+          final pocketPath = Path();
+          final pw = halfBellyW * 0.8;
+          pocketPath.moveTo(cx - pw * 0.6, h * 0.63);
+          pocketPath.lineTo(cx + pw * 0.6, h * 0.63);
+          pocketPath.lineTo(cx + pw * 0.85, bellyY - 6);
+          pocketPath.lineTo(cx - pw * 0.85, bellyY - 6);
+          pocketPath.close();
+          canvas.drawPath(pocketPath, pocketPaint);
+
+          // Drawstring cords
+          final cordPaint = Paint()
+            ..color = Colors.white.withAlpha(alpha)
+            ..strokeWidth = 2.0;
+          canvas.drawLine(Offset(cx - 8, neckY + 4), Offset(cx - 8, neckY + 22), cordPaint);
+          canvas.drawLine(Offset(cx + 8, neckY + 4), Offset(cx + 8, neckY + 22), cordPaint);
+        }
+        break;
+
+      // 3. TRAJE SUPERHEROE
+      case 'ropa_superheroe':
+        final redSuit = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFFDC2626), Color(0xFF991B1B)],
+          ).createShader(Rect.fromLTWH(cx - halfBellyW, neckY, halfBellyW * 2, bellyY - neckY));
+
+        final suitPath = Path();
+        suitPath.moveTo(cx - halfTopW, neckY);
+        suitPath.quadraticBezierTo(cx, neckY - 4, cx + halfTopW, neckY);
+        suitPath.quadraticBezierTo(cx + halfBellyW * 1.05, h * 0.62, cx + halfBellyW, bellyY);
+        suitPath.quadraticBezierTo(cx, bellyY + 6, cx - halfBellyW, bellyY);
+        suitPath.quadraticBezierTo(cx - halfBellyW * 1.05, h * 0.62, cx - halfTopW, neckY);
+        suitPath.close();
+        canvas.drawPath(suitPath, redSuit);
+
+        if (frontWeight > 0.1) {
+          final alpha = (frontWeight * 255).clamp(0, 255).toInt();
+          // Gold emblem on chest
+          final emblemPaint = Paint()..color = const Color(0xFFFFD54F).withAlpha(alpha);
+          canvas.drawCircle(Offset(cx, h * 0.58), 13 * foreshorten, emblemPaint);
+
+          // Gold utility belt
+          final beltPaint = Paint()..color = const Color(0xFFFFB300).withAlpha(alpha);
           canvas.drawRRect(
             RRect.fromRectAndRadius(
-              Rect.fromLTWH(w * 0.36, chestY + 14, w * 0.28, h * 0.08),
-              const Radius.circular(8),
+              Rect.fromLTWH(cx - halfBellyW * 0.85, bellyY - 6, halfBellyW * 1.7, 8),
+              const Radius.circular(4),
             ),
-            pocketPaint,
+            beltPaint,
           );
         }
         break;
 
-      case 'ropa_superheroe':
-        // Capa roja ondeante (se ve detrás y a los costados)
-        final capePaint = Paint()..color = const Color(0xFFDC2626);
-        final capePath = Path();
-        if (isBack) {
-          capePath.moveTo(w * 0.24, chestY - 15);
-          capePath.lineTo(w * 0.76, chestY - 15);
-          capePath.lineTo(w * 0.84, chestY + 55);
-          capePath.lineTo(w * 0.16, chestY + 55);
-          capePath.close();
-          canvas.drawPath(capePath, capePaint);
-        } else {
-          // Al frente se ven las puntas de la capa a los lados
-          canvas.drawOval(Rect.fromLTWH(w * 0.18, chestY - 5, w * 0.14, h * 0.24), capePaint);
-          canvas.drawOval(Rect.fromLTWH(w * 0.68, chestY - 5, w * 0.14, h * 0.24), capePaint);
-          // Emblema dorado en el pecho
-          final crestPaint = Paint()..color = const Color(0xFFFFD54F);
-          canvas.drawCircle(Offset(w * 0.50, chestY + 12), 14, crestPaint);
-        }
-        break;
-
+      // 4. ARMADURA GALACTICA
       case 'ropa_armadura':
-        // Armadura Galáctica con circuitos neón
-        final armorPaint = Paint()..color = const Color(0xFF334155);
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(w * 0.30, chestY - 10, w * 0.40, h * 0.22),
-            const Radius.circular(14),
-          ),
-          armorPaint,
-        );
-        final neonPaint = Paint()
-          ..color = const Color(0xFF00E5FF)
-          ..strokeWidth = 2.0
-          ..style = PaintingStyle.stroke;
-        canvas.drawCircle(Offset(w * 0.50, chestY + 12), 10, neonPaint);
+        final armorPaint = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF475569), Color(0xFF1E293B)],
+          ).createShader(Rect.fromLTWH(cx - halfBellyW, neckY, halfBellyW * 2, bellyY - neckY));
+
+        final armorPath = Path();
+        armorPath.moveTo(cx - halfTopW, neckY);
+        armorPath.quadraticBezierTo(cx, neckY - 4, cx + halfTopW, neckY);
+        armorPath.quadraticBezierTo(cx + halfBellyW * 1.05, h * 0.62, cx + halfBellyW, bellyY);
+        armorPath.quadraticBezierTo(cx, bellyY + 6, cx - halfBellyW, bellyY);
+        armorPath.quadraticBezierTo(cx - halfBellyW * 1.05, h * 0.62, cx - halfTopW, neckY);
+        armorPath.close();
+        canvas.drawPath(armorPath, armorPaint);
+
+        // Glowing cyan power core
+        final coreGlow = Paint()
+          ..color = const Color(0xFF00E5FF).withValues(alpha: 0.85)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.5;
+        canvas.drawCircle(Offset(cx, h * 0.60), 12 * foreshorten, coreGlow);
         break;
 
+      // 5. FILIPINA CHEF
       case 'ropa_chef':
-        // Filipina blanca
         final chefPaint = Paint()..color = Colors.white;
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(w * 0.32, chestY - 10, w * 0.36, h * 0.22),
-            const Radius.circular(12),
-          ),
-          chefPaint,
-        );
-        if (isFront) {
-          final goldBtn = Paint()..color = const Color(0xFFFFD54F);
-          canvas.drawCircle(Offset(w * 0.44, chestY + 4), 3, goldBtn);
-          canvas.drawCircle(Offset(w * 0.56, chestY + 4), 3, goldBtn);
-          canvas.drawCircle(Offset(w * 0.44, chestY + 18), 3, goldBtn);
-          canvas.drawCircle(Offset(w * 0.56, chestY + 18), 3, goldBtn);
+        final chefPath = Path();
+        chefPath.moveTo(cx - halfTopW, neckY);
+        chefPath.quadraticBezierTo(cx, neckY - 4, cx + halfTopW, neckY);
+        chefPath.quadraticBezierTo(cx + halfBellyW * 1.05, h * 0.62, cx + halfBellyW, bellyY);
+        chefPath.quadraticBezierTo(cx, bellyY + 6, cx - halfBellyW, bellyY);
+        chefPath.quadraticBezierTo(cx - halfBellyW * 1.05, h * 0.62, cx - halfTopW, neckY);
+        chefPath.close();
+        canvas.drawPath(chefPath, chefPaint);
+
+        if (frontWeight > 0.1) {
+          final alpha = (frontWeight * 255).clamp(0, 255).toInt();
+          final goldBtn = Paint()..color = const Color(0xFFFFD54F).withAlpha(alpha);
+          final spacing = 12 * foreshorten;
+          canvas.drawCircle(Offset(cx - spacing, h * 0.56), 3, goldBtn);
+          canvas.drawCircle(Offset(cx + spacing, h * 0.56), 3, goldBtn);
+          canvas.drawCircle(Offset(cx - spacing, h * 0.64), 3, goldBtn);
+          canvas.drawCircle(Offset(cx + spacing, h * 0.64), 3, goldBtn);
         }
         break;
 
+      // 6. TOGA IMPERIAL
       case 'ropa_toga':
-        // Toga Imperial dorada
-        final togaPaint = Paint()..color = const Color(0xFFFFF8E1);
-        final sashPaint = Paint()..color = const Color(0xFFFFB300);
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(w * 0.30, chestY - 10, w * 0.40, h * 0.22),
-            const Radius.circular(14),
-          ),
-          togaPaint,
-        );
+        final togaPaint = Paint()..color = const Color(0xFFFFFBEB);
+        final togaPath = Path();
+        togaPath.moveTo(cx - halfTopW, neckY);
+        togaPath.quadraticBezierTo(cx, neckY - 4, cx + halfTopW, neckY);
+        togaPath.quadraticBezierTo(cx + halfBellyW * 1.05, h * 0.62, cx + halfBellyW, bellyY);
+        togaPath.quadraticBezierTo(cx, bellyY + 6, cx - halfBellyW, bellyY);
+        togaPath.quadraticBezierTo(cx - halfBellyW * 1.05, h * 0.62, cx - halfTopW, neckY);
+        togaPath.close();
+        canvas.drawPath(togaPath, togaPaint);
+
+        // Gold sash draped over shoulder
+        final sashPaint = Paint()
+          ..shader = const LinearGradient(colors: [Color(0xFFFFD54F), Color(0xFFD97706)])
+              .createShader(Rect.fromLTWH(cx - halfTopW, neckY, halfBellyW * 2, bellyY - neckY));
         final sashPath = Path();
-        sashPath.moveTo(w * 0.32, chestY - 10);
-        sashPath.lineTo(w * 0.42, chestY - 10);
-        sashPath.lineTo(w * 0.68, chestY + 36);
-        sashPath.lineTo(w * 0.58, chestY + 36);
+        sashPath.moveTo(cx - halfTopW * 0.7, neckY);
+        sashPath.lineTo(cx - halfTopW * 0.2, neckY);
+        sashPath.lineTo(cx + halfBellyW * 0.9, bellyY);
+        sashPath.lineTo(cx + halfBellyW * 0.4, bellyY);
         sashPath.close();
         canvas.drawPath(sashPath, sashPaint);
         break;
 
+      // 7. CONJUNTO ATLETICO TECH
       case 'ropa_deportiva':
-        // Jersey deportivo
-        final jerseyPaint = Paint()..color = const Color(0xFF0D9488);
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(w * 0.32, chestY - 10, w * 0.36, h * 0.20),
-            const Radius.circular(12),
-          ),
-          jerseyPaint,
-        );
+        final sportPaint = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFF0D9488), Color(0xFF115E59)],
+          ).createShader(Rect.fromLTWH(cx - halfBellyW, neckY, halfBellyW * 2, bellyY - neckY));
+
+        final sportPath = Path();
+        sportPath.moveTo(cx - halfTopW, neckY);
+        sportPath.quadraticBezierTo(cx, neckY - 4, cx + halfTopW, neckY);
+        sportPath.quadraticBezierTo(cx + halfBellyW * 1.05, h * 0.62, cx + halfBellyW, bellyY);
+        sportPath.quadraticBezierTo(cx, bellyY + 6, cx - halfBellyW, bellyY);
+        sportPath.quadraticBezierTo(cx - halfBellyW * 1.05, h * 0.62, cx - halfTopW, neckY);
+        sportPath.close();
+        canvas.drawPath(sportPath, sportPaint);
         break;
     }
   }
 
-  void _paintAccessories(
+  // -------------------------------------------------------------------------
+  // SCULPTED ACCESSORIES (Bufandas, Cascos, Gorra, Corona, Lentes, Auriculares)
+  // -------------------------------------------------------------------------
+  void _paintSculptedAccessories(
     Canvas canvas,
     double w,
     double h,
-    bool isFront,
-    bool isBack,
-    bool isRight,
-    bool isLeft,
+    double frontWeight,
+    double backWeight,
+    double shiftX,
+    double foreshorten,
   ) {
     final accId = equipment.accessoryId;
     if (accId == 'acc_ninguno') return;
 
-    final headY = h * 0.22;
-    final neckY = h * 0.50;
+    final cx = w * 0.50 + shiftX;
+    final headY = h * 0.32;
+    final neckY = h * 0.48;
 
     switch (accId) {
-      // 1. BUFANDAS
+      // 1. BUFANDAS (Snug 3D toroidal wrap around neck)
       case 'acc_bufanda_nordica':
-        final scarfPaint = Paint()..color = const Color(0xFF0284C7);
-        final stripePaint = Paint()..color = Colors.white;
-        // Aro de bufanda alrededor del cuello
-        final neckRect = RRect.fromRectAndRadius(
-          Rect.fromLTWH(w * 0.28, neckY, w * 0.44, h * 0.08),
-          const Radius.circular(14),
+      case 'acc_bufanda_carmesi':
+        final isNordic = (accId == 'acc_bufanda_nordica');
+        final scarfColor = isNordic ? const Color(0xFF0284C7) : const Color(0xFFE11D48);
+        final scarfAccent = isNordic ? Colors.white : const Color(0xFFFFD54F);
+
+        final scarfPaint = Paint()..color = scarfColor;
+        final accentPaint = Paint()..color = scarfAccent;
+
+        // Torus neck ring wrapping 360°
+        final ringRect = RRect.fromRectAndRadius(
+          Rect.fromLTWH(cx - (w * 0.22) * foreshorten, neckY - 8, (w * 0.44) * foreshorten, 22),
+          const Radius.circular(12),
         );
-        canvas.drawRRect(neckRect, scarfPaint);
-        // Franjas decorativas
-        canvas.drawRect(Rect.fromLTWH(w * 0.36, neckY, 4, h * 0.08), stripePaint);
-        canvas.drawRect(Rect.fromLTWH(w * 0.52, neckY, 4, h * 0.08), stripePaint);
-        canvas.drawRect(Rect.fromLTWH(w * 0.62, neckY, 4, h * 0.08), stripePaint);
-        // Cola de la bufanda cayendo
-        if (isFront || isLeft) {
+        canvas.drawRRect(ringRect, scarfPaint);
+
+        // Decorative stripes on the collar
+        canvas.drawRect(Rect.fromLTWH(cx - 10, neckY - 8, 4, 22), accentPaint);
+        canvas.drawRect(Rect.fromLTWH(cx + 8, neckY - 8, 4, 22), accentPaint);
+
+        // Hanging tail swaying with rotation
+        if (frontWeight > 0.15) {
           final tailRect = RRect.fromRectAndRadius(
-            Rect.fromLTWH(w * 0.32, neckY + 8, w * 0.10, h * 0.14),
+            Rect.fromLTWH(cx - 14, neckY + 10, 18, 38),
             const Radius.circular(6),
           );
           canvas.drawRRect(tailRect, scarfPaint);
-          canvas.drawRect(Rect.fromLTWH(w * 0.32, neckY + 16, w * 0.10, 4), stripePaint);
-          canvas.drawRect(Rect.fromLTWH(w * 0.32, neckY + 26, w * 0.10, 4), stripePaint);
+          canvas.drawRect(Rect.fromLTWH(cx - 14, neckY + 22, 18, 4), accentPaint);
+          canvas.drawRect(Rect.fromLTWH(cx - 14, neckY + 32, 18, 4), accentPaint);
         }
         break;
 
-      case 'acc_bufanda_carmesi':
-        final redScarf = Paint()..color = const Color(0xFFE11D48);
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(w * 0.28, neckY, w * 0.44, h * 0.075),
-            const Radius.circular(12),
-          ),
-          redScarf,
-        );
-        // Cola ondeante
-        final tailPath = Path();
-        tailPath.moveTo(w * 0.60, neckY + 6);
-        tailPath.cubicTo(w * 0.72, neckY + 12, w * 0.78, neckY + 28, w * 0.74, neckY + 45);
-        tailPath.lineTo(w * 0.66, neckY + 45);
-        tailPath.close();
-        canvas.drawPath(tailPath, redScarf);
-        break;
-
-      // 2. CASCOS
+      // 2. CASCO DE ASTRONAUTA (Dome bubble + gold visor)
       case 'acc_casco_astronauta':
-        // Casco esférico con visor reflectante
-        final helmetPaint = Paint()..color = const Color(0xFFF1F5F9);
-        final visorPaint = Paint()
-          ..shader = const LinearGradient(
-            colors: [Color(0xFFFFD54F), Color(0xFFFF8F00)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ).createShader(Rect.fromLTWH(w * 0.22, headY - 15, w * 0.56, h * 0.35));
+        final domePaint = Paint()
+          ..shader = RadialGradient(
+            center: const Alignment(-0.2, -0.3),
+            colors: [
+              Colors.white.withValues(alpha: 0.35),
+              const Color(0xFF00E5FF).withValues(alpha: 0.15),
+              Colors.transparent,
+            ],
+          ).createShader(Rect.fromCircle(center: Offset(cx, headY + 8), radius: w * 0.30));
 
-        canvas.drawOval(Rect.fromLTWH(w * 0.22, headY - 15, w * 0.56, h * 0.35), helmetPaint);
-        if (isFront || isRight || isLeft) {
-          canvas.drawOval(Rect.fromLTWH(w * 0.28, headY + 5, w * 0.44, h * 0.20), visorPaint);
+        // Glass sphere
+        canvas.drawCircle(Offset(cx, headY + 8), w * 0.29, domePaint);
+
+        // Gold curved visor in front
+        if (frontWeight > 0.1) {
+          final alpha = (frontWeight * 255).clamp(0, 255).toInt();
+          final visorPaint = Paint()
+            ..shader = const LinearGradient(
+              colors: [Color(0xFFFFD54F), Color(0xFFFF8F00)],
+            ).createShader(Rect.fromLTWH(cx - 40 * foreshorten, headY - 10, 80 * foreshorten, 42));
+          visorPaint.color = visorPaint.color.withAlpha(alpha);
+
+          final visorRect = RRect.fromRectAndRadius(
+            Rect.fromLTWH(cx - 40 * foreshorten, headY - 8, 80 * foreshorten, 40),
+            const Radius.circular(16),
+          );
+          canvas.drawRRect(visorRect, visorPaint);
         }
         break;
 
+      // 3. CASCO CYBERPUNK (HUD Holográfico)
       case 'acc_casco_cyberpunk':
-        // Visor HUD Neón
-        final hudPaint = Paint()..color = const Color(0xFF00E5FF).withValues(alpha: 0.85);
-        final hudRect = RRect.fromRectAndRadius(
-          Rect.fromLTWH(w * 0.26, headY + 30, w * 0.48, h * 0.08),
-          const Radius.circular(8),
-        );
-        canvas.drawRRect(hudRect, hudPaint);
+        if (frontWeight > 0.1) {
+          final hudPaint = Paint()
+            ..color = const Color(0xFF00E5FF).withValues(alpha: frontWeight * 0.85);
+          final hudRect = RRect.fromRectAndRadius(
+            Rect.fromLTWH(cx - 44 * foreshorten, headY + 16, 88 * foreshorten, 18),
+            const Radius.circular(8),
+          );
+          canvas.drawRRect(hudRect, hudPaint);
+
+          // Glowing scanline
+          final linePaint = Paint()
+            ..color = Colors.white
+            ..strokeWidth = 2.0;
+          canvas.drawLine(
+            Offset(cx - 36 * foreshorten, headY + 25),
+            Offset(cx + 36 * foreshorten, headY + 25),
+            linePaint,
+          );
+        }
         break;
 
+      // 4. CASCO DE PILOTO AVIADOR
       case 'acc_casco_piloto':
-        // Casco aviador de cuero con gafas
-        final leatherPaint = Paint()..color = const Color(0xFF78350F);
+        final capPaint = Paint()..color = const Color(0xFF78350F);
+        // Cap curve over crown
         canvas.drawArc(
-          Rect.fromLTWH(w * 0.24, headY - 10, w * 0.52, h * 0.30),
-          math.pi,
-          math.pi,
-          true,
-          leatherPaint,
-        );
-        // Gafas en la frente
-        final gogglePaint = Paint()..color = const Color(0xFF38BDF8);
-        canvas.drawOval(Rect.fromLTWH(w * 0.34, headY + 8, w * 0.14, h * 0.08), gogglePaint);
-        canvas.drawOval(Rect.fromLTWH(w * 0.52, headY + 8, w * 0.14, h * 0.08), gogglePaint);
-        break;
-
-      // 3. GORRAS, CORONAS Y OTROS
-      case 'acc_gorra':
-        final capPaint = Paint()..color = const Color(0xFF2563EB);
-        final brimPaint = Paint()..color = const Color(0xFF00E5FF);
-        canvas.drawArc(
-          Rect.fromLTWH(w * 0.26, headY - 12, w * 0.48, h * 0.25),
+          Rect.fromLTWH(cx - 52 * foreshorten, headY - 32, 104 * foreshorten, 60),
           math.pi,
           math.pi,
           true,
           capPaint,
         );
-        canvas.drawRect(Rect.fromLTWH(w * 0.22, headY + 18, w * 0.56, h * 0.04), brimPaint);
+        // Brass goggles
+        if (frontWeight > 0.1) {
+          final gogglePaint = Paint()..color = const Color(0xFF38BDF8);
+          final rimPaint = Paint()
+            ..color = const Color(0xFFFFD54F)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.0;
+
+          final g1 = Rect.fromCircle(center: Offset(cx - 16 * foreshorten, headY - 6), radius: 10 * foreshorten);
+          final g2 = Rect.fromCircle(center: Offset(cx + 16 * foreshorten, headY - 6), radius: 10 * foreshorten);
+          canvas.drawOval(g1, gogglePaint);
+          canvas.drawOval(g2, gogglePaint);
+          canvas.drawOval(g1, rimPaint);
+          canvas.drawOval(g2, rimPaint);
+        }
         break;
 
+      // 5. GORRA SNAPBACK URBANA
+      case 'acc_gorra':
+        final crownPaint = Paint()..color = const Color(0xFF2563EB);
+        final visorPaint = Paint()..color = const Color(0xFF00E5FF);
+
+        // Cap crown
+        canvas.drawArc(
+          Rect.fromLTWH(cx - 48 * foreshorten, headY - 30, 96 * foreshorten, 55),
+          math.pi,
+          math.pi,
+          true,
+          crownPaint,
+        );
+
+        if (frontWeight > 0.1) {
+          // Visor projecting forward
+          final visorRect = RRect.fromRectAndRadius(
+            Rect.fromLTWH(cx - 52 * foreshorten, headY - 4, 104 * foreshorten, 12),
+            const Radius.circular(6),
+          );
+          canvas.drawRRect(visorRect, visorPaint);
+        }
+        break;
+
+      // 6. CORONA IMPERIAL
       case 'acc_corona':
-        // Corona dorada
-        final crownPaint = Paint()..color = const Color(0xFFFFD54F);
+        final goldCrown = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFFFFD54F), Color(0xFFFFB300)],
+          ).createShader(Rect.fromLTWH(cx - 36, headY - 40, 72, 36));
+
         final crownPath = Path();
-        crownPath.moveTo(w * 0.34, headY + 8);
-        crownPath.lineTo(w * 0.34, headY - 16);
-        crownPath.lineTo(w * 0.42, headY - 4);
-        crownPath.lineTo(w * 0.50, headY - 24);
-        crownPath.lineTo(w * 0.58, headY - 4);
-        crownPath.lineTo(w * 0.66, headY - 16);
-        crownPath.lineTo(w * 0.66, headY + 8);
+        final cw = 36.0 * foreshorten;
+        crownPath.moveTo(cx - cw, headY - 6);
+        crownPath.lineTo(cx - cw, headY - 30);
+        crownPath.lineTo(cx - cw * 0.5, headY - 18);
+        crownPath.lineTo(cx, headY - 38);
+        crownPath.lineTo(cx + cw * 0.5, headY - 18);
+        crownPath.lineTo(cx + cw, headY - 30);
+        crownPath.lineTo(cx + cw, headY - 6);
         crownPath.close();
-        canvas.drawPath(crownPath, crownPaint);
+        canvas.drawPath(crownPath, goldCrown);
 
-        // Gemas de la corona
-        final gemRed = Paint()..color = const Color(0xFFDC2626);
-        final gemGreen = Paint()..color = const Color(0xFF10B981);
-        canvas.drawCircle(Offset(w * 0.50, headY - 12), 3, gemRed);
-        canvas.drawCircle(Offset(w * 0.38, headY), 2.5, gemGreen);
-        canvas.drawCircle(Offset(w * 0.62, headY), 2.5, gemGreen);
+        // Rubies & Emeralds on peaks
+        final ruby = Paint()..color = const Color(0xFFDC2626);
+        final emerald = Paint()..color = const Color(0xFF10B981);
+        canvas.drawCircle(Offset(cx, headY - 36), 3.5, ruby);
+        canvas.drawCircle(Offset(cx - cw * 0.9, headY - 28), 2.5, emerald);
+        canvas.drawCircle(Offset(cx + cw * 0.9, headY - 28), 2.5, emerald);
         break;
 
+      // 7. LENTES VIP
       case 'acc_lentes_vip':
-        // Gafas oscuras
-        final lensPaint = Paint()..color = const Color(0xFF0F172A);
-        final framePaint = Paint()
-          ..color = const Color(0xFFFFD54F)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.0;
-        final leftLens = Rect.fromLTWH(w * 0.32, headY + 36, w * 0.16, h * 0.08);
-        final rightLens = Rect.fromLTWH(w * 0.52, headY + 36, w * 0.16, h * 0.08);
-        canvas.drawOval(leftLens, lensPaint);
-        canvas.drawOval(rightLens, lensPaint);
-        canvas.drawOval(leftLens, framePaint);
-        canvas.drawOval(rightLens, framePaint);
-        canvas.drawLine(Offset(w * 0.48, headY + 40), Offset(w * 0.52, headY + 40), framePaint);
+        if (frontWeight > 0.1) {
+          final alpha = (frontWeight * 255).clamp(0, 255).toInt();
+          final lensPaint = Paint()..color = const Color(0xFF0F172A).withAlpha(alpha);
+          final framePaint = Paint()
+            ..color = const Color(0xFFFFD54F).withAlpha(alpha)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.0;
+
+          final l1 = Rect.fromCircle(center: Offset(cx - 18 * foreshorten, headY + 14), radius: 11 * foreshorten);
+          final l2 = Rect.fromCircle(center: Offset(cx + 18 * foreshorten, headY + 14), radius: 11 * foreshorten);
+          canvas.drawOval(l1, lensPaint);
+          canvas.drawOval(l2, lensPaint);
+          canvas.drawOval(l1, framePaint);
+          canvas.drawOval(l2, framePaint);
+          canvas.drawLine(Offset(cx - 7 * foreshorten, headY + 14), Offset(cx + 7 * foreshorten, headY + 14), framePaint);
+        }
         break;
 
+      // 8. AURICULARES DJ
       case 'acc_auriculares':
-        // Auriculares DJ
         final phonePaint = Paint()..color = const Color(0xFF9333EA);
         final bandPaint = Paint()
           ..color = const Color(0xFF1E293B)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 4.5;
-        // Diadema
+
+        // Headband over crest
         canvas.drawArc(
-          Rect.fromLTWH(w * 0.20, headY - 18, w * 0.60, h * 0.35),
+          Rect.fromLTWH(cx - 56 * foreshorten, headY - 42, 112 * foreshorten, 60),
           math.pi,
           math.pi,
           false,
           bandPaint,
         );
-        // Orejeras
-        canvas.drawOval(Rect.fromLTWH(w * 0.18, headY + 22, w * 0.10, h * 0.16), phonePaint);
-        canvas.drawOval(Rect.fromLTWH(w * 0.72, headY + 22, w * 0.10, h * 0.16), phonePaint);
+
+        // Side cushioned earcups
+        canvas.drawOval(Rect.fromLTWH(cx - 58 * foreshorten, headY - 4, 14, 28), phonePaint);
+        canvas.drawOval(Rect.fromLTWH(cx + 44 * foreshorten, headY - 4, 14, 28), phonePaint);
         break;
     }
   }

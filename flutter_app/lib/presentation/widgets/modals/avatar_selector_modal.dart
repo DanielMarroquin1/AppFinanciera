@@ -624,20 +624,20 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                               transform: Matrix4.identity()
                                 ..setEntry(3, 2, 0.0015)
                                 ..rotateY(perspectiveAngle),
-                              child: Container(
-                                width: 210,
-                                height: 200,
-                                alignment: Alignment.center,
+                              child: SizedBox(
+                                width: 200,
+                                height: 181.45,
                                 child: Stack(
+                                  fit: StackFit.expand,
                                   alignment: Alignment.center,
                                   clipBehavior: Clip.none,
                                   children: [
                                     // 1. Personaje Base SAMI (HD)
                                     Image.asset(
                                       currentAsset,
-                                      fit: BoxFit.contain,
-                                      width: 175,
-                                      height: 175,
+                                      fit: BoxFit.fill,
+                                      width: 200,
+                                      height: 181.45,
                                       filterQuality: FilterQuality.high,
                                     ),
 
@@ -1209,681 +1209,853 @@ class _SamiApparelOverlayPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    // 3D Trigonometric perspective angles (0 = front, 90 = right profile, 180 = back, 270 = left profile)
-    final norm = (angleDegrees % 360.0 + 360.0) % 360.0;
-    final rad = norm * math.pi / 180.0;
-    final cosVal = math.cos(rad);
-    final sinVal = math.sin(rad);
+    // Normalizar ángulo en 4 cuadrantes correspondientes a los 4 renders 3D oficiales de SAMI
+    final d = (angleDegrees % 360.0 + 360.0) % 360.0;
+    final bool isFront = (d >= 315.0 || d < 45.0);
+    final bool isRight = (d >= 45.0 && d < 135.0);
+    final bool isBack = (d >= 135.0 && d < 225.0);
+    final bool isLeft = (d >= 225.0 && d < 315.0);
 
-    // Front/Back visibility factors (Continuous smooth transition, no jumps!)
-    final double frontWeight = math.max(0.0, cosVal);
-    final double backWeight = math.max(0.0, -cosVal);
+    // 1. Capa trasera (si es superhéroe y se ve desde el frente / perfiles)
+    _paintCapeBack(canvas, w, h, isFront, isRight, isBack, isLeft);
 
-    // 3D Horizontal displacement of the belly center as SAMI rotates
-    final double shiftX = sinVal * (w * 0.16);
+    // 2. Calzado esculpido anatómicamente a las patitas de SAMI
+    _paintSculptedShoes(canvas, w, h, isFront, isRight, isBack, isLeft);
 
-    // Foreshortening factor (compresses features when turning into profile)
-    final double foreshorten = 0.52 + 0.48 * cosVal.abs();
+    // 3. Ropa esculpida ceñida al cuerpo, hombros, brazos y vientre de SAMI
+    _paintSculptedClothing(canvas, w, h, isFront, isRight, isBack, isLeft);
 
-    // Depth-sorted rendering:
-    // 1. Back items (cape from front view, etc.)
-    _paintBackElements(canvas, w, h, frontWeight, backWeight, shiftX, foreshorten);
-
-    // 2. Shoes (sculpted to SAMI's feet)
-    _paintSculptedShoes(canvas, w, h, frontWeight, backWeight, shiftX, sinVal);
-
-    // 3. Clothing (molded smoothly to SAMI's pear body)
-    _paintSculptedClothing(canvas, w, h, frontWeight, backWeight, shiftX, foreshorten);
-
-    // 4. Accessories (toroidal scarf, helmets, crown, glasses)
-    _paintSculptedAccessories(canvas, w, h, frontWeight, backWeight, shiftX, foreshorten);
+    // 4. Accesorios (Bufandas envolventes 360°, Cascos, Gorra, Corona, Gafas)
+    _paintSculptedAccessories(canvas, w, h, isFront, isRight, isBack, isLeft);
   }
 
   // -------------------------------------------------------------------------
-  // CAPE / BACK ELEMENTS (Rendered behind body when front, in front when back)
+  // CAPA TRASERA DE SUPERHÉROE
   // -------------------------------------------------------------------------
-  void _paintBackElements(
+  void _paintCapeBack(
     Canvas canvas,
     double w,
     double h,
-    double frontWeight,
-    double backWeight,
-    double shiftX,
-    double foreshorten,
+    bool isFront,
+    bool isRight,
+    bool isBack,
+    bool isLeft,
   ) {
-    if (equipment.clothingId == 'ropa_superheroe') {
-      final capePaint = Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFFE11D48), Color(0xFF9F1239), Color(0xFF4C0519)],
-        ).createShader(Rect.fromLTWH(0, h * 0.45, w, h * 0.45));
+    if (equipment.clothingId != 'ropa_superheroe') return;
 
+    final capePaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFFE11D48), Color(0xFF9F1239), Color(0xFF4C0519)],
+      ).createShader(Rect.fromLTWH(0, h * 0.40, w, h * 0.50));
+
+    if (isFront) {
+      // Alas de la capa asomándose ondulantes detrás de ambos hombros
+      final leftWing = Path();
+      leftWing.moveTo(w * 0.22, h * 0.60);
+      leftWing.quadraticBezierTo(w * 0.08, h * 0.68, w * 0.11, h * 0.82);
+      leftWing.quadraticBezierTo(w * 0.18, h * 0.76, w * 0.24, h * 0.68);
+      leftWing.close();
+      canvas.drawPath(leftWing, capePaint);
+
+      final rightWing = Path();
+      rightWing.moveTo(w * 0.78, h * 0.60);
+      rightWing.quadraticBezierTo(w * 0.92, h * 0.68, w * 0.89, h * 0.82);
+      rightWing.quadraticBezierTo(w * 0.82, h * 0.76, w * 0.76, h * 0.68);
+      rightWing.close();
+      canvas.drawPath(rightWing, capePaint);
+    } else if (isRight) {
+      // Capa ondeando hacia la izquierda (detrás de la espalda)
       final capePath = Path();
-      if (backWeight > 0.05) {
-        // Full cape covering the back
-        final alpha = (backWeight * 255).clamp(0, 255).toInt();
-        capePaint.color = capePaint.color.withAlpha(alpha);
-
-        capePath.moveTo(w * 0.32 + shiftX, h * 0.46);
-        capePath.quadraticBezierTo(w * 0.50 + shiftX, h * 0.44, w * 0.68 + shiftX, h * 0.46);
-        capePath.quadraticBezierTo(w * 0.82 + shiftX * 0.6, h * 0.68, w * 0.80 + shiftX * 0.5, h * 0.86);
-        capePath.quadraticBezierTo(w * 0.50 + shiftX * 0.5, h * 0.90, w * 0.20 + shiftX * 0.5, h * 0.86);
-        capePath.quadraticBezierTo(w * 0.18 + shiftX * 0.6, h * 0.68, w * 0.32 + shiftX, h * 0.46);
-        capePath.close();
-        canvas.drawPath(capePath, capePaint);
-
-        // Gold clasp at back of neck
-        final claspPaint = Paint()..color = const Color(0xFFFFD54F);
-        canvas.drawCircle(Offset(w * 0.50 + shiftX, h * 0.46), 4.5, claspPaint);
-      } else if (frontWeight > 0.1) {
-        // Cape wings peeking from behind shoulders
-        final wingPath = Path();
-        // Left wing
-        wingPath.moveTo(w * 0.24, h * 0.52);
-        wingPath.quadraticBezierTo(w * 0.12, h * 0.62, w * 0.15, h * 0.76);
-        wingPath.quadraticBezierTo(w * 0.22, h * 0.70, w * 0.26, h * 0.58);
-        wingPath.close();
-        // Right wing
-        wingPath.moveTo(w * 0.76, h * 0.52);
-        wingPath.quadraticBezierTo(w * 0.88, h * 0.62, w * 0.85, h * 0.76);
-        wingPath.quadraticBezierTo(w * 0.78, h * 0.70, w * 0.74, h * 0.58);
-        wingPath.close();
-        canvas.drawPath(wingPath, capePaint);
-      }
+      capePath.moveTo(w * 0.32, h * 0.45);
+      capePath.quadraticBezierTo(w * 0.12, h * 0.58, w * 0.14, h * 0.84);
+      capePath.quadraticBezierTo(w * 0.28, h * 0.80, w * 0.35, h * 0.68);
+      capePath.close();
+      canvas.drawPath(capePath, capePaint);
+    } else if (isLeft) {
+      // Capa ondeando hacia la derecha (detrás de la espalda)
+      final capePath = Path();
+      capePath.moveTo(w * 0.68, h * 0.45);
+      capePath.quadraticBezierTo(w * 0.88, h * 0.58, w * 0.86, h * 0.84);
+      capePath.quadraticBezierTo(w * 0.72, h * 0.80, w * 0.65, h * 0.68);
+      capePath.close();
+      canvas.drawPath(capePath, capePaint);
     }
   }
 
   // -------------------------------------------------------------------------
-  // SCULPTED SHOES (Molded to SAMI's round flipper paws)
+  // ROPA ESCULPIDA Y CEÑIDA (Frente, Espalda y Laterales)
+  // -------------------------------------------------------------------------
+  void _paintSculptedClothing(
+    Canvas canvas,
+    double w,
+    double h,
+    bool isFront,
+    bool isRight,
+    bool isBack,
+    bool isLeft,
+  ) {
+    final clothId = equipment.clothingId;
+    if (clothId == 'ropa_clasica') return;
+
+    switch (clothId) {
+      // =====================================================================
+      // 1. TRAJE EJECUTIVO (Saco formal azul marino, camisa blanca y corbata)
+      // =====================================================================
+      case 'ropa_ejecutivo':
+        final suitShader = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1E3A8A), Color(0xFF0F172A)],
+        );
+
+        if (isFront) {
+          // A) Saco frontal cubriendo todo el cuerpo azul debajo de la cara blanca y ambos brazos
+          final suitPath = Path();
+          suitPath.moveTo(w * 0.28, h * 0.59);
+          suitPath.quadraticBezierTo(w * 0.50, h * 0.62, w * 0.72, h * 0.59);
+          // Hombro y manga derecha
+          suitPath.quadraticBezierTo(w * 0.82, h * 0.63, w * 0.87, h * 0.67);
+          suitPath.quadraticBezierTo(w * 0.88, h * 0.74, w * 0.78, h * 0.76);
+          // Costado derecho y basta inferior
+          suitPath.quadraticBezierTo(w * 0.75, h * 0.815, w * 0.50, h * 0.815);
+          // Costado izquierdo y manga izquierda
+          suitPath.quadraticBezierTo(w * 0.25, h * 0.815, w * 0.22, h * 0.76);
+          suitPath.quadraticBezierTo(w * 0.12, h * 0.74, w * 0.13, h * 0.67);
+          suitPath.quadraticBezierTo(w * 0.18, h * 0.63, w * 0.28, h * 0.59);
+          suitPath.close();
+
+          final suitPaint = Paint()
+            ..shader = suitShader.createShader(Rect.fromLTWH(w * 0.12, h * 0.58, w * 0.76, h * 0.24));
+          canvas.drawPath(suitPath, suitPaint);
+
+          // B) Puños blancos de la camisa en las muñecas
+          final cuffPaint = Paint()..color = Colors.white;
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.14, h * 0.72, w * 0.08, h * 0.024), const Radius.circular(3)),
+            cuffPaint,
+          );
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.78, h * 0.72, w * 0.08, h * 0.024), const Radius.circular(3)),
+            cuffPaint,
+          );
+
+          // C) Cuello y pechera en V de la camisa blanca
+          final shirtPath = Path();
+          shirtPath.moveTo(w * 0.43, h * 0.605);
+          shirtPath.lineTo(w * 0.57, h * 0.605);
+          shirtPath.lineTo(w * 0.50, h * 0.70);
+          shirtPath.close();
+          canvas.drawPath(shirtPath, cuffPaint);
+
+          // D) Corbata roja de seda
+          final tieShader = const LinearGradient(
+            colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
+          ).createShader(Rect.fromLTWH(w * 0.46, h * 0.61, w * 0.08, h * 0.16));
+          final tiePaint = Paint()..shader = tieShader;
+
+          final tiePath = Path();
+          // Nudo
+          tiePath.moveTo(w * 0.47, h * 0.615);
+          tiePath.lineTo(w * 0.53, h * 0.615);
+          tiePath.lineTo(w * 0.52, h * 0.645);
+          tiePath.lineTo(w * 0.48, h * 0.645);
+          tiePath.close();
+          // Cuerpo y punta de flecha
+          tiePath.moveTo(w * 0.48, h * 0.645);
+          tiePath.lineTo(w * 0.52, h * 0.645);
+          tiePath.lineTo(w * 0.54, h * 0.74);
+          tiePath.lineTo(w * 0.50, h * 0.77);
+          tiePath.lineTo(w * 0.46, h * 0.74);
+          tiePath.close();
+          canvas.drawPath(tiePath, tiePaint);
+
+          // E) Solapas del saco
+          final lapelStroke = Paint()
+            ..color = const Color(0xFF38BDF8).withValues(alpha: 0.5)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.5;
+          canvas.drawLine(Offset(w * 0.41, h * 0.60), Offset(w * 0.49, h * 0.72), lapelStroke);
+          canvas.drawLine(Offset(w * 0.59, h * 0.60), Offset(w * 0.51, h * 0.72), lapelStroke);
+
+          // F) Botones dorados frontales
+          final btnPaint = Paint()..color = const Color(0xFFFFD54F);
+          canvas.drawCircle(Offset(w * 0.50, h * 0.75), 2.2, btnPaint);
+          canvas.drawCircle(Offset(w * 0.50, h * 0.785), 2.2, btnPaint);
+        } else if (isBack) {
+          // Saco cubriendo la espalda completa desde la nuca (h * 0.35) hasta abajo (h * 0.815)
+          final backSuit = Path();
+          backSuit.moveTo(w * 0.44, h * 0.35);
+          backSuit.quadraticBezierTo(w * 0.50, h * 0.36, w * 0.56, h * 0.35);
+          // Hombros y mangas traseras
+          backSuit.quadraticBezierTo(w * 0.78, h * 0.45, w * 0.88, h * 0.66);
+          backSuit.quadraticBezierTo(w * 0.84, h * 0.74, w * 0.74, h * 0.815);
+          backSuit.lineTo(w * 0.26, h * 0.815);
+          backSuit.quadraticBezierTo(w * 0.16, h * 0.74, w * 0.12, h * 0.66);
+          backSuit.quadraticBezierTo(w * 0.22, h * 0.45, w * 0.44, h * 0.35);
+          backSuit.close();
+
+          final backPaint = Paint()
+            ..shader = suitShader.createShader(Rect.fromLTWH(w * 0.12, h * 0.35, w * 0.76, h * 0.47));
+          canvas.drawPath(backSuit, backPaint);
+
+          // Cuellito blanco asomándose en la nuca
+          final collarPaint = Paint()..color = Colors.white;
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.45, h * 0.34, w * 0.10, h * 0.018), const Radius.circular(2)),
+            collarPaint,
+          );
+
+          // Costura central trasera con abertura de ventilación
+          final seamPaint = Paint()
+            ..color = const Color(0xFF0F172A)
+            ..strokeWidth = 2.0;
+          canvas.drawLine(Offset(w * 0.50, h * 0.37), Offset(w * 0.50, h * 0.77), seamPaint);
+          // Abertura
+          final ventPaint = Paint()
+            ..color = const Color(0xFF38BDF8).withValues(alpha: 0.4)
+            ..strokeWidth = 1.2;
+          canvas.drawLine(Offset(w * 0.50, h * 0.77), Offset(w * 0.49, h * 0.815), ventPaint);
+        } else if (isRight) {
+          // Perfil Derecho: El traje cubre la espalda a la izquierda y el pecho a la derecha
+          final sideSuit = Path();
+          sideSuit.moveTo(w * 0.55, h * 0.59);
+          sideSuit.quadraticBezierTo(w * 0.76, h * 0.64, w * 0.74, h * 0.82);
+          sideSuit.lineTo(w * 0.22, h * 0.82);
+          sideSuit.quadraticBezierTo(w * 0.20, h * 0.55, w * 0.28, h * 0.36);
+          sideSuit.quadraticBezierTo(w * 0.42, h * 0.42, w * 0.55, h * 0.59);
+          sideSuit.close();
+
+          final sidePaint = Paint()
+            ..shader = suitShader.createShader(Rect.fromLTWH(w * 0.20, h * 0.36, w * 0.56, h * 0.46));
+          canvas.drawPath(sideSuit, sidePaint);
+
+          // Manga cubriendo el brazo derecho
+          final sleevePath = Path();
+          sleevePath.moveTo(w * 0.24, h * 0.56);
+          sleevePath.quadraticBezierTo(w * 0.36, h * 0.56, w * 0.38, h * 0.74);
+          sleevePath.lineTo(w * 0.26, h * 0.76);
+          sleevePath.close();
+          canvas.drawPath(sleevePath, Paint()..color = const Color(0xFF1E3A8A));
+
+          // Puño blanco
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.25, h * 0.74, w * 0.12, h * 0.022), const Radius.circular(3)),
+            Paint()..color = Colors.white,
+          );
+
+          // Asomo de solapa y corbata en el perfil del pecho
+          final tieProfile = Path();
+          tieProfile.moveTo(w * 0.64, h * 0.62);
+          tieProfile.lineTo(w * 0.70, h * 0.63);
+          tieProfile.lineTo(w * 0.68, h * 0.72);
+          tieProfile.close();
+          canvas.drawPath(tieProfile, Paint()..color = const Color(0xFFEF4444));
+        } else if (isLeft) {
+          // Perfil Izquierdo: Simétrico al derecho
+          final sideSuit = Path();
+          sideSuit.moveTo(w * 0.45, h * 0.59);
+          sideSuit.quadraticBezierTo(w * 0.24, h * 0.64, w * 0.26, h * 0.82);
+          sideSuit.lineTo(w * 0.78, h * 0.82);
+          sideSuit.quadraticBezierTo(w * 0.80, h * 0.55, w * 0.72, h * 0.36);
+          sideSuit.quadraticBezierTo(w * 0.58, h * 0.42, w * 0.45, h * 0.59);
+          sideSuit.close();
+
+          final sidePaint = Paint()
+            ..shader = suitShader.createShader(Rect.fromLTWH(w * 0.24, h * 0.36, w * 0.56, h * 0.46));
+          canvas.drawPath(sideSuit, sidePaint);
+
+          // Manga cubriendo el brazo izquierdo
+          final sleevePath = Path();
+          sleevePath.moveTo(w * 0.76, h * 0.56);
+          sleevePath.quadraticBezierTo(w * 0.64, h * 0.56, w * 0.62, h * 0.74);
+          sleevePath.lineTo(w * 0.74, h * 0.76);
+          sleevePath.close();
+          canvas.drawPath(sleevePath, Paint()..color = const Color(0xFF1E3A8A));
+
+          // Puño blanco
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.63, h * 0.74, w * 0.12, h * 0.022), const Radius.circular(3)),
+            Paint()..color = Colors.white,
+          );
+
+          // Asomo de solapa y corbata
+          final tieProfile = Path();
+          tieProfile.moveTo(w * 0.36, h * 0.62);
+          tieProfile.lineTo(w * 0.30, h * 0.63);
+          tieProfile.lineTo(w * 0.32, h * 0.72);
+          tieProfile.close();
+          canvas.drawPath(tieProfile, Paint()..color = const Color(0xFFEF4444));
+        }
+        break;
+
+      // =====================================================================
+      // 2. SUDADERA STREETWEAR (Hoodie cyan con bolsillo canguro y capucha)
+      // =====================================================================
+      case 'ropa_sudadera':
+        final hoodieShader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF00E5FF), Color(0xFF0284C7)],
+        );
+
+        if (isFront) {
+          final bodyPath = Path();
+          bodyPath.moveTo(w * 0.28, h * 0.59);
+          bodyPath.quadraticBezierTo(w * 0.50, h * 0.62, w * 0.72, h * 0.59);
+          bodyPath.quadraticBezierTo(w * 0.82, h * 0.63, w * 0.87, h * 0.67);
+          bodyPath.quadraticBezierTo(w * 0.88, h * 0.74, w * 0.78, h * 0.76);
+          bodyPath.quadraticBezierTo(w * 0.75, h * 0.815, w * 0.50, h * 0.815);
+          bodyPath.quadraticBezierTo(w * 0.25, h * 0.815, w * 0.22, h * 0.76);
+          bodyPath.quadraticBezierTo(w * 0.12, h * 0.74, w * 0.13, h * 0.67);
+          bodyPath.quadraticBezierTo(w * 0.18, h * 0.63, w * 0.28, h * 0.59);
+          bodyPath.close();
+
+          canvas.drawPath(bodyPath, Paint()..shader = hoodieShader.createShader(Rect.fromLTWH(0, 0, w, h)));
+
+          // Ribete elástico inferior
+          final hemRect = RRect.fromRectAndRadius(
+            Rect.fromLTWH(w * 0.27, h * 0.785, w * 0.46, h * 0.030),
+            const Radius.circular(5),
+          );
+          canvas.drawRRect(hemRect, Paint()..color = const Color(0xFF0369A1));
+
+          // Bolsillo canguro central
+          final pocketPath = Path();
+          pocketPath.moveTo(w * 0.38, h * 0.69);
+          pocketPath.lineTo(w * 0.62, h * 0.69);
+          pocketPath.lineTo(w * 0.67, h * 0.78);
+          pocketPath.lineTo(w * 0.33, h * 0.78);
+          pocketPath.close();
+          canvas.drawPath(pocketPath, Paint()..color = const Color(0xFF0284C7));
+
+          // Cordones de la capucha con herretes blancos
+          final cordPaint = Paint()..color = Colors.white..strokeWidth = 2.0;
+          canvas.drawLine(Offset(w * 0.46, h * 0.61), Offset(w * 0.46, h * 0.69), cordPaint);
+          canvas.drawLine(Offset(w * 0.54, h * 0.61), Offset(w * 0.54, h * 0.69), cordPaint);
+        } else if (isBack) {
+          // Espalda con la capucha descansando en la nuca
+          final backBody = Path();
+          backBody.moveTo(w * 0.44, h * 0.35);
+          backBody.quadraticBezierTo(w * 0.50, h * 0.36, w * 0.56, h * 0.35);
+          backBody.quadraticBezierTo(w * 0.78, h * 0.45, w * 0.88, h * 0.66);
+          backBody.quadraticBezierTo(w * 0.84, h * 0.74, w * 0.74, h * 0.815);
+          backBody.lineTo(w * 0.26, h * 0.815);
+          backBody.quadraticBezierTo(w * 0.16, h * 0.74, w * 0.12, h * 0.66);
+          backBody.quadraticBezierTo(w * 0.22, h * 0.45, w * 0.44, h * 0.35);
+          backBody.close();
+
+          canvas.drawPath(backBody, Paint()..shader = hoodieShader.createShader(Rect.fromLTWH(0, 0, w, h)));
+
+          // Capucha descansando en la nuca
+          final hoodRect = RRect.fromRectAndRadius(
+            Rect.fromLTWH(w * 0.36, h * 0.33, w * 0.28, h * 0.12),
+            const Radius.circular(14),
+          );
+          canvas.drawRRect(hoodRect, Paint()..color = const Color(0xFF0369A1));
+        } else {
+          // Perfiles
+          final sideRect = Rect.fromLTWH(w * 0.22, h * 0.40, w * 0.56, h * 0.42);
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(sideRect, const Radius.circular(22)),
+            Paint()..shader = hoodieShader.createShader(sideRect),
+          );
+        }
+        break;
+
+      // =====================================================================
+      // 3. TRAJE DE SUPERHÉROE (Escarlata con escudo dorado y capa)
+      // =====================================================================
+      case 'ropa_superheroe':
+        final heroShader = const LinearGradient(
+          colors: [Color(0xFFDC2626), Color(0xFF991B1B)],
+        );
+
+        if (isFront) {
+          final heroBody = Path();
+          heroBody.moveTo(w * 0.28, h * 0.59);
+          heroBody.quadraticBezierTo(w * 0.50, h * 0.62, w * 0.72, h * 0.59);
+          heroBody.quadraticBezierTo(w * 0.82, h * 0.63, w * 0.87, h * 0.67);
+          heroBody.quadraticBezierTo(w * 0.88, h * 0.74, w * 0.78, h * 0.76);
+          heroBody.quadraticBezierTo(w * 0.75, h * 0.815, w * 0.50, h * 0.815);
+          heroBody.quadraticBezierTo(w * 0.25, h * 0.815, w * 0.22, h * 0.76);
+          heroBody.quadraticBezierTo(w * 0.12, h * 0.74, w * 0.13, h * 0.67);
+          heroBody.quadraticBezierTo(w * 0.18, h * 0.63, w * 0.28, h * 0.59);
+          heroBody.close();
+
+          canvas.drawPath(heroBody, Paint()..shader = heroShader.createShader(Rect.fromLTWH(0, 0, w, h)));
+
+          // Escudo dorado con "Q" en el pecho
+          final emblemCenter = Offset(w * 0.50, h * 0.69);
+          canvas.drawCircle(emblemCenter, w * 0.075, Paint()..color = const Color(0xFFFFD54F));
+          canvas.drawCircle(emblemCenter, w * 0.065, Paint()..color = const Color(0xFFFF8F00));
+          // Letra Q
+          canvas.drawCircle(
+            emblemCenter,
+            w * 0.035,
+            Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 2.0,
+          );
+
+          // Cinturón de héroe dorado
+          final beltRect = RRect.fromRectAndRadius(
+            Rect.fromLTWH(w * 0.30, h * 0.77, w * 0.40, h * 0.032),
+            const Radius.circular(5),
+          );
+          canvas.drawRRect(beltRect, Paint()..color = const Color(0xFFFFB300));
+          canvas.drawCircle(Offset(w * 0.50, h * 0.786), 4.0, Paint()..color = const Color(0xFFFFE082));
+        } else if (isBack) {
+          // Capa cayendo por toda la espalda
+          final fullCape = Path();
+          fullCape.moveTo(w * 0.36, h * 0.35);
+          fullCape.quadraticBezierTo(w * 0.50, h * 0.34, w * 0.64, h * 0.35);
+          fullCape.quadraticBezierTo(w * 0.88, h * 0.58, w * 0.85, h * 0.85);
+          fullCape.quadraticBezierTo(w * 0.50, h * 0.88, w * 0.15, h * 0.85);
+          fullCape.quadraticBezierTo(w * 0.12, h * 0.58, w * 0.36, h * 0.35);
+          fullCape.close();
+
+          canvas.drawPath(
+            fullCape,
+            Paint()..shader = const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFE11D48), Color(0xFF7F1D1D)],
+            ).createShader(Rect.fromLTWH(0, 0, w, h)),
+          );
+
+          // Broches dorados en los hombros
+          canvas.drawCircle(Offset(w * 0.36, h * 0.37), 4.0, Paint()..color = const Color(0xFFFFD54F));
+          canvas.drawCircle(Offset(w * 0.64, h * 0.37), 4.0, Paint()..color = const Color(0xFFFFD54F));
+        } else {
+          // Perfiles
+          final sideRect = Rect.fromLTWH(w * 0.22, h * 0.40, w * 0.56, h * 0.42);
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(sideRect, const Radius.circular(22)),
+            Paint()..shader = heroShader.createShader(sideRect),
+          );
+        }
+        break;
+
+      // =====================================================================
+      // 4. FILIPINA DE CHEF
+      // =====================================================================
+      case 'ropa_chef':
+        final chefPath = Path();
+        if (isFront) {
+          chefPath.moveTo(w * 0.28, h * 0.59);
+          chefPath.quadraticBezierTo(w * 0.50, h * 0.62, w * 0.72, h * 0.59);
+          chefPath.quadraticBezierTo(w * 0.82, h * 0.63, w * 0.87, h * 0.67);
+          chefPath.quadraticBezierTo(w * 0.88, h * 0.74, w * 0.78, h * 0.76);
+          chefPath.quadraticBezierTo(w * 0.75, h * 0.815, w * 0.50, h * 0.815);
+          chefPath.quadraticBezierTo(w * 0.25, h * 0.815, w * 0.22, h * 0.76);
+          chefPath.quadraticBezierTo(w * 0.12, h * 0.74, w * 0.13, h * 0.67);
+          chefPath.quadraticBezierTo(w * 0.18, h * 0.63, w * 0.28, h * 0.59);
+          chefPath.close();
+          canvas.drawPath(chefPath, Paint()..color = const Color(0xFFF8FAFC));
+
+          // Botones dorados dobles de chef
+          final goldBtn = Paint()..color = const Color(0xFFFFD54F);
+          canvas.drawCircle(Offset(w * 0.44, h * 0.66), 2.5, goldBtn);
+          canvas.drawCircle(Offset(w * 0.56, h * 0.66), 2.5, goldBtn);
+          canvas.drawCircle(Offset(w * 0.44, h * 0.71), 2.5, goldBtn);
+          canvas.drawCircle(Offset(w * 0.56, h * 0.71), 2.5, goldBtn);
+          canvas.drawCircle(Offset(w * 0.44, h * 0.76), 2.5, goldBtn);
+          canvas.drawCircle(Offset(w * 0.56, h * 0.76), 2.5, goldBtn);
+        } else if (isBack) {
+          chefPath.moveTo(w * 0.44, h * 0.35);
+          chefPath.quadraticBezierTo(w * 0.50, h * 0.36, w * 0.56, h * 0.35);
+          chefPath.quadraticBezierTo(w * 0.78, h * 0.45, w * 0.88, h * 0.66);
+          chefPath.quadraticBezierTo(w * 0.84, h * 0.74, w * 0.74, h * 0.815);
+          chefPath.lineTo(w * 0.26, h * 0.815);
+          chefPath.quadraticBezierTo(w * 0.16, h * 0.74, w * 0.12, h * 0.66);
+          chefPath.quadraticBezierTo(w * 0.22, h * 0.45, w * 0.44, h * 0.35);
+          chefPath.close();
+          canvas.drawPath(chefPath, Paint()..color = const Color(0xFFF1F5F9));
+        } else {
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.22, h * 0.40, w * 0.56, h * 0.42), const Radius.circular(22)),
+            Paint()..color = Colors.white,
+          );
+        }
+        break;
+
+      // =====================================================================
+      // 5. ARMADURA GALÁCTICA
+      // =====================================================================
+      case 'ropa_armadura':
+        final armorShader = const LinearGradient(
+          colors: [Color(0xFF475569), Color(0xFF0F172A)],
+        );
+        final armorPath = Path();
+        if (isFront) {
+          armorPath.moveTo(w * 0.28, h * 0.59);
+          armorPath.quadraticBezierTo(w * 0.50, h * 0.62, w * 0.72, h * 0.59);
+          armorPath.quadraticBezierTo(w * 0.82, h * 0.63, w * 0.87, h * 0.67);
+          armorPath.quadraticBezierTo(w * 0.88, h * 0.74, w * 0.78, h * 0.76);
+          armorPath.quadraticBezierTo(w * 0.75, h * 0.815, w * 0.50, h * 0.815);
+          armorPath.quadraticBezierTo(w * 0.25, h * 0.815, w * 0.22, h * 0.76);
+          armorPath.quadraticBezierTo(w * 0.12, h * 0.74, w * 0.13, h * 0.67);
+          armorPath.quadraticBezierTo(w * 0.18, h * 0.63, w * 0.28, h * 0.59);
+          armorPath.close();
+          canvas.drawPath(armorPath, Paint()..shader = armorShader.createShader(Rect.fromLTWH(0, 0, w, h)));
+
+          // Reactor de arco cyan central
+          final reactorCenter = Offset(w * 0.50, h * 0.69);
+          canvas.drawCircle(reactorCenter, w * 0.055, Paint()..color = const Color(0xFF00E5FF));
+          canvas.drawCircle(reactorCenter, w * 0.035, Paint()..color = Colors.white);
+        } else if (isBack) {
+          armorPath.moveTo(w * 0.44, h * 0.35);
+          armorPath.quadraticBezierTo(w * 0.50, h * 0.36, w * 0.56, h * 0.35);
+          armorPath.quadraticBezierTo(w * 0.78, h * 0.45, w * 0.88, h * 0.66);
+          armorPath.quadraticBezierTo(w * 0.84, h * 0.74, w * 0.74, h * 0.815);
+          armorPath.lineTo(w * 0.26, h * 0.815);
+          armorPath.quadraticBezierTo(w * 0.16, h * 0.74, w * 0.12, h * 0.66);
+          armorPath.quadraticBezierTo(w * 0.22, h * 0.45, w * 0.44, h * 0.35);
+          armorPath.close();
+          canvas.drawPath(armorPath, Paint()..shader = armorShader.createShader(Rect.fromLTWH(0, 0, w, h)));
+
+          // Propulsores cibernéticos traseros
+          canvas.drawCircle(Offset(w * 0.42, h * 0.55), 6.0, Paint()..color = const Color(0xFF00E5FF));
+          canvas.drawCircle(Offset(w * 0.58, h * 0.55), 6.0, Paint()..color = const Color(0xFF00E5FF));
+        } else {
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.22, h * 0.40, w * 0.56, h * 0.42), const Radius.circular(22)),
+            Paint()..shader = armorShader.createShader(Rect.fromLTWH(0, 0, w, h)),
+          );
+        }
+        break;
+
+      // =====================================================================
+      // 6. TOGA IMPERIAL & DEPORTIVO
+      // =====================================================================
+      case 'ropa_toga':
+      case 'ropa_deportiva':
+      default:
+        final togaShader = (clothId == 'ropa_toga')
+            ? const LinearGradient(colors: [Color(0xFFFFFBEB), Color(0xFFFEF3C7)])
+            : const LinearGradient(colors: [Color(0xFF0D9488), Color(0xFF115E59)]);
+
+        final genPath = Path();
+        if (isFront) {
+          genPath.moveTo(w * 0.28, h * 0.59);
+          genPath.quadraticBezierTo(w * 0.50, h * 0.62, w * 0.72, h * 0.59);
+          genPath.quadraticBezierTo(w * 0.82, h * 0.63, w * 0.87, h * 0.67);
+          genPath.quadraticBezierTo(w * 0.88, h * 0.74, w * 0.78, h * 0.76);
+          genPath.quadraticBezierTo(w * 0.75, h * 0.815, w * 0.50, h * 0.815);
+          genPath.quadraticBezierTo(w * 0.25, h * 0.815, w * 0.22, h * 0.76);
+          genPath.quadraticBezierTo(w * 0.12, h * 0.74, w * 0.13, h * 0.67);
+          genPath.quadraticBezierTo(w * 0.18, h * 0.63, w * 0.28, h * 0.59);
+          genPath.close();
+        } else if (isBack) {
+          genPath.moveTo(w * 0.44, h * 0.35);
+          genPath.quadraticBezierTo(w * 0.50, h * 0.36, w * 0.56, h * 0.35);
+          genPath.quadraticBezierTo(w * 0.78, h * 0.45, w * 0.88, h * 0.66);
+          genPath.quadraticBezierTo(w * 0.84, h * 0.74, w * 0.74, h * 0.815);
+          genPath.lineTo(w * 0.26, h * 0.815);
+          genPath.quadraticBezierTo(w * 0.16, h * 0.74, w * 0.12, h * 0.66);
+          genPath.quadraticBezierTo(w * 0.22, h * 0.45, w * 0.44, h * 0.35);
+          genPath.close();
+        } else {
+          genPath.addRRect(RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.22, h * 0.40, w * 0.56, h * 0.42), const Radius.circular(22)));
+        }
+        canvas.drawPath(genPath, Paint()..shader = togaShader.createShader(Rect.fromLTWH(0, 0, w, h)));
+        break;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // CALZADO ESCULPIDO A LAS PATITAS DE SAMI
   // -------------------------------------------------------------------------
   void _paintSculptedShoes(
     Canvas canvas,
     double w,
     double h,
-    double frontWeight,
-    double backWeight,
-    double shiftX,
-    double sinVal,
+    bool isFront,
+    bool isRight,
+    bool isBack,
+    bool isLeft,
   ) {
     final shoeId = equipment.shoesId;
     if (shoeId == 'zap_clasicos') return;
 
     Color upperColor;
     Color soleColor;
-    Color detailColor;
 
     switch (shoeId) {
       case 'zap_sneakers':
-        upperColor = const Color(0xFF00E5FF); // Electric cyan
+        upperColor = const Color(0xFF00E5FF);
         soleColor = Colors.white;
-        detailColor = const Color(0xFF0284C7);
         break;
       case 'zap_botas':
-        upperColor = const Color(0xFF8B4513); // Leather brown
-        soleColor = const Color(0xFF5D2E0C);
-        detailColor = const Color(0xFFFFD54F);
+        upperColor = const Color(0xFF8B4513);
+        soleColor = const Color(0xFF3E1D06);
         break;
       case 'zap_charol':
-        upperColor = const Color(0xFF0F172A); // High-gloss tuxedo black
+        upperColor = const Color(0xFF0F172A);
         soleColor = const Color(0xFF334155);
-        detailColor = Colors.white;
         break;
       case 'zap_espaciales':
-        upperColor = const Color(0xFF7C3AED); // Space purple
+        upperColor = const Color(0xFF7C3AED);
         soleColor = const Color(0xFF00E5FF);
-        detailColor = const Color(0xFFA78BFA);
         break;
       case 'zap_dorados':
-        upperColor = const Color(0xFFFFD54F); // Royal gold
+        upperColor = const Color(0xFFFFD54F);
         soleColor = const Color(0xFFB45309);
-        detailColor = const Color(0xFFFFF9C4);
         break;
       default:
         upperColor = const Color(0xFF00E5FF);
         soleColor = Colors.white;
-        detailColor = Colors.cyan;
     }
-
-    final feetY = h * 0.84;
-    final pawWidth = w * 0.17;
-    final pawHeight = h * 0.085;
-
-    // Shift feet naturally with 3D rotation
-    final leftX = w * 0.32 + shiftX * 0.6;
-    final rightX = w * 0.53 + shiftX * 0.6;
 
     final upperPaint = Paint()..color = upperColor;
     final solePaint = Paint()..color = soleColor;
-    final detailPaint = Paint()..color = detailColor;
 
-    // Left Foot
-    _drawCurvedPawShoe(canvas, leftX, feetY, pawWidth, pawHeight, upperPaint, solePaint, detailPaint, sinVal);
-    // Right Foot
-    _drawCurvedPawShoe(canvas, rightX, feetY, pawWidth, pawHeight, upperPaint, solePaint, detailPaint, sinVal);
-  }
+    if (isFront || isBack) {
+      // Patita Izquierda
+      final leftRect = Rect.fromLTWH(w * 0.26, h * 0.81, w * 0.19, h * 0.11);
+      canvas.drawRRect(RRect.fromRectAndRadius(leftRect, const Radius.circular(10)), upperPaint);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.25, h * 0.88, w * 0.21, h * 0.04), const Radius.circular(4)),
+        solePaint,
+      );
 
-  void _drawCurvedPawShoe(
-    Canvas canvas,
-    double x,
-    double y,
-    double width,
-    double height,
-    Paint upperPaint,
-    Paint solePaint,
-    Paint detailPaint,
-    double sinVal,
-  ) {
-    // Upper shoe contoured to flipper
-    final shoeRect = RRect.fromRectAndCorners(
-      Rect.fromLTWH(x, y, width, height),
-      topLeft: const Radius.circular(12),
-      topRight: const Radius.circular(12),
-      bottomLeft: const Radius.circular(8),
-      bottomRight: const Radius.circular(8),
-    );
-    canvas.drawRRect(shoeRect, upperPaint);
+      // Patita Derecha
+      final rightRect = Rect.fromLTWH(w * 0.55, h * 0.81, w * 0.19, h * 0.11);
+      canvas.drawRRect(RRect.fromRectAndRadius(rightRect, const Radius.circular(10)), upperPaint);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.54, h * 0.88, w * 0.21, h * 0.04), const Radius.circular(4)),
+        solePaint,
+      );
 
-    // Rubber sole rim along bottom
-    final soleRect = RRect.fromRectAndCorners(
-      Rect.fromLTWH(x - 1, y + height * 0.68, width + 2, height * 0.35),
-      topLeft: const Radius.circular(4),
-      topRight: const Radius.circular(4),
-      bottomLeft: const Radius.circular(8),
-      bottomRight: const Radius.circular(8),
-    );
-    canvas.drawRRect(soleRect, solePaint);
+      // Detalle de agujetas / broches
+      if (isFront) {
+        final lacePaint = Paint()..color = Colors.white..strokeWidth = 1.5;
+        canvas.drawLine(Offset(w * 0.31, h * 0.84), Offset(w * 0.39, h * 0.84), lacePaint);
+        canvas.drawLine(Offset(w * 0.60, h * 0.84), Offset(w * 0.68, h * 0.84), lacePaint);
+      }
+    } else if (isRight) {
+      // Perfil Derecho
+      final fRect = Rect.fromLTWH(w * 0.48, h * 0.82, w * 0.23, h * 0.11);
+      canvas.drawRRect(RRect.fromRectAndRadius(fRect, const Radius.circular(10)), upperPaint);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.47, h * 0.89, w * 0.25, h * 0.04), const Radius.circular(4)),
+        solePaint,
+      );
 
-    // Subtle laces or metallic buckle
-    canvas.drawCircle(Offset(x + width * 0.5, y + height * 0.35), 2.5, detailPaint);
-  }
+      final bRect = Rect.fromLTWH(w * 0.28, h * 0.81, w * 0.19, h * 0.10);
+      canvas.drawRRect(RRect.fromRectAndRadius(bRect, const Radius.circular(8)), upperPaint);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.27, h * 0.88, w * 0.21, h * 0.035), const Radius.circular(4)),
+        solePaint,
+      );
+    } else if (isLeft) {
+      // Perfil Izquierdo
+      final fRect = Rect.fromLTWH(w * 0.29, h * 0.82, w * 0.23, h * 0.11);
+      canvas.drawRRect(RRect.fromRectAndRadius(fRect, const Radius.circular(10)), upperPaint);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.28, h * 0.89, w * 0.25, h * 0.04), const Radius.circular(4)),
+        solePaint,
+      );
 
-  // -------------------------------------------------------------------------
-  // SCULPTED CLOTHING (Molded around SAMI's pear body)
-  // -------------------------------------------------------------------------
-  void _paintSculptedClothing(
-    Canvas canvas,
-    double w,
-    double h,
-    double frontWeight,
-    double backWeight,
-    double shiftX,
-    double foreshorten,
-  ) {
-    final clothId = equipment.clothingId;
-    if (clothId == 'ropa_clasica') return;
-
-    final cx = w * 0.50 + shiftX;
-    final neckY = h * 0.49;
-    final bellyY = h * 0.74;
-    final halfTopW = (w * 0.17) * foreshorten;
-    final halfBellyW = (w * 0.25) * foreshorten;
-
-    switch (clothId) {
-      // 1. TRAJE EJECUTIVO
-      case 'ropa_ejecutivo':
-        // Base suit jacket curved along SAMI's pear body
-        final suitPaint = Paint()
-          ..shader = LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1E3A8A),
-              const Color(0xFF0F172A),
-            ],
-          ).createShader(Rect.fromLTWH(cx - halfBellyW, neckY, halfBellyW * 2, bellyY - neckY));
-
-        final suitPath = Path();
-        suitPath.moveTo(cx - halfTopW, neckY);
-        suitPath.quadraticBezierTo(cx, neckY - 4, cx + halfTopW, neckY);
-        suitPath.quadraticBezierTo(cx + halfBellyW * 1.05, h * 0.62, cx + halfBellyW, bellyY);
-        suitPath.quadraticBezierTo(cx, bellyY + 6, cx - halfBellyW, bellyY);
-        suitPath.quadraticBezierTo(cx - halfBellyW * 1.05, h * 0.62, cx - halfTopW, neckY);
-        suitPath.close();
-        canvas.drawPath(suitPath, suitPaint);
-
-        if (frontWeight > 0.08) {
-          final alpha = (frontWeight * 255).clamp(0, 255).toInt();
-
-          // White shirt triangle inside collar
-          final shirtPaint = Paint()..color = Colors.white.withAlpha(alpha);
-          final shirtPath = Path();
-          shirtPath.moveTo(cx - halfTopW * 0.45, neckY);
-          shirtPath.lineTo(cx + halfTopW * 0.45, neckY);
-          shirtPath.lineTo(cx, neckY + 28);
-          shirtPath.close();
-          canvas.drawPath(shirtPath, shirtPaint);
-
-          // Silk red tie
-          final tiePaint = Paint()
-            ..shader = const LinearGradient(
-              colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
-            ).createShader(Rect.fromLTWH(cx - 7, neckY + 8, 14, 38));
-          final tiePath = Path();
-          tiePath.moveTo(cx - 5, neckY + 6);
-          tiePath.lineTo(cx + 5, neckY + 6);
-          tiePath.lineTo(cx + 7, neckY + 36);
-          tiePath.lineTo(cx, neckY + 44);
-          tiePath.lineTo(cx - 7, neckY + 36);
-          tiePath.close();
-          canvas.drawPath(tiePath, tiePaint);
-
-          // Lapel fold edges with highlighted borders
-          final lapelStroke = Paint()
-            ..color = const Color(0xFF38BDF8).withAlpha((alpha * 0.6).toInt())
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 1.5;
-          canvas.drawLine(Offset(cx - halfTopW * 0.8, neckY + 2), Offset(cx - 4, neckY + 38), lapelStroke);
-          canvas.drawLine(Offset(cx + halfTopW * 0.8, neckY + 2), Offset(cx + 4, neckY + 38), lapelStroke);
-        } else if (backWeight > 0.1) {
-          // Back tailored seam
-          final seamPaint = Paint()
-            ..color = const Color(0xFF0F172A)
-            ..strokeWidth = 2.0;
-          canvas.drawLine(Offset(cx, neckY + 4), Offset(cx, bellyY - 4), seamPaint);
-        }
-        break;
-
-      // 2. SUDADERA STREETWEAR
-      case 'ropa_sudadera':
-        final hoodiePaint = Paint()
-          ..shader = const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF00E5FF), Color(0xFF0284C7)],
-          ).createShader(Rect.fromLTWH(cx - halfBellyW, neckY, halfBellyW * 2, bellyY - neckY));
-
-        final bodyPath = Path();
-        bodyPath.moveTo(cx - halfTopW, neckY);
-        bodyPath.quadraticBezierTo(cx, neckY - 6, cx + halfTopW, neckY);
-        bodyPath.quadraticBezierTo(cx + halfBellyW * 1.08, h * 0.62, cx + halfBellyW, bellyY);
-        bodyPath.quadraticBezierTo(cx, bellyY + 7, cx - halfBellyW, bellyY);
-        bodyPath.quadraticBezierTo(cx - halfBellyW * 1.08, h * 0.62, cx - halfTopW, neckY);
-        bodyPath.close();
-        canvas.drawPath(bodyPath, hoodiePaint);
-
-        // Ribbed hem at waist
-        final hemPaint = Paint()..color = const Color(0xFF0369A1);
-        final hemRect = RRect.fromRectAndRadius(
-          Rect.fromLTWH(cx - halfBellyW * 0.95, bellyY - 4, halfBellyW * 1.9, 10),
-          const Radius.circular(5),
-        );
-        canvas.drawRRect(hemRect, hemPaint);
-
-        if (frontWeight > 0.1) {
-          final alpha = (frontWeight * 255).clamp(0, 255).toInt();
-          // Kangaroo pocket on belly
-          final pocketPaint = Paint()..color = const Color(0xFF075985).withAlpha(alpha);
-          final pocketPath = Path();
-          final pw = halfBellyW * 0.8;
-          pocketPath.moveTo(cx - pw * 0.6, h * 0.63);
-          pocketPath.lineTo(cx + pw * 0.6, h * 0.63);
-          pocketPath.lineTo(cx + pw * 0.85, bellyY - 6);
-          pocketPath.lineTo(cx - pw * 0.85, bellyY - 6);
-          pocketPath.close();
-          canvas.drawPath(pocketPath, pocketPaint);
-
-          // Drawstring cords
-          final cordPaint = Paint()
-            ..color = Colors.white.withAlpha(alpha)
-            ..strokeWidth = 2.0;
-          canvas.drawLine(Offset(cx - 8, neckY + 4), Offset(cx - 8, neckY + 22), cordPaint);
-          canvas.drawLine(Offset(cx + 8, neckY + 4), Offset(cx + 8, neckY + 22), cordPaint);
-        }
-        break;
-
-      // 3. TRAJE SUPERHEROE
-      case 'ropa_superheroe':
-        final redSuit = Paint()
-          ..shader = const LinearGradient(
-            colors: [Color(0xFFDC2626), Color(0xFF991B1B)],
-          ).createShader(Rect.fromLTWH(cx - halfBellyW, neckY, halfBellyW * 2, bellyY - neckY));
-
-        final suitPath = Path();
-        suitPath.moveTo(cx - halfTopW, neckY);
-        suitPath.quadraticBezierTo(cx, neckY - 4, cx + halfTopW, neckY);
-        suitPath.quadraticBezierTo(cx + halfBellyW * 1.05, h * 0.62, cx + halfBellyW, bellyY);
-        suitPath.quadraticBezierTo(cx, bellyY + 6, cx - halfBellyW, bellyY);
-        suitPath.quadraticBezierTo(cx - halfBellyW * 1.05, h * 0.62, cx - halfTopW, neckY);
-        suitPath.close();
-        canvas.drawPath(suitPath, redSuit);
-
-        if (frontWeight > 0.1) {
-          final alpha = (frontWeight * 255).clamp(0, 255).toInt();
-          // Gold emblem on chest
-          final emblemPaint = Paint()..color = const Color(0xFFFFD54F).withAlpha(alpha);
-          canvas.drawCircle(Offset(cx, h * 0.58), 13 * foreshorten, emblemPaint);
-
-          // Gold utility belt
-          final beltPaint = Paint()..color = const Color(0xFFFFB300).withAlpha(alpha);
-          canvas.drawRRect(
-            RRect.fromRectAndRadius(
-              Rect.fromLTWH(cx - halfBellyW * 0.85, bellyY - 6, halfBellyW * 1.7, 8),
-              const Radius.circular(4),
-            ),
-            beltPaint,
-          );
-        }
-        break;
-
-      // 4. ARMADURA GALACTICA
-      case 'ropa_armadura':
-        final armorPaint = Paint()
-          ..shader = const LinearGradient(
-            colors: [Color(0xFF475569), Color(0xFF1E293B)],
-          ).createShader(Rect.fromLTWH(cx - halfBellyW, neckY, halfBellyW * 2, bellyY - neckY));
-
-        final armorPath = Path();
-        armorPath.moveTo(cx - halfTopW, neckY);
-        armorPath.quadraticBezierTo(cx, neckY - 4, cx + halfTopW, neckY);
-        armorPath.quadraticBezierTo(cx + halfBellyW * 1.05, h * 0.62, cx + halfBellyW, bellyY);
-        armorPath.quadraticBezierTo(cx, bellyY + 6, cx - halfBellyW, bellyY);
-        armorPath.quadraticBezierTo(cx - halfBellyW * 1.05, h * 0.62, cx - halfTopW, neckY);
-        armorPath.close();
-        canvas.drawPath(armorPath, armorPaint);
-
-        // Glowing cyan power core
-        final coreGlow = Paint()
-          ..color = const Color(0xFF00E5FF).withValues(alpha: 0.85)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.5;
-        canvas.drawCircle(Offset(cx, h * 0.60), 12 * foreshorten, coreGlow);
-        break;
-
-      // 5. FILIPINA CHEF
-      case 'ropa_chef':
-        final chefPaint = Paint()..color = Colors.white;
-        final chefPath = Path();
-        chefPath.moveTo(cx - halfTopW, neckY);
-        chefPath.quadraticBezierTo(cx, neckY - 4, cx + halfTopW, neckY);
-        chefPath.quadraticBezierTo(cx + halfBellyW * 1.05, h * 0.62, cx + halfBellyW, bellyY);
-        chefPath.quadraticBezierTo(cx, bellyY + 6, cx - halfBellyW, bellyY);
-        chefPath.quadraticBezierTo(cx - halfBellyW * 1.05, h * 0.62, cx - halfTopW, neckY);
-        chefPath.close();
-        canvas.drawPath(chefPath, chefPaint);
-
-        if (frontWeight > 0.1) {
-          final alpha = (frontWeight * 255).clamp(0, 255).toInt();
-          final goldBtn = Paint()..color = const Color(0xFFFFD54F).withAlpha(alpha);
-          final spacing = 12 * foreshorten;
-          canvas.drawCircle(Offset(cx - spacing, h * 0.56), 3, goldBtn);
-          canvas.drawCircle(Offset(cx + spacing, h * 0.56), 3, goldBtn);
-          canvas.drawCircle(Offset(cx - spacing, h * 0.64), 3, goldBtn);
-          canvas.drawCircle(Offset(cx + spacing, h * 0.64), 3, goldBtn);
-        }
-        break;
-
-      // 6. TOGA IMPERIAL
-      case 'ropa_toga':
-        final togaPaint = Paint()..color = const Color(0xFFFFFBEB);
-        final togaPath = Path();
-        togaPath.moveTo(cx - halfTopW, neckY);
-        togaPath.quadraticBezierTo(cx, neckY - 4, cx + halfTopW, neckY);
-        togaPath.quadraticBezierTo(cx + halfBellyW * 1.05, h * 0.62, cx + halfBellyW, bellyY);
-        togaPath.quadraticBezierTo(cx, bellyY + 6, cx - halfBellyW, bellyY);
-        togaPath.quadraticBezierTo(cx - halfBellyW * 1.05, h * 0.62, cx - halfTopW, neckY);
-        togaPath.close();
-        canvas.drawPath(togaPath, togaPaint);
-
-        // Gold sash draped over shoulder
-        final sashPaint = Paint()
-          ..shader = const LinearGradient(colors: [Color(0xFFFFD54F), Color(0xFFD97706)])
-              .createShader(Rect.fromLTWH(cx - halfTopW, neckY, halfBellyW * 2, bellyY - neckY));
-        final sashPath = Path();
-        sashPath.moveTo(cx - halfTopW * 0.7, neckY);
-        sashPath.lineTo(cx - halfTopW * 0.2, neckY);
-        sashPath.lineTo(cx + halfBellyW * 0.9, bellyY);
-        sashPath.lineTo(cx + halfBellyW * 0.4, bellyY);
-        sashPath.close();
-        canvas.drawPath(sashPath, sashPaint);
-        break;
-
-      // 7. CONJUNTO ATLETICO TECH
-      case 'ropa_deportiva':
-        final sportPaint = Paint()
-          ..shader = const LinearGradient(
-            colors: [Color(0xFF0D9488), Color(0xFF115E59)],
-          ).createShader(Rect.fromLTWH(cx - halfBellyW, neckY, halfBellyW * 2, bellyY - neckY));
-
-        final sportPath = Path();
-        sportPath.moveTo(cx - halfTopW, neckY);
-        sportPath.quadraticBezierTo(cx, neckY - 4, cx + halfTopW, neckY);
-        sportPath.quadraticBezierTo(cx + halfBellyW * 1.05, h * 0.62, cx + halfBellyW, bellyY);
-        sportPath.quadraticBezierTo(cx, bellyY + 6, cx - halfBellyW, bellyY);
-        sportPath.quadraticBezierTo(cx - halfBellyW * 1.05, h * 0.62, cx - halfTopW, neckY);
-        sportPath.close();
-        canvas.drawPath(sportPath, sportPaint);
-        break;
+      final bRect = Rect.fromLTWH(w * 0.53, h * 0.81, w * 0.19, h * 0.10);
+      canvas.drawRRect(RRect.fromRectAndRadius(bRect, const Radius.circular(8)), upperPaint);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.52, h * 0.88, w * 0.21, h * 0.035), const Radius.circular(4)),
+        solePaint,
+      );
     }
   }
 
   // -------------------------------------------------------------------------
-  // SCULPTED ACCESSORIES (Bufandas, Cascos, Gorra, Corona, Lentes, Auriculares)
+  // ACCESORIOS (Bufandas, Cascos, Gorra, Corona, Lentes)
   // -------------------------------------------------------------------------
   void _paintSculptedAccessories(
     Canvas canvas,
     double w,
     double h,
-    double frontWeight,
-    double backWeight,
-    double shiftX,
-    double foreshorten,
+    bool isFront,
+    bool isRight,
+    bool isBack,
+    bool isLeft,
   ) {
     final accId = equipment.accessoryId;
     if (accId == 'acc_ninguno') return;
 
-    final cx = w * 0.50 + shiftX;
-    final headY = h * 0.32;
-    final neckY = h * 0.48;
-
     switch (accId) {
-      // 1. BUFANDAS (Snug 3D toroidal wrap around neck)
+      // 1. BUFANDAS (Envolventes alrededor del cuello)
       case 'acc_bufanda_nordica':
       case 'acc_bufanda_carmesi':
         final isNordic = (accId == 'acc_bufanda_nordica');
         final scarfColor = isNordic ? const Color(0xFF0284C7) : const Color(0xFFE11D48);
         final scarfAccent = isNordic ? Colors.white : const Color(0xFFFFD54F);
 
-        final scarfPaint = Paint()..color = scarfColor;
-        final accentPaint = Paint()..color = scarfAccent;
-
-        // Torus neck ring wrapping 360°
-        final ringRect = RRect.fromRectAndRadius(
-          Rect.fromLTWH(cx - (w * 0.22) * foreshorten, neckY - 8, (w * 0.44) * foreshorten, 22),
-          const Radius.circular(12),
-        );
-        canvas.drawRRect(ringRect, scarfPaint);
-
-        // Decorative stripes on the collar
-        canvas.drawRect(Rect.fromLTWH(cx - 10, neckY - 8, 4, 22), accentPaint);
-        canvas.drawRect(Rect.fromLTWH(cx + 8, neckY - 8, 4, 22), accentPaint);
-
-        // Hanging tail swaying with rotation
-        if (frontWeight > 0.15) {
-          final tailRect = RRect.fromRectAndRadius(
-            Rect.fromLTWH(cx - 14, neckY + 10, 18, 38),
+        if (isFront) {
+          // Aro envolvente en la base de la cara blanca
+          final neckRing = RRect.fromRectAndRadius(
+            Rect.fromLTWH(w * 0.26, h * 0.56, w * 0.48, h * 0.08),
+            const Radius.circular(14),
+          );
+          canvas.drawRRect(neckRing, Paint()..color = scarfColor);
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.46, h * 0.56, w * 0.08, h * 0.08), const Radius.circular(6)),
+            Paint()..color = scarfAccent,
+          );
+          // Cola colgante de la bufanda sobre el pecho
+          final tail = RRect.fromRectAndRadius(
+            Rect.fromLTWH(w * 0.36, h * 0.62, w * 0.12, h * 0.15),
             const Radius.circular(6),
           );
-          canvas.drawRRect(tailRect, scarfPaint);
-          canvas.drawRect(Rect.fromLTWH(cx - 14, neckY + 22, 18, 4), accentPaint);
-          canvas.drawRect(Rect.fromLTWH(cx - 14, neckY + 32, 18, 4), accentPaint);
+          canvas.drawRRect(tail, Paint()..color = scarfColor);
+          canvas.drawRect(Rect.fromLTWH(w * 0.36, h * 0.74, w * 0.12, h * 0.015), Paint()..color = scarfAccent);
+        } else if (isBack) {
+          final backRing = RRect.fromRectAndRadius(
+            Rect.fromLTWH(w * 0.34, h * 0.33, w * 0.32, h * 0.075),
+            const Radius.circular(12),
+          );
+          canvas.drawRRect(backRing, Paint()..color = scarfColor);
+        } else {
+          final sideRing = RRect.fromRectAndRadius(
+            Rect.fromLTWH(w * 0.32, h * 0.48, w * 0.36, h * 0.08),
+            const Radius.circular(12),
+          );
+          canvas.drawRRect(sideRing, Paint()..color = scarfColor);
         }
         break;
 
-      // 2. CASCO DE ASTRONAUTA (Dome bubble + gold visor)
+      // 2. CASCO DE ASTRONAUTA (Burbuja transparente de cristal)
       case 'acc_casco_astronauta':
-        final domePaint = Paint()
-          ..shader = RadialGradient(
-            center: const Alignment(-0.2, -0.3),
-            colors: [
-              Colors.white.withValues(alpha: 0.35),
-              const Color(0xFF00E5FF).withValues(alpha: 0.15),
-              Colors.transparent,
-            ],
-          ).createShader(Rect.fromCircle(center: Offset(cx, headY + 8), radius: w * 0.30));
+        final helmetCenter = Offset(w * 0.50, h * 0.38);
+        final domeRadius = w * 0.34;
 
-        // Glass sphere
-        canvas.drawCircle(Offset(cx, headY + 8), w * 0.29, domePaint);
+        final domeShader = RadialGradient(
+          center: const Alignment(-0.3, -0.3),
+          colors: [
+            Colors.white.withValues(alpha: 0.30),
+            const Color(0xFF00E5FF).withValues(alpha: 0.12),
+            Colors.transparent,
+          ],
+        ).createShader(Rect.fromCircle(center: helmetCenter, radius: domeRadius));
 
-        // Gold curved visor in front
-        if (frontWeight > 0.1) {
-          final alpha = (frontWeight * 255).clamp(0, 255).toInt();
-          final visorPaint = Paint()
-            ..shader = const LinearGradient(
-              colors: [Color(0xFFFFD54F), Color(0xFFFF8F00)],
-            ).createShader(Rect.fromLTWH(cx - 40 * foreshorten, headY - 10, 80 * foreshorten, 42));
-          visorPaint.color = visorPaint.color.withAlpha(alpha);
-
-          final visorRect = RRect.fromRectAndRadius(
-            Rect.fromLTWH(cx - 40 * foreshorten, headY - 8, 80 * foreshorten, 40),
-            const Radius.circular(16),
-          );
-          canvas.drawRRect(visorRect, visorPaint);
-        }
-        break;
-
-      // 3. CASCO CYBERPUNK (HUD Holográfico)
-      case 'acc_casco_cyberpunk':
-        if (frontWeight > 0.1) {
-          final hudPaint = Paint()
-            ..color = const Color(0xFF00E5FF).withValues(alpha: frontWeight * 0.85);
-          final hudRect = RRect.fromRectAndRadius(
-            Rect.fromLTWH(cx - 44 * foreshorten, headY + 16, 88 * foreshorten, 18),
-            const Radius.circular(8),
-          );
-          canvas.drawRRect(hudRect, hudPaint);
-
-          // Glowing scanline
-          final linePaint = Paint()
-            ..color = Colors.white
-            ..strokeWidth = 2.0;
-          canvas.drawLine(
-            Offset(cx - 36 * foreshorten, headY + 25),
-            Offset(cx + 36 * foreshorten, headY + 25),
-            linePaint,
-          );
-        }
-        break;
-
-      // 4. CASCO DE PILOTO AVIADOR
-      case 'acc_casco_piloto':
-        final capPaint = Paint()..color = const Color(0xFF78350F);
-        // Cap curve over crown
-        canvas.drawArc(
-          Rect.fromLTWH(cx - 52 * foreshorten, headY - 32, 104 * foreshorten, 60),
-          math.pi,
-          math.pi,
-          true,
-          capPaint,
+        canvas.drawCircle(helmetCenter, domeRadius, Paint()..shader = domeShader);
+        canvas.drawCircle(
+          helmetCenter,
+          domeRadius,
+          Paint()..color = const Color(0xFF00E5FF).withValues(alpha: 0.4)..style = PaintingStyle.stroke..strokeWidth = 2.0,
         );
-        // Brass goggles
-        if (frontWeight > 0.1) {
-          final gogglePaint = Paint()..color = const Color(0xFF38BDF8);
-          final rimPaint = Paint()
+        // Destello de reflejo curvado
+        final glintPaint = Paint()..color = Colors.white.withValues(alpha: 0.55)..style = PaintingStyle.stroke..strokeWidth = 2.5;
+        canvas.drawArc(
+          Rect.fromCircle(center: helmetCenter, radius: domeRadius * 0.85),
+          math.pi * 1.15,
+          math.pi * 0.45,
+          false,
+          glintPaint,
+        );
+        break;
+
+      // 3. GORRA SNAPBACK URBANA
+      case 'acc_gorra':
+        if (isFront || isBack) {
+          canvas.drawArc(
+            Rect.fromLTWH(w * 0.30, h * 0.14, w * 0.40, h * 0.20),
+            math.pi,
+            math.pi,
+            true,
+            Paint()..color = const Color(0xFF2563EB),
+          );
+          if (isFront) {
+            // Visera plana cyan al frente
+            final visor = RRect.fromRectAndRadius(
+              Rect.fromLTWH(w * 0.26, h * 0.22, w * 0.48, h * 0.04),
+              const Radius.circular(6),
+            );
+            canvas.drawRRect(visor, Paint()..color = const Color(0xFF00E5FF));
+          }
+        } else {
+          canvas.drawArc(
+            Rect.fromLTWH(w * 0.28, h * 0.14, w * 0.44, h * 0.20),
+            math.pi,
+            math.pi,
+            true,
+            Paint()..color = const Color(0xFF2563EB),
+          );
+        }
+        break;
+
+      // 4. CORONA IMPERIAL
+      case 'acc_corona':
+        final crownPaint = Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFFFFD54F), Color(0xFFFFB300)],
+          ).createShader(Rect.fromLTWH(w * 0.36, h * 0.10, w * 0.28, h * 0.14));
+
+        final crownPath = Path();
+        crownPath.moveTo(w * 0.36, h * 0.22);
+        crownPath.lineTo(w * 0.36, h * 0.12);
+        crownPath.lineTo(w * 0.43, h * 0.16);
+        crownPath.lineTo(w * 0.50, h * 0.09);
+        crownPath.lineTo(w * 0.57, h * 0.16);
+        crownPath.lineTo(w * 0.64, h * 0.12);
+        crownPath.lineTo(w * 0.64, h * 0.22);
+        crownPath.close();
+        canvas.drawPath(crownPath, crownPaint);
+
+        // Gemas en las puntas
+        canvas.drawCircle(Offset(w * 0.50, h * 0.09), 3.0, Paint()..color = const Color(0xFFDC2626));
+        canvas.drawCircle(Offset(w * 0.36, h * 0.12), 2.2, Paint()..color = const Color(0xFF10B981));
+        canvas.drawCircle(Offset(w * 0.64, h * 0.12), 2.2, Paint()..color = const Color(0xFF10B981));
+        break;
+
+      // 5. LENTES DE SOL VIP
+      case 'acc_lentes_vip':
+        if (isFront) {
+          final lensPaint = Paint()..color = const Color(0xFF0F172A);
+          final framePaint = Paint()
             ..color = const Color(0xFFFFD54F)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2.0;
 
-          final g1 = Rect.fromCircle(center: Offset(cx - 16 * foreshorten, headY - 6), radius: 10 * foreshorten);
-          final g2 = Rect.fromCircle(center: Offset(cx + 16 * foreshorten, headY - 6), radius: 10 * foreshorten);
-          canvas.drawOval(g1, gogglePaint);
-          canvas.drawOval(g2, gogglePaint);
-          canvas.drawOval(g1, rimPaint);
-          canvas.drawOval(g2, rimPaint);
-        }
-        break;
+          // Lente izquierdo
+          final l1 = Rect.fromCircle(center: Offset(w * 0.42, h * 0.45), radius: w * 0.065);
+          // Lente derecho
+          final l2 = Rect.fromCircle(center: Offset(w * 0.58, h * 0.45), radius: w * 0.065);
 
-      // 5. GORRA SNAPBACK URBANA
-      case 'acc_gorra':
-        final crownPaint = Paint()..color = const Color(0xFF2563EB);
-        final visorPaint = Paint()..color = const Color(0xFF00E5FF);
-
-        // Cap crown
-        canvas.drawArc(
-          Rect.fromLTWH(cx - 48 * foreshorten, headY - 30, 96 * foreshorten, 55),
-          math.pi,
-          math.pi,
-          true,
-          crownPaint,
-        );
-
-        if (frontWeight > 0.1) {
-          // Visor projecting forward
-          final visorRect = RRect.fromRectAndRadius(
-            Rect.fromLTWH(cx - 52 * foreshorten, headY - 4, 104 * foreshorten, 12),
-            const Radius.circular(6),
-          );
-          canvas.drawRRect(visorRect, visorPaint);
-        }
-        break;
-
-      // 6. CORONA IMPERIAL
-      case 'acc_corona':
-        final goldCrown = Paint()
-          ..shader = const LinearGradient(
-            colors: [Color(0xFFFFD54F), Color(0xFFFFB300)],
-          ).createShader(Rect.fromLTWH(cx - 36, headY - 40, 72, 36));
-
-        final crownPath = Path();
-        final cw = 36.0 * foreshorten;
-        crownPath.moveTo(cx - cw, headY - 6);
-        crownPath.lineTo(cx - cw, headY - 30);
-        crownPath.lineTo(cx - cw * 0.5, headY - 18);
-        crownPath.lineTo(cx, headY - 38);
-        crownPath.lineTo(cx + cw * 0.5, headY - 18);
-        crownPath.lineTo(cx + cw, headY - 30);
-        crownPath.lineTo(cx + cw, headY - 6);
-        crownPath.close();
-        canvas.drawPath(crownPath, goldCrown);
-
-        // Rubies & Emeralds on peaks
-        final ruby = Paint()..color = const Color(0xFFDC2626);
-        final emerald = Paint()..color = const Color(0xFF10B981);
-        canvas.drawCircle(Offset(cx, headY - 36), 3.5, ruby);
-        canvas.drawCircle(Offset(cx - cw * 0.9, headY - 28), 2.5, emerald);
-        canvas.drawCircle(Offset(cx + cw * 0.9, headY - 28), 2.5, emerald);
-        break;
-
-      // 7. LENTES VIP
-      case 'acc_lentes_vip':
-        if (frontWeight > 0.1) {
-          final alpha = (frontWeight * 255).clamp(0, 255).toInt();
-          final lensPaint = Paint()..color = const Color(0xFF0F172A).withAlpha(alpha);
-          final framePaint = Paint()
-            ..color = const Color(0xFFFFD54F).withAlpha(alpha)
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 2.0;
-
-          final l1 = Rect.fromCircle(center: Offset(cx - 18 * foreshorten, headY + 14), radius: 11 * foreshorten);
-          final l2 = Rect.fromCircle(center: Offset(cx + 18 * foreshorten, headY + 14), radius: 11 * foreshorten);
           canvas.drawOval(l1, lensPaint);
           canvas.drawOval(l2, lensPaint);
           canvas.drawOval(l1, framePaint);
           canvas.drawOval(l2, framePaint);
-          canvas.drawLine(Offset(cx - 7 * foreshorten, headY + 14), Offset(cx + 7 * foreshorten, headY + 14), framePaint);
+          // Puente
+          canvas.drawLine(Offset(w * 0.485, h * 0.45), Offset(w * 0.515, h * 0.45), framePaint);
+        } else if (isRight) {
+          final l = Rect.fromCircle(center: Offset(w * 0.66, h * 0.44), radius: w * 0.065);
+          canvas.drawOval(l, Paint()..color = const Color(0xFF0F172A));
+          canvas.drawOval(l, Paint()..color = const Color(0xFFFFD54F)..style = PaintingStyle.stroke..strokeWidth = 2.0);
+        } else if (isLeft) {
+          final l = Rect.fromCircle(center: Offset(w * 0.34, h * 0.44), radius: w * 0.065);
+          canvas.drawOval(l, Paint()..color = const Color(0xFF0F172A));
+          canvas.drawOval(l, Paint()..color = const Color(0xFFFFD54F)..style = PaintingStyle.stroke..strokeWidth = 2.0);
         }
         break;
 
-      // 8. AURICULARES DJ
+      // 6. AURICULARES GAMER DJ
       case 'acc_auriculares':
-        final phonePaint = Paint()..color = const Color(0xFF9333EA);
         final bandPaint = Paint()
           ..color = const Color(0xFF1E293B)
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 4.5;
+          ..strokeWidth = 4.0;
+        final cupPaint = Paint()..color = const Color(0xFF9333EA);
 
-        // Headband over crest
+        // Diadema sobre la cabeza
         canvas.drawArc(
-          Rect.fromLTWH(cx - 56 * foreshorten, headY - 42, 112 * foreshorten, 60),
+          Rect.fromLTWH(w * 0.32, h * 0.12, w * 0.36, h * 0.28),
           math.pi,
           math.pi,
           false,
           bandPaint,
         );
-
-        // Side cushioned earcups
-        canvas.drawOval(Rect.fromLTWH(cx - 58 * foreshorten, headY - 4, 14, 28), phonePaint);
-        canvas.drawOval(Rect.fromLTWH(cx + 44 * foreshorten, headY - 4, 14, 28), phonePaint);
+        // Almohadillas a los lados
+        canvas.drawOval(Rect.fromLTWH(w * 0.28, h * 0.24, w * 0.06, h * 0.09), cupPaint);
+        canvas.drawOval(Rect.fromLTWH(w * 0.66, h * 0.24, w * 0.06, h * 0.09), cupPaint);
         break;
     }
   }

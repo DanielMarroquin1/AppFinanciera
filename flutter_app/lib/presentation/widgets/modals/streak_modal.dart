@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../../core/services/streak_session_service.dart';
 import '../../../core/utils/app_haptics.dart';
 import '../../providers/auth_provider.dart';
 import 'add_expense_modal.dart';
@@ -45,11 +46,16 @@ class _StreakModalState extends ConsumerState<StreakModal>
   late AnimationController _bobController;
   late AnimationController _glowController;
   late AnimationController _particleController;
+  late AnimationController _flickerController;
   final List<_FlameSpark> _sparks = [];
+  bool _isActiveState = false;
+  int _liveStreak = 0;
 
   @override
   void initState() {
     super.initState();
+    _isActiveState = widget.isActiveToday;
+    _liveStreak = widget.currentStreak;
 
     // Gentle floating bob animation for 3D flame
     _bobController = AnimationController(
@@ -63,15 +69,42 @@ class _StreakModalState extends ConsumerState<StreakModal>
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
 
+    // Natural flame wind flicker
+    _flickerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat();
+
     // Celebration sparks
     _particleController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2200),
     );
 
-    if (widget.isActiveToday) {
+    if (_isActiveState) {
       _initSparks();
       _particleController.repeat();
+    }
+
+    // Escuchar activación automática tras 45s de permanencia
+    StreakSessionService.autoActivatedNotifier.addListener(_onAutoActivated);
+    StreakSessionService.secondsNotifier.addListener(_onSecondsTick);
+  }
+
+  void _onAutoActivated() {
+    if (!_isActiveState && mounted) {
+      setState(() {
+        _isActiveState = true;
+        _liveStreak = _liveStreak <= 0 ? 1 : _liveStreak;
+      });
+      _initSparks();
+      _particleController.repeat();
+    }
+  }
+
+  void _onSecondsTick() {
+    if (!_isActiveState && mounted) {
+      setState(() {});
     }
   }
 
@@ -97,8 +130,11 @@ class _StreakModalState extends ConsumerState<StreakModal>
 
   @override
   void dispose() {
+    StreakSessionService.autoActivatedNotifier.removeListener(_onAutoActivated);
+    StreakSessionService.secondsNotifier.removeListener(_onSecondsTick);
     _bobController.dispose();
     _glowController.dispose();
+    _flickerController.dispose();
     _particleController.dispose();
     super.dispose();
   }
@@ -145,19 +181,20 @@ class _StreakModalState extends ConsumerState<StreakModal>
         : 'CAMPEÓN';
 
     // 5-day milestone cycle calculation (User gets +50 PTS every 5 days!)
-    final int currentStreak = widget.currentStreak;
+    final int currentStreak = _liveStreak;
     final int cycleIndex = currentStreak <= 0 ? 0 : (currentStreak - 1) ~/ 5;
     final int startDay = cycleIndex * 5 + 1;
-    final int endDay = startDay + 4;
     final int completedInCycle = currentStreak <= 0
         ? 0
         : (currentStreak - startDay + 1).clamp(0, 5);
     final int daysRemainingInCycle = math.max(0, 5 - completedInCycle);
 
+    final secondsRemaining = math.max(0, StreakSessionService.activationThresholdSeconds - StreakSessionService.elapsedSeconds);
+
     return Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       child: Stack(
         alignment: Alignment.center,
         clipBehavior: Clip.none,
@@ -165,11 +202,14 @@ class _StreakModalState extends ConsumerState<StreakModal>
           // Main Dialog Card matching Image 2 Dark Slate aesthetic
           Container(
             width: double.infinity,
-            constraints: const BoxConstraints(maxWidth: 400),
-            padding: const EdgeInsets.fromLTRB(22, 28, 22, 24),
+            constraints: BoxConstraints(
+              maxWidth: 390,
+              maxHeight: MediaQuery.of(context).size.height * 0.90,
+            ),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
             decoration: BoxDecoration(
               color: const Color(0xFF131F24),
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(28),
               border: Border.all(
                 color: const Color(0xFF263843),
                 width: 1.5,
@@ -182,91 +222,94 @@ class _StreakModalState extends ConsumerState<StreakModal>
                 ),
               ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Top close button
-                Align(
-                  alignment: Alignment.topRight,
-                  child: GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1A2830),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: const Color(0xFF2E404D),
-                          width: 1,
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Top close button
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A2830),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF2E404D),
+                            width: 1,
+                          ),
                         ),
-                      ),
-                      child: const Icon(
-                        LucideIcons.x,
-                        color: Color(0xFF8599A6),
-                        size: 18,
+                        child: const Icon(
+                          LucideIcons.x,
+                          color: Color(0xFF8599A6),
+                          size: 18,
+                        ),
                       ),
                     ),
                   ),
-                ),
 
-                // 3D QUIVO Financial Flame Hero Visual
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Outer pulsating warm glow
-                    AnimatedBuilder(
-                      animation: _glowController,
-                      builder: (context, child) {
-                        final glowScale = 1.0 + (_glowController.value * 0.12);
-                        return Transform.scale(
-                          scale: glowScale,
-                          child: Container(
-                            width: 165,
-                            height: 165,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: RadialGradient(
-                                colors: [
-                                  (widget.isFrozen
-                                          ? const Color(0xFF00E5FF)
-                                          : const Color(0xFFFF9600))
-                                      .withValues(
-                                        alpha: 0.35 *
-                                            (1.0 -
-                                                (_glowController.value * 0.3)),
-                                      ),
-                                  Colors.transparent,
-                                ],
+                  // 3D QUIVO Financial Flame Hero Visual
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Outer pulsating warm glow
+                      AnimatedBuilder(
+                        animation: _glowController,
+                        builder: (context, child) {
+                          final glowScale = 1.0 + (_glowController.value * 0.12);
+                          return Transform.scale(
+                            scale: glowScale,
+                            child: Container(
+                              width: 145,
+                              height: 145,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: RadialGradient(
+                                  colors: [
+                                    (widget.isFrozen
+                                            ? const Color(0xFF00E5FF)
+                                            : const Color(0xFFFF9600))
+                                        .withValues(
+                                          alpha: (_isActiveState ? 0.35 : 0.20) *
+                                              (1.0 -
+                                                  (_glowController.value * 0.3)),
+                                        ),
+                                    Colors.transparent,
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
+                          );
+                        },
+                      ),
 
-                    // Floating 3D QUIVO Flame
-                    AnimatedBuilder(
-                      animation: _bobController,
-                      builder: (context, child) {
-                        final bobY = math.sin(_bobController.value * math.pi) * -7.0;
-                        return CustomPaint(
-                          size: const Size(160, 185),
-                          painter: _QuivoFlamePainter(
-                            bobOffset: bobY,
-                            isActive: widget.isActiveToday,
-                            isFrozen: widget.isFrozen,
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                      // Floating 3D QUIVO Flame
+                      AnimatedBuilder(
+                        animation: Listenable.merge([_bobController, _flickerController]),
+                        builder: (context, child) {
+                          final bobY = math.sin(_bobController.value * math.pi) * -5.0;
+                          return CustomPaint(
+                            size: const Size(130, 142),
+                            painter: _QuivoFlamePainter(
+                              bobOffset: bobY,
+                              flickerProgress: _flickerController.value,
+                              isActive: _isActiveState,
+                              isFrozen: widget.isFrozen,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
 
-                // Giant Streak Counter (Image 2 style)
-                Text(
-                  '${widget.currentStreak}',
+                  // Giant Streak Counter (Image 2 style)
+                  Text(
+                    '$_liveStreak',
                   style: const TextStyle(
                     fontSize: 74,
                     fontWeight: FontWeight.w900,
@@ -283,17 +326,56 @@ class _StreakModalState extends ConsumerState<StreakModal>
                       ? 'días protegidos con escudo'
                       : 'días de racha',
                   style: const TextStyle(
-                    fontSize: 22,
+                    fontSize: 20,
                     fontWeight: FontWeight.w800,
                     color: Color(0xFFFF9600),
                     letterSpacing: -0.2,
                   ),
                 ),
-                const SizedBox(height: 16),
+
+                // Chip de Auto-Activación por permanencia (45s en la app)
+                if (!_isActiveState) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1B2C37),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFFFF9600).withValues(alpha: 0.6),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFF9600).withValues(alpha: 0.15),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(LucideIcons.timer, color: Color(0xFFFF9600), size: 14),
+                        const SizedBox(width: 8),
+                        Text(
+                          secondsRemaining > 0
+                              ? 'Auto-encendido en ${secondsRemaining}s en la app 🔥'
+                              : '¡Encendiendo racha ahora! 🔥',
+                          style: const TextStyle(
+                            color: Color(0xFFFFD54F),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 12),
 
                 // 5-Day Milestone Badge: "+50 PTS cada 5 días"
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFB300).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
@@ -305,7 +387,7 @@ class _StreakModalState extends ConsumerState<StreakModal>
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('🪙', style: TextStyle(fontSize: 14)),
+                      Text('🪙', style: TextStyle(fontSize: 13)),
                       SizedBox(width: 6),
                       Text(
                         'BONO: +50 PTS CADA 5 DÍAS',
@@ -319,15 +401,15 @@ class _StreakModalState extends ConsumerState<StreakModal>
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 // 5-Day Milestone Progress Track (startDay to endDay)
                 _FiveDayMilestoneTrack(
                   startDay: startDay,
                   completedCount: completedInCycle,
-                  isActiveToday: widget.isActiveToday,
+                  isActiveToday: _isActiveState,
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 12),
 
                 // Motivational Text for the 5-day cycle
                 Padding(
@@ -337,9 +419,9 @@ class _StreakModalState extends ConsumerState<StreakModal>
                     text: TextSpan(
                       style: const TextStyle(
                         color: Color(0xFFD6E2E8),
-                        fontSize: 14.5,
+                        fontSize: 13.5,
                         fontWeight: FontWeight.w600,
-                        height: 1.35,
+                        height: 1.30,
                       ),
                       children: daysRemainingInCycle > 0
                           ? [
@@ -388,13 +470,13 @@ class _StreakModalState extends ConsumerState<StreakModal>
                     ),
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
 
                 // SAMI Encouragement Card (High-Definition Master Asset, zero pixelation)
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
-                    vertical: 10,
+                    vertical: 9,
                   ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF16252E),
@@ -459,9 +541,9 @@ class _StreakModalState extends ConsumerState<StreakModal>
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  widget.isActiveToday ? '✨ Racha Activa' : '🔥 Por Activar',
+                                  _isActiveState ? '✨ Racha Activa' : '🔥 Por Activar',
                                   style: TextStyle(
-                                    color: widget.isActiveToday
+                                    color: _isActiveState
                                         ? const Color(0xFF10B981)
                                         : const Color(0xFFFF9600),
                                     fontSize: 10,
@@ -472,12 +554,12 @@ class _StreakModalState extends ConsumerState<StreakModal>
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              widget.isActiveToday
+                              _isActiveState
                                   ? '¡Gran disciplina hoy! Cada día suma a tu libertad financiera.'
-                                  : '¡Registra un movimiento hoy y mantén viva tu racha!',
+                                  : '¡Pasa 45s aquí o registra un gasto para encenderla!',
                               style: const TextStyle(
                                 color: Color(0xFFD6E2E8),
-                                fontSize: 12,
+                                fontSize: 11.5,
                                 fontWeight: FontWeight.w600,
                                 height: 1.25,
                               ),
@@ -488,7 +570,7 @@ class _StreakModalState extends ConsumerState<StreakModal>
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
                 // Bottom Action Bar: Share Button + 3D Duolingo Button
                 Row(
@@ -497,8 +579,8 @@ class _StreakModalState extends ConsumerState<StreakModal>
                     GestureDetector(
                       onTap: _onShare,
                       child: Container(
-                        width: 52,
-                        height: 52,
+                        width: 50,
+                        height: 50,
                         decoration: BoxDecoration(
                           color: const Color(0xFF1B2A32),
                           borderRadius: BorderRadius.circular(16),
@@ -517,7 +599,7 @@ class _StreakModalState extends ConsumerState<StreakModal>
                         child: const Icon(
                           LucideIcons.share2,
                           color: Color(0xFF38BDF8),
-                          size: 22,
+                          size: 21,
                         ),
                       ),
                     ),
@@ -526,11 +608,11 @@ class _StreakModalState extends ConsumerState<StreakModal>
                     // Big 3D Duolingo Button (Image 2: ¡BRAVO, [NOMBRE]!)
                     Expanded(
                       child: _Duolingo3DButton(
-                        label: widget.isActiveToday
+                        label: _isActiveState
                             ? '¡BRAVO, $firstName!'
                             : '¡MANTENER MI RACHA!',
                         onPressed: () {
-                          if (widget.isActiveToday) {
+                          if (_isActiveState) {
                             AppHaptics.success();
                             Navigator.of(context).pop();
                           } else {
@@ -546,9 +628,10 @@ class _StreakModalState extends ConsumerState<StreakModal>
               ],
             ),
           ),
+        ),
 
-          // Celebration particles layer (when active)
-          if (widget.isActiveToday)
+        // Celebration particles layer (when active)
+        if (_isActiveState)
             Positioned.fill(
               child: IgnorePointer(
                 child: AnimatedBuilder(
@@ -752,15 +835,17 @@ class _FiveDayMilestoneTrack extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// 3D QUIVO FINANCIAL FLAME PAINTER (Llama de la Fortuna QUIVO)
+// 3D QUIVO FINANCIAL FLAME PAINTER (Llama Fluida, Dinámica y Orgánica QUIVO)
 // ---------------------------------------------------------------------------
 class _QuivoFlamePainter extends CustomPainter {
   final double bobOffset;
+  final double flickerProgress;
   final bool isActive;
   final bool isFrozen;
 
   _QuivoFlamePainter({
     required this.bobOffset,
+    required this.flickerProgress,
     required this.isActive,
     required this.isFrozen,
   });
@@ -770,176 +855,207 @@ class _QuivoFlamePainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    // 1. High-tech floating energy disc at base
-    final baseCenter = Offset(w * 0.50, h * 0.93);
-    final baseGlowPaint = Paint()
-      ..color = (isFrozen ? const Color(0xFF00E5FF) : const Color(0xFFFF9600))
-          .withValues(alpha: 0.25)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
-    canvas.drawOval(
-      Rect.fromCenter(center: baseCenter, width: w * 0.80, height: h * 0.20),
-      baseGlowPaint,
-    );
-
-    final baseRimPaint = Paint()
-      ..color = (isFrozen ? const Color(0xFF38BDF8) : const Color(0xFFFFD54F))
-          .withValues(alpha: 0.7)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
-    canvas.drawOval(
-      Rect.fromCenter(center: baseCenter, width: w * 0.72, height: h * 0.16),
-      baseRimPaint,
-    );
-
     // Apply floating bob animation offset to the flame
     canvas.save();
     canvas.translate(0, bobOffset);
 
-    // 2. Outer Flame Body - Dynamic Symmetrical Crest with Soaring Center and Twin Wings
+    // Natural energetic flame wind & flicker
+    final flicker = math.sin(flickerProgress * 2 * math.pi) * 3.5;
+
+    // 1. Warm radial ambient bloom (Sin disco rígido plano en el piso)
+    final bloomCenter = Offset(w * 0.50, h * 0.55);
+    final bloomPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          (isFrozen
+                  ? const Color(0xFF00E5FF)
+                  : (isActive ? const Color(0xFFFF5216) : const Color(0xFFFF9100)))
+              .withValues(alpha: isActive ? 0.38 : 0.18),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromCircle(center: bloomCenter, radius: w * 0.65));
+    canvas.drawCircle(bloomCenter, w * 0.65, bloomPaint);
+
+    // 2. Outer Dynamic Flame Body (Fluid organic tongues of fire)
     final outerPath = Path();
-    outerPath.moveTo(w * 0.50, h * 0.05); // Central sharp spire
-    // Right side curve down to saddle
-    outerPath.cubicTo(w * 0.58, h * 0.22, w * 0.65, h * 0.32, w * 0.68, h * 0.42);
-    // Right wing peak
-    outerPath.cubicTo(w * 0.78, h * 0.30, w * 0.88, h * 0.38, w * 0.90, h * 0.52);
-    // Right flank sweeping down
-    outerPath.cubicTo(w * 0.92, h * 0.68, w * 0.82, h * 0.86, w * 0.50, h * 0.89);
-    // Left flank sweeping up
-    outerPath.cubicTo(w * 0.18, h * 0.86, w * 0.08, h * 0.68, w * 0.10, h * 0.52);
-    // Left wing peak
-    outerPath.cubicTo(w * 0.12, h * 0.38, w * 0.22, h * 0.30, w * 0.32, h * 0.42);
-    // Left side curve back to central spire
-    outerPath.cubicTo(w * 0.35, h * 0.32, w * 0.42, h * 0.22, w * 0.50, h * 0.05);
+    outerPath.moveTo(w * 0.50 + flicker, h * 0.04); // Soaring central spire tip
+    // Right crest & lick
+    outerPath.cubicTo(w * 0.62 + flicker * 0.5, h * 0.18, w * 0.70, h * 0.26, w * 0.74, h * 0.38);
+    // Right secondary dancing tongue
+    outerPath.cubicTo(w * 0.85, h * 0.28, w * 0.94, h * 0.38, w * 0.92, h * 0.54);
+    // Right flank hugging down
+    outerPath.cubicTo(w * 0.90, h * 0.74, w * 0.78, h * 0.94, w * 0.50, h * 0.96);
+    // Left flank hugging up
+    outerPath.cubicTo(w * 0.22, h * 0.94, w * 0.10, h * 0.74, w * 0.08, h * 0.54);
+    // Left secondary dancing tongue
+    outerPath.cubicTo(w * 0.06, h * 0.38, w * 0.15, h * 0.28, w * 0.26, h * 0.38);
+    // Left crest leading back to center spire
+    outerPath.cubicTo(w * 0.30, h * 0.26, w * 0.38 + flicker * 0.5, h * 0.18, w * 0.50 + flicker, h * 0.04);
     outerPath.close();
 
-    // Outer Gradient (Molten Orange-Ruby or Glacial Cyan)
+    // Vibrant Fire Gradient
     final outerGradient = isFrozen
         ? const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFBAE6FD), Color(0xFF0284C7), Color(0xFF0369A1)],
+            colors: [Color(0xFFE0F2FE), Color(0xFF38BDF8), Color(0xFF0284C7)],
           )
-        : const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFFFD54F), // Amber-Gold at the tip
-              Color(0xFFFF6D00), // Molten Orange
-              Color(0xFFE11D48), // Deep Ruby Red
-              Color(0xFF9F1239),
-            ],
-            stops: [0.0, 0.35, 0.75, 1.0],
-          );
+        : (isActive
+            ? const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFFFFEA00), // Pure golden sun at tip
+                  Color(0xFFFF9100), // Molten energetic orange
+                  Color(0xFFFF3D00), // Blazing red-orange
+                  Color(0xFFD50000), // Deep ruby at the base
+                ],
+                stops: [0.0, 0.30, 0.68, 1.0],
+              )
+            : const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFFFFB300),
+                  Color(0xFFFF6F00),
+                  Color(0xFF8D2B0B),
+                ],
+                stops: [0.0, 0.45, 1.0],
+              ));
 
     final outerPaint = Paint()
       ..shader = outerGradient.createShader(Rect.fromLTWH(0, 0, w, h))
       ..style = PaintingStyle.fill;
     canvas.drawPath(outerPath, outerPaint);
 
-    // Outer Rim Stroke (Golden energy edge)
-    final borderPaint = Paint()
-      ..color = (isFrozen ? const Color(0xFFE0F2FE) : const Color(0xFFFFE082))
-          .withValues(alpha: 0.9)
+    // Glowing border highlight along the flame edge
+    final rimPaint = Paint()
+      ..color = (isFrozen ? const Color(0xFFE0F2FE) : const Color(0xFFFFF9C4))
+          .withValues(alpha: isActive ? 0.85 : 0.5)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5;
-    canvas.drawPath(outerPath, borderPaint);
+      ..strokeWidth = 2.0;
+    canvas.drawPath(outerPath, rimPaint);
 
-    // 3. Inner Dynamic Flame Layer (Sculpted Core)
-    final innerPath = Path();
-    innerPath.moveTo(w * 0.50, h * 0.16);
-    innerPath.cubicTo(w * 0.56, h * 0.28, w * 0.62, h * 0.38, w * 0.64, h * 0.46);
-    innerPath.cubicTo(w * 0.72, h * 0.40, w * 0.78, h * 0.46, w * 0.80, h * 0.56);
-    innerPath.cubicTo(w * 0.82, h * 0.70, w * 0.72, h * 0.82, w * 0.50, h * 0.84);
-    innerPath.cubicTo(w * 0.28, h * 0.82, w * 0.18, h * 0.70, w * 0.20, h * 0.56);
-    innerPath.cubicTo(w * 0.22, h * 0.46, w * 0.28, h * 0.40, w * 0.36, h * 0.46);
-    innerPath.cubicTo(w * 0.38, h * 0.38, w * 0.44, h * 0.28, w * 0.50, h * 0.16);
-    innerPath.close();
+    // 3. Middle Flame Layer (Dancing Core)
+    final midFlicker = -flicker * 0.6;
+    final midPath = Path();
+    midPath.moveTo(w * 0.50 + midFlicker, h * 0.18);
+    midPath.cubicTo(w * 0.60 + midFlicker, h * 0.30, w * 0.68, h * 0.42, w * 0.70, h * 0.52);
+    midPath.cubicTo(w * 0.76, h * 0.46, w * 0.82, h * 0.54, w * 0.80, h * 0.66);
+    midPath.cubicTo(w * 0.78, h * 0.82, w * 0.66, h * 0.90, w * 0.50, h * 0.91);
+    midPath.cubicTo(w * 0.34, h * 0.90, w * 0.22, h * 0.82, w * 0.20, h * 0.66);
+    midPath.cubicTo(w * 0.18, h * 0.54, w * 0.24, h * 0.46, w * 0.30, h * 0.52);
+    midPath.cubicTo(w * 0.32, h * 0.42, w * 0.40 + midFlicker, h * 0.30, w * 0.50 + midFlicker, h * 0.18);
+    midPath.close();
 
-    final innerGradient = isFrozen
+    final midGradient = isFrozen
         ? const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFE0F2FE), Color(0xFF38BDF8)],
+            colors: [Colors.white, Color(0xFF38BDF8)],
           )
         : const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFFFF9C4), // Bright light yellow
-              Color(0xFFFFB300), // Rich amber
-              Color(0xFFFF5722), // Fire coral
+              Color(0xFFFFFDE7), // Bright lemon white
+              Color(0xFFFFEE58), // Electric yellow
+              Color(0xFFFF9800), // Warm amber
             ],
-            stops: [0.0, 0.45, 1.0],
+            stops: [0.0, 0.40, 1.0],
           );
 
-    final innerPaint = Paint()
-      ..shader = innerGradient.createShader(Rect.fromLTWH(0, 0, w, h))
+    final midPaint = Paint()
+      ..shader = midGradient.createShader(Rect.fromLTWH(0, 0, w, h))
       ..style = PaintingStyle.fill;
-    canvas.drawPath(innerPath, innerPaint);
+    canvas.drawPath(midPath, midPaint);
 
-    // 4. Centerpiece: Radiant Golden Coin Core ("🪙" QUIVO Emblem)
-    final coinCenter = Offset(w * 0.50, h * 0.62);
-    final coinRadius = w * 0.18;
+    // 4. Inner Luminous Core (White-hot energy teardrop)
+    final corePath = Path();
+    final coreTopY = h * 0.34 + flicker * 0.3;
+    corePath.moveTo(w * 0.50, coreTopY);
+    corePath.cubicTo(w * 0.62, h * 0.48, w * 0.66, h * 0.66, w * 0.50, h * 0.84);
+    corePath.cubicTo(w * 0.34, h * 0.66, w * 0.38, h * 0.48, w * 0.50, coreTopY);
+    corePath.close();
 
-    // Diffuse radial bloom behind coin
-    final coinGlowPaint = Paint()
+    final corePaint = Paint()
       ..shader = RadialGradient(
+        center: const Alignment(0, -0.2),
+        radius: 0.6,
         colors: [
-          (isFrozen ? const Color(0xFF00E5FF) : const Color(0xFFFFD54F))
-              .withValues(alpha: 0.8),
+          Colors.white,
+          (isFrozen ? const Color(0xFF7DD3FC) : const Color(0xFFFFE082))
+              .withValues(alpha: 0.85),
           Colors.transparent,
         ],
-      ).createShader(Rect.fromCircle(center: coinCenter, radius: coinRadius * 1.8));
-    canvas.drawCircle(coinCenter, coinRadius * 1.8, coinGlowPaint);
+      ).createShader(Rect.fromLTWH(w * 0.30, h * 0.30, w * 0.40, h * 0.55))
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(corePath, corePaint);
+
+    // 5. Golden QUIVO Medallion floating in the heart
+    final coinCenter = Offset(w * 0.50, h * 0.65);
+    final coinRadius = w * 0.16;
 
     // Outer coin rim
     final coinRimPaint = Paint()
-      ..shader = LinearGradient(
+      ..shader = const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: isFrozen
-            ? const [Color(0xFFE0F2FE), Color(0xFF0284C7)]
-            : const [Color(0xFFFFF176), Color(0xFFFF8F00)],
+        colors: [Color(0xFFFFF9C4), Color(0xFFFFB300), Color(0xFFB45309)],
       ).createShader(Rect.fromCircle(center: coinCenter, radius: coinRadius))
       ..style = PaintingStyle.fill;
     canvas.drawCircle(coinCenter, coinRadius, coinRimPaint);
 
     // Inner embossed coin disc
     final coinInnerPaint = Paint()
-      ..shader = LinearGradient(
+      ..shader = const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: isFrozen
-            ? const [Color(0xFF38BDF8), Color(0xFF0369A1)]
-            : const [Color(0xFFFFD54F), Color(0xFFFF6F00)],
+        colors: [Color(0xFFFFD54F), Color(0xFFF57F17)],
       ).createShader(Rect.fromCircle(center: coinCenter, radius: coinRadius * 0.82))
       ..style = PaintingStyle.fill;
     canvas.drawCircle(coinCenter, coinRadius * 0.82, coinInnerPaint);
 
-    // Golden "Q" Emblem in center of the coin
+    // Golden "Q" Emblem
     final emblemPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.2
+      ..strokeWidth = 2.8
       ..strokeCap = StrokeCap.round;
 
-    final qRect = Rect.fromCircle(center: coinCenter, radius: coinRadius * 0.42);
+    final qRect = Rect.fromCircle(center: coinCenter, radius: coinRadius * 0.44);
     canvas.drawOval(qRect, emblemPaint);
     canvas.drawLine(
-      Offset(coinCenter.dx + coinRadius * 0.15, coinCenter.dy + coinRadius * 0.15),
-      Offset(coinCenter.dx + coinRadius * 0.42, coinCenter.dy + coinRadius * 0.42),
+      Offset(coinCenter.dx + coinRadius * 0.16, coinCenter.dy + coinRadius * 0.16),
+      Offset(coinCenter.dx + coinRadius * 0.44, coinCenter.dy + coinRadius * 0.44),
       emblemPaint,
     );
 
-    // Specular shine on upper left of coin
+    // Specular highlight
     final shinePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.7)
+      ..color = Colors.white.withValues(alpha: 0.75)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(
-      Offset(coinCenter.dx - coinRadius * 0.4, coinCenter.dy - coinRadius * 0.4),
+      Offset(coinCenter.dx - coinRadius * 0.38, coinCenter.dy - coinRadius * 0.38),
       coinRadius * 0.18,
       shinePaint,
     );
+
+    // 6. Floating Sparks / Embers drifting upward
+    final emberPaint = Paint()..style = PaintingStyle.fill;
+    final emberPositions = [
+      Offset(w * 0.42 + flicker * 1.2, h * 0.08),
+      Offset(w * 0.68 - flicker * 0.8, h * 0.22),
+      Offset(w * 0.28 + flicker * 0.5, h * 0.26),
+      Offset(w * 0.82, h * 0.34),
+    ];
+    for (int i = 0; i < emberPositions.length; i++) {
+      final pos = emberPositions[i];
+      final r = (1.5 + (i % 2) * 1.2);
+      emberPaint.color = (i == 0 ? Colors.white : const Color(0xFFFFD54F))
+          .withValues(alpha: (0.6 + 0.3 * math.sin(flickerProgress * math.pi + i)));
+      canvas.drawCircle(pos, r, emberPaint);
+    }
 
     canvas.restore();
   }
@@ -947,6 +1063,7 @@ class _QuivoFlamePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _QuivoFlamePainter oldDelegate) {
     return oldDelegate.bobOffset != bobOffset ||
+        oldDelegate.flickerProgress != flickerProgress ||
         oldDelegate.isActive != isActive ||
         oldDelegate.isFrozen != isFrozen;
   }

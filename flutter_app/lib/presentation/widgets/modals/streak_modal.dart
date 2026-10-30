@@ -861,39 +861,41 @@ class _QuivoFlamePainter extends CustomPainter {
 
     // Natural energetic flame wind & flicker
     final flicker = math.sin(flickerProgress * 2 * math.pi) * 3.5;
+    final secondaryFlicker = math.cos(flickerProgress * 2 * math.pi) * 2.5;
 
     // 1. Warm radial ambient bloom (Sin disco rígido plano en el piso)
-    final bloomCenter = Offset(w * 0.50, h * 0.55);
+    final bloomCenter = Offset(w * 0.50, h * 0.58);
     final bloomPaint = Paint()
       ..shader = RadialGradient(
         colors: [
           (isFrozen
                   ? const Color(0xFF00E5FF)
-                  : (isActive ? const Color(0xFFFF5216) : const Color(0xFFFF9100)))
-              .withValues(alpha: isActive ? 0.38 : 0.18),
+                  : (isActive ? const Color(0xFFFF3D00) : const Color(0xFFFF9100)))
+              .withValues(alpha: isActive ? 0.42 : 0.16),
           Colors.transparent,
         ],
-      ).createShader(Rect.fromCircle(center: bloomCenter, radius: w * 0.65));
-    canvas.drawCircle(bloomCenter, w * 0.65, bloomPaint);
+      ).createShader(Rect.fromCircle(center: bloomCenter, radius: w * 0.68));
+    canvas.drawCircle(bloomCenter, w * 0.68, bloomPaint);
 
-    // 2. Outer Dynamic Flame Body (Fluid organic tongues of fire)
+    // 2. Outer Dynamic Flame Body (Cuerpo exterior de fuego estilizado con 3 crestas orgánicas)
     final outerPath = Path();
-    outerPath.moveTo(w * 0.50 + flicker, h * 0.04); // Soaring central spire tip
-    // Right crest & lick
-    outerPath.cubicTo(w * 0.62 + flicker * 0.5, h * 0.18, w * 0.70, h * 0.26, w * 0.74, h * 0.38);
-    // Right secondary dancing tongue
-    outerPath.cubicTo(w * 0.85, h * 0.28, w * 0.94, h * 0.38, w * 0.92, h * 0.54);
-    // Right flank hugging down
-    outerPath.cubicTo(w * 0.90, h * 0.74, w * 0.78, h * 0.94, w * 0.50, h * 0.96);
-    // Left flank hugging up
-    outerPath.cubicTo(w * 0.22, h * 0.94, w * 0.10, h * 0.74, w * 0.08, h * 0.54);
-    // Left secondary dancing tongue
-    outerPath.cubicTo(w * 0.06, h * 0.38, w * 0.15, h * 0.28, w * 0.26, h * 0.38);
-    // Left crest leading back to center spire
-    outerPath.cubicTo(w * 0.30, h * 0.26, w * 0.38 + flicker * 0.5, h * 0.18, w * 0.50 + flicker, h * 0.04);
+    // Punta central alta
+    outerPath.moveTo(w * 0.50 + flicker * 0.8, h * 0.05);
+    // Cresta derecha superior
+    outerPath.cubicTo(w * 0.63 + flicker * 0.4, h * 0.16, w * 0.72, h * 0.25, w * 0.76, h * 0.36);
+    // Lengüeta exterior derecha
+    outerPath.cubicTo(w * 0.88, h * 0.26 + secondaryFlicker, w * 0.96, h * 0.38, w * 0.90, h * 0.56);
+    // Costado derecho bajando al vientre redondeado
+    outerPath.cubicTo(w * 0.88, h * 0.76, w * 0.76, h * 0.95, w * 0.50, h * 0.96);
+    // Costado izquierdo redondeado
+    outerPath.cubicTo(w * 0.24, h * 0.95, w * 0.12, h * 0.76, w * 0.10, h * 0.56);
+    // Lengüeta exterior izquierda
+    outerPath.cubicTo(w * 0.04, h * 0.38, w * 0.12, h * 0.26 - secondaryFlicker, w * 0.24, h * 0.36);
+    // Cresta izquierda superior hacia la punta
+    outerPath.cubicTo(w * 0.28, h * 0.25, w * 0.37 - flicker * 0.4, h * 0.16, w * 0.50 + flicker * 0.8, h * 0.05);
     outerPath.close();
 
-    // Vibrant Fire Gradient
+    // Degradado ardiente de alta energía
     final outerGradient = isFrozen
         ? const LinearGradient(
             begin: Alignment.topCenter,
@@ -905,12 +907,12 @@ class _QuivoFlamePainter extends CustomPainter {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFFFFEA00), // Pure golden sun at tip
-                  Color(0xFFFF9100), // Molten energetic orange
-                  Color(0xFFFF3D00), // Blazing red-orange
-                  Color(0xFFD50000), // Deep ruby at the base
+                  Color(0xFFFFEA00), // Oro puro en la punta
+                  Color(0xFFFF9100), // Naranja magma
+                  Color(0xFFFF3D00), // Rojo fuego vivo
+                  Color(0xFFB71C1C), // Carmesí profundo en la base
                 ],
-                stops: [0.0, 0.30, 0.68, 1.0],
+                stops: [0.0, 0.28, 0.65, 1.0],
               )
             : const LinearGradient(
                 begin: Alignment.topCenter,
@@ -918,9 +920,9 @@ class _QuivoFlamePainter extends CustomPainter {
                 colors: [
                   Color(0xFFFFB300),
                   Color(0xFFFF6F00),
-                  Color(0xFF8D2B0B),
+                  Color(0xFF3E2723),
                 ],
-                stops: [0.0, 0.45, 1.0],
+                stops: [0.0, 0.40, 1.0],
               ));
 
     final outerPaint = Paint()
@@ -928,24 +930,24 @@ class _QuivoFlamePainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     canvas.drawPath(outerPath, outerPaint);
 
-    // Glowing border highlight along the flame edge
+    // Borde iluminado con resplandor suave
     final rimPaint = Paint()
       ..color = (isFrozen ? const Color(0xFFE0F2FE) : const Color(0xFFFFF9C4))
-          .withValues(alpha: isActive ? 0.85 : 0.5)
+          .withValues(alpha: isActive ? 0.85 : 0.45)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
+      ..strokeWidth = 2.2;
     canvas.drawPath(outerPath, rimPaint);
 
-    // 3. Middle Flame Layer (Dancing Core)
-    final midFlicker = -flicker * 0.6;
+    // 3. Middle Flame Layer (Capa intermedia vibrante)
+    final midFlicker = -flicker * 0.7;
     final midPath = Path();
-    midPath.moveTo(w * 0.50 + midFlicker, h * 0.18);
-    midPath.cubicTo(w * 0.60 + midFlicker, h * 0.30, w * 0.68, h * 0.42, w * 0.70, h * 0.52);
-    midPath.cubicTo(w * 0.76, h * 0.46, w * 0.82, h * 0.54, w * 0.80, h * 0.66);
-    midPath.cubicTo(w * 0.78, h * 0.82, w * 0.66, h * 0.90, w * 0.50, h * 0.91);
-    midPath.cubicTo(w * 0.34, h * 0.90, w * 0.22, h * 0.82, w * 0.20, h * 0.66);
-    midPath.cubicTo(w * 0.18, h * 0.54, w * 0.24, h * 0.46, w * 0.30, h * 0.52);
-    midPath.cubicTo(w * 0.32, h * 0.42, w * 0.40 + midFlicker, h * 0.30, w * 0.50 + midFlicker, h * 0.18);
+    midPath.moveTo(w * 0.50 + midFlicker, h * 0.20);
+    midPath.cubicTo(w * 0.61 + midFlicker, h * 0.32, w * 0.68, h * 0.44, w * 0.71, h * 0.54);
+    midPath.cubicTo(w * 0.78, h * 0.48, w * 0.84, h * 0.56, w * 0.81, h * 0.68);
+    midPath.cubicTo(w * 0.78, h * 0.84, w * 0.66, h * 0.90, w * 0.50, h * 0.91);
+    midPath.cubicTo(w * 0.34, h * 0.90, w * 0.22, h * 0.84, w * 0.19, h * 0.68);
+    midPath.cubicTo(w * 0.16, h * 0.56, w * 0.22, h * 0.48, w * 0.29, h * 0.54);
+    midPath.cubicTo(w * 0.32, h * 0.44, w * 0.39 + midFlicker, h * 0.32, w * 0.50 + midFlicker, h * 0.20);
     midPath.close();
 
     final midGradient = isFrozen
@@ -958,9 +960,9 @@ class _QuivoFlamePainter extends CustomPainter {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFFFFDE7), // Bright lemon white
-              Color(0xFFFFEE58), // Electric yellow
-              Color(0xFFFF9800), // Warm amber
+              Color(0xFFFFFDE7),
+              Color(0xFFFFEE58),
+              Color(0xFFFF9800),
             ],
             stops: [0.0, 0.40, 1.0],
           );
@@ -970,90 +972,81 @@ class _QuivoFlamePainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     canvas.drawPath(midPath, midPaint);
 
-    // 4. Inner Luminous Core (White-hot energy teardrop)
+    // 4. Inner Luminous Core (Gota incandescente de plasma blanco-dorado)
     final corePath = Path();
-    final coreTopY = h * 0.34 + flicker * 0.3;
+    final coreTopY = h * 0.36 + flicker * 0.3;
     corePath.moveTo(w * 0.50, coreTopY);
-    corePath.cubicTo(w * 0.62, h * 0.48, w * 0.66, h * 0.66, w * 0.50, h * 0.84);
-    corePath.cubicTo(w * 0.34, h * 0.66, w * 0.38, h * 0.48, w * 0.50, coreTopY);
+    corePath.cubicTo(w * 0.63, h * 0.50, w * 0.66, h * 0.68, w * 0.50, h * 0.84);
+    corePath.cubicTo(w * 0.34, h * 0.68, w * 0.37, h * 0.50, w * 0.50, coreTopY);
     corePath.close();
 
     final corePaint = Paint()
       ..shader = RadialGradient(
         center: const Alignment(0, -0.2),
-        radius: 0.6,
+        radius: 0.65,
         colors: [
           Colors.white,
           (isFrozen ? const Color(0xFF7DD3FC) : const Color(0xFFFFE082))
-              .withValues(alpha: 0.85),
+              .withValues(alpha: 0.90),
           Colors.transparent,
         ],
-      ).createShader(Rect.fromLTWH(w * 0.30, h * 0.30, w * 0.40, h * 0.55))
+      ).createShader(Rect.fromLTWH(w * 0.30, h * 0.32, w * 0.40, h * 0.55))
       ..style = PaintingStyle.fill;
     canvas.drawPath(corePath, corePaint);
 
-    // 5. Golden QUIVO Medallion floating in the heart
-    final coinCenter = Offset(w * 0.50, h * 0.65);
-    final coinRadius = w * 0.16;
+    // 5. Stylized QUIVO Flame Emblem (Emblema 'Q' integrado en el corazón ardiente)
+    final emblemCenter = Offset(w * 0.50, h * 0.64);
+    final emblemRadius = w * 0.14;
 
-    // Outer coin rim
-    final coinRimPaint = Paint()
+    // Disco sutilmente dorado
+    final emblemDiscPaint = Paint()
       ..shader = const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xFFFFF9C4), Color(0xFFFFB300), Color(0xFFB45309)],
-      ).createShader(Rect.fromCircle(center: coinCenter, radius: coinRadius))
+        colors: [Color(0xFFFFF9C4), Color(0xFFFFB300), Color(0xFFD97706)],
+      ).createShader(Rect.fromCircle(center: emblemCenter, radius: emblemRadius))
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(coinCenter, coinRadius, coinRimPaint);
+    canvas.drawCircle(emblemCenter, emblemRadius, emblemDiscPaint);
 
-    // Inner embossed coin disc
-    final coinInnerPaint = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFFFD54F), Color(0xFFF57F17)],
-      ).createShader(Rect.fromCircle(center: coinCenter, radius: coinRadius * 0.82))
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(coinCenter, coinRadius * 0.82, coinInnerPaint);
-
-    // Golden "Q" Emblem
-    final emblemPaint = Paint()
+    // Emblema "Q" en blanco con trazo nítido
+    final qPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.8
       ..strokeCap = StrokeCap.round;
 
-    final qRect = Rect.fromCircle(center: coinCenter, radius: coinRadius * 0.44);
-    canvas.drawOval(qRect, emblemPaint);
+    final qRect = Rect.fromCircle(center: emblemCenter, radius: emblemRadius * 0.48);
+    canvas.drawOval(qRect, qPaint);
     canvas.drawLine(
-      Offset(coinCenter.dx + coinRadius * 0.16, coinCenter.dy + coinRadius * 0.16),
-      Offset(coinCenter.dx + coinRadius * 0.44, coinCenter.dy + coinRadius * 0.44),
-      emblemPaint,
+      Offset(emblemCenter.dx + emblemRadius * 0.18, emblemCenter.dy + emblemRadius * 0.18),
+      Offset(emblemCenter.dx + emblemRadius * 0.50, emblemCenter.dy + emblemRadius * 0.50),
+      qPaint,
     );
 
-    // Specular highlight
+    // Brillo especular
     final shinePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.75)
+      ..color = Colors.white.withValues(alpha: 0.8)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(
-      Offset(coinCenter.dx - coinRadius * 0.38, coinCenter.dy - coinRadius * 0.38),
-      coinRadius * 0.18,
+      Offset(emblemCenter.dx - emblemRadius * 0.38, emblemCenter.dy - emblemRadius * 0.38),
+      emblemRadius * 0.20,
       shinePaint,
     );
 
-    // 6. Floating Sparks / Embers drifting upward
+    // 6. Floating Sparks / Embers drifting upward (Ascuas flotantes ascendentes)
     final emberPaint = Paint()..style = PaintingStyle.fill;
     final emberPositions = [
-      Offset(w * 0.42 + flicker * 1.2, h * 0.08),
-      Offset(w * 0.68 - flicker * 0.8, h * 0.22),
-      Offset(w * 0.28 + flicker * 0.5, h * 0.26),
-      Offset(w * 0.82, h * 0.34),
+      Offset(w * 0.40 + flicker * 1.4, h * 0.06),
+      Offset(w * 0.68 - flicker * 0.9, h * 0.20),
+      Offset(w * 0.26 + flicker * 0.6, h * 0.24),
+      Offset(w * 0.82, h * 0.32),
+      Offset(w * 0.50 + secondaryFlicker, h * 0.02),
     ];
     for (int i = 0; i < emberPositions.length; i++) {
       final pos = emberPositions[i];
-      final r = (1.5 + (i % 2) * 1.2);
+      final r = (1.5 + (i % 2) * 1.3);
       emberPaint.color = (i == 0 ? Colors.white : const Color(0xFFFFD54F))
-          .withValues(alpha: (0.6 + 0.3 * math.sin(flickerProgress * math.pi + i)));
+          .withValues(alpha: (0.65 + 0.35 * math.sin(flickerProgress * math.pi + i)));
       canvas.drawCircle(pos, r, emberPaint);
     }
 

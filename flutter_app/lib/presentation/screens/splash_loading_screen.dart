@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../providers/auth_provider.dart';
 import '../../core/utils/localization.dart';
 
 class SplashLoadingScreen extends ConsumerStatefulWidget {
@@ -176,21 +175,16 @@ class _SplashLoadingScreenState extends ConsumerState<SplashLoadingScreen>
               children: [
                 const Spacer(flex: 3),
 
-                // SAMI Mascot with authentic character animation (independent waving hand & natural gestures)
+                // SAMI Mascot with authentic 3D waving greeting animation
                 AnimatedBuilder(
                   animation: Listenable.merge([_controller, _waveController]),
                   builder: (context, child) {
-                    // Organic grounded breathing cycle (subtle chest rise, no bouncing of the image!)
-                    final breathY = 1.0 + 0.014 * math.sin(_controller.value * 8 * math.pi);
-                    final breathX = 1.0 - 0.007 * math.sin(_controller.value * 8 * math.pi);
+                    // Organic grounded breathing cycle (subtle chest rise, no jumping!)
+                    final breathY = 1.0 + 0.012 * math.sin(_controller.value * 8 * math.pi);
+                    final breathX = 1.0 - 0.006 * math.sin(_controller.value * 8 * math.pi);
 
-                    // Dynamic character hand wave angle (swings arm back and forth at shoulder joint)
-                    final armWaveAngle = math.sin(_waveController.value * 2 * math.pi) * 0.28;
-
-                    // Periodic natural blinking & winking gestures
-                    final cycleTime = (_controller.value * 5000) % 2400;
-                    final bool isBlinking = (cycleTime > 1900 && cycleTime < 2050);
-                    final bool isWinking = (_controller.value > 0.45 && _controller.value < 0.65);
+                    // Gentle, natural greeting wave motion (subtle rotation around body center)
+                    final waveTilt = math.sin(_waveController.value * 2 * math.pi) * 0.05;
 
                     return Opacity(
                       opacity: _samiFadeAnimation.value.clamp(0.0, 1.0),
@@ -204,54 +198,45 @@ class _SplashLoadingScreenState extends ConsumerState<SplashLoadingScreen>
                               alignment: Alignment.center,
                               clipBehavior: Clip.none,
                               children: [
-                                // 1. SAMI Grounded Body with organic breathing
+                                // 1. SAMI 3D Official Render saludando con la mano de forma natural
                                 Transform.scale(
                                   scaleY: breathY,
                                   scaleX: breathX,
                                   alignment: Alignment.bottomCenter,
-                                  child: Image.asset(
-                                    (isBlinking || isWinking)
-                                        ? 'assets/images/sami_3d_front.png'
-                                        : 'assets/images/sami_3d_body_nowave.png',
-                                    width: 250,
-                                    height: 230,
-                                    fit: BoxFit.contain,
-                                    filterQuality: FilterQuality.high,
-                                  ),
-                                ),
-
-                                // 2. Articulated Waving Arm & Hand (pivoting at shoulder socket)
-                                Positioned(
-                                  left: 10,
-                                  top: 55,
                                   child: Transform.rotate(
-                                    angle: armWaveAngle,
-                                    alignment: const Alignment(0.65, 0.75), // Shoulder joint
+                                    angle: waveTilt,
+                                    alignment: const Alignment(0.0, 0.4),
                                     child: Image.asset(
-                                      'assets/images/sami_3d_waving_arm.png',
-                                      width: 82,
-                                      height: 92,
+                                      'assets/images/sami_3d_waving.png',
+                                      width: 235,
+                                      height: 220,
                                       fit: BoxFit.contain,
                                       filterQuality: FilterQuality.high,
                                     ),
                                   ),
                                 ),
 
-                                // 3. Welcoming sparkle stars popping from waving hand
+                                // 2. Welcoming sparkle stars popping from waving hand
                                 Positioned(
-                                  top: 36,
-                                  left: 2,
+                                  top: 18,
+                                  left: 6,
                                   child: AnimatedBuilder(
                                     animation: _waveController,
                                     builder: (context, _) {
-                                      final sparkScale = 0.8 + 0.35 * math.sin(_waveController.value * math.pi);
+                                      final sparkScale = 0.85 + 0.30 * math.sin(_waveController.value * math.pi);
                                       return Transform.scale(
                                         scale: sparkScale,
                                         child: Container(
                                           padding: const EdgeInsets.all(5),
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
-                                            color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
+                                            color: const Color(0xFF00E5FF).withValues(alpha: 0.35),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
+                                                blurRadius: 8,
+                                              ),
+                                            ],
                                           ),
                                           child: const Icon(
                                             Icons.auto_awesome,

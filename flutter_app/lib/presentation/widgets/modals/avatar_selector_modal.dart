@@ -6,10 +6,9 @@ import '../../../domain/entities/sami_outfit.dart';
 import '../../providers/auth_provider.dart';
 import '../../../core/utils/app_haptics.dart';
 
-enum _ArmarioTab {
+enum _ArmarioCategory {
   ropa,
   zapatos,
-  cabeza,
   accesorios,
 }
 
@@ -50,23 +49,23 @@ class AvatarSelectorModal extends ConsumerStatefulWidget {
 
 class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
     with TickerProviderStateMixin {
-  // Animación idle de respiración / flotación suave 2D
+  // Animación suave de respiración / flotación de SAMI
   late AnimationController _idleController;
 
   // Animación de parpadeo natural de ojos
   late AnimationController _blinkController;
   bool _isBlinking = false;
 
-  // Animación de saludo y rebote al tocar a SAMI en 2D
+  // Animación de saludo y rebote al tocar a SAMI
   late AnimationController _tapBounceController;
   late AnimationController _waveController;
   bool _isWaving = false;
   String? _speechMessage;
 
   // Categoría activa en el armario
-  _ArmarioTab _activeTab = _ArmarioTab.ropa;
+  _ArmarioCategory _activeCategory = _ArmarioCategory.ropa;
 
-  // Equipamiento actual en vista previa (Probador / Simulador en vivo 2D)
+  // Equipamiento actual en vista previa (Simulador en vivo)
   late SamiEquipment _currentEquipment;
 
   // Ítem actualmente seleccionado en la cuadrícula
@@ -98,19 +97,19 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
     _currentEquipment = SamiEquipment.fromStorage(widget.currentAvatarId);
     _selectedItem = WardrobeItem.getItem(_currentEquipment.clothingId);
 
-    // Respiración orgánica / flotación 2D (2.4s)
+    // 1. Idle Controller: Flotación suave y natural
     _idleController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2400),
     )..repeat(reverse: true);
 
-    // Parpadeo natural de ojos cada 3.5 segundos
+    // 2. Blink Controller: Parpadeo de ojos cada 4 segundos
     _blinkController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3200),
+      duration: const Duration(milliseconds: 4000),
     )..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
-          setState(() => _isBlinking = true);
+          if (mounted) setState(() => _isBlinking = true);
           Future.delayed(const Duration(milliseconds: 140), () {
             if (mounted) {
               setState(() => _isBlinking = false);
@@ -121,17 +120,21 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
       });
     _blinkController.forward();
 
-    // Rebote y squash al tocar en 2D
+    // 3. Tap Bounce Controller: Rebote elástico
     _tapBounceController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 450),
     );
 
-    // Movimiento de saludo
+    // 4. Wave Controller: Saludo interactivo
     _waveController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    );
+      duration: const Duration(milliseconds: 1600),
+    )..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          if (mounted) setState(() => _isWaving = false);
+        }
+      });
   }
 
   @override
@@ -144,58 +147,24 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
   }
 
   void _onTapSami() {
-    AppHaptics.success();
+    AppHaptics.mediumImpact();
     _tapBounceController.forward(from: 0.0);
     _waveController.forward(from: 0.0);
-
-    final randomPhrase =
-        _greetingPhrases[math.Random().nextInt(_greetingPhrases.length)];
-
     setState(() {
       _isWaving = true;
-      _speechMessage = randomPhrase;
+      final randIndex = math.Random().nextInt(_greetingPhrases.length);
+      _speechMessage = _greetingPhrases[randIndex];
     });
 
-    Future.delayed(const Duration(milliseconds: 2600), () {
-      if (mounted) {
-        setState(() {
-          _isWaving = false;
-          _speechMessage = null;
-        });
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted && _speechMessage != null) {
+        setState(() => _speechMessage = null);
       }
     });
   }
 
-  bool _isItemUnlocked(WardrobeItem item, List<String> unlocked) {
-    if (item.isFree) return true;
-    return unlocked.contains(item.id) ||
-        (item.id == 'ropa_superheroe' && unlocked.contains('avatar1')) ||
-        (item.id == 'ropa_toga' && unlocked.contains('avatar3')) ||
-        (item.id == 'ropa_armadura' && unlocked.contains('avatar5')) ||
-        (item.id == 'acc_casco_astronauta' && unlocked.contains('avatar5')) ||
-        (item.id == 'ropa_chef' && unlocked.contains('avatar7')) ||
-        (item.id == 'acc_lentes_vip' && unlocked.contains('avatar8')) ||
-        (item.id == 'ropa_sudadera' && unlocked.contains('avatar9')) ||
-        (item.id == 'ropa_ejecutivo' && unlocked.contains('avatar10')) ||
-        (item.id == 'acc_gorra' && unlocked.contains('sami_cap')) ||
-        (item.id == 'acc_corona' && unlocked.contains('avatar3'));
-  }
-
-  bool _isItemEquipped(WardrobeItem item) {
-    final equipped = SamiEquipment.fromStorage(widget.currentAvatarId);
-    switch (item.category) {
-      case WardrobeCategory.clothing:
-        return equipped.clothingId == item.id;
-      case WardrobeCategory.shoes:
-        return equipped.shoesId == item.id;
-      case WardrobeCategory.accessories:
-        return equipped.accessoryId == item.id;
-    }
-  }
-
-  /// Al tocar CUALQUIER prenda en la cuadrícula, SAMI se la prueba en vivo en 2D inmediatamente
-  void _tryOnItem(WardrobeItem item) {
-    AppHaptics.selection();
+  void _selectItem(WardrobeItem item) {
+    AppHaptics.lightImpact();
     setState(() {
       _selectedItem = item;
       switch (item.category) {
@@ -210,6 +179,22 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
           break;
       }
     });
+  }
+
+  bool _isItemUnlocked(WardrobeItem item, List<String> unlockedItems) {
+    if (item.isFree || item.cost == 0) return true;
+    return unlockedItems.contains(item.id);
+  }
+
+  bool _isItemEquipped(WardrobeItem item) {
+    switch (item.category) {
+      case WardrobeCategory.clothing:
+        return _currentEquipment.clothingId == item.id;
+      case WardrobeCategory.shoes:
+        return _currentEquipment.shoesId == item.id;
+      case WardrobeCategory.accessories:
+        return _currentEquipment.accessoryId == item.id;
+    }
   }
 
   Future<void> _handleEquipOrUnlock(WardrobeItem item) async {
@@ -300,108 +285,67 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
     }
   }
 
-  void _showNotEnoughCoinsDialog(WardrobeItem item, int userPoints) {
+  void _showNotEnoughCoinsDialog(WardrobeItem item, int currentPoints) {
     showDialog(
       context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: const Color(0xFF131F24),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: const Color(0xFF263843), width: 1.5),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.5),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF131F24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: Color(0xFF263843), width: 1.5),
+        ),
+        title: const Row(
+          children: [
+            Text('🪙', style: TextStyle(fontSize: 24)),
+            SizedBox(width: 10),
+            Text(
+              'Puntos Insuficientes',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
               ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(item.emoji, style: const TextStyle(fontSize: 48)),
-              const SizedBox(height: 12),
-              const Text(
-                'Monedas Insuficientes',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Necesitas ${item.cost} monedas para desbloquear "${item.name}". Actualmente tienes $userPoints 🪙.',
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Color(0xFF8BA0AE), fontSize: 13),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1B2A32),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(LucideIcons.flame, color: Color(0xFFFF9600), size: 20),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        '¡Registra tus transacciones y mantén tu racha para ganar más monedas!',
-                        style: TextStyle(
-                          color: Color(0xFFD6E2E8),
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.of(ctx).pop(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1CB0F6),
-                    foregroundColor: const Color(0xFF092A40),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: const Text(
-                    'Entendido',
-                    style: TextStyle(fontWeight: FontWeight.w900),
-                  ),
-                ),
-              ),
-            ],
+            ),
+          ],
+        ),
+        content: Text(
+          'Para desbloquear "${item.name}" necesitas ${item.cost} puntos.\n\nActualmente tienes $currentPoints puntos. ¡Sigue registrando tus gastos diarios y manteniendo tu racha con SAMI para ganar más!',
+          style: const TextStyle(
+            color: Color(0xFFD6E2E8),
+            fontSize: 14,
+            height: 1.4,
           ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text(
+              'Entendido',
+              style: TextStyle(
+                color: Color(0xFF00E5FF),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  List<WardrobeItem> _getItemsForActiveTab() {
-    switch (_activeTab) {
-      case _ArmarioTab.ropa:
-        return WardrobeItem.getByCategory(WardrobeCategory.clothing);
-      case _ArmarioTab.zapatos:
-        return WardrobeItem.getByCategory(WardrobeCategory.shoes);
-      case _ArmarioTab.cabeza:
-        final allAcc = WardrobeItem.getByCategory(WardrobeCategory.accessories);
-        final none = allAcc.firstWhere((i) => i.id == 'acc_ninguno');
-        final headItems = allAcc.where((i) => _isHeadItem(i.id)).toList();
-        return [none, ...headItems];
-      case _ArmarioTab.accesorios:
-        final allAcc = WardrobeItem.getByCategory(WardrobeCategory.accessories);
-        return allAcc.where((i) => !_isHeadItem(i.id)).toList();
+  List<WardrobeItem> _getItemsForActiveCategory() {
+    switch (_activeCategory) {
+      case _ArmarioCategory.ropa:
+        return WardrobeItem.allItems
+            .where((i) => i.category == WardrobeCategory.clothing)
+            .toList();
+      case _ArmarioCategory.zapatos:
+        return WardrobeItem.allItems
+            .where((i) => i.category == WardrobeCategory.shoes)
+            .toList();
+      case _ArmarioCategory.accesorios:
+        return WardrobeItem.allItems
+            .where((i) => i.category == WardrobeCategory.accessories)
+            .toList();
     }
   }
 
@@ -411,27 +355,29 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
     final userCoins = user?.points ?? 0;
     final unlockedList = user?.unlockedItems ?? [];
 
-    final activeItems = _getItemsForActiveTab();
+    final activeItems = _getItemsForActiveCategory();
     final isSelectedUnlocked = _isItemUnlocked(_selectedItem, unlockedList);
     final isSelectedEquipped = _isItemEquipped(_selectedItem);
 
-    final floatY = math.sin(_idleController.value * math.pi) * 3.5;
+    final floatY = math.sin(_idleController.value * math.pi) * 3.0;
     final bounceScale = _tapBounceController.isAnimating
         ? 1.0 + (math.sin(_tapBounceController.value * math.pi) * 0.08)
         : 1.0;
 
-    // Asset frontal 2D de SAMI (con ojos abiertos o parpadeo)
-    final samiFrontAsset = _isBlinking
-        ? 'assets/images/sami_3d_front.png'
-        : 'assets/images/sami_3d_front_open.png';
+    // Asset frontal 2D de SAMI (con ojos abiertos o saludo)
+    final samiFrontAsset = _isWaving
+        ? 'assets/images/sami_3d_waving.png'
+        : (_isBlinking
+            ? 'assets/images/sami_3d_front.png'
+            : 'assets/images/sami_3d_front_open.png');
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.92,
       decoration: const BoxDecoration(
-        color: Color(0xFF0A141B),
+        color: Color(0xFF091217),
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
         border: Border(
-          top: BorderSide(color: Color(0xFF1E3A4A), width: 2),
+          top: BorderSide(color: Color(0xFF1B313E), width: 2),
         ),
       ),
       child: Column(
@@ -443,13 +389,13 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
               width: 44,
               height: 5,
               decoration: BoxDecoration(
-                color: const Color(0xFF2C4452),
+                color: const Color(0xFF263D4C),
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
           ),
 
-          // Header: Título + Saldo de Monedas + Botón Cerrar
+          // Header: Título + Saldo de Puntos + Botón Cerrar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             child: Row(
@@ -460,7 +406,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                     const Row(
                       children: [
                         Text(
-                          'Armario de QUIVO',
+                          'Armario de SAMI',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -474,24 +420,24 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                     ),
                     const SizedBox(height: 2),
                     const Text(
-                      'Prueba y personaliza la ropa, zapatos y accesorios de SAMI',
+                      'Prueba y personaliza ropa, calzado y accesorios',
                       style: TextStyle(
-                        color: Color(0xFF8BA0AE),
+                        color: Color(0xFF869FAE),
                         fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
                 const Spacer(),
-                // Saldo de monedas del usuario
+                // Saldo de puntos/monedas
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF172832),
+                    color: const Color(0xFF162732),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: const Color(0xFFFFB300).withValues(alpha: 0.6),
@@ -533,51 +479,51 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
             ),
           ),
 
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
 
           // =================================================================
-          // ESCENARIO 2D ELEGANTE CON SIMULACIÓN EN VIVO (SHOWCASE STAGE)
+          // ESCENARIO MINIMALISTA Y REAL DE SAMI (SHOWCASE FITTING SUITE)
           // =================================================================
           Container(
-            height: 220,
+            height: 210,
             width: double.infinity,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
+            margin: const EdgeInsets.symmetric(horizontal: 18),
             decoration: BoxDecoration(
-              gradient: const RadialGradient(
-                center: Alignment(0, -0.1),
+              gradient: RadialGradient(
+                center: const Alignment(0, -0.2),
                 radius: 0.95,
                 colors: [
-                  Color(0xFF122C3A),
-                  Color(0xFF0D1D27),
-                  Color(0xFF071016),
+                  _selectedItem.primaryColor.withValues(alpha: 0.22),
+                  const Color(0xFF0F1E27),
+                  const Color(0xFF0A141A),
                 ],
               ),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color(0xFF1F3846), width: 1.5),
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(color: const Color(0xFF1F3847), width: 1.5),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.5),
-                  blurRadius: 16,
-                  offset: const Offset(0, 5),
+                  blurRadius: 20,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(26),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Resplandor ambiental de fondo detrás de SAMI
+                  // Ambient warm glow spotlight
                   Positioned(
-                    top: 20,
+                    top: 15,
                     child: Container(
-                      width: 140,
-                      height: 140,
+                      width: 150,
+                      height: 150,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
                           colors: [
-                            const Color(0xFF00E5FF).withValues(alpha: 0.18),
+                            _selectedItem.primaryColor.withValues(alpha: 0.28),
                             Colors.transparent,
                           ],
                         ),
@@ -585,42 +531,41 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                     ),
                   ),
 
-                  // Pedestal base de presentación 2D
+                  // Minimalist glowing reflection pedestal
                   Positioned(
                     bottom: 12,
                     child: Container(
-                      width: 160,
-                      height: 22,
+                      width: 150,
+                      height: 18,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(100),
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           colors: [
-                            Color(0xFF00E5FF),
-                            Color(0xFF0284C7),
+                            const Color(0xFF00E5FF).withValues(alpha: 0.8),
+                            _selectedItem.primaryColor.withValues(alpha: 0.6),
                           ],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF00E5FF).withValues(alpha: 0.45),
+                            color: const Color(0xFF00E5FF).withValues(alpha: 0.40),
                             blurRadius: 14,
-                            spreadRadius: 1,
                           ),
                         ],
                       ),
                       child: Center(
                         child: Container(
-                          width: 154,
-                          height: 16,
+                          width: 144,
+                          height: 14,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(100),
-                            color: const Color(0xFF08141C),
+                            color: const Color(0xFF09141B),
                           ),
                         ),
                       ),
                     ),
                   ),
 
-                  // SAMI 2D INTERACTIVO (Rebote, Flotación y Probador en Vivo)
+                  // SAMI Mascot: Interactive, Animated & Responsive
                   GestureDetector(
                     onTap: _onTapSami,
                     child: AnimatedBuilder(
@@ -635,50 +580,29 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                           child: Transform.scale(
                             scale: bounceScale,
                             child: SizedBox(
-                              width: 180,
-                              height: 163.3,
+                              width: 175,
+                              height: 165,
                               child: Stack(
                                 fit: StackFit.expand,
                                 alignment: Alignment.center,
                                 clipBehavior: Clip.none,
                                 children: [
-                                  // 1. Personaje Base SAMI (HD frontal 2D)
+                                  // Base Character (Crisp 2D illustration)
                                   Image.asset(
                                     samiFrontAsset,
-                                    fit: BoxFit.fill,
+                                    fit: BoxFit.contain,
                                     filterQuality: FilterQuality.high,
                                   ),
 
-                                  // 2. SIMULACIÓN DE ROPA, ZAPATOS Y ACCESORIOS EN VIVO 2D
+                                  // Beautiful, Sculpted Clothing & Accessories Layer
                                   Positioned.fill(
                                     child: CustomPaint(
-                                      painter: _Sami2DApparelPainter(
+                                      painter: _SamiApparelSculptor(
                                         equipment: _currentEquipment,
                                         isWaving: _isWaving,
-                                        waveProgress: _waveController.value,
                                       ),
                                     ),
                                   ),
-
-                                  // 3. Destello de interacción al tocarlo
-                                  if (_isWaving)
-                                    Positioned(
-                                      top: 10,
-                                      right: 10,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(5),
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: const Color(0xFF00E5FF)
-                                              .withValues(alpha: 0.35),
-                                        ),
-                                        child: const Icon(
-                                          Icons.auto_awesome,
-                                          color: Color(0xFF00E5FF),
-                                          size: 16,
-                                        ),
-                                      ),
-                                    ),
                                 ],
                               ),
                             ),
@@ -688,7 +612,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                     ),
                   ),
 
-                  // Globo de diálogo si SAMI está saludando o fue tocado
+                  // Speech Bubble when tapped or greeting
                   if (_speechMessage != null)
                     Positioned(
                       top: 10,
@@ -697,17 +621,17 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                           horizontal: 14,
                           vertical: 6,
                         ),
-                        constraints: const BoxConstraints(maxWidth: 260),
+                        constraints: const BoxConstraints(maxWidth: 270),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0F2B3B),
+                          color: const Color(0xFF0C2432),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: const Color(0xFF00E5FF).withValues(alpha: 0.8),
+                            color: const Color(0xFF00E5FF).withValues(alpha: 0.85),
                             width: 1.5,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF00E5FF).withValues(alpha: 0.25),
+                              color: const Color(0xFF00E5FF).withValues(alpha: 0.30),
                               blurRadius: 10,
                             ),
                           ],
@@ -717,334 +641,301 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
                     ),
 
-                  // Chip inferior: "👆 Toca a SAMI para interactuar"
-                  if (_speechMessage == null)
-                    Positioned(
-                      bottom: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF060D12).withValues(alpha: 0.85),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: const Color(0xFF1B313E),
-                            width: 1,
-                          ),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('👆', style: TextStyle(fontSize: 11)),
-                            SizedBox(width: 4),
-                            Text(
-                              'Toca a SAMI para interactuar',
-                              style: TextStyle(
-                                color: Color(0xFF7DD3FC),
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
+                  // Top Pill: Simulation indicator or Equipped badge
+                  Positioned(
+                    top: 10,
+                    left: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelectedEquipped
+                            ? const Color(0xFF10B981).withValues(alpha: 0.20)
+                            : (isSelectedUnlocked
+                                ? const Color(0xFF00E5FF).withValues(alpha: 0.20)
+                                : const Color(0xFFFFB300).withValues(alpha: 0.20)),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelectedEquipped
+                              ? const Color(0xFF10B981)
+                              : (isSelectedUnlocked
+                                  ? const Color(0xFF00E5FF)
+                                  : const Color(0xFFFFB300)),
+                          width: 1,
                         ),
                       ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isSelectedEquipped
+                                ? LucideIcons.checkCircle
+                                : (isSelectedUnlocked
+                                    ? LucideIcons.sparkles
+                                    : LucideIcons.eye),
+                            size: 11,
+                            color: isSelectedEquipped
+                                ? const Color(0xFF10B981)
+                                : (isSelectedUnlocked
+                                    ? const Color(0xFF00E5FF)
+                                    : const Color(0xFFFFB300)),
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            isSelectedEquipped
+                                ? 'Equipado'
+                                : (isSelectedUnlocked
+                                    ? 'Listo'
+                                    : 'Probador en Vivo'),
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: isSelectedEquipped
+                                  ? const Color(0xFF6EE7B7)
+                                  : (isSelectedUnlocked
+                                      ? const Color(0xFF38BDF8)
+                                      : const Color(0xFFFFD54F)),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                  ),
+
+                  // Floating Hint: "Toca a SAMI para interactuar"
+                  Positioned(
+                    bottom: 8,
+                    right: 12,
+                    child: Text(
+                      'Toca a SAMI 👋',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF869FAE).withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
 
           // =================================================================
-          // SELECTOR DE CATEGORÍAS 2D: [ 👕 Ropa | 👟 Calzado | 👑 Cabeza | 🧣 Accesorios ]
+          // CATEGORY SELECTOR PILLS: 👕 Ropa | 👟 Zapatos | ✨ Accesorios
           // =================================================================
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                _buildCategoryTab(
-                  label: 'Atuendos',
-                  emoji: '👕',
-                  tab: _ArmarioTab.ropa,
-                ),
-                const SizedBox(width: 6),
-                _buildCategoryTab(
-                  label: 'Calzado',
-                  emoji: '👟',
-                  tab: _ArmarioTab.zapatos,
-                ),
-                const SizedBox(width: 6),
-                _buildCategoryTab(
-                  label: 'Cabeza',
-                  emoji: '👑',
-                  tab: _ArmarioTab.cabeza,
-                ),
-                const SizedBox(width: 6),
-                _buildCategoryTab(
-                  label: 'Accesorios',
-                  emoji: '🧣',
-                  tab: _ArmarioTab.accesorios,
-                ),
-              ],
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Container(
+              height: 44,
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF121F28),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: const Color(0xFF223847), width: 1.2),
+              ),
+              child: Row(
+                children: [
+                  _buildCategoryTab(
+                    label: 'Ropa',
+                    emoji: '👕',
+                    category: _ArmarioCategory.ropa,
+                  ),
+                  _buildCategoryTab(
+                    label: 'Zapatos',
+                    emoji: '👟',
+                    category: _ArmarioCategory.zapatos,
+                  ),
+                  _buildCategoryTab(
+                    label: 'Accesorios',
+                    emoji: '✨',
+                    category: _ArmarioCategory.accesorios,
+                  ),
+                ],
+              ),
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
           // =================================================================
-          // CUADRÍCULA DE ÍTEMS DEL ARMARIO (2 COLUMNAS CON PROBADOR EN VIVO)
+          // ITEMS GRID: Minimalist luxury cards
           // =================================================================
           Expanded(
             child: GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
               physics: const BouncingScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 1.62,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
+                childAspectRatio: 1.72,
               ),
               itemCount: activeItems.length,
               itemBuilder: (context, index) {
                 final item = activeItems[index];
-                final isUnlocked = _isItemUnlocked(item, unlockedList);
+                final isSelected = _selectedItem.id == item.id;
                 final isEquipped = _isItemEquipped(item);
-                final isSelectedInPreview = _selectedItem.id == item.id;
+                final isUnlocked = _isItemUnlocked(item, unlockedList);
 
-                return GestureDetector(
-                  onTap: () => _tryOnItem(item),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: isSelectedInPreview
-                          ? const Color(0xFF132B39)
-                          : const Color(0xFF101C24),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isSelectedInPreview
-                            ? const Color(0xFF00E5FF)
-                            : (isEquipped
-                                ? const Color(0xFF10B981)
-                                : const Color(0xFF1C2D38)),
-                        width: isSelectedInPreview ? 2.0 : 1.2,
-                      ),
-                      boxShadow: [
-                        if (isSelectedInPreview)
-                          BoxShadow(
-                            color: const Color(0xFF00E5FF).withValues(alpha: 0.22),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        // Icono / Emoji con fondo suave de rareza
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: item.rarityColor.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: item.rarityColor.withValues(alpha: 0.35),
-                              width: 1,
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              item.emoji,
-                              style: const TextStyle(fontSize: 22),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        // Nombre + Estado + Precio
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                item.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 12.5,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              // Estado o precio
-                              Row(
-                                children: [
-                                  if (isEquipped) ...[
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 5,
-                                        vertical: 1.5,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF10B981)
-                                            .withValues(alpha: 0.2),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: const Text(
-                                        'Equipado',
-                                        style: TextStyle(
-                                          color: Color(0xFF10B981),
-                                          fontSize: 9.5,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                    ),
-                                  ] else if (isUnlocked) ...[
-                                    const Text(
-                                      'En tu colección',
-                                      style: TextStyle(
-                                        color: Color(0xFF38BDF8),
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ] else ...[
-                                    const Text('🪙 ', style: TextStyle(fontSize: 10)),
-                                    Text(
-                                      '${item.cost}',
-                                      style: const TextStyle(
-                                        color: Color(0xFFFFD54F),
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (!isUnlocked)
-                          const Icon(
-                            LucideIcons.lock,
-                            color: Color(0xFF6E8492),
-                            size: 13,
-                          ),
-                      ],
-                    ),
-                  ),
+                return _buildWardrobeCard(
+                  item: item,
+                  isSelected: isSelected,
+                  isEquipped: isEquipped,
+                  isUnlocked: isUnlocked,
                 );
               },
             ),
           ),
 
           // =================================================================
-          // BARRA INFERIOR DE ACCIÓN (EQUIPAR O DESBLOQUEAR)
+          // BOTTOM ACTION DOCK: Primary Action CTA
           // =================================================================
-          Container(
-            padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
-            decoration: const BoxDecoration(
-              color: Color(0xFF0C161C),
-              border: Border(
-                top: BorderSide(color: Color(0xFF192A34), width: 1.5),
+          SafeArea(
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(18, 10, 18, 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0E1A22),
+                border: const Border(
+                  top: BorderSide(color: Color(0xFF1C313E), width: 1.5),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    blurRadius: 16,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
               ),
-            ),
-            child: SafeArea(
-              top: false,
               child: Row(
                 children: [
+                  // Item Info Summary
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Row(
-                          children: [
-                            Text(
-                              _selectedItem.emoji,
-                              style: const TextStyle(fontSize: 18),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _selectedItem.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 13.5,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
                         Text(
-                          _selectedItem.description,
+                          _selectedItem.name,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _selectedItem.subtitle,
                           style: const TextStyle(
-                            color: Color(0xFF8BA0AE),
                             fontSize: 11,
+                            color: Color(0xFF869FAE),
+                            fontWeight: FontWeight.w500,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 14),
-                  ElevatedButton(
-                    onPressed: _isProcessing
+
+                  const SizedBox(width: 12),
+
+                  // Action Button: Equip / Buy / Already Equipped
+                  GestureDetector(
+                    onTap: _isProcessing
                         ? null
                         : () => _handleEquipOrUnlock(_selectedItem),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isSelectedEquipped
-                          ? const Color(0xFF10B981)
-                          : (isSelectedUnlocked
-                              ? const Color(0xFF1CB0F6)
-                              : const Color(0xFFFF9600)),
-                      foregroundColor: isSelectedEquipped || !isSelectedUnlocked
-                          ? Colors.white
-                          : const Color(0xFF092A40),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
                         vertical: 12,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                      decoration: BoxDecoration(
+                        gradient: isSelectedEquipped
+                            ? const LinearGradient(
+                                colors: [Color(0xFF162934), Color(0xFF162934)],
+                              )
+                            : (isSelectedUnlocked
+                                ? const LinearGradient(
+                                    colors: [
+                                      Color(0xFF10B981),
+                                      Color(0xFF06B6D4),
+                                    ],
+                                  )
+                                : const LinearGradient(
+                                    colors: [
+                                      Color(0xFFF59E0B),
+                                      Color(0xFFD97706),
+                                    ],
+                                  )),
+                        borderRadius: BorderRadius.circular(18),
+                        border: isSelectedEquipped
+                            ? Border.all(color: const Color(0xFF264051), width: 1.2)
+                            : null,
+                        boxShadow: isSelectedEquipped
+                            ? null
+                            : [
+                                BoxShadow(
+                                  color: (isSelectedUnlocked
+                                          ? const Color(0xFF06B6D4)
+                                          : const Color(0xFFF59E0B))
+                                      .withValues(alpha: 0.4),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                       ),
-                      elevation: 3,
+                      child: _isProcessing
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isSelectedEquipped
+                                      ? LucideIcons.check
+                                      : (isSelectedUnlocked
+                                          ? LucideIcons.sparkles
+                                          : LucideIcons.unlock),
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  isSelectedEquipped
+                                      ? 'Equipado'
+                                      : (isSelectedUnlocked
+                                          ? 'Guardar Estilo'
+                                          : 'Canjear ${_selectedItem.cost} 🪙'),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                              ],
+                            ),
                     ),
-                    child: _isProcessing
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Text(
-                            isSelectedEquipped
-                                ? '✓ Equipado'
-                                : (isSelectedUnlocked
-                                    ? 'Equipar'
-                                    : '🪙 ${_selectedItem.cost}'),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 13.5,
-                            ),
-                          ),
                   ),
                 ],
               ),
@@ -1058,153 +949,368 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
   Widget _buildCategoryTab({
     required String label,
     required String emoji,
-    required _ArmarioTab tab,
+    required _ArmarioCategory category,
   }) {
-    final isSelected = _activeTab == tab;
+    final isSelected = _activeCategory == category;
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          AppHaptics.selection();
-          setState(() => _activeTab = tab);
+          AppHaptics.lightImpact();
+          setState(() {
+            _activeCategory = category;
+            final items = _getItemsForActiveCategory();
+            if (items.isNotEmpty) {
+              _selectedItem = items.first;
+            }
+          });
         },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 9),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
           decoration: BoxDecoration(
-            color: isSelected
-                ? const Color(0xFF1CB0F6)
-                : const Color(0xFF14242D),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isSelected
-                  ? const Color(0xFF38BDF8)
-                  : const Color(0xFF223541),
-              width: 1,
+            color: isSelected ? const Color(0xFF00E5FF) : Colors.transparent,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 13)),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? const Color(0xFF051722) : const Color(0xFF869FAE),
+                    fontSize: 12.5,
+                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(emoji, style: const TextStyle(fontSize: 13)),
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  color: isSelected ? const Color(0xFF092A40) : Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 11.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWardrobeCard({
+    required WardrobeItem item,
+    required bool isSelected,
+    required bool isEquipped,
+    required bool isUnlocked,
+  }) {
+    return GestureDetector(
+      onTap: () => _selectItem(item),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF162934)
+              : const Color(0xFF0F1B23),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF00E5FF)
+                : (isEquipped
+                    ? const Color(0xFF10B981).withValues(alpha: 0.6)
+                    : const Color(0xFF1F3543)),
+            width: isSelected ? 1.8 : 1.2,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF00E5FF).withValues(alpha: 0.25),
+                    blurRadius: 10,
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          children: [
+            // Emoji / Icon Circle
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: item.primaryColor.withValues(alpha: 0.18),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: item.rarityColor.withValues(alpha: 0.5),
+                  width: 1,
                 ),
               ),
-            ],
-          ),
+              child: Center(
+                child: Text(item.emoji, style: const TextStyle(fontSize: 20)),
+              ),
+            ),
+            const SizedBox(width: 9),
+            // Info Column
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    item.name,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: isSelected ? Colors.white : const Color(0xFFE2E8F0),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  // Price / Status Badge
+                  if (isEquipped)
+                    const Text(
+                      '✓ Equipado',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF10B981),
+                      ),
+                    )
+                  else if (isUnlocked)
+                    const Text(
+                      'Desbloqueado',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF38BDF8),
+                      ),
+                    )
+                  else
+                    Row(
+                      children: [
+                        const Icon(
+                          LucideIcons.lock,
+                          size: 9,
+                          color: Color(0xFFFFD54F),
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          '${item.cost} 🪙',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFFFFD54F),
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-// ===========================================================================
-// PAINTER 2D PARA SIMULACIÓN EN VIVO DE ROPA, ZAPATOS Y ACCESORIOS DE SAMI
-// ===========================================================================
-class _Sami2DApparelPainter extends CustomPainter {
+// =============================================================================
+// SCULPTED 2D APPAREL PAINTER (Real, Organic, Minimalist, Beautiful)
+// =============================================================================
+class _SamiApparelSculptor extends CustomPainter {
   final SamiEquipment equipment;
   final bool isWaving;
-  final double waveProgress;
 
-  _Sami2DApparelPainter({
+  _SamiApparelSculptor({
     required this.equipment,
     required this.isWaving,
-    required this.waveProgress,
   });
 
-  bool get _hasHeadAccessory {
-    final id = equipment.accessoryId;
-    return id == 'acc_casco_astronauta' ||
-        id == 'acc_gorra' ||
-        id == 'acc_corona' ||
-        id == 'acc_auriculares' ||
-        id == 'acc_casco_cyberpunk' ||
-        id == 'acc_casco_piloto';
-  }
+  bool get _hasHeadAccessory =>
+      _AvatarSelectorModalState._isHeadItem(equipment.accessoryId);
 
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
 
-    // 0. Si tiene accesorio en la cabeza, RETIRAR EL PELO cubriendo el brote cyan con el tono azul marino de SAMI
+    // 0. Si tiene accesorio en la cabeza, RETIRAR EL PELO (cubriendo suavemente el brote cyan)
     if (_hasHeadAccessory) {
       _coverHeadSprout(canvas, w, h);
     }
 
     // 1. Capa de superhéroe trasera (si está equipada)
     if (equipment.clothingId == 'ropa_superheroe') {
-      _paintHeroCape(canvas, w, h);
+      _paintSuperheroCape(canvas, w, h);
     }
 
-    // 2. Calzado esculpido en 2D adaptado a las patitas frontales de SAMI
-    _paintShoes2D(canvas, w, h);
+    // 2. Calzado adaptado a las patitas frontales de SAMI
+    _paintShoes(canvas, w, h);
 
-    // 3. Ropa esculpida ceñida al cuerpo y vientre de SAMI en 2D
-    _paintClothing2D(canvas, w, h);
+    // 3. Ropa esculpida ceñida a los contornos de SAMI
+    _paintClothing(canvas, w, h);
 
     // 4. Accesorios (Bufandas, Gafas, Cascos, Gorra, Corona, Auriculares)
-    _paintAccessories2D(canvas, w, h);
+    _paintAccessories(canvas, w, h);
   }
 
-  // -------------------------------------------------------------------------
-  // OCULTAR EL PELO / BROTE CYAN CUANDO USA ACCESORIO EN LA CABEZA
-  // -------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // 0. OCULTAR EL PELO / BROTE CYAN CON SUAVE COBERTURA DE COLOR CABEZA
+  // ---------------------------------------------------------------------------
   void _coverHeadSprout(Canvas canvas, double w, double h) {
-    final sproutCenter = Offset(w * 0.52, h * 0.16);
-
-    final skullPaint = Paint()
+    final sproutCenter = Offset(w * 0.50, h * 0.18);
+    final domePaint = Paint()
       ..shader = RadialGradient(
-        center: const Alignment(-0.2, -0.3),
+        center: const Alignment(0, -0.2),
         colors: const [
-          Color(0xFF034A74),
-          Color(0xFF003859),
-          Color(0xFF002237),
+          Color(0xFF023859),
+          Color(0xFF012942),
+          Color(0xFF00192A),
         ],
-      ).createShader(Rect.fromCircle(center: sproutCenter, radius: w * 0.22));
+      ).createShader(Rect.fromCircle(center: sproutCenter, radius: w * 0.20));
 
     canvas.drawOval(
-      Rect.fromCenter(center: sproutCenter, width: w * 0.36, height: h * 0.18),
-      skullPaint,
+      Rect.fromCenter(center: sproutCenter, width: w * 0.32, height: h * 0.16),
+      domePaint,
     );
   }
 
-  // -------------------------------------------------------------------------
-  // CAPA DE SUPERHÉROE
-  // -------------------------------------------------------------------------
-  void _paintHeroCape(Canvas canvas, double w, double h) {
+  // ---------------------------------------------------------------------------
+  // 1. CAPA DE SUPERHÉROE TRASERA
+  // ---------------------------------------------------------------------------
+  void _paintSuperheroCape(Canvas canvas, double w, double h) {
     final capePaint = Paint()
       ..shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [Color(0xFFE11D48), Color(0xFF9F1239), Color(0xFF4C0519)],
-      ).createShader(Rect.fromLTWH(0, h * 0.45, w, h * 0.50));
+        colors: [Color(0xFFDC2626), Color(0xFF991B1B)],
+      ).createShader(Rect.fromLTWH(0, h * 0.50, w, h * 0.40));
 
-    // Ala izquierda de la capa
     final leftWing = Path();
-    leftWing.moveTo(w * 0.22, h * 0.58);
-    leftWing.quadraticBezierTo(w * 0.08, h * 0.68, w * 0.11, h * 0.82);
+    leftWing.moveTo(w * 0.20, h * 0.60);
+    leftWing.quadraticBezierTo(w * 0.08, h * 0.70, w * 0.12, h * 0.82);
     leftWing.quadraticBezierTo(w * 0.18, h * 0.76, w * 0.24, h * 0.68);
     leftWing.close();
     canvas.drawPath(leftWing, capePaint);
 
-    // Ala derecha de la capa
     final rightWing = Path();
-    rightWing.moveTo(w * 0.78, h * 0.58);
-    rightWing.quadraticBezierTo(w * 0.92, h * 0.68, w * 0.89, h * 0.82);
+    rightWing.moveTo(w * 0.80, h * 0.60);
+    rightWing.quadraticBezierTo(w * 0.92, h * 0.70, w * 0.88, h * 0.82);
     rightWing.quadraticBezierTo(w * 0.82, h * 0.76, w * 0.76, h * 0.68);
     rightWing.close();
     canvas.drawPath(rightWing, capePaint);
   }
 
-  // -------------------------------------------------------------------------
-  // ROPA ESCULPIDA EN 2D (ADAPTADA AL PECHO Y VIENTRE DE SAMI FRONTAL)
-  // -------------------------------------------------------------------------
-  void _paintClothing2D(Canvas canvas, double w, double h) {
+  // ---------------------------------------------------------------------------
+  // 2. CALZADO (Pies de SAMI en w * 0.35 y w * 0.65, h * 0.88 a 0.96)
+  // ---------------------------------------------------------------------------
+  void _paintShoes(Canvas canvas, double w, double h) {
+    switch (equipment.shoesId) {
+      case 'zap_sneakers':
+        _drawSneaker(canvas, w * 0.35, h * 0.91, w * 0.14, h * 0.07, isLeft: true);
+        _drawSneaker(canvas, w * 0.65, h * 0.91, w * 0.14, h * 0.07, isLeft: false);
+        break;
+      case 'zap_botas':
+        _drawBoot(canvas, w * 0.35, h * 0.91, w * 0.15, h * 0.075, const Color(0xFF92400E));
+        _drawBoot(canvas, w * 0.65, h * 0.91, w * 0.15, h * 0.075, const Color(0xFF92400E));
+        break;
+      case 'zap_charol':
+        _drawDressShoe(canvas, w * 0.35, h * 0.91, w * 0.15, h * 0.07);
+        _drawDressShoe(canvas, w * 0.65, h * 0.91, w * 0.15, h * 0.07);
+        break;
+      case 'zap_espaciales':
+        _drawAntiGravShoe(canvas, w * 0.35, h * 0.91, w * 0.15, h * 0.075);
+        _drawAntiGravShoe(canvas, w * 0.65, h * 0.91, w * 0.15, h * 0.075);
+        break;
+      case 'zap_dorados':
+        _drawGoldSlippers(canvas, w * 0.35, h * 0.91, w * 0.15, h * 0.075);
+        _drawGoldSlippers(canvas, w * 0.65, h * 0.91, w * 0.15, h * 0.075);
+        break;
+      case 'zap_clasicos':
+      default:
+        // Patitas naturales de SAMI
+        break;
+    }
+  }
+
+  void _drawSneaker(Canvas canvas, double cx, double cy, double sw, double sh, {required bool isLeft}) {
+    final shoeRect = Rect.fromCenter(center: Offset(cx, cy), width: sw, height: sh);
+    // Cyan Sneaker Upper
+    final upperPaint = Paint()..color = const Color(0xFF06B6D4);
+    canvas.drawRRect(RRect.fromRectAndRadius(shoeRect, const Radius.circular(8)), upperPaint);
+    // White Sole
+    final solePaint = Paint()..color = Colors.white;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(shoeRect.left, shoeRect.bottom - sh * 0.35, sw, sh * 0.35),
+        const Radius.circular(4),
+      ),
+      solePaint,
+    );
+    // LED Glow line
+    final ledPaint = Paint()
+      ..color = const Color(0xFF38BDF8)
+      ..strokeWidth = 1.5;
+    canvas.drawLine(
+      Offset(shoeRect.left + 2, shoeRect.bottom - 2),
+      Offset(shoeRect.right - 2, shoeRect.bottom - 2),
+      ledPaint,
+    );
+  }
+
+  void _drawBoot(Canvas canvas, double cx, double cy, double sw, double sh, Color bootColor) {
+    final bootRect = Rect.fromCenter(center: Offset(cx, cy), width: sw, height: sh);
+    final leatherPaint = Paint()..color = bootColor;
+    canvas.drawRRect(RRect.fromRectAndRadius(bootRect, const Radius.circular(8)), leatherPaint);
+    // Dark Sole
+    final solePaint = Paint()..color = const Color(0xFF1E1B18);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(bootRect.left, bootRect.bottom - sh * 0.35, sw, sh * 0.35),
+        const Radius.circular(4),
+      ),
+      solePaint,
+    );
+  }
+
+  void _drawDressShoe(Canvas canvas, double cx, double cy, double sw, double sh) {
+    final shoeRect = Rect.fromCenter(center: Offset(cx, cy), width: sw, height: sh);
+    final patentPaint = Paint()..color = const Color(0xFF0F172A);
+    canvas.drawRRect(RRect.fromRectAndRadius(shoeRect, const Radius.circular(8)), patentPaint);
+    // Specular shine line
+    final shinePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.35)
+      ..strokeWidth = 1.5;
+    canvas.drawLine(
+      Offset(shoeRect.left + 4, shoeRect.top + 3),
+      Offset(shoeRect.right - 4, shoeRect.top + 3),
+      shinePaint,
+    );
+  }
+
+  void _drawAntiGravShoe(Canvas canvas, double cx, double cy, double sw, double sh) {
+    final shoeRect = Rect.fromCenter(center: Offset(cx, cy), width: sw, height: sh);
+    final shoePaint = Paint()..color = const Color(0xFF7C3AED);
+    canvas.drawRRect(RRect.fromRectAndRadius(shoeRect, const Radius.circular(8)), shoePaint);
+    // Anti-gravity neon glow
+    final glowPaint = Paint()
+      ..color = const Color(0xFF00E5FF)
+      ..strokeWidth = 2;
+    canvas.drawLine(
+      Offset(shoeRect.left + 2, shoeRect.bottom - 1),
+      Offset(shoeRect.right - 2, shoeRect.bottom - 1),
+      glowPaint,
+    );
+  }
+
+  void _drawGoldSlippers(Canvas canvas, double cx, double cy, double sw, double sh) {
+    final shoeRect = Rect.fromCenter(center: Offset(cx, cy), width: sw, height: sh);
+    final goldPaint = Paint()..color = const Color(0xFFFFB300);
+    canvas.drawRRect(RRect.fromRectAndRadius(shoeRect, const Radius.circular(8)), goldPaint);
+    // Star emblem
+    final starPaint = Paint()..color = Colors.white;
+    canvas.drawCircle(Offset(cx, cy), 2.5, starPaint);
+  }
+
+  // ---------------------------------------------------------------------------
+  // 3. ROPA (Ceñida al cuerpo, empieza naturalmente en h * 0.62 bajo la barbilla)
+  // ---------------------------------------------------------------------------
+  void _paintClothing(Canvas canvas, double w, double h) {
     switch (equipment.clothingId) {
       case 'ropa_ejecutivo':
         _paintExecutiveSuit(canvas, w, h);
@@ -1215,49 +1321,49 @@ class _Sami2DApparelPainter extends CustomPainter {
       case 'ropa_superheroe':
         _paintSuperheroSuit(canvas, w, h);
         break;
-      case 'ropa_deportiva':
-        _paintSportJersey(canvas, w, h);
-        break;
       case 'ropa_chef':
         _paintChefCoat(canvas, w, h);
         break;
       case 'ropa_armadura':
         _paintGalacticArmor(canvas, w, h);
         break;
+      case 'ropa_deportiva':
+        _paintAthleticJersey(canvas, w, h);
+        break;
       case 'ropa_toga':
         _paintImperialToga(canvas, w, h);
         break;
       case 'ropa_clasica':
       default:
-        // Plumaje natural de SAMI (sin overlay de ropa)
+        // Plumaje natural de SAMI (sin ropa)
         break;
     }
   }
 
-  // Traje Ejecutivo: Saco azul marino, camisa blanca y corbata roja con clip de oro
   void _paintExecutiveSuit(Canvas canvas, double w, double h) {
+    // Saco formal azul marino curvado con solapa
     final suitPaint = Paint()
       ..shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [Color(0xFF1E3A8A), Color(0xFF0F172A)],
-      ).createShader(Rect.fromLTWH(w * 0.22, h * 0.52, w * 0.56, h * 0.35));
+      ).createShader(Rect.fromLTWH(w * 0.26, h * 0.62, w * 0.48, h * 0.24));
 
     final suitPath = Path();
-    suitPath.moveTo(w * 0.30, h * 0.54);
-    suitPath.quadraticBezierTo(w * 0.20, h * 0.65, w * 0.22, h * 0.84);
-    suitPath.quadraticBezierTo(w * 0.50, h * 0.88, w * 0.78, h * 0.84);
-    suitPath.quadraticBezierTo(w * 0.80, h * 0.65, w * 0.70, h * 0.54);
-    suitPath.quadraticBezierTo(w * 0.50, h * 0.60, w * 0.30, h * 0.54);
+    suitPath.moveTo(w * 0.32, h * 0.62);
+    suitPath.quadraticBezierTo(w * 0.22, h * 0.70, w * 0.25, h * 0.85);
+    suitPath.quadraticBezierTo(w * 0.50, h * 0.88, w * 0.75, h * 0.85);
+    suitPath.quadraticBezierTo(w * 0.78, h * 0.70, w * 0.68, h * 0.62);
+    suitPath.quadraticBezierTo(w * 0.50, h * 0.66, w * 0.32, h * 0.62);
     suitPath.close();
     canvas.drawPath(suitPath, suitPaint);
 
-    // Cuello de camisa blanca triangular
+    // Camisa blanca en 'V'
     final shirtPaint = Paint()..color = Colors.white;
     final shirtPath = Path();
-    shirtPath.moveTo(w * 0.42, h * 0.56);
-    shirtPath.lineTo(w * 0.50, h * 0.70);
-    shirtPath.lineTo(w * 0.58, h * 0.56);
+    shirtPath.moveTo(w * 0.42, h * 0.63);
+    shirtPath.lineTo(w * 0.50, h * 0.73);
+    shirtPath.lineTo(w * 0.58, h * 0.63);
     shirtPath.close();
     canvas.drawPath(shirtPath, shirtPaint);
 
@@ -1267,604 +1373,398 @@ class _Sami2DApparelPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [Color(0xFFDC2626), Color(0xFF991B1B)],
-      ).createShader(Rect.fromLTWH(w * 0.46, h * 0.58, w * 0.08, h * 0.24));
+      ).createShader(Rect.fromLTWH(w * 0.47, h * 0.64, w * 0.06, h * 0.16));
 
     final tiePath = Path();
-    tiePath.moveTo(w * 0.48, h * 0.58);
-    tiePath.lineTo(w * 0.52, h * 0.58);
-    tiePath.lineTo(w * 0.53, h * 0.74);
-    tiePath.lineTo(w * 0.50, h * 0.79);
-    tiePath.lineTo(w * 0.47, h * 0.74);
+    tiePath.moveTo(w * 0.48, h * 0.64);
+    tiePath.lineTo(w * 0.52, h * 0.64);
+    tiePath.lineTo(w * 0.53, h * 0.76);
+    tiePath.lineTo(w * 0.50, h * 0.80);
+    tiePath.lineTo(w * 0.47, h * 0.76);
     tiePath.close();
     canvas.drawPath(tiePath, tiePaint);
 
-    // Clip de oro en la corbata
-    final goldClipPaint = Paint()..color = const Color(0xFFFFD54F);
+    // Clip dorado
+    final clipPaint = Paint()..color = const Color(0xFFFFD54F);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(w * 0.47, h * 0.66, w * 0.06, h * 0.015),
+        Rect.fromLTWH(w * 0.475, h * 0.70, w * 0.05, h * 0.012),
         const Radius.circular(2),
       ),
-      goldClipPaint,
+      clipPaint,
     );
-
-    // Botones dorados del saco
-    final buttonPaint = Paint()..color = const Color(0xFFFFD54F);
-    canvas.drawCircle(Offset(w * 0.44, h * 0.76), 3.0, buttonPaint);
-    canvas.drawCircle(Offset(w * 0.44, h * 0.81), 3.0, buttonPaint);
   }
 
-  // Sudadera Streetwear: Cyan moderno con bolsillo canguro y cordones blancos
   void _paintStreetwearHoodie(Canvas canvas, double w, double h) {
     final hoodiePaint = Paint()
       ..shader = const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
-      ).createShader(Rect.fromLTWH(w * 0.22, h * 0.52, w * 0.56, h * 0.35));
+      ).createShader(Rect.fromLTWH(w * 0.25, h * 0.62, w * 0.50, h * 0.24));
 
     final hoodiePath = Path();
-    hoodiePath.moveTo(w * 0.28, h * 0.53);
-    hoodiePath.quadraticBezierTo(w * 0.19, h * 0.65, w * 0.21, h * 0.84);
-    hoodiePath.quadraticBezierTo(w * 0.50, h * 0.87, w * 0.79, h * 0.84);
-    hoodiePath.quadraticBezierTo(w * 0.81, h * 0.65, w * 0.72, h * 0.53);
-    hoodiePath.quadraticBezierTo(w * 0.50, h * 0.58, w * 0.28, h * 0.53);
+    hoodiePath.moveTo(w * 0.30, h * 0.62);
+    hoodiePath.quadraticBezierTo(w * 0.22, h * 0.70, w * 0.25, h * 0.85);
+    hoodiePath.quadraticBezierTo(w * 0.50, h * 0.88, w * 0.75, h * 0.85);
+    hoodiePath.quadraticBezierTo(w * 0.78, h * 0.70, w * 0.70, h * 0.62);
+    hoodiePath.quadraticBezierTo(w * 0.50, h * 0.65, w * 0.30, h * 0.62);
     hoodiePath.close();
     canvas.drawPath(hoodiePath, hoodiePaint);
 
-    // Bolsillo canguro frontal
-    final pocketPaint = Paint()
-      ..color = const Color(0xFF075985).withValues(alpha: 0.85);
+    // Bolsillo canguro
+    final pocketPaint = Paint()..color = const Color(0xFF075985);
     final pocketPath = Path();
-    pocketPath.moveTo(w * 0.36, h * 0.71);
-    pocketPath.lineTo(w * 0.64, h * 0.71);
-    pocketPath.lineTo(w * 0.67, h * 0.82);
-    pocketPath.lineTo(w * 0.33, h * 0.82);
+    pocketPath.moveTo(w * 0.36, h * 0.74);
+    pocketPath.lineTo(w * 0.64, h * 0.74);
+    pocketPath.lineTo(w * 0.66, h * 0.83);
+    pocketPath.lineTo(w * 0.34, h * 0.83);
     pocketPath.close();
     canvas.drawPath(pocketPath, pocketPaint);
 
-    // Cordones de la capucha
+    // Cordones de la sudadera
     final stringPaint = Paint()
       ..color = Colors.white
       ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
-    canvas.drawLine(Offset(w * 0.44, h * 0.56), Offset(w * 0.43, h * 0.65), stringPaint);
-    canvas.drawLine(Offset(w * 0.56, h * 0.56), Offset(w * 0.57, h * 0.65), stringPaint);
+    canvas.drawLine(Offset(w * 0.44, h * 0.64), Offset(w * 0.43, h * 0.71), stringPaint);
+    canvas.drawLine(Offset(w * 0.56, h * 0.64), Offset(w * 0.57, h * 0.71), stringPaint);
   }
 
-  // Traje de Superhéroe: Escarlata con cinturón dorado y emblema
   void _paintSuperheroSuit(Canvas canvas, double w, double h) {
     final heroPaint = Paint()
       ..shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [Color(0xFFDC2626), Color(0xFF991B1B)],
-      ).createShader(Rect.fromLTWH(w * 0.22, h * 0.52, w * 0.56, h * 0.35));
+      ).createShader(Rect.fromLTWH(w * 0.26, h * 0.62, w * 0.48, h * 0.24));
 
     final heroPath = Path();
-    heroPath.moveTo(w * 0.30, h * 0.53);
-    heroPath.quadraticBezierTo(w * 0.20, h * 0.65, w * 0.22, h * 0.84);
-    heroPath.quadraticBezierTo(w * 0.50, h * 0.87, w * 0.78, h * 0.84);
-    heroPath.quadraticBezierTo(w * 0.80, h * 0.65, w * 0.70, h * 0.53);
-    heroPath.quadraticBezierTo(w * 0.50, h * 0.58, w * 0.30, h * 0.53);
+    heroPath.moveTo(w * 0.30, h * 0.62);
+    heroPath.quadraticBezierTo(w * 0.22, h * 0.70, w * 0.25, h * 0.85);
+    heroPath.quadraticBezierTo(w * 0.50, h * 0.88, w * 0.75, h * 0.85);
+    heroPath.quadraticBezierTo(w * 0.78, h * 0.70, w * 0.70, h * 0.62);
+    heroPath.quadraticBezierTo(w * 0.50, h * 0.65, w * 0.30, h * 0.62);
     heroPath.close();
     canvas.drawPath(heroPath, heroPaint);
 
-    // Emblema dorado en el pecho (Escudo geométrico)
-    final emblemPaint = Paint()..color = const Color(0xFFFFD54F);
-    final emblemPath = Path();
-    emblemPath.moveTo(w * 0.50, h * 0.61);
-    emblemPath.lineTo(w * 0.56, h * 0.64);
-    emblemPath.lineTo(w * 0.50, h * 0.71);
-    emblemPath.lineTo(w * 0.44, h * 0.64);
-    emblemPath.close();
-    canvas.drawPath(emblemPath, emblemPaint);
-
     // Cinturón dorado de superhéroe
-    final beltPaint = Paint()..color = const Color(0xFFFFC107);
+    final beltPaint = Paint()..color = const Color(0xFFFFB300);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(w * 0.28, h * 0.77, w * 0.44, h * 0.045),
+        Rect.fromLTWH(w * 0.34, h * 0.77, w * 0.32, h * 0.04),
         const Radius.circular(4),
       ),
       beltPaint,
     );
-    // Hebilla del cinturón
-    final bucklePaint = Paint()..color = Colors.white;
-    canvas.drawCircle(Offset(w * 0.50, h * 0.792), 4.5, bucklePaint);
   }
 
-  // Conjunto Atlético: Jersey deportivo teal con franjas blancas
-  void _paintSportJersey(Canvas canvas, double w, double h) {
-    final jerseyPaint = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFF0D9488), Color(0xFF115E59)],
-      ).createShader(Rect.fromLTWH(w * 0.22, h * 0.52, w * 0.56, h * 0.35));
-
-    final jerseyPath = Path();
-    jerseyPath.moveTo(w * 0.30, h * 0.54);
-    jerseyPath.quadraticBezierTo(w * 0.20, h * 0.65, w * 0.22, h * 0.84);
-    jerseyPath.quadraticBezierTo(w * 0.50, h * 0.87, w * 0.78, h * 0.84);
-    jerseyPath.quadraticBezierTo(w * 0.80, h * 0.65, w * 0.70, h * 0.54);
-    jerseyPath.quadraticBezierTo(w * 0.50, h * 0.59, w * 0.30, h * 0.54);
-    jerseyPath.close();
-    canvas.drawPath(jerseyPath, jerseyPaint);
-
-    // Franjas laterales blancas
-    final stripePaint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 3.0
-      ..style = PaintingStyle.stroke;
-    canvas.drawLine(Offset(w * 0.28, h * 0.58), Offset(w * 0.26, h * 0.82), stripePaint);
-    canvas.drawLine(Offset(w * 0.72, h * 0.58), Offset(w * 0.74, h * 0.82), stripePaint);
-
-    // Número atlético 01 en el pecho
-    final textPainter = TextPainter(
-      text: const TextSpan(
-        text: '01',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.w900,
-          letterSpacing: -0.5,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    textPainter.paint(
-      canvas,
-      Offset(w * 0.50 - textPainter.width / 2, h * 0.66 - textPainter.height / 2),
-    );
-  }
-
-  // Filipina de Chef: Chaqueta culinaria blanca con botones dorados y pañuelo rojo
   void _paintChefCoat(Canvas canvas, double w, double h) {
-    final coatPaint = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFFFFFFFF), Color(0xFFE2E8F0)],
-      ).createShader(Rect.fromLTWH(w * 0.22, h * 0.52, w * 0.56, h * 0.35));
-
+    final coatPaint = Paint()..color = Colors.white;
     final coatPath = Path();
-    coatPath.moveTo(w * 0.30, h * 0.54);
-    coatPath.quadraticBezierTo(w * 0.20, h * 0.65, w * 0.22, h * 0.84);
-    coatPath.quadraticBezierTo(w * 0.50, h * 0.87, w * 0.78, h * 0.84);
-    coatPath.quadraticBezierTo(w * 0.80, h * 0.65, w * 0.70, h * 0.54);
-    coatPath.quadraticBezierTo(w * 0.50, h * 0.60, w * 0.30, h * 0.54);
+    coatPath.moveTo(w * 0.30, h * 0.62);
+    coatPath.quadraticBezierTo(w * 0.22, h * 0.70, w * 0.25, h * 0.85);
+    coatPath.quadraticBezierTo(w * 0.50, h * 0.88, w * 0.75, h * 0.85);
+    coatPath.quadraticBezierTo(w * 0.78, h * 0.70, w * 0.70, h * 0.62);
+    coatPath.quadraticBezierTo(w * 0.50, h * 0.65, w * 0.30, h * 0.62);
     coatPath.close();
     canvas.drawPath(coatPath, coatPaint);
 
-    // Pañuelo rojo de chef al cuello
-    final scarfPaint = Paint()..color = const Color(0xFFEF4444);
-    final scarfPath = Path();
-    scarfPath.moveTo(w * 0.44, h * 0.56);
-    scarfPath.lineTo(w * 0.50, h * 0.62);
-    scarfPath.lineTo(w * 0.56, h * 0.56);
-    scarfPath.close();
-    canvas.drawPath(scarfPath, scarfPaint);
-
-    // Doble hilera de botones negros
-    final buttonPaint = Paint()..color = const Color(0xFF1E293B);
-    for (int i = 0; i < 3; i++) {
-      final y = h * (0.65 + i * 0.06);
-      canvas.drawCircle(Offset(w * 0.42, y), 2.8, buttonPaint);
-      canvas.drawCircle(Offset(w * 0.58, y), 2.8, buttonPaint);
-    }
+    // Botones dobles de chef
+    final buttonPaint = Paint()..color = const Color(0xFFFFB300);
+    canvas.drawCircle(Offset(w * 0.44, h * 0.68), 2.5, buttonPaint);
+    canvas.drawCircle(Offset(w * 0.56, h * 0.68), 2.5, buttonPaint);
+    canvas.drawCircle(Offset(w * 0.44, h * 0.74), 2.5, buttonPaint);
+    canvas.drawCircle(Offset(w * 0.56, h * 0.74), 2.5, buttonPaint);
   }
 
-  // Armadura Galáctica: Coraza de nanotecnología con reactor cyan central
   void _paintGalacticArmor(Canvas canvas, double w, double h) {
     final armorPaint = Paint()
       ..shader = const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xFF475569), Color(0xFF1E293B), Color(0xFF0F172A)],
-      ).createShader(Rect.fromLTWH(w * 0.22, h * 0.52, w * 0.56, h * 0.35));
+        colors: [Color(0xFF475569), Color(0xFF1E293B)],
+      ).createShader(Rect.fromLTWH(w * 0.25, h * 0.62, w * 0.50, h * 0.24));
 
     final armorPath = Path();
-    armorPath.moveTo(w * 0.30, h * 0.53);
-    armorPath.quadraticBezierTo(w * 0.20, h * 0.65, w * 0.22, h * 0.84);
-    armorPath.quadraticBezierTo(w * 0.50, h * 0.87, w * 0.78, h * 0.84);
-    armorPath.quadraticBezierTo(w * 0.80, h * 0.65, w * 0.70, h * 0.53);
-    armorPath.quadraticBezierTo(w * 0.50, h * 0.58, w * 0.30, h * 0.53);
+    armorPath.moveTo(w * 0.30, h * 0.62);
+    armorPath.quadraticBezierTo(w * 0.22, h * 0.70, w * 0.25, h * 0.85);
+    armorPath.quadraticBezierTo(w * 0.50, h * 0.88, w * 0.75, h * 0.85);
+    armorPath.quadraticBezierTo(w * 0.78, h * 0.70, w * 0.70, h * 0.62);
+    armorPath.quadraticBezierTo(w * 0.50, h * 0.65, w * 0.30, h * 0.62);
     armorPath.close();
     canvas.drawPath(armorPath, armorPaint);
 
-    // Borde de titanio
-    final rimPaint = Paint()
-      ..color = const Color(0xFF94A3B8)
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke;
-    canvas.drawPath(armorPath, rimPaint);
-
-    // Reactor arc cyan resplandeciente en el pecho
-    final coreGlowPaint = Paint()
-      ..color = const Color(0xFF00E5FF).withValues(alpha: 0.5)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6.0);
-    canvas.drawCircle(Offset(w * 0.50, h * 0.68), 12.0, coreGlowPaint);
-
+    // Reactor central cyan
     final corePaint = Paint()..color = const Color(0xFF00E5FF);
-    canvas.drawCircle(Offset(w * 0.50, h * 0.68), 7.0, corePaint);
-
-    final coreCenterPaint = Paint()..color = Colors.white;
-    canvas.drawCircle(Offset(w * 0.50, h * 0.68), 3.5, coreCenterPaint);
+    canvas.drawCircle(Offset(w * 0.50, h * 0.72), 5.0, corePaint);
   }
 
-  // Toga Imperial de Oro: Manto imperial drapeado con broche de rubí
+  void _paintAthleticJersey(Canvas canvas, double w, double h) {
+    final jerseyPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF0D9488), Color(0xFF115E59)],
+      ).createShader(Rect.fromLTWH(w * 0.25, h * 0.62, w * 0.50, h * 0.24));
+
+    final jerseyPath = Path();
+    jerseyPath.moveTo(w * 0.30, h * 0.62);
+    jerseyPath.quadraticBezierTo(w * 0.22, h * 0.70, w * 0.25, h * 0.85);
+    jerseyPath.quadraticBezierTo(w * 0.50, h * 0.88, w * 0.75, h * 0.85);
+    jerseyPath.quadraticBezierTo(w * 0.78, h * 0.70, w * 0.70, h * 0.62);
+    jerseyPath.quadraticBezierTo(w * 0.50, h * 0.65, w * 0.30, h * 0.62);
+    jerseyPath.close();
+    canvas.drawPath(jerseyPath, jerseyPaint);
+
+    // Rayas blancas deportivas laterales
+    final stripePaint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 2.0;
+    canvas.drawLine(Offset(w * 0.34, h * 0.66), Offset(w * 0.33, h * 0.83), stripePaint);
+    canvas.drawLine(Offset(w * 0.66, h * 0.66), Offset(w * 0.67, h * 0.83), stripePaint);
+  }
+
   void _paintImperialToga(Canvas canvas, double w, double h) {
     final togaPaint = Paint()
       ..shader = const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xFFF59E0B), Color(0xFFD97706), Color(0xFF78350F)],
-      ).createShader(Rect.fromLTWH(w * 0.22, h * 0.52, w * 0.56, h * 0.35));
+        colors: [Color(0xFFD97706), Color(0xFF78350F)],
+      ).createShader(Rect.fromLTWH(w * 0.26, h * 0.62, w * 0.48, h * 0.24));
 
     final togaPath = Path();
-    togaPath.moveTo(w * 0.30, h * 0.53);
-    togaPath.lineTo(w * 0.72, h * 0.68);
-    togaPath.lineTo(w * 0.78, h * 0.84);
-    togaPath.quadraticBezierTo(w * 0.50, h * 0.87, w * 0.22, h * 0.84);
+    togaPath.moveTo(w * 0.30, h * 0.62);
+    togaPath.lineTo(w * 0.70, h * 0.75);
+    togaPath.quadraticBezierTo(w * 0.65, h * 0.86, w * 0.50, h * 0.88);
+    togaPath.quadraticBezierTo(w * 0.28, h * 0.85, w * 0.26, h * 0.74);
     togaPath.close();
     canvas.drawPath(togaPath, togaPaint);
-
-    // Broche de oro y rubí en el hombro
-    final broochGold = Paint()..color = const Color(0xFFFFD54F);
-    canvas.drawCircle(Offset(w * 0.32, h * 0.55), 7.0, broochGold);
-    final rubyGem = Paint()..color = const Color(0xFFEF4444);
-    canvas.drawCircle(Offset(w * 0.32, h * 0.55), 3.8, rubyGem);
   }
 
-  // -------------------------------------------------------------------------
-  // CALZADO ESCULPIDO EN 2D (PATITAS FRONTALES DE SAMI)
-  // -------------------------------------------------------------------------
-  void _paintShoes2D(Canvas canvas, double w, double h) {
-    if (equipment.shoesId == 'zap_clasicos') return; // Patitas naturales
-
-    final leftFoot = Rect.fromCenter(
-      center: Offset(w * 0.37, h * 0.89),
-      width: w * 0.20,
-      height: h * 0.12,
-    );
-    final rightFoot = Rect.fromCenter(
-      center: Offset(w * 0.63, h * 0.89),
-      width: w * 0.20,
-      height: h * 0.12,
-    );
-
-    switch (equipment.shoesId) {
-      case 'zap_sneakers':
-        final shoePaint = Paint()..color = const Color(0xFF00E5FF);
-        canvas.drawRRect(RRect.fromRectAndRadius(leftFoot, const Radius.circular(8)), shoePaint);
-        canvas.drawRRect(RRect.fromRectAndRadius(rightFoot, const Radius.circular(8)), shoePaint);
-        // Suela blanca
-        final solePaint = Paint()..color = Colors.white;
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(leftFoot.left, leftFoot.bottom - 4, leftFoot.width, 4),
-            const Radius.circular(4),
-          ),
-          solePaint,
-        );
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(rightFoot.left, rightFoot.bottom - 4, rightFoot.width, 4),
-            const Radius.circular(4),
-          ),
-          solePaint,
-        );
-        break;
-
-      case 'zap_botas':
-        final bootPaint = Paint()..color = const Color(0xFF78350F);
-        canvas.drawRRect(RRect.fromRectAndRadius(leftFoot, const Radius.circular(6)), bootPaint);
-        canvas.drawRRect(RRect.fromRectAndRadius(rightFoot, const Radius.circular(6)), bootPaint);
-        break;
-
-      case 'zap_charol':
-        final galaPaint = Paint()..color = const Color(0xFF0F172A);
-        canvas.drawRRect(RRect.fromRectAndRadius(leftFoot, const Radius.circular(8)), galaPaint);
-        canvas.drawRRect(RRect.fromRectAndRadius(rightFoot, const Radius.circular(8)), galaPaint);
-        // Brillo blanco
-        final shinePaint = Paint()..color = Colors.white.withValues(alpha: 0.5);
-        canvas.drawCircle(Offset(leftFoot.left + 8, leftFoot.top + 4), 2.5, shinePaint);
-        canvas.drawCircle(Offset(rightFoot.left + 8, rightFoot.top + 4), 2.5, shinePaint);
-        break;
-
-      case 'zap_espaciales':
-        final spacePaint = Paint()..color = const Color(0xFF7C3AED);
-        canvas.drawRRect(RRect.fromRectAndRadius(leftFoot, const Radius.circular(8)), spacePaint);
-        canvas.drawRRect(RRect.fromRectAndRadius(rightFoot, const Radius.circular(8)), spacePaint);
-        final glowRing = Paint()..color = const Color(0xFF00E5FF);
-        canvas.drawLine(
-          Offset(leftFoot.left + 4, leftFoot.bottom - 2),
-          Offset(leftFoot.right - 4, leftFoot.bottom - 2),
-          glowRing..strokeWidth = 2,
-        );
-        canvas.drawLine(
-          Offset(rightFoot.left + 4, rightFoot.bottom - 2),
-          Offset(rightFoot.right - 4, rightFoot.bottom - 2),
-          glowRing..strokeWidth = 2,
-        );
-        break;
-
-      case 'zap_dorados':
-        final goldPaint = Paint()..color = const Color(0xFFFFD54F);
-        canvas.drawRRect(RRect.fromRectAndRadius(leftFoot, const Radius.circular(8)), goldPaint);
-        canvas.drawRRect(RRect.fromRectAndRadius(rightFoot, const Radius.circular(8)), goldPaint);
-        final coinPaint = Paint()..color = const Color(0xFFF59E0B);
-        canvas.drawCircle(leftFoot.center, 4, coinPaint);
-        canvas.drawCircle(rightFoot.center, 4, coinPaint);
-        break;
-    }
-  }
-
-  // -------------------------------------------------------------------------
-  // ACCESORIOS ESCULPIDOS EN 2D (CABEZA, CUELLO Y OJOS)
-  // -------------------------------------------------------------------------
-  void _paintAccessories2D(Canvas canvas, double w, double h) {
+  // ---------------------------------------------------------------------------
+  // 4. ACCESORIOS (Bufandas, Gafas, Gorra, Corona, Auriculares, Cascos)
+  // ---------------------------------------------------------------------------
+  void _paintAccessories(Canvas canvas, double w, double h) {
     switch (equipment.accessoryId) {
-      // 1. Bufanda Nórdica
       case 'acc_bufanda_nordica':
-        final scarfPaint = Paint()
-          ..shader = const LinearGradient(
-            colors: [Color(0xFF0284C7), Color(0xFF38BDF8)],
-          ).createShader(Rect.fromLTWH(w * 0.28, h * 0.50, w * 0.44, h * 0.12));
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(w * 0.28, h * 0.50, w * 0.44, h * 0.11),
-            const Radius.circular(14),
-          ),
-          scarfPaint,
-        );
-        // Cola de la bufanda colgando
-        final tailPaint = Paint()..color = const Color(0xFF0284C7);
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(w * 0.58, h * 0.57, w * 0.10, h * 0.16),
-            const Radius.circular(6),
-          ),
-          tailPaint,
-        );
+        _paintScarf(canvas, w, h, const Color(0xFF0284C7));
         break;
-
-      // 2. Bufanda Carmesí
       case 'acc_bufanda_carmesi':
-        final silkPaint = Paint()
-          ..shader = const LinearGradient(
-            colors: [Color(0xFFE11D48), Color(0xFF9F1239)],
-          ).createShader(Rect.fromLTWH(w * 0.28, h * 0.50, w * 0.44, h * 0.12));
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(w * 0.28, h * 0.50, w * 0.44, h * 0.11),
-            const Radius.circular(14),
-          ),
-          silkPaint,
-        );
-        final silkTail = Paint()..color = const Color(0xFFE11D48);
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(w * 0.32, h * 0.57, w * 0.09, h * 0.17),
-            const Radius.circular(6),
-          ),
-          silkTail,
-        );
+        _paintScarf(canvas, w, h, const Color(0xFFDC2626));
         break;
-
-      // 3. Lentes Oscuros VIP
-      case 'acc_lentes_vip':
-        final framePaint = Paint()..color = const Color(0xFF090D10);
-        final leftLens = RRect.fromRectAndRadius(
-          Rect.fromLTWH(w * 0.34, h * 0.42, w * 0.14, h * 0.08),
-          const Radius.circular(5),
-        );
-        final rightLens = RRect.fromRectAndRadius(
-          Rect.fromLTWH(w * 0.52, h * 0.42, w * 0.14, h * 0.08),
-          const Radius.circular(5),
-        );
-        canvas.drawRRect(leftLens, framePaint);
-        canvas.drawRRect(rightLens, framePaint);
-        // Puente
-        canvas.drawLine(
-          Offset(w * 0.48, h * 0.45),
-          Offset(w * 0.52, h * 0.45),
-          Paint()..color = const Color(0xFF090D10)..strokeWidth = 2.5,
-        );
-        // Reflejo blanco en las lentes
-        final glassReflection = Paint()
-          ..color = Colors.white.withValues(alpha: 0.45)
-          ..strokeWidth = 1.8;
-        canvas.drawLine(
-          Offset(w * 0.36, h * 0.48),
-          Offset(w * 0.43, h * 0.44),
-          glassReflection,
-        );
-        canvas.drawLine(
-          Offset(w * 0.54, h * 0.48),
-          Offset(w * 0.61, h * 0.44),
-          glassReflection,
-        );
-        break;
-
-      // 4. Gorra Snapback Urbana
       case 'acc_gorra':
-        final capPaint = Paint()
-          ..shader = const LinearGradient(
-            colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-          ).createShader(Rect.fromLTWH(w * 0.28, h * 0.14, w * 0.44, h * 0.18));
-        // Corona de la gorra
-        final capPath = Path();
-        capPath.moveTo(w * 0.30, h * 0.27);
-        capPath.quadraticBezierTo(w * 0.32, h * 0.14, w * 0.50, h * 0.13);
-        capPath.quadraticBezierTo(w * 0.68, h * 0.14, w * 0.70, h * 0.27);
-        capPath.close();
-        canvas.drawPath(capPath, capPaint);
-        // Visera plana cyan
-        final visorPaint = Paint()..color = const Color(0xFF00E5FF);
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(w * 0.26, h * 0.25, w * 0.48, h * 0.05),
-            const Radius.circular(6),
-          ),
-          visorPaint,
-        );
-        // Logo Q frontal
-        final qPaint = Paint()
-          ..color = Colors.white
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.8;
-        canvas.drawCircle(Offset(w * 0.50, h * 0.20), 4.5, qPaint);
+        _paintSnapbackCap(canvas, w, h);
         break;
-
-      // 5. Corona Imperial de Oro
       case 'acc_corona':
-        final crownPaint = Paint()
-          ..shader = const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFFFEA00), Color(0xFFFFB300), Color(0xFFD97706)],
-          ).createShader(Rect.fromLTWH(w * 0.30, h * 0.08, w * 0.40, h * 0.16));
-
-        final crownPath = Path();
-        crownPath.moveTo(w * 0.32, h * 0.24);
-        crownPath.lineTo(w * 0.30, h * 0.11); // Pico izquierdo
-        crownPath.lineTo(w * 0.40, h * 0.17);
-        crownPath.lineTo(w * 0.50, h * 0.08); // Pico central alto
-        crownPath.lineTo(w * 0.60, h * 0.17);
-        crownPath.lineTo(w * 0.70, h * 0.11); // Pico derecho
-        crownPath.lineTo(w * 0.68, h * 0.24);
-        crownPath.close();
-        canvas.drawPath(crownPath, crownPaint);
-
-        // Gemas incrustadas
-        final rubyPaint = Paint()..color = const Color(0xFFEF4444);
-        canvas.drawCircle(Offset(w * 0.50, h * 0.14), 3.5, rubyPaint);
-        final emeraldPaint = Paint()..color = const Color(0xFF10B981);
-        canvas.drawCircle(Offset(w * 0.37, h * 0.20), 2.8, emeraldPaint);
-        canvas.drawCircle(Offset(w * 0.63, h * 0.20), 2.8, emeraldPaint);
+        _paintCrown(canvas, w, h);
         break;
-
-      // 6. Casco de Astronauta
-      case 'acc_casco_astronauta':
-        // Cúpula esférica de cristal con borde metálico
-        final helmetDomePaint = Paint()
-          ..color = const Color(0xFFE2E8F0).withValues(alpha: 0.35)
-          ..style = PaintingStyle.fill;
-        final helmetRimPaint = Paint()
-          ..color = Colors.white
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3.5;
-        final helmetRect = Rect.fromCenter(
-          center: Offset(w * 0.50, h * 0.32),
-          width: w * 0.64,
-          height: h * 0.44,
-        );
-        canvas.drawOval(helmetRect, helmetDomePaint);
-        canvas.drawOval(helmetRect, helmetRimPaint);
-
-        // Visera reflectante de oro
-        final visorGoldPaint = Paint()
-          ..shader = const LinearGradient(
-            colors: [Color(0xFFFFEA00), Color(0xFFFFB300)],
-          ).createShader(helmetRect)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
-        canvas.drawArc(
-          Rect.fromCenter(
-            center: Offset(w * 0.50, h * 0.28),
-            width: w * 0.48,
-            height: h * 0.18,
-          ),
-          0.2,
-          2.7,
-          false,
-          visorGoldPaint..strokeWidth = 4..style = PaintingStyle.stroke,
-        );
-        break;
-
-      // 7. Auriculares DJ Wireless
       case 'acc_auriculares':
-        final bandPaint = Paint()
-          ..color = const Color(0xFF1E293B)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 4.0;
-        canvas.drawArc(
-          Rect.fromCenter(
-            center: Offset(w * 0.50, h * 0.26),
-            width: w * 0.56,
-            height: h * 0.30,
-          ),
-          math.pi,
-          math.pi,
-          false,
-          bandPaint,
-        );
-        // Almohadillas a los costados
-        final earpadPaint = Paint()..color = const Color(0xFF00E5FF);
-        canvas.drawOval(
-          Rect.fromCenter(center: Offset(w * 0.21, h * 0.38), width: w * 0.08, height: h * 0.14),
-          earpadPaint,
-        );
-        canvas.drawOval(
-          Rect.fromCenter(center: Offset(w * 0.79, h * 0.38), width: w * 0.08, height: h * 0.14),
-          earpadPaint,
-        );
+        _paintHeadphones(canvas, w, h);
         break;
-
-      // 8. Casco Gamer Cyberpunk
+      case 'acc_lentes_vip':
+        _paintSunglasses(canvas, w, h);
+        break;
+      case 'acc_casco_astronauta':
+        _paintAstronautHelmet(canvas, w, h);
+        break;
       case 'acc_casco_cyberpunk':
-        final visorPaint = Paint()
-          ..shader = const LinearGradient(
-            colors: [Color(0xFF00E5FF), Color(0xFF3B82F6)],
-          ).createShader(Rect.fromLTWH(w * 0.26, h * 0.38, w * 0.48, h * 0.12));
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(w * 0.26, h * 0.38, w * 0.48, h * 0.10),
-            const Radius.circular(8),
-          ),
-          visorPaint,
-        );
-        // HUD Grid Line
-        final hudLine = Paint()
-          ..color = Colors.white
-          ..strokeWidth = 1.5;
-        canvas.drawLine(Offset(w * 0.30, h * 0.43), Offset(w * 0.70, h * 0.43), hudLine);
+        _paintCyberpunkVisor(canvas, w, h);
         break;
-
-      // 9. Casco de Piloto Aviador
       case 'acc_casco_piloto':
-        final leatherPaint = Paint()..color = const Color(0xFF78350F);
-        // Gorro de aviador
-        canvas.drawArc(
-          Rect.fromCenter(center: Offset(w * 0.50, h * 0.24), width: w * 0.54, height: h * 0.24),
-          math.pi,
-          math.pi,
-          true,
-          leatherPaint,
-        );
-        // Gafas de aviador sobre la frente
-        final gogglePaint = Paint()
-          ..color = const Color(0xFFFFD54F)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.5;
-        canvas.drawCircle(Offset(w * 0.42, h * 0.22), 6.5, gogglePaint);
-        canvas.drawCircle(Offset(w * 0.58, h * 0.22), 6.5, gogglePaint);
+        _paintPilotHelmet(canvas, w, h);
         break;
-
       case 'acc_ninguno':
       default:
         break;
     }
   }
 
+  void _paintScarf(Canvas canvas, double w, double h, Color scarfColor) {
+    final scarfPaint = Paint()..color = scarfColor;
+    // Cuello de la bufanda
+    final neckRect = Rect.fromCenter(
+      center: Offset(w * 0.50, h * 0.62),
+      width: w * 0.44,
+      height: h * 0.08,
+    );
+    canvas.drawRRect(RRect.fromRectAndRadius(neckRect, const Radius.circular(12)), scarfPaint);
+
+    // Caída lateral de la bufanda
+    final tailPath = Path();
+    tailPath.moveTo(w * 0.36, h * 0.64);
+    tailPath.lineTo(w * 0.33, h * 0.78);
+    tailPath.lineTo(w * 0.41, h * 0.78);
+    tailPath.lineTo(w * 0.42, h * 0.64);
+    tailPath.close();
+    canvas.drawPath(tailPath, scarfPaint);
+  }
+
+  void _paintSnapbackCap(Canvas canvas, double w, double h) {
+    final capPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+      ).createShader(Rect.fromLTWH(w * 0.32, h * 0.16, w * 0.36, h * 0.14));
+
+    // Corona de la gorra
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(w * 0.50, h * 0.20), width: w * 0.36, height: h * 0.12),
+      capPaint,
+    );
+
+    // Visera plana que sobresale
+    final visorPaint = Paint()..color = const Color(0xFF06B6D4);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(w * 0.34, h * 0.22, w * 0.36, h * 0.035),
+        const Radius.circular(6),
+      ),
+      visorPaint,
+    );
+
+    // Botón superior
+    final buttonPaint = Paint()..color = const Color(0xFF06B6D4);
+    canvas.drawCircle(Offset(w * 0.50, h * 0.15), 3.0, buttonPaint);
+  }
+
+  void _paintCrown(Canvas canvas, double w, double h) {
+    final crownPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFFFFD54F), Color(0xFFF59E0B)],
+      ).createShader(Rect.fromLTWH(w * 0.36, h * 0.14, w * 0.28, h * 0.12));
+
+    final crownPath = Path();
+    crownPath.moveTo(w * 0.36, h * 0.23);
+    crownPath.lineTo(w * 0.36, h * 0.14);
+    crownPath.lineTo(w * 0.43, h * 0.19);
+    crownPath.lineTo(w * 0.50, h * 0.12);
+    crownPath.lineTo(w * 0.57, h * 0.19);
+    crownPath.lineTo(w * 0.64, h * 0.14);
+    crownPath.lineTo(w * 0.64, h * 0.23);
+    crownPath.close();
+    canvas.drawPath(crownPath, crownPaint);
+
+    // Gemas rojas en las puntas
+    final gemPaint = Paint()..color = const Color(0xFFEF4444);
+    canvas.drawCircle(Offset(w * 0.36, h * 0.14), 2.5, gemPaint);
+    canvas.drawCircle(Offset(w * 0.50, h * 0.12), 3.0, gemPaint);
+    canvas.drawCircle(Offset(w * 0.64, h * 0.14), 2.5, gemPaint);
+  }
+
+  void _paintHeadphones(Canvas canvas, double w, double h) {
+    // Diadema curva superior
+    final bandPaint = Paint()
+      ..color = const Color(0xFF1E293B)
+      ..strokeWidth = 3.5
+      ..style = PaintingStyle.stroke;
+
+    final bandPath = Path();
+    bandPath.moveTo(w * 0.26, h * 0.40);
+    bandPath.quadraticBezierTo(w * 0.50, h * 0.14, w * 0.74, h * 0.40);
+    canvas.drawPath(bandPath, bandPaint);
+
+    // Auriculares en ambos lados de la cabeza
+    final padPaint = Paint()..color = const Color(0xFF00E5FF);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(w * 0.25, h * 0.42), width: w * 0.08, height: h * 0.10),
+        const Radius.circular(6),
+      ),
+      padPaint,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(w * 0.75, h * 0.42), width: w * 0.08, height: h * 0.10),
+        const Radius.circular(6),
+      ),
+      padPaint,
+    );
+  }
+
+  void _paintSunglasses(Canvas canvas, double w, double h) {
+    final glassesPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+      ).createShader(Rect.fromLTWH(w * 0.33, h * 0.44, w * 0.34, h * 0.08));
+
+    // Lente izquierdo
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(w * 0.34, h * 0.44, w * 0.14, h * 0.075),
+        const Radius.circular(6),
+      ),
+      glassesPaint,
+    );
+    // Lente derecho
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(w * 0.52, h * 0.44, w * 0.14, h * 0.075),
+        const Radius.circular(6),
+      ),
+      glassesPaint,
+    );
+    // Puente central
+    final bridgePaint = Paint()
+      ..color = const Color(0xFF0F172A)
+      ..strokeWidth = 2.0;
+    canvas.drawLine(Offset(w * 0.48, h * 0.46), Offset(w * 0.52, h * 0.46), bridgePaint);
+
+    // Reflejo blanco elegante
+    final glintPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.4)
+      ..strokeWidth = 1.5;
+    canvas.drawLine(Offset(w * 0.36, h * 0.46), Offset(w * 0.40, h * 0.49), glintPaint);
+    canvas.drawLine(Offset(w * 0.54, h * 0.46), Offset(w * 0.58, h * 0.49), glintPaint);
+  }
+
+  void _paintAstronautHelmet(Canvas canvas, double w, double h) {
+    // Cúpula del casco
+    final helmetPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.85)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4.0;
+    canvas.drawCircle(Offset(w * 0.50, h * 0.38), w * 0.32, helmetPaint);
+
+    // Visor dorado reflectante
+    final visorPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          const Color(0xFFFFD54F).withValues(alpha: 0.45),
+          const Color(0xFFF59E0B).withValues(alpha: 0.20),
+        ],
+      ).createShader(Rect.fromCircle(center: Offset(w * 0.50, h * 0.40), radius: w * 0.28));
+    canvas.drawCircle(Offset(w * 0.50, h * 0.38), w * 0.30, visorPaint);
+  }
+
+  void _paintCyberpunkVisor(Canvas canvas, double w, double h) {
+    final visorPaint = Paint()
+      ..color = const Color(0xFF00E5FF).withValues(alpha: 0.8)
+      ..strokeWidth = 3;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(w * 0.50, h * 0.46), width: w * 0.44, height: h * 0.05),
+        const Radius.circular(4),
+      ),
+      visorPaint,
+    );
+  }
+
+  void _paintPilotHelmet(Canvas canvas, double w, double h) {
+    final leatherPaint = Paint()..color = const Color(0xFF78350F);
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(w * 0.50, h * 0.20), width: w * 0.38, height: h * 0.14),
+      leatherPaint,
+    );
+    // Gafas de aviador
+    final gogglePaint = Paint()..color = const Color(0xFFD97706);
+    canvas.drawCircle(Offset(w * 0.44, h * 0.24), 6, gogglePaint);
+    canvas.drawCircle(Offset(w * 0.56, h * 0.24), 6, gogglePaint);
+  }
+
   @override
-  bool shouldRepaint(covariant _Sami2DApparelPainter oldDelegate) {
-    return oldDelegate.equipment.clothingId != equipment.clothingId ||
-        oldDelegate.equipment.shoesId != equipment.shoesId ||
-        oldDelegate.equipment.accessoryId != equipment.accessoryId ||
-        oldDelegate.isWaving != isWaving ||
-        oldDelegate.waveProgress != waveProgress;
+  bool shouldRepaint(covariant _SamiApparelSculptor oldDelegate) {
+    return oldDelegate.equipment != equipment || oldDelegate.isWaving != isWaving;
   }
 }

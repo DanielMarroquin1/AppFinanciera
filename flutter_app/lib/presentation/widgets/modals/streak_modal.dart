@@ -194,7 +194,7 @@ class _StreakModalState extends ConsumerState<StreakModal>
     return Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Stack(
         alignment: Alignment.center,
         clipBehavior: Clip.none,
@@ -204,9 +204,8 @@ class _StreakModalState extends ConsumerState<StreakModal>
             width: double.infinity,
             constraints: BoxConstraints(
               maxWidth: 390,
-              maxHeight: MediaQuery.of(context).size.height * 0.90,
+              maxHeight: MediaQuery.of(context).size.height * 0.92,
             ),
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
             decoration: BoxDecoration(
               color: const Color(0xFF131F24),
               borderRadius: BorderRadius.circular(28),
@@ -222,11 +221,14 @@ class _StreakModalState extends ConsumerState<StreakModal>
                 ),
               ],
             ),
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                   // Top close button
                   Align(
                     alignment: Alignment.topRight,
@@ -264,8 +266,8 @@ class _StreakModalState extends ConsumerState<StreakModal>
                           return Transform.scale(
                             scale: glowScale,
                             child: Container(
-                              width: 145,
-                              height: 145,
+                              width: 125,
+                              height: 125,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: RadialGradient(
@@ -293,7 +295,7 @@ class _StreakModalState extends ConsumerState<StreakModal>
                         builder: (context, child) {
                           final bobY = math.sin(_bobController.value * math.pi) * -5.0;
                           return CustomPaint(
-                            size: const Size(130, 142),
+                            size: const Size(110, 120),
                             painter: _QuivoFlamePainter(
                               bobOffset: bobY,
                               flickerProgress: _flickerController.value,
@@ -305,13 +307,13 @@ class _StreakModalState extends ConsumerState<StreakModal>
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
 
                   // Giant Streak Counter (Image 2 style)
                   Text(
                     '$_liveStreak',
                   style: const TextStyle(
-                    fontSize: 74,
+                    fontSize: 58,
                     fontWeight: FontWeight.w900,
                     color: Color(0xFFFF9600),
                     letterSpacing: -1.5,
@@ -326,7 +328,7 @@ class _StreakModalState extends ConsumerState<StreakModal>
                       ? 'días protegidos con escudo'
                       : 'días de racha',
                   style: const TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w800,
                     color: Color(0xFFFF9600),
                     letterSpacing: -0.2,
@@ -362,7 +364,7 @@ class _StreakModalState extends ConsumerState<StreakModal>
                             const SizedBox(width: 8),
                             Text(
                               secondsRemaining > 0
-                                  ? 'Auto-encendido en ${secondsRemaining}s en la app 🔥'
+                                  ? 'Auto-encendido en ${secondsRemaining >= 60 ? "${secondsRemaining ~/ 60}m ${secondsRemaining % 60}s" : "${secondsRemaining}s"} en la app 🔥'
                                   : '¡Encendiendo racha ahora! 🔥',
                               style: const TextStyle(
                                 color: Color(0xFFFFD54F),
@@ -607,7 +609,7 @@ class _StreakModalState extends ConsumerState<StreakModal>
                             Text(
                               _isActiveState
                                   ? '¡Gran disciplina hoy! Cada día suma a tu libertad financiera.'
-                                  : '¡Pasa 45s aquí o registra un gasto para encenderla!',
+                                  : '¡Pasa 2 minutos aquí o registra un movimiento para encenderla!',
                               style: const TextStyle(
                                 color: Color(0xFFD6E2E8),
                                 fontSize: 11.5,
@@ -680,6 +682,7 @@ class _StreakModalState extends ConsumerState<StreakModal>
             ),
           ),
         ),
+      ),
 
         // Celebration particles layer (when active)
         if (_isActiveState)

@@ -44,10 +44,10 @@
         <!-- Default Notification Icon for Android System -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@mipmap/ic_launcher" />
+            android:resource="@drawable/ic_notification" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@android:color/holo_blue_dark" />
+            android:resource="@color/notification_color" />
 
         <!-- Google AdMob Test Application ID -->
         <meta-data

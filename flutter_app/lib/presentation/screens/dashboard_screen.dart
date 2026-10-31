@@ -38,7 +38,6 @@ import '../widgets/modals/app_tutorial_coach_mark.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/ai_insights_provider.dart';
 import '../widgets/common/micro_insights_widget.dart';
-import '../../core/services/recurrence_service.dart';
 import '../../core/services/recurring_transaction_service.dart';
 import '../../core/services/local_notification_service.dart';
 import '../../core/utils/app_haptics.dart';
@@ -78,8 +77,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
       // Process recurring transactions
       final user = ref.read(authProvider).user;
       if (user != null && user.email != null) {
-        final authUid = FirebaseAuth.instance.currentUser?.uid;
-        if (authUid != null) RecurrenceService.processRecurrences(authUid);
         RecurringTransactionService.evaluateRecurringTransactions();
         LocalNotificationService.requestPermissions();
         LocalNotificationService.scheduleDailyTransactionReminders();
@@ -106,8 +103,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     if (state == AppLifecycleState.resumed) {
       final user = ref.read(authProvider).user;
       if (user != null) {
-        final authUid = FirebaseAuth.instance.currentUser?.uid;
-        if (authUid != null) RecurrenceService.processRecurrences(authUid);
         RecurringTransactionService.evaluateRecurringTransactions();
       }
     }

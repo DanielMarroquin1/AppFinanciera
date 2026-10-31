@@ -24,7 +24,7 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 320),
+      duration: const Duration(milliseconds: 280),
     );
     _scaleAnimation = Tween<double>(begin: 0.90, end: 1.0).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeOutBack),
@@ -56,52 +56,58 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
     final loc = ref.watch(localizationProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final actions = [
+    final smartTools = [
+      {
+        'id': 'ai-chat',
+        'label': 'Asistente SAMI',
+        'desc': 'IA financiera 24/7',
+        'icon': LucideIcons.bot,
+        'gradient': const [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+        'accent': const Color(0xFF8B5CF6),
+        'isPremium': true,
+      },
       {
         'id': 'what-if',
-        'label': loc.get('what_if_title') ?? '¿Qué pasaría si...?',
+        'label': '¿Qué pasaría si...?',
+        'desc': 'Simulador de metas',
         'icon': LucideIcons.sparkles,
         'gradient': const [Color(0xFF06B6D4), Color(0xFF2563EB)],
         'accent': const Color(0xFF06B6D4),
         'isPremium': true,
       },
       {
-        'id': 'rewards-shop',
-        'label': loc.get('quick_actions_rewards_shop') ?? 'Tienda de Premios',
+        'id': 'category-budget',
+        'label': 'Presupuesto',
+        'desc': 'Límites de gastos',
+        'icon': LucideIcons.pieChart,
+        'gradient': const [Color(0xFF0D9488), Color(0xFF047857)],
+        'accent': const Color(0xFF0D9488),
+        'isPremium': true,
+      },
+      {
+        'id': 'armario-sami',
+        'label': 'Armario SAMI',
+        'desc': 'Tienda y estilo',
         'icon': LucideIcons.gift,
-        'gradient': const [Color(0xFFF59E0B), Color(0xFFEA580C)],
+        'gradient': const [Color(0xFFF59E0B), Color(0xFFD97706)],
         'accent': const Color(0xFFF59E0B),
         'isPremium': false,
       },
       {
-        'id': 'category-budget',
-        'label': loc.get('category_budget') ?? 'Presupuesto',
-        'icon': LucideIcons.pieChart,
-        'gradient': const [Color(0xFF10B981), Color(0xFF059669)],
-        'accent': const Color(0xFF10B981),
-        'isPremium': true,
-      },
-      {
-        'id': 'ai-chat',
-        'label': loc.get('quick_actions_sami_ai') ?? 'Asistente SAMI',
-        'icon': LucideIcons.bot,
-        'gradient': const [Color(0xFF8B5CF6), Color(0xFFD946EF)],
-        'accent': const Color(0xFF8B5CF6),
-        'isPremium': true,
-      },
-      {
         'id': 'pdf-report',
-        'label': loc.get('pdf_report') ?? 'Reporte PDF',
+        'label': 'Reporte PDF',
+        'desc': 'Balance financiero',
         'icon': LucideIcons.fileText,
-        'gradient': const [Color(0xFF6366F1), Color(0xFF3B82F6)],
+        'gradient': const [Color(0xFF6366F1), Color(0xFF4338CA)],
         'accent': const Color(0xFF6366F1),
         'isPremium': true,
       },
       {
         'id': 'notifications',
-        'label': loc.get('notifications') ?? 'Notificaciones',
+        'label': 'Notificaciones',
+        'desc': 'Alertas y recordatorios',
         'icon': LucideIcons.bell,
-        'gradient': const [Color(0xFFF43F5E), Color(0xFFE11D48)],
+        'gradient': const [Color(0xFFF43F5E), Color(0xFFBE123C)],
         'accent': const Color(0xFFF43F5E),
         'isPremium': false,
       },
@@ -117,9 +123,9 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
               onTap: () => _handleDismiss(),
               behavior: HitTestBehavior.opaque,
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
                 child: Container(
-                  color: Colors.black.withValues(alpha: isDark ? 0.60 : 0.35),
+                  color: Colors.black.withValues(alpha: isDark ? 0.65 : 0.40),
                 ),
               ),
             ),
@@ -139,29 +145,29 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
                 );
               },
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                constraints: const BoxConstraints(maxWidth: 390),
+                margin: const EdgeInsets.symmetric(horizontal: 18),
+                constraints: const BoxConstraints(maxWidth: 400),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? const Color(0xFF0F172A).withValues(alpha: 0.92)
-                      : Colors.white.withValues(alpha: 0.96),
+                      ? const Color(0xFF0F172A).withValues(alpha: 0.95)
+                      : Colors.white.withValues(alpha: 0.98),
                   borderRadius: BorderRadius.circular(32),
                   border: Border.all(
                     color: isDark
-                        ? Colors.white.withValues(alpha: 0.12)
-                        : Colors.black.withValues(alpha: 0.08),
-                    width: 1.2,
+                        ? const Color(0xFF334155).withValues(alpha: 0.8)
+                        : const Color(0xFFE2E8F0),
+                    width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.55 : 0.18),
-                      blurRadius: 36,
-                      offset: const Offset(0, 16),
+                      color: Colors.black.withValues(alpha: isDark ? 0.60 : 0.20),
+                      blurRadius: 40,
+                      offset: const Offset(0, 18),
                     ),
                   ],
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -169,25 +175,51 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF06B6D4).withValues(alpha: 0.4),
+                                  blurRadius: 10,
+                                ),
+                              ],
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                LucideIcons.plus,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  loc.get('quick_actions') ?? 'Acciones Rápidas',
+                                  loc.get('quick_actions'),
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 19,
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: -0.4,
-                                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                    color: isDark
+                                        ? Colors.white
+                                        : const Color(0xFF0F172A),
                                   ),
                                 ),
-                                const SizedBox(height: 2),
+                                const SizedBox(height: 1),
                                 Text(
-                                  loc.get('quick_actions_hub_subtitle') ?? 'Herramientas financieras y accesos directos',
+                                  '¿Qué movimiento deseas registrar?',
                                   style: TextStyle(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w400,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
                                     color: isDark
                                         ? const Color(0xFF94A3B8)
                                         : const Color(0xFF64748B),
@@ -200,8 +232,8 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
                           GestureDetector(
                             onTap: () => _handleDismiss(),
                             child: Container(
-                              width: 36,
-                              height: 36,
+                              width: 34,
+                              height: 34,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: isDark
@@ -215,7 +247,7 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
                               ),
                               child: Icon(
                                 LucideIcons.x,
-                                size: 18,
+                                size: 16,
                                 color: isDark ? Colors.white70 : Colors.black87,
                               ),
                             ),
@@ -223,63 +255,87 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
                         ],
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 18),
+
+                      // =======================================================
+                      // HERO DUAL ACTIONS: NUEVO GASTO & NUEVO INGRESO
+                      // =======================================================
+                      Row(
+                        children: [
+                          // 🔴 NUEVO GASTO
+                          Expanded(
+                            child: _HeroTransactionActionTile(
+                              title: 'Nuevo Gasto',
+                              subtitle: 'Registrar salida',
+                              icon: LucideIcons.arrowDownRight,
+                              gradient: const [
+                                Color(0xFFEF4444),
+                                Color(0xFFDC2626),
+                              ],
+                              accentColor: const Color(0xFFEF4444),
+                              isDark: isDark,
+                              onTap: () => _handleDismiss('expense'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          // 🟢 NUEVO INGRESO
+                          Expanded(
+                            child: _HeroTransactionActionTile(
+                              title: 'Nuevo Ingreso',
+                              subtitle: 'Añadir saldo',
+                              icon: LucideIcons.arrowUpRight,
+                              gradient: const [
+                                Color(0xFF10B981),
+                                Color(0xFF059669),
+                              ],
+                              accentColor: const Color(0xFF10B981),
+                              isDark: isDark,
+                              onTap: () => _handleDismiss('income'),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      // Section Header: Herramientas Inteligentes
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'HERRAMIENTAS FINANCIERAS',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.0,
+                            color: isDark
+                                ? const Color(0xFF64748B)
+                                : const Color(0xFF94A3B8),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
 
                       // 2-Column Clean Tactile Action Grid
                       LayoutBuilder(
                         builder: (context, constraints) {
-                          final cardWidth = (constraints.maxWidth - 12) / 2;
+                          final cardWidth = (constraints.maxWidth - 10) / 2;
                           return Wrap(
-                            spacing: 12,
-                            runSpacing: 12,
-                            children: List.generate(actions.length, (index) {
-                              final action = actions[index];
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: List.generate(smartTools.length, (index) {
+                              final tool = smartTools[index];
                               return SizedBox(
                                 width: cardWidth,
-                                child: _HumanQuickActionTile(
-                                  action: action,
+                                child: _SmartToolTile(
+                                  tool: tool,
                                   isDark: isDark,
-                                  onTap: () => _handleDismiss(action['id'] as String),
+                                  onTap: () =>
+                                      _handleDismiss(tool['id'] as String),
                                 ),
                               );
                             }),
                           );
                         },
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      // Bottom Floating Close FAB
-                      GestureDetector(
-                        onTap: () => _handleDismiss(),
-                        child: Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF1E293B)
-                                : const Color(0xFFF1F5F9),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(0xFF334155)
-                                  : const Color(0xFFCBD5E1),
-                              width: 1.2,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            LucideIcons.x,
-                            size: 24,
-                            color: isDark ? Colors.white : const Color(0xFF334155),
-                          ),
-                        ),
                       ),
                     ],
                   ),
@@ -293,22 +349,34 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
   }
 }
 
-class _HumanQuickActionTile extends StatefulWidget {
-  final Map<String, dynamic> action;
+// =============================================================================
+// HERO TRANSACTION ACTION TILE (Nuevo Gasto / Nuevo Ingreso)
+// =============================================================================
+class _HeroTransactionActionTile extends StatefulWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final List<Color> gradient;
+  final Color accentColor;
   final bool isDark;
   final VoidCallback onTap;
 
-  const _HumanQuickActionTile({
-    required this.action,
+  const _HeroTransactionActionTile({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.gradient,
+    required this.accentColor,
     required this.isDark,
     required this.onTap,
   });
 
   @override
-  State<_HumanQuickActionTile> createState() => _HumanQuickActionTileState();
+  State<_HeroTransactionActionTile> createState() =>
+      _HeroTransactionActionTileState();
 }
 
-class _HumanQuickActionTileState extends State<_HumanQuickActionTile>
+class _HeroTransactionActionTileState extends State<_HeroTransactionActionTile>
     with SingleTickerProviderStateMixin {
   late AnimationController _pressController;
   late Animation<double> _scaleAnimation;
@@ -318,9 +386,9 @@ class _HumanQuickActionTileState extends State<_HumanQuickActionTile>
     super.initState();
     _pressController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 100),
+      duration: const Duration(milliseconds: 90),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.91).animate(
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.94).animate(
       CurvedAnimation(parent: _pressController, curve: Curves.easeInOutCubic),
     );
   }
@@ -331,30 +399,18 @@ class _HumanQuickActionTileState extends State<_HumanQuickActionTile>
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails _) {
-    HapticFeedback.lightImpact();
-    _pressController.forward();
-  }
-
-  void _onTapUp(TapUpDetails _) async {
-    await _pressController.reverse();
-    widget.onTap();
-  }
-
-  void _onTapCancel() {
-    _pressController.reverse();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final gradient = widget.action['gradient'] as List<Color>;
-    final accent = widget.action['accent'] as Color;
-    final isPremium = widget.action['isPremium'] == true;
-
     return GestureDetector(
-      onTapDown: _onTapDown,
-      onTapUp: _onTapUp,
-      onTapCancel: _onTapCancel,
+      onTapDown: (_) {
+        HapticFeedback.lightImpact();
+        _pressController.forward();
+      },
+      onTapUp: (_) async {
+        await _pressController.reverse();
+        widget.onTap();
+      },
+      onTapCancel: () => _pressController.reverse(),
       child: AnimatedBuilder(
         animation: _scaleAnimation,
         builder: (context, child) => Transform.scale(
@@ -362,111 +418,245 @@ class _HumanQuickActionTileState extends State<_HumanQuickActionTile>
           child: child,
         ),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
           decoration: BoxDecoration(
-            color: widget.isDark
-                ? const Color(0xFF1E293B).withValues(alpha: 0.65)
-                : const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: accent.withValues(alpha: widget.isDark ? 0.28 : 0.20),
-              width: 1.2,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: widget.gradient,
             ),
+            borderRadius: BorderRadius.circular(22),
             boxShadow: [
               BoxShadow(
-                color: accent.withValues(alpha: widget.isDark ? 0.12 : 0.06),
-                blurRadius: 14,
-                offset: const Offset(0, 4),
+                color: widget.accentColor.withValues(alpha: 0.38),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
-          child: Stack(
-            clipBehavior: Clip.none,
+          child: Row(
             children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Circular Vibrant Icon Badge
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: gradient,
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: gradient.first.withValues(alpha: 0.40),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Icon(
-                        widget.action['icon'] as IconData,
-                        color: Colors.white,
-                        size: 26,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // Label (Centered, Bold, Never truncated)
-                  Text(
-                    widget.action['label'] as String,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    style: TextStyle(
-                      fontSize: 13,
-                      height: 1.2,
-                      fontWeight: FontWeight.w800,
-                      color: widget.isDark ? Colors.white : const Color(0xFF0F172A),
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                ],
-              ),
-
-              // Subtle, Classy PRO Indicator (Never aggressive)
-              if (isPremium)
-                Positioned(
-                  top: -6,
-                  right: -2,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B).withValues(alpha: 0.18),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: const Color(0xFFF59E0B).withValues(alpha: 0.45),
-                        width: 1,
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(LucideIcons.crown, size: 9, color: Color(0xFFF59E0B)),
-                        SizedBox(width: 2),
-                        Text(
-                          'PRO',
-                          style: TextStyle(
-                            color: Color(0xFFF59E0B),
-                            fontSize: 8.5,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.22),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.45),
+                    width: 1.2,
                   ),
                 ),
+                child: Center(
+                  child: Icon(widget.icon, color: Colors.white, size: 22),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.title,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: -0.3,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      widget.subtitle,
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// SMART TOOL TILE (SAMI AI, What-If, Category Budget, etc.)
+// =============================================================================
+class _SmartToolTile extends StatefulWidget {
+  final Map<String, dynamic> tool;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _SmartToolTile({
+    required this.tool,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  State<_SmartToolTile> createState() => _SmartToolTileState();
+}
+
+class _SmartToolTileState extends State<_SmartToolTile>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pressController;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pressController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 90),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.94).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeInOutCubic),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pressController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final gradient = widget.tool['gradient'] as List<Color>;
+    final accent = widget.tool['accent'] as Color;
+    final isPremium = widget.tool['isPremium'] == true;
+
+    return GestureDetector(
+      onTapDown: (_) {
+        HapticFeedback.selectionClick();
+        _pressController.forward();
+      },
+      onTapUp: (_) async {
+        await _pressController.reverse();
+        widget.onTap();
+      },
+      onTapCancel: () => _pressController.reverse(),
+      child: AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) => Transform.scale(
+          scale: _scaleAnimation.value,
+          child: child,
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+          decoration: BoxDecoration(
+            color: widget.isDark
+                ? const Color(0xFF1E293B).withValues(alpha: 0.70)
+                : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: widget.isDark
+                  ? const Color(0xFF334155).withValues(alpha: 0.6)
+                  : const Color(0xFFE2E8F0),
+              width: 1.2,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: gradient,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: accent.withValues(alpha: 0.35),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Icon(
+                    widget.tool['icon'] as IconData,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            widget.tool['label'] as String,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: widget.isDark
+                                  ? Colors.white
+                                  : const Color(0xFF0F172A),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (isPremium) ...[
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF59E0B)
+                                  .withValues(alpha: 0.20),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'PRO',
+                              style: TextStyle(
+                                color: Color(0xFFF59E0B),
+                                fontSize: 8,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      widget.tool['desc'] as String,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: widget.isDark
+                            ? const Color(0xFF94A3B8)
+                            : const Color(0xFF64748B),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

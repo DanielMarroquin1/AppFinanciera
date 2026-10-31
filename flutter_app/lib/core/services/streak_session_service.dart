@@ -5,13 +5,13 @@ import '../../presentation/providers/auth_provider.dart';
 import '../utils/app_haptics.dart';
 
 /// Servicio global para rastrear el tiempo de permanencia del usuario en la app.
-/// Si el usuario pasa más de 45 segundos dentro de la app, su racha se enciende automáticamente.
+/// Si el usuario pasa más de 2 minutos (120s) dentro de la app, su racha se enciende automáticamente.
 class StreakSessionService {
   static final StreakSessionService _instance = StreakSessionService._internal();
   factory StreakSessionService() => _instance;
   StreakSessionService._internal();
 
-  static const int activationThresholdSeconds = 45;
+  static const int activationThresholdSeconds = 120; // 2 minutos en la app
   static int elapsedSeconds = 0;
   static Timer? _timer;
   static final ValueNotifier<int> secondsNotifier = ValueNotifier<int>(0);

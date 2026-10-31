@@ -526,7 +526,10 @@ class RecurringTransactionService {
 
     for (var t in allNormal) {
       // Normalizar descripción quitando sufijos automáticos para encontrar duplicados exactos
-      final cleanDesc = t.description.replaceAll(' (Automático)', '').trim().toLowerCase();
+      String cleanDesc = t.description.replaceAll(' (Automático)', '').trim().toLowerCase();
+      if (cleanDesc.isEmpty) {
+        cleanDesc = t.category.trim().toLowerCase();
+      }
       final key =
           '${t.type}_${t.amount.toStringAsFixed(2)}_${t.date.year}_${t.date.month}_${t.date.day}_$cleanDesc';
       if (!groups.containsKey(key)) {

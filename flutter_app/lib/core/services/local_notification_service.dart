@@ -39,8 +39,8 @@ class LocalNotificationService {
       }
 
       // 2. Configurar icono de Android y ajustes de iOS
-      // Usamos el icono oficial de la aplicación @mipmap/ic_launcher
-      const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+      // Usamos ic_notification (silueta vectorial blanca) para status bar y launcher para gran icono
+      const androidInit = AndroidInitializationSettings('ic_notification');
       const iosInit = DarwinInitializationSettings(
         requestAlertPermission: false, // Solicitado explícitamente en UI
         requestBadgePermission: false,
@@ -186,7 +186,7 @@ class LocalNotificationService {
         channelDescription: _channelDesc,
         importance: Importance.max,
         priority: Priority.high,
-        icon: '@mipmap/ic_launcher',
+        icon: 'ic_notification',
         largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
         color: const Color(0xFF06B6D4), // Cyan brillante de QUIVO
         enableLights: true,
@@ -291,7 +291,7 @@ class LocalNotificationService {
       channelDescription: _channelDesc,
       importance: Importance.max,
       priority: Priority.high,
-      icon: '@mipmap/ic_launcher',
+      icon: 'ic_notification',
       largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
       color: const Color(0xFF06B6D4),
       enableLights: true,
@@ -413,7 +413,7 @@ class LocalNotificationService {
         channelDescription: _channelDesc,
         importance: Importance.max,
         priority: Priority.high,
-        icon: '@mipmap/ic_launcher',
+        icon: 'ic_notification',
         largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
         color: const Color(0xFF06B6D4),
         enableVibration: true,

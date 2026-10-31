@@ -1,10 +1,8 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/presentation/widgets/common/delete_confirmation_dialog.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../widgets/modals/add_saving_goal_modal.dart';
 import '../widgets/modals/add_funds_modal.dart';
-import '../widgets/modals/saving_guide_modal.dart';
 import '../widgets/modals/ai_chat_modal.dart';
 import '../widgets/modals/interactive_ai_plan_modal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,8 +10,8 @@ import '../providers/color_palette_provider.dart';
 import '../providers/saving_goals_provider.dart';
 import '../../core/utils/localization.dart';
 import '../../core/utils/currency_formatter.dart';
-import '../widgets/modals/monthly_report_modal.dart';
 import '../providers/auth_provider.dart';
+import '../../core/utils/app_haptics.dart';
 
 class SavingsScreen extends ConsumerStatefulWidget {
   const SavingsScreen({super.key});
@@ -423,38 +421,122 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 20),
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                        borderRadius: BorderRadius.circular(32),
-                        border: Border.all(
-                          color: isComplete
-                              ? const Color(0xFF10B981).withOpacity(0.5)
-                              : (isDark
-                                    ? const Color(0xFF334155)
-                                    : const Color(0xFFE2E8F0)),
-                          width: isComplete ? 2 : 1,
-                        ),
-                        boxShadow: [
-                          if (isComplete)
-                            BoxShadow(
-                              color: const Color(0xFF10B981).withOpacity(0.1),
-                              blurRadius: 24,
-                              offset: const Offset(0, 12),
-                            )
-                          else
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 16,
-                              offset: const Offset(0, 8),
+                      child: Dismissible(
+                        key: ValueKey('goal_${goal.id}'),
+                        direction: DismissDirection.horizontal,
+                        confirmDismiss: (direction) async {
+                          if (direction == DismissDirection.startToEnd) {
+                            // Deslizar a la derecha -> EDITAR
+                            AppHaptics.selection();
+                            AddSavingGoalModal.show(
+                              context,
+                              initialName: goal.name,
+                              initialTargetAmount: goal.targetAmount,
+                              initialIcon: goal.icon,
+                              goalToEdit: goal,
+                            );
+                            return false; // Mantiene la tarjeta en la vista
+                          } else if (direction == DismissDirection.endToStart) {
+                            // Deslizar a la izquierda -> ELIMINAR
+                            AppHaptics.heavyImpact();
+                            final confirm = await DeleteConfirmationDialog.show(
+                              context,
+                              title: 'Eliminar Meta',
+                              content:
+                                  '¿Estás seguro de que quieres eliminar la meta "${goal.name}"? Esta acción no se puede deshacer.',
+                            );
+                            if (confirm == true) {
+                              AppHaptics.error();
+                              await ref
+                                  .read(savingGoalsProvider.notifier)
+                                  .deleteGoal(goal.id);
+                              return true;
+                            }
+                            return false;
+                          }
+                          return false;
+                        },
+                        // Fondo al deslizar hacia la derecha (Editar)
+                        background: Container(
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF0284C7), Color(0xFF0EA5E9)],
                             ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            borderRadius: BorderRadius.circular(32),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(LucideIcons.edit3, color: Colors.white, size: 22),
+                              SizedBox(width: 10),
+                              Text(
+                                'Editar Meta',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Fondo al deslizar hacia la izquierda (Eliminar)
+                        secondaryBackground: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFDC2626), Color(0xFFEF4444)],
+                            ),
+                            borderRadius: BorderRadius.circular(32),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                'Eliminar Meta',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              Icon(LucideIcons.trash2, color: Colors.white, size: 22),
+                            ],
+                          ),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                            borderRadius: BorderRadius.circular(32),
+                            border: Border.all(
+                              color: isComplete
+                                  ? const Color(0xFF10B981).withOpacity(0.5)
+                                  : (isDark
+                                        ? const Color(0xFF334155)
+                                        : const Color(0xFFE2E8F0)),
+                              width: isComplete ? 2 : 1,
+                            ),
+                            boxShadow: [
+                              if (isComplete)
+                                BoxShadow(
+                                  color: const Color(0xFF10B981).withOpacity(0.1),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 12),
+                                )
+                              else
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.04),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 8),
+                                ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
                                 children: [
@@ -473,107 +555,36 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 16),
-                                  Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        goal.name,
-                                        style: TextStyle(
-                                          color: isDark
-                                              ? Colors.white
-                                              : const Color(0xFF0F172A),
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        '${percentage.toStringAsFixed(1)}% ${loc.get('completed')}',
-                                        style: TextStyle(
-                                          color: goalColors[0],
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              PopupMenuButton<String>(
-                                icon: Icon(
-                                  LucideIcons.moreVertical,
-                                  color: isDark
-                                      ? const Color(0xFF94A3B8)
-                                      : const Color(0xFF64748B),
-                                ),
-                                color: isDark
-                                    ? const Color(0xFF1E293B)
-                                    : Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                onSelected: (value) async {
-                                  if (value == 'edit') {
-                                    AddSavingGoalModal.show(
-                                      context,
-                                      initialName: goal.name,
-                                      initialTargetAmount: goal.targetAmount,
-                                      initialIcon: goal.icon,
-                                      goalToEdit: goal,
-                                    );
-                                  } else if (value == 'delete') {
-                                    final confirm =
-                                        await DeleteConfirmationDialog.show(
-                                          context,
-                                          title: 'Eliminar Meta',
-                                          content:
-                                              '¿Estás seguro de que quieres eliminar la meta "${goal.name}"? Esta acción no se puede deshacer.',
-                                        );
-                                    if (confirm == true) {
-                                      await ref
-                                          .read(savingGoalsProvider.notifier)
-                                          .deleteGoal(goal.id);
-                                    }
-                                  }
-                                },
-                                itemBuilder: (context) => [
-                                  const PopupMenuItem(
-                                    value: 'edit',
-                                    child: Row(
+                                  Expanded(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Icon(
-                                          LucideIcons.edit2,
-                                          size: 18,
-                                          color: Colors.blue,
-                                        ),
-                                        SizedBox(width: 12),
-                                        Text('Editar Meta'),
-                                      ],
-                                    ),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: 'delete',
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          LucideIcons.trash2,
-                                          size: 18,
-                                          color: Colors.red,
-                                        ),
-                                        SizedBox(width: 12),
                                         Text(
-                                          'Eliminar Meta',
-                                          style: TextStyle(color: Colors.red),
+                                          goal.name,
+                                          style: TextStyle(
+                                            color: isDark
+                                                ? Colors.white
+                                                : const Color(0xFF0F172A),
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '${percentage.toStringAsFixed(1)}% ${loc.get('completed')}',
+                                          style: TextStyle(
+                                            color: goalColors[0],
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
                           const SizedBox(height: 24),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
@@ -717,8 +728,10 @@ class _SavingsScreenState extends ConsumerState<SavingsScreen> {
                             ),
                         ],
                       ),
-                    );
-                  }, childCount: goalsList.length),
+                    ),
+                  ),
+                );
+              }, childCount: goalsList.length),
                 );
               },
               loading: () => const SliverToBoxAdapter(

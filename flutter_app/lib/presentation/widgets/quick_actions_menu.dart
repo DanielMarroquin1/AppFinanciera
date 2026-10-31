@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../core/utils/localization.dart';
 
 class QuickActionsMenu extends ConsumerStatefulWidget {
   const QuickActionsMenu({super.key});
@@ -15,7 +14,7 @@ class QuickActionsMenu extends ConsumerStatefulWidget {
 class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
-  late Animation<double> _scaleAnimation;
+  late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
   bool _isClosing = false;
 
@@ -24,10 +23,13 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 280),
+      duration: const Duration(milliseconds: 260),
     );
-    _scaleAnimation = Tween<double>(begin: 0.90, end: 1.0).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOutBack),
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 1),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeOut),
@@ -53,291 +55,190 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
 
   @override
   Widget build(BuildContext context) {
-    final loc = ref.watch(localizationProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final smartTools = [
-      {
-        'id': 'ai-chat',
-        'label': 'Asistente SAMI',
-        'desc': 'IA financiera 24/7',
-        'icon': LucideIcons.bot,
-        'gradient': const [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
-        'accent': const Color(0xFF8B5CF6),
-        'isPremium': true,
-      },
-      {
-        'id': 'what-if',
-        'label': '¿Qué pasaría si...?',
-        'desc': 'Simulador de metas',
-        'icon': LucideIcons.sparkles,
-        'gradient': const [Color(0xFF06B6D4), Color(0xFF2563EB)],
-        'accent': const Color(0xFF06B6D4),
-        'isPremium': true,
-      },
-      {
-        'id': 'category-budget',
-        'label': 'Presupuesto',
-        'desc': 'Límites de gastos',
-        'icon': LucideIcons.pieChart,
-        'gradient': const [Color(0xFF0D9488), Color(0xFF047857)],
-        'accent': const Color(0xFF0D9488),
-        'isPremium': true,
-      },
-      {
-        'id': 'armario-sami',
-        'label': 'Armario SAMI',
-        'desc': 'Tienda y estilo',
-        'icon': LucideIcons.gift,
-        'gradient': const [Color(0xFFF59E0B), Color(0xFFD97706)],
-        'accent': const Color(0xFFF59E0B),
-        'isPremium': false,
-      },
-      {
-        'id': 'pdf-report',
-        'label': 'Reporte PDF',
-        'desc': 'Balance financiero',
-        'icon': LucideIcons.fileText,
-        'gradient': const [Color(0xFF6366F1), Color(0xFF4338CA)],
-        'accent': const Color(0xFF6366F1),
-        'isPremium': true,
-      },
-      {
-        'id': 'notifications',
-        'label': 'Notificaciones',
-        'desc': 'Alertas y recordatorios',
-        'icon': LucideIcons.bell,
-        'gradient': const [Color(0xFFF43F5E), Color(0xFFBE123C)],
-        'accent': const Color(0xFFF43F5E),
-        'isPremium': false,
-      },
-    ];
+    final sheetBg = isDark ? const Color(0xFF131E27) : Colors.white;
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final subtitleColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final cardBg = isDark ? const Color(0xFF1B2834) : const Color(0xFFF8FAFC);
+    final borderColor = isDark ? const Color(0xFF243645) : const Color(0xFFE2E8F0);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          // Dismissible blurred background
+          // Dismissible backdrop
           Positioned.fill(
             child: GestureDetector(
               onTap: () => _handleDismiss(),
               behavior: HitTestBehavior.opaque,
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                child: Container(
-                  color: Colors.black.withValues(alpha: isDark ? 0.65 : 0.40),
+              child: AnimatedBuilder(
+                animation: _fadeAnimation,
+                builder: (context, child) => BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: 10 * _fadeAnimation.value,
+                    sigmaY: 10 * _fadeAnimation.value,
+                  ),
+                  child: Container(
+                    color: Colors.black.withValues(
+                      alpha: 0.50 * _fadeAnimation.value,
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
 
-          // Floating Center Modal Card
-          Center(
-            child: AnimatedBuilder(
-              animation: _animController,
-              builder: (context, child) {
-                return ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: child,
-                  ),
-                );
-              },
+          // Bottom Action Sheet (Native iOS/Fintech style)
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SlideTransition(
+              position: _slideAnimation,
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 18),
-                constraints: const BoxConstraints(maxWidth: 400),
+                width: double.infinity,
+                constraints: const BoxConstraints(maxWidth: 480),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF0F172A).withValues(alpha: 0.95)
-                      : Colors.white.withValues(alpha: 0.98),
-                  borderRadius: BorderRadius.circular(32),
-                  border: Border.all(
-                    color: isDark
-                        ? const Color(0xFF334155).withValues(alpha: 0.8)
-                        : const Color(0xFFE2E8F0),
-                    width: 1.5,
+                  color: sheetBg,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                  border: Border(
+                    top: BorderSide(color: borderColor, width: 1),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.60 : 0.20),
-                      blurRadius: 40,
-                      offset: const Offset(0, 18),
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 28,
+                      offset: const Offset(0, -6),
                     ),
                   ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Header Row
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
+                child: SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Drag Handle
+                        Center(
+                          child: Container(
+                            width: 36,
+                            height: 4,
                             decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF06B6D4).withValues(alpha: 0.4),
-                                  blurRadius: 10,
-                                ),
-                              ],
+                              color: isDark
+                                  ? const Color(0xFF334756)
+                                  : const Color(0xFFCBD5E1),
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Center(
-                              child: Icon(
-                                LucideIcons.plus,
-                                color: Colors.white,
-                                size: 22,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  loc.get('quick_actions'),
-                                  style: TextStyle(
-                                    fontSize: 19,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: -0.4,
-                                    color: isDark
-                                        ? Colors.white
-                                        : const Color(0xFF0F172A),
-                                  ),
-                                ),
-                                const SizedBox(height: 1),
-                                Text(
-                                  '¿Qué movimiento deseas registrar?',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: isDark
-                                        ? const Color(0xFF94A3B8)
-                                        : const Color(0xFF64748B),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Close Button
-                          GestureDetector(
-                            onTap: () => _handleDismiss(),
-                            child: Container(
-                              width: 34,
-                              height: 34,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isDark
-                                    ? const Color(0xFF1E293B)
-                                    : const Color(0xFFF1F5F9),
-                                border: Border.all(
-                                  color: isDark
-                                      ? const Color(0xFF334155)
-                                      : const Color(0xFFE2E8F0),
-                                ),
-                              ),
-                              child: Icon(
-                                LucideIcons.x,
-                                size: 16,
-                                color: isDark ? Colors.white70 : Colors.black87,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      // =======================================================
-                      // HERO DUAL ACTIONS: NUEVO GASTO & NUEVO INGRESO
-                      // =======================================================
-                      Row(
-                        children: [
-                          // 🔴 NUEVO GASTO
-                          Expanded(
-                            child: _HeroTransactionActionTile(
-                              title: 'Nuevo Gasto',
-                              subtitle: 'Registrar salida',
-                              icon: LucideIcons.arrowDownRight,
-                              gradient: const [
-                                Color(0xFFEF4444),
-                                Color(0xFFDC2626),
-                              ],
-                              accentColor: const Color(0xFFEF4444),
-                              isDark: isDark,
-                              onTap: () => _handleDismiss('expense'),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          // 🟢 NUEVO INGRESO
-                          Expanded(
-                            child: _HeroTransactionActionTile(
-                              title: 'Nuevo Ingreso',
-                              subtitle: 'Añadir saldo',
-                              icon: LucideIcons.arrowUpRight,
-                              gradient: const [
-                                Color(0xFF10B981),
-                                Color(0xFF059669),
-                              ],
-                              accentColor: const Color(0xFF10B981),
-                              isDark: isDark,
-                              onTap: () => _handleDismiss('income'),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      // Section Header: Herramientas Inteligentes
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'HERRAMIENTAS FINANCIERAS',
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.0,
-                            color: isDark
-                                ? const Color(0xFF64748B)
-                                : const Color(0xFF94A3B8),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
+                        const SizedBox(height: 14),
 
-                      // 2-Column Clean Tactile Action Grid
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final cardWidth = (constraints.maxWidth - 10) / 2;
-                          return Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            children: List.generate(smartTools.length, (index) {
-                              final tool = smartTools[index];
-                              return SizedBox(
-                                width: cardWidth,
-                                child: _SmartToolTile(
-                                  tool: tool,
-                                  isDark: isDark,
-                                  onTap: () =>
-                                      _handleDismiss(tool['id'] as String),
+                        // Header Row
+                        Row(
+                          children: [
+                            Text(
+                              'Nuevo Movimiento',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: titleColor,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                            const Spacer(),
+                            GestureDetector(
+                              onTap: () => _handleDismiss(),
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: isDark
+                                      ? const Color(0xFF1E2D3B)
+                                      : const Color(0xFFF1F5F9),
                                 ),
-                              );
-                            }),
-                          );
-                        },
-                      ),
-                    ],
+                                child: Icon(
+                                  LucideIcons.x,
+                                  size: 16,
+                                  color: subtitleColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // 🔴 Registrar Gasto
+                        _ActionListRow(
+                          icon: LucideIcons.arrowDownLeft,
+                          iconBg: const Color(0xFFEF4444),
+                          title: 'Registrar Gasto',
+                          subtitle: 'Compras, servicios, salidas o pagos',
+                          cardBg: cardBg,
+                          borderColor: borderColor,
+                          titleColor: titleColor,
+                          subtitleColor: subtitleColor,
+                          onTap: () => _handleDismiss('expense'),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        // 🟢 Registrar Ingreso
+                        _ActionListRow(
+                          icon: LucideIcons.arrowUpRight,
+                          iconBg: const Color(0xFF10B981),
+                          title: 'Registrar Ingreso',
+                          subtitle: 'Sueldo, depósitos, transferencias o cobros',
+                          cardBg: cardBg,
+                          borderColor: borderColor,
+                          titleColor: titleColor,
+                          subtitleColor: subtitleColor,
+                          onTap: () => _handleDismiss('income'),
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        // Subtle Divider
+                        Divider(color: borderColor, height: 1),
+                        const SizedBox(height: 14),
+
+                        // Quick Navigation Shortcuts
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _ShortcutIconPill(
+                              icon: LucideIcons.bot,
+                              label: 'SAMI AI',
+                              color: const Color(0xFF8B5CF6),
+                              isDark: isDark,
+                              onTap: () => _handleDismiss('ai-chat'),
+                            ),
+                            _ShortcutIconPill(
+                              icon: LucideIcons.sparkles,
+                              label: 'Simulador',
+                              color: const Color(0xFF06B6D4),
+                              isDark: isDark,
+                              onTap: () => _handleDismiss('what-if'),
+                            ),
+                            _ShortcutIconPill(
+                              icon: LucideIcons.pieChart,
+                              label: 'Presupuesto',
+                              color: const Color(0xFF0D9488),
+                              isDark: isDark,
+                              onTap: () => _handleDismiss('category-budget'),
+                            ),
+                            _ShortcutIconPill(
+                              icon: LucideIcons.shirt,
+                              label: 'Armario',
+                              color: const Color(0xFFF59E0B),
+                              isDark: isDark,
+                              onTap: () => _handleDismiss('armario-sami'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -350,137 +251,92 @@ class _QuickActionsMenuState extends ConsumerState<QuickActionsMenu>
 }
 
 // =============================================================================
-// HERO TRANSACTION ACTION TILE (Nuevo Gasto / Nuevo Ingreso)
+// ACTION LIST ROW (Clean, Human, Native iOS/Fintech)
 // =============================================================================
-class _HeroTransactionActionTile extends StatefulWidget {
+class _ActionListRow extends StatelessWidget {
+  final IconData icon;
+  final Color iconBg;
   final String title;
   final String subtitle;
-  final IconData icon;
-  final List<Color> gradient;
-  final Color accentColor;
-  final bool isDark;
+  final Color cardBg;
+  final Color borderColor;
+  final Color titleColor;
+  final Color subtitleColor;
   final VoidCallback onTap;
 
-  const _HeroTransactionActionTile({
+  const _ActionListRow({
+    required this.icon,
+    required this.iconBg,
     required this.title,
     required this.subtitle,
-    required this.icon,
-    required this.gradient,
-    required this.accentColor,
-    required this.isDark,
+    required this.cardBg,
+    required this.borderColor,
+    required this.titleColor,
+    required this.subtitleColor,
     required this.onTap,
   });
 
   @override
-  State<_HeroTransactionActionTile> createState() =>
-      _HeroTransactionActionTileState();
-}
-
-class _HeroTransactionActionTileState extends State<_HeroTransactionActionTile>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _pressController;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _pressController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 90),
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.94).animate(
-      CurvedAnimation(parent: _pressController, curve: Curves.easeInOutCubic),
-    );
-  }
-
-  @override
-  void dispose() {
-    _pressController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) {
-        HapticFeedback.lightImpact();
-        _pressController.forward();
-      },
-      onTapUp: (_) async {
-        await _pressController.reverse();
-        widget.onTap();
-      },
-      onTapCancel: () => _pressController.reverse(),
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) => Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
-        ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: widget.gradient,
-            ),
-            borderRadius: BorderRadius.circular(22),
-            boxShadow: [
-              BoxShadow(
-                color: widget.accentColor.withValues(alpha: 0.38),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
+            color: cardBg,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: borderColor, width: 1),
           ),
           child: Row(
             children: [
               Container(
-                width: 42,
-                height: 42,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.22),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.45),
-                    width: 1.2,
-                  ),
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
-                  child: Icon(widget.icon, color: Colors.white, size: 22),
+                  child: Icon(icon, color: Colors.white, size: 20),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      widget.title,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: -0.3,
+                      title,
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.bold,
+                        color: titleColor,
+                        letterSpacing: -0.2,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      widget.subtitle,
+                      subtitle,
                       style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 11.5,
+                        color: subtitleColor,
+                        fontWeight: FontWeight.w400,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
+              ),
+              Icon(
+                LucideIcons.chevronRight,
+                size: 16,
+                color: subtitleColor.withValues(alpha: 0.6),
               ),
             ],
           ),
@@ -491,175 +347,54 @@ class _HeroTransactionActionTileState extends State<_HeroTransactionActionTile>
 }
 
 // =============================================================================
-// SMART TOOL TILE (SAMI AI, What-If, Category Budget, etc.)
+// SHORTCUT ICON PILL (Clean icon + label)
 // =============================================================================
-class _SmartToolTile extends StatefulWidget {
-  final Map<String, dynamic> tool;
+class _ShortcutIconPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
   final bool isDark;
   final VoidCallback onTap;
 
-  const _SmartToolTile({
-    required this.tool,
+  const _ShortcutIconPill({
+    required this.icon,
+    required this.label,
+    required this.color,
     required this.isDark,
     required this.onTap,
   });
 
   @override
-  State<_SmartToolTile> createState() => _SmartToolTileState();
-}
-
-class _SmartToolTileState extends State<_SmartToolTile>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _pressController;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _pressController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 90),
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.94).animate(
-      CurvedAnimation(parent: _pressController, curve: Curves.easeInOutCubic),
-    );
-  }
-
-  @override
-  void dispose() {
-    _pressController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final gradient = widget.tool['gradient'] as List<Color>;
-    final accent = widget.tool['accent'] as Color;
-    final isPremium = widget.tool['isPremium'] == true;
-
     return GestureDetector(
-      onTapDown: (_) {
+      onTap: () {
         HapticFeedback.selectionClick();
-        _pressController.forward();
+        onTap();
       },
-      onTapUp: (_) async {
-        await _pressController.reverse();
-        widget.onTap();
-      },
-      onTapCancel: () => _pressController.reverse(),
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) => Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
-        ),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-          decoration: BoxDecoration(
-            color: widget.isDark
-                ? const Color(0xFF1E293B).withValues(alpha: 0.70)
-                : const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: widget.isDark
-                  ? const Color(0xFF334155).withValues(alpha: 0.6)
-                  : const Color(0xFFE2E8F0),
-              width: 1.2,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: isDark ? 0.16 : 0.10),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Icon(icon, color: color, size: 20),
             ),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: gradient,
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: accent.withValues(alpha: 0.35),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Icon(
-                    widget.tool['icon'] as IconData,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 9),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            widget.tool['label'] as String,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: widget.isDark
-                                  ? Colors.white
-                                  : const Color(0xFF0F172A),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (isPremium) ...[
-                          const SizedBox(width: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 4,
-                              vertical: 1,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF59E0B)
-                                  .withValues(alpha: 0.20),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: const Text(
-                              'PRO',
-                              style: TextStyle(
-                                color: Color(0xFFF59E0B),
-                                fontSize: 8,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      widget.tool['desc'] as String,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                        color: widget.isDark
-                            ? const Color(0xFF94A3B8)
-                            : const Color(0xFF64748B),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: isDark ? const Color(0xFFD6E2E8) : const Color(0xFF334155),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

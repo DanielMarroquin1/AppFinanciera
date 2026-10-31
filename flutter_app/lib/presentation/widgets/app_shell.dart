@@ -135,15 +135,10 @@ class _AppShellState extends ConsumerState<AppShell>
                   boxShadow: [
                     BoxShadow(
                       color: isDark
-                          ? Colors.black.withValues(alpha: 0.50)
-                          : Colors.black.withValues(alpha: 0.10),
-                      blurRadius: 28,
-                      offset: const Offset(0, 10),
-                    ),
-                    BoxShadow(
-                      color: const Color(0xFF06B6D4).withValues(alpha: isDark ? 0.08 : 0.04),
-                      blurRadius: 18,
-                      offset: const Offset(0, 4),
+                          ? Colors.black.withValues(alpha: 0.40)
+                          : Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
@@ -296,37 +291,34 @@ class _AppShellState extends ConsumerState<AppShell>
                             CurvedAnimation(parent: _fabController, curve: Curves.easeInOutCubic),
                           ),
                           child: Container(
-                            width: 60,
-                            height: 60,
+                            width: 52,
+                            height: 52,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: const LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
-                                colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
+                                colors: [Color(0xFF0891B2), Color(0xFF06B6D4)],
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF06B6D4).withValues(alpha: 0.55),
-                                  blurRadius: 18,
-                                  offset: const Offset(0, 5),
-                                ),
-                                BoxShadow(
-                                  color: const Color(0xFF10B981).withValues(alpha: 0.35),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 2),
+                                  color: Colors.black.withValues(
+                                    alpha: isDark ? 0.40 : 0.16,
+                                  ),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
                                 ),
                               ],
                               border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.55),
-                                width: 2.2,
+                                color: Colors.white.withValues(alpha: 0.25),
+                                width: 1.2,
                               ),
                             ),
                             child: const Center(
                               child: Icon(
                                 LucideIcons.plus,
                                 color: Colors.white,
-                                size: 28,
+                                size: 24,
                               ),
                             ),
                           ),

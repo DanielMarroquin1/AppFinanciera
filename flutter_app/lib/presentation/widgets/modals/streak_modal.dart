@@ -337,12 +337,12 @@ class _StreakModalState extends ConsumerState<StreakModal>
                 if (!_isActiveState) ...[
                   const SizedBox(height: 10),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1B2C37),
-                      borderRadius: BorderRadius.circular(16),
+                      color: const Color(0xFF1A2A35),
+                      borderRadius: BorderRadius.circular(18),
                       border: Border.all(
-                        color: const Color(0xFFFF9600).withValues(alpha: 0.6),
+                        color: const Color(0xFFFF9600).withValues(alpha: 0.7),
                         width: 1.2,
                       ),
                       boxShadow: [
@@ -352,17 +352,68 @@ class _StreakModalState extends ConsumerState<StreakModal>
                         ),
                       ],
                     ),
-                    child: Row(
+                    child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(LucideIcons.timer, color: Color(0xFFFF9600), size: 14),
-                        const SizedBox(width: 8),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(LucideIcons.timer, color: Color(0xFFFF9600), size: 14),
+                            const SizedBox(width: 8),
+                            Text(
+                              secondsRemaining > 0
+                                  ? 'Auto-encendido en ${secondsRemaining}s en la app 🔥'
+                                  : '¡Encendiendo racha ahora! 🔥',
+                              style: const TextStyle(
+                                color: Color(0xFFFFD54F),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 5),
+                        // Mini progress bar
+                        SizedBox(
+                          width: 180,
+                          height: 4,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: (StreakSessionService.elapsedSeconds /
+                                      StreakSessionService.activationThresholdSeconds)
+                                  .clamp(0.0, 1.0),
+                              backgroundColor: const Color(0xFF0F1B22),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                Color(0xFFFF9600),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ] else ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.6),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(LucideIcons.checkCircle2, color: Color(0xFF10B981), size: 14),
+                        SizedBox(width: 6),
                         Text(
-                          secondsRemaining > 0
-                              ? 'Auto-encendido en ${secondsRemaining}s en la app 🔥'
-                              : '¡Encendiendo racha ahora! 🔥',
-                          style: const TextStyle(
-                            color: Color(0xFFFFD54F),
+                          '¡Racha encendida hoy! Mantienes tu fuego vivo 🔥',
+                          style: TextStyle(
+                            color: Color(0xFF6EE7B7),
                             fontSize: 11,
                             fontWeight: FontWeight.w800,
                           ),
@@ -706,7 +757,7 @@ class _FiveDayMilestoneTrack extends StatelessWidget {
             final double slotWidth = totalWidth / 5;
 
             return SizedBox(
-              height: 54,
+              height: 64,
               child: Stack(
                 clipBehavior: Clip.none,
                 alignment: Alignment.centerLeft,
@@ -716,7 +767,7 @@ class _FiveDayMilestoneTrack extends StatelessWidget {
                     Positioned(
                       left: 0,
                       top: 4,
-                      bottom: 4,
+                      bottom: 12,
                       width: math.min(totalWidth, slotWidth * completedCount),
                       child: Container(
                         decoration: BoxDecoration(
@@ -758,9 +809,9 @@ class _FiveDayMilestoneTrack extends StatelessWidget {
                           clipBehavior: Clip.none,
                           children: [
                             _TreasureChestIcon(isCompleted: isCompleted),
-                            // +50 PTS Gold Badge floating above/below chest
+                            // +50 PTS Gold Badge floating directly below chest
                             Positioned(
-                              bottom: -16,
+                              bottom: -8,
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                                 decoration: BoxDecoration(

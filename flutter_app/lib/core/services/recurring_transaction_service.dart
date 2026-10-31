@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/debt.dart';
@@ -10,171 +11,196 @@ import '../utils/currency_formatter.dart';
 import 'local_notification_service.dart';
 
 class RecurringTransactionService {
+  static bool _isEvaluating = false;
+
   static Future<void> evaluateRecurringTransactions() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    await cleanDuplicates(user.uid);
-
-    final existingSnapshot = await FirebaseFirestore.instance
-        .collection('transactions')
-        .where('userId', isEqualTo: user.uid)
-        .get();
-    final existingNormal = existingSnapshot.docs
-        .map((d) => TransactionModel.fromFirestore(d))
-        .where((t) => !t.isFixed)
-        .toList();
-
-    final prefs = await SharedPreferences.getInstance();
-    final String lastCheckStr =
-        prefs.getString('last_recurring_check_${user.uid}') ?? '';
-    final DateTime now = DateTime.now();
-    final DateTime today = DateTime(now.year, now.month, now.day);
-
-    DateTime lastCheck;
-    if (lastCheckStr.isEmpty) {
-      // First time running this engine, look back 60 days to catch missed ones
-      // but we will restrict it to not generate before the template was created.
-      lastCheck = today.subtract(const Duration(days: 60));
-    } else {
-      lastCheck = DateTime.parse(lastCheckStr);
-    }
-
-    if (!lastCheck.isBefore(today)) {
-      // Already checked today
+    if (_isEvaluating) {
       return;
     }
+    _isEvaluating = true;
 
-    // Get all fixed transactions (templates)
-    final snapshot = await FirebaseFirestore.instance
-        .collection('transactions')
-        .where('userId', isEqualTo: user.uid)
-        .where('isFixed', isEqualTo: true)
-        .get();
+    try {
+      await cleanDuplicates(user.uid);
 
-    final templates = snapshot.docs
-        .map((doc) => TransactionModel.fromFirestore(doc))
-        .toList();
-    final batch = FirebaseFirestore.instance.batch();
-    int addedCount = 0;
+      final prefs = await SharedPreferences.getInstance();
+      final DateTime now = DateTime.now();
+      final DateTime today = DateTime(now.year, now.month, now.day);
+      final String todayIso = today.toIso8601String();
 
-    for (var template in templates) {
-      if (template.recurrenceType == null || template.recurrenceDay == null)
-        continue;
+      final String lastCheckStr =
+          prefs.getString('last_recurring_check_${user.uid}') ?? '';
 
-      // We need to check if any required dates fell between lastCheck (exclusive) and today (inclusive)
-      // Since it could be months, we iterate day by day.
-      // Do not generate transactions before the template was created.
-      DateTime templateDate = DateTime(
-        template.date.year,
-        template.date.month,
-        template.date.day,
-      );
-      DateTime start = lastCheck.isBefore(templateDate)
-          ? templateDate
-          : lastCheck;
-
-      // We start checking from start + 1 day
-      DateTime current = start.add(const Duration(days: 1));
-
-      while (!current.isAfter(today)) {
-        bool shouldAdd = false;
-
-        if (template.recurrenceType == 'monthly') {
-          if (current.day == template.recurrenceDay) {
-            shouldAdd = true;
-          }
-        } else if (template.recurrenceType == 'bimonthly') {
-          if (current.day == template.recurrenceDay ||
-              current.day == template.recurrenceDay2) {
-            shouldAdd = true;
-          }
-        } else if (template.recurrenceType == 'weekly') {
-          if (current.weekday == template.recurrenceDay) {
-            shouldAdd = true;
-          }
-        }
-
-        if (shouldAdd) {
-          final targetDesc = '${template.description} (Automático)';
-          final alreadyExists = existingNormal.any(
-            (t) =>
-                t.description == targetDesc &&
-                t.date.year == current.year &&
-                t.date.month == current.month &&
-                t.date.day == current.day,
-          );
-          if (alreadyExists) {
-            shouldAdd = false;
-          }
-        }
-
-        if (shouldAdd) {
-          // Create a new normal transaction (not fixed, so it doesn't duplicate the template)
-          final newTx = TransactionModel(
-            id: '',
-            userId: user.uid,
-            amount: template.getAmountForDay(current.day),
-            type: template.type,
-            category: template.category,
-            description: '${template.description} (Automático)',
-            date: current,
-            isFixed: false, // It's an instantiated transaction, not a template
-          );
-
-          final docRef = FirebaseFirestore.instance
-              .collection('transactions')
-              .doc();
-          batch.set(docRef, newTx.toFirestore());
-
-          // Generate notification
-          final notifRef = FirebaseFirestore.instance
-              .collection('notifications')
-              .doc();
-          final notif = NotificationModel(
-            id: notifRef.id,
-            userId: user.uid,
-            title: template.type == 'income'
-                ? 'Ingreso Automático'
-                : 'Cobro Automático',
-            body:
-                'Se ha registrado "${template.description}" por un monto de ${template.getAmountForDay(current.day).toStringAsFixed(2)}.',
-            createdAt: DateTime.now(),
-            isRead: false,
-            type: template.type,
-            relatedId: docRef.id,
-            category: template.category,
-          );
-          batch.set(notifRef, notif.toFirestore());
-          LocalNotificationService.showNotification(
-            title: notif.title,
-            body: notif.body,
-            id: notif.id.hashCode.abs() % 100000,
-          );
-
-          if (user.email != null) {
-            final mailRef = FirebaseFirestore.instance.collection('mail').doc();
-            batch.set(mailRef, {
-              'to': user.email,
-              'message': {
-                'subject': template.type == 'income'
-                    ? 'Ingreso Automático Registrado'
-                    : 'Cobro Automático Registrado',
-                'text':
-                    'Se ha registrado "${template.description}" por un monto de ${template.getAmountForDay(current.day).toStringAsFixed(2)}.',
-                'html':
-                    '<p>Se ha registrado <strong>"${template.description}"</strong> por un monto de ${template.getAmountForDay(current.day).toStringAsFixed(2)}.</p>',
-              },
-              'createdAt': FieldValue.serverTimestamp(),
-            });
-          }
-
-          addedCount++;
-        }
-
-        current = current.add(const Duration(days: 1));
+      DateTime lastCheck;
+      if (lastCheckStr.isEmpty) {
+        lastCheck = today.subtract(const Duration(days: 60));
+      } else {
+        lastCheck = DateTime.parse(lastCheckStr);
       }
-    }
+
+      if (!lastCheck.isBefore(today)) {
+        // Ya verificado hoy
+        return;
+      }
+
+      // Marcar de inmediato la fecha de verificación para bloquear llamadas concurrentes
+      await prefs.setString('last_recurring_check_${user.uid}', todayIso);
+
+      final existingSnapshot = await FirebaseFirestore.instance
+          .collection('transactions')
+          .where('userId', isEqualTo: user.uid)
+          .get();
+      final List<TransactionModel> existingNormal = existingSnapshot.docs
+          .map((d) => TransactionModel.fromFirestore(d))
+          .where((t) => !t.isFixed)
+          .toList();
+
+      // Obtener transacciones fijas / recurrentes (plantillas)
+      final snapshot = await FirebaseFirestore.instance
+          .collection('transactions')
+          .where('userId', isEqualTo: user.uid)
+          .where('isFixed', isEqualTo: true)
+          .get();
+
+      final templates = snapshot.docs
+          .map((doc) => TransactionModel.fromFirestore(doc))
+          .toList();
+      final batch = FirebaseFirestore.instance.batch();
+      int addedCount = 0;
+
+      for (var template in templates) {
+        if (template.recurrenceType == null || template.recurrenceDay == null) {
+          continue;
+        }
+
+        DateTime templateDate = DateTime(
+          template.date.year,
+          template.date.month,
+          template.date.day,
+        );
+        DateTime start = lastCheck.isBefore(templateDate)
+            ? templateDate
+            : lastCheck;
+
+        DateTime current = start.add(const Duration(days: 1));
+
+        final String cleanDesc = template.description.trim().isNotEmpty
+            ? template.description.trim()
+            : (template.category.trim().isNotEmpty
+                ? template.category.trim()
+                : (template.type == 'income' ? 'Ingreso Fijo' : 'Cobro Fijo'));
+
+        while (!current.isAfter(today)) {
+          bool shouldAdd = false;
+
+          if (template.recurrenceType == 'monthly') {
+            if (current.day == template.recurrenceDay) {
+              shouldAdd = true;
+            }
+          } else if (template.recurrenceType == 'bimonthly') {
+            if (current.day == template.recurrenceDay ||
+                current.day == template.recurrenceDay2) {
+              shouldAdd = true;
+            }
+          } else if (template.recurrenceType == 'weekly') {
+            if (current.weekday == template.recurrenceDay) {
+              shouldAdd = true;
+            }
+          }
+
+          if (shouldAdd) {
+            final targetDesc = '$cleanDesc (Automático)';
+            final alreadyExists = existingNormal.any(
+              (t) =>
+                  (t.description == targetDesc ||
+                      t.description == cleanDesc ||
+                      t.description.contains(cleanDesc)) &&
+                  t.type == template.type &&
+                  (t.amount - template.getAmountForDay(current.day)).abs() < 0.01 &&
+                  t.date.year == current.year &&
+                  t.date.month == current.month &&
+                  t.date.day == current.day,
+            );
+            if (alreadyExists) {
+              shouldAdd = false;
+            }
+          }
+
+          if (shouldAdd) {
+            final double amount = template.getAmountForDay(current.day);
+            final String dateKey = '${current.year}_${current.month.toString().padLeft(2, '0')}_${current.day.toString().padLeft(2, '0')}';
+            final String docId = 'auto_tx_${user.uid}_${template.id}_$dateKey';
+            final String notifId = 'auto_notif_${user.uid}_${template.id}_$dateKey';
+
+            final newTx = TransactionModel(
+              id: docId,
+              userId: user.uid,
+              amount: amount,
+              type: template.type,
+              category: template.category,
+              description: '$cleanDesc (Automático)',
+              date: current,
+              isFixed: false,
+            );
+
+            existingNormal.add(newTx);
+
+            final docRef = FirebaseFirestore.instance
+                .collection('transactions')
+                .doc(docId);
+            batch.set(docRef, newTx.toFirestore(), SetOptions(merge: true));
+
+            // Notificación con título y descripción nunca vacíos
+            final notifRef = FirebaseFirestore.instance
+                .collection('notifications')
+                .doc(notifId);
+            final notif = NotificationModel(
+              id: notifId,
+              userId: user.uid,
+              title: template.type == 'income'
+                  ? 'Ingreso Automático'
+                  : 'Cobro Automático',
+              body:
+                  'Se ha registrado "$cleanDesc" por un monto de ${amount.toStringAsFixed(2)}.',
+              createdAt: DateTime.now(),
+              isRead: false,
+              type: template.type,
+              relatedId: docId,
+              category: template.category,
+            );
+            batch.set(notifRef, notif.toFirestore(), SetOptions(merge: true));
+
+            LocalNotificationService.showNotification(
+              title: notif.title,
+              body: notif.body,
+              id: notif.id.hashCode.abs() % 100000,
+            );
+
+            if (user.email != null) {
+              final mailRef = FirebaseFirestore.instance.collection('mail').doc('mail_$docId');
+              batch.set(mailRef, {
+                'to': user.email,
+                'message': {
+                  'subject': template.type == 'income'
+                      ? 'Ingreso Automático Registrado'
+                      : 'Cobro Automático Registrado',
+                  'text':
+                      'Se ha registrado "$cleanDesc" por un monto de ${amount.toStringAsFixed(2)}.',
+                  'html':
+                      '<p>Se ha registrado <strong>"$cleanDesc"</strong> por un monto de ${amount.toStringAsFixed(2)}.</p>',
+                },
+                'createdAt': FieldValue.serverTimestamp(),
+              }, SetOptions(merge: true));
+            }
+
+            addedCount++;
+          }
+
+          current = current.add(const Duration(days: 1));
+        }
+      }
 
     // Now evaluate Debts with isAutoPay == true
     final debtSnapshot = await FirebaseFirestore.instance
@@ -189,8 +215,9 @@ class RecurringTransactionService {
 
     for (var debt in debtTemplates) {
       if (debt.recurrenceType == null || debt.recurrenceDay == null) continue;
-      if (debt.paidInstallments >= debt.totalInstallments)
+      if (debt.paidInstallments >= debt.totalInstallments) {
         continue; // Already paid
+      }
 
       DateTime templateDate = DateTime(
         debt.createdAt.year,
@@ -213,8 +240,9 @@ class RecurringTransactionService {
           if (current.day == debt.recurrenceDay) shouldAdd = true;
         } else if (debt.recurrenceType == 'bimonthly') {
           if (current.day == debt.recurrenceDay ||
-              current.day == debt.recurrenceDay2)
+              current.day == debt.recurrenceDay2) {
             shouldAdd = true;
+          }
         } else if (debt.recurrenceType == 'weekly') {
           if (current.weekday == debt.recurrenceDay) shouldAdd = true;
         }
@@ -234,9 +262,13 @@ class RecurringTransactionService {
         }
 
         if (shouldAdd) {
+          final String dateKey = '${current.year}_${current.month.toString().padLeft(2, '0')}_${current.day.toString().padLeft(2, '0')}';
+          final String docId = 'auto_debt_${user.uid}_${debt.id}_$dateKey';
+          final String notifId = 'auto_debt_notif_${user.uid}_${debt.id}_$dateKey';
+
           // Create the expense transaction
           final newTx = TransactionModel(
-            id: '',
+            id: docId,
             userId: user.uid,
             amount: debt.installmentAmount,
             type: 'expense',
@@ -246,17 +278,19 @@ class RecurringTransactionService {
             isFixed: false,
           );
 
+          existingNormal.add(newTx);
+
           final docRef = FirebaseFirestore.instance
               .collection('transactions')
-              .doc();
-          batch.set(docRef, newTx.toFirestore());
+              .doc(docId);
+          batch.set(docRef, newTx.toFirestore(), SetOptions(merge: true));
 
           // Generate notification
           final notifRef = FirebaseFirestore.instance
               .collection('notifications')
-              .doc();
+              .doc(notifId);
           final notif = NotificationModel(
-            id: notifRef.id,
+            id: notifId,
             userId: user.uid,
             title: 'Pago Automático de Deuda',
             body:
@@ -264,10 +298,10 @@ class RecurringTransactionService {
             createdAt: DateTime.now(),
             isRead: false,
             type: 'expense',
-            relatedId: docRef.id,
+            relatedId: docId,
             category: debt.category,
           );
-          batch.set(notifRef, notif.toFirestore());
+          batch.set(notifRef, notif.toFirestore(), SetOptions(merge: true));
           LocalNotificationService.showNotification(
             title: notif.title,
             body: notif.body,
@@ -275,7 +309,7 @@ class RecurringTransactionService {
           );
 
           if (user.email != null) {
-            final mailRef = FirebaseFirestore.instance.collection('mail').doc();
+            final mailRef = FirebaseFirestore.instance.collection('mail').doc('mail_$docId');
             batch.set(mailRef, {
               'to': user.email,
               'message': {
@@ -286,7 +320,7 @@ class RecurringTransactionService {
                     '<p>Se ha cobrado la cuota de <strong>"${debt.name}"</strong> por un monto de ${debt.installmentAmount.toStringAsFixed(2)}.</p>',
               },
               'createdAt': FieldValue.serverTimestamp(),
-            });
+            }, SetOptions(merge: true));
           }
 
           addedInstallments++;
@@ -388,9 +422,13 @@ class RecurringTransactionService {
           final actualDeduct =
               deductAmount > remaining ? remaining : deductAmount;
 
+          final String dateKey = '${current.year}_${current.month.toString().padLeft(2, '0')}_${current.day.toString().padLeft(2, '0')}';
+          final String docId = 'auto_save_${user.uid}_${goal.id}_$dateKey';
+          final String notifId = 'auto_save_notif_${user.uid}_${goal.id}_$dateKey';
+
           // Create the expense transaction
           final newTx = TransactionModel(
-            id: '',
+            id: docId,
             userId: user.uid,
             amount: actualDeduct,
             type: 'expense',
@@ -400,17 +438,19 @@ class RecurringTransactionService {
             isFixed: false,
           );
 
+          existingNormal.add(newTx);
+
           final docRef = FirebaseFirestore.instance
               .collection('transactions')
-              .doc();
-          batch.set(docRef, newTx.toFirestore());
+              .doc(docId);
+          batch.set(docRef, newTx.toFirestore(), SetOptions(merge: true));
 
           // In-app notification
           final notifRef = FirebaseFirestore.instance
               .collection('notifications')
-              .doc();
+              .doc(notifId);
           final notif = NotificationModel(
-            id: notifRef.id,
+            id: notifId,
             userId: user.uid,
             title: '🌱 Ahorro Automático Aplicado',
             body:
@@ -418,10 +458,10 @@ class RecurringTransactionService {
             createdAt: DateTime.now(),
             isRead: false,
             type: 'savings',
-            relatedId: docRef.id,
+            relatedId: docId,
             category: 'Ahorro',
           );
-          batch.set(notifRef, notif.toFirestore());
+          batch.set(notifRef, notif.toFirestore(), SetOptions(merge: true));
           LocalNotificationService.showNotification(
             title: notif.title,
             body: notif.body,
@@ -429,7 +469,7 @@ class RecurringTransactionService {
           );
 
           if (user.email != null) {
-            final mailRef = FirebaseFirestore.instance.collection('mail').doc();
+            final mailRef = FirebaseFirestore.instance.collection('mail').doc('mail_$docId');
             batch.set(mailRef, {
               'to': user.email,
               'message': {
@@ -440,7 +480,7 @@ class RecurringTransactionService {
                     '<p>🌱 Se ha transferido automáticamente <strong>${actualDeduct.toStringAsFixed(2)}</strong> a tu meta <strong>"${goal.name}"</strong>.</p>',
               },
               'createdAt': FieldValue.serverTimestamp(),
-            });
+            }, SetOptions(merge: true));
           }
 
           addedToGoal += actualDeduct;
@@ -465,12 +505,11 @@ class RecurringTransactionService {
       await batch.commit();
     }
 
-    await prefs.setString(
-      'last_recurring_check_${user.uid}',
-      today.toIso8601String(),
-    );
     await evaluateCreditCardAlerts();
     await cleanDuplicates(user.uid);
+    } finally {
+      _isEvaluating = false;
+    }
   }
 
   static Future<void> cleanDuplicates(String uid) async {
@@ -486,8 +525,10 @@ class RecurringTransactionService {
     final Map<String, List<TransactionModel>> groups = {};
 
     for (var t in allNormal) {
+      // Normalizar descripción quitando sufijos automáticos para encontrar duplicados exactos
+      final cleanDesc = t.description.replaceAll(' (Automático)', '').trim().toLowerCase();
       final key =
-          '${t.type}_${t.category}_${t.description}_${t.amount}_${t.date.year}_${t.date.month}_${t.date.day}';
+          '${t.type}_${t.amount.toStringAsFixed(2)}_${t.date.year}_${t.date.month}_${t.date.day}_$cleanDesc';
       if (!groups.containsKey(key)) {
         groups[key] = [];
       }
@@ -499,7 +540,7 @@ class RecurringTransactionService {
 
     for (var group in groups.values) {
       if (group.length > 1) {
-        // keep the first one, delete the rest
+        // Dejar el primero, borrar duplicados
         for (int i = 1; i < group.length; i++) {
           final docRef = FirebaseFirestore.instance
               .collection('transactions')
@@ -510,7 +551,7 @@ class RecurringTransactionService {
       }
     }
 
-    // Clean duplicate notifications
+    // Limpiar notificaciones duplicadas
     final notifSnapshot = await FirebaseFirestore.instance
         .collection('notifications')
         .where('userId', isEqualTo: uid)
@@ -753,7 +794,7 @@ class RecurringTransactionService {
         await batch.commit();
       }
     } catch (e) {
-      print('Error evaluating credit card alerts: $e');
+      debugPrint('Error evaluating credit card alerts: $e');
     }
   }
 }

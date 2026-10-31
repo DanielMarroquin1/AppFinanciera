@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -40,8 +39,8 @@ class LocalNotificationService {
       }
 
       // 2. Configurar icono de Android y ajustes de iOS
-      // Usamos @drawable/ic_notification (monocromático compatible con Android 5 al 15)
-      const androidInit = AndroidInitializationSettings('@drawable/ic_notification');
+      // Usamos el icono oficial de la aplicación @mipmap/ic_launcher
+      const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
       const iosInit = DarwinInitializationSettings(
         requestAlertPermission: false, // Solicitado explícitamente en UI
         requestBadgePermission: false,
@@ -187,7 +186,8 @@ class LocalNotificationService {
         channelDescription: _channelDesc,
         importance: Importance.max,
         priority: Priority.high,
-        icon: '@drawable/ic_notification',
+        icon: '@mipmap/ic_launcher',
+        largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
         color: const Color(0xFF06B6D4), // Cyan brillante de QUIVO
         enableLights: true,
         ledColor: const Color(0xFF06B6D4),
@@ -291,7 +291,8 @@ class LocalNotificationService {
       channelDescription: _channelDesc,
       importance: Importance.max,
       priority: Priority.high,
-      icon: '@drawable/ic_notification',
+      icon: '@mipmap/ic_launcher',
+      largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
       color: const Color(0xFF06B6D4),
       enableLights: true,
       ledColor: const Color(0xFF06B6D4),
@@ -412,7 +413,8 @@ class LocalNotificationService {
         channelDescription: _channelDesc,
         importance: Importance.max,
         priority: Priority.high,
-        icon: '@drawable/ic_notification',
+        icon: '@mipmap/ic_launcher',
+        largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
         color: const Color(0xFF06B6D4),
         enableVibration: true,
         vibrationPattern: vibrationPattern,

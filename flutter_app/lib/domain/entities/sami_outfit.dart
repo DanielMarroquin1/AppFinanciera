@@ -517,13 +517,32 @@ class SamiOutfit {
     required this.rarityColor,
   });
 
+  static String getAssetForEquipment(SamiEquipment equipment) {
+    switch (equipment.clothingId) {
+      case 'ropa_ejecutivo':
+        return 'assets/images/sami_outfit_ejecutivo.png';
+      case 'ropa_sudadera':
+        return 'assets/images/sami_outfit_streetwear.png';
+      case 'ropa_superheroe':
+        return 'assets/images/sami_outfit_superheroe.png';
+      case 'ropa_deportiva':
+        return 'assets/images/sami_outfit_deportiva.png';
+      case 'ropa_chef':
+        return 'assets/images/sami_outfit_chef.png';
+      case 'ropa_armadura':
+        return 'assets/images/sami_outfit_armadura.png';
+      default:
+        return 'assets/images/sami_3d_front_open.png';
+    }
+  }
+
   static const List<SamiOutfit> allOutfits = [
     SamiOutfit(
       id: 'sami_default',
       name: 'SAMI Clásico',
       subtitle: 'Semilla Original',
       description: 'El personaje oficial de QUIVO con su suave plumaje azul marino y vientre blanco.',
-      imageAsset: 'assets/images/sami_3d_front.png',
+      imageAsset: 'assets/images/sami_3d_front_open.png',
       accessoryEmoji: '🌱',
       primaryColor: Color(0xFF0284C7),
       secondaryColor: Color(0xFF0369A1),
@@ -537,7 +556,7 @@ class SamiOutfit {
       name: 'SAMI Urbano',
       subtitle: 'Gorra Snapback QUIVO',
       description: 'Estilo fresco y juvenil con gorra deportiva azul y cyan para el día a día.',
-      imageAsset: 'assets/images/sami_3d_front.png',
+      imageAsset: 'assets/images/sami_3d_front_open.png',
       accessoryEmoji: '🧢',
       primaryColor: Color(0xFF06B6D4),
       secondaryColor: Color(0xFF2563EB),
@@ -550,7 +569,7 @@ class SamiOutfit {
       name: 'SAMI Ejecutivo',
       subtitle: 'Traje Formal y Corbata',
       description: 'Vestido de etiqueta con saco formal y corbata de seda para grandes negocios.',
-      imageAsset: 'assets/images/sami_3d_front.png',
+      imageAsset: 'assets/images/sami_outfit_ejecutivo.png',
       accessoryEmoji: '👔',
       primaryColor: Color(0xFF1E3A8A),
       secondaryColor: Color(0xFF0F172A),
@@ -563,7 +582,7 @@ class SamiOutfit {
       name: 'SAMI Detective',
       subtitle: 'Rastreador de Gastos',
       description: 'Equipado con lentes oscuros para rastrear cada centavo de tu presupuesto.',
-      imageAsset: 'assets/images/sami_3d_front.png',
+      imageAsset: 'assets/images/sami_outfit_ejecutivo.png',
       accessoryEmoji: '🕶️',
       primaryColor: Color(0xFF475569),
       secondaryColor: Color(0xFF1E293B),
@@ -576,7 +595,7 @@ class SamiOutfit {
       name: 'SAMI Urbano Street',
       subtitle: 'Sudadera Streetwear',
       description: 'Listo con hoodie cyan para festejar tus rachas y logros de ahorro.',
-      imageAsset: 'assets/images/sami_3d_front.png',
+      imageAsset: 'assets/images/sami_outfit_streetwear.png',
       accessoryEmoji: '🧥',
       primaryColor: Color(0xFF0284C7),
       secondaryColor: Color(0xFF0369A1),
@@ -589,7 +608,7 @@ class SamiOutfit {
       name: 'SAMI Superhéroe',
       subtitle: 'Capa Protectora',
       description: 'Listo para rescatar tus finanzas con su capa roja y valentía inquebrantable.',
-      imageAsset: 'assets/images/sami_3d_front.png',
+      imageAsset: 'assets/images/sami_outfit_superheroe.png',
       accessoryEmoji: '🦸',
       primaryColor: Color(0xFFDC2626),
       secondaryColor: Color(0xFF991B1B),
@@ -602,7 +621,7 @@ class SamiOutfit {
       name: 'SAMI Chef',
       subtitle: 'Filipina Gourmet',
       description: 'Cocinando las mejores recetas de ahorro con su chaquetín de alta cocina.',
-      imageAsset: 'assets/images/sami_3d_front.png',
+      imageAsset: 'assets/images/sami_outfit_chef.png',
       accessoryEmoji: '👨‍🍳',
       primaryColor: Color(0xFFD97706),
       secondaryColor: Color(0xFF78350F),
@@ -614,8 +633,8 @@ class SamiOutfit {
       id: 'sami_wizard',
       name: 'SAMI Astronauta',
       subtitle: 'Casco Espacial Galáctico',
-      description: 'Explorando nuevas fronteras de ahorro con su casco espacial.',
-      imageAsset: 'assets/images/sami_3d_front.png',
+      description: 'Explorando nuevas fronteras de ahorro con su armadura y casco espacial.',
+      imageAsset: 'assets/images/sami_outfit_armadura.png',
       accessoryEmoji: '🧑‍🚀',
       primaryColor: Color(0xFF6366F1),
       secondaryColor: Color(0xFF312E81),
@@ -628,7 +647,7 @@ class SamiOutfit {
       name: 'SAMI Cyberpunk',
       subtitle: 'Casco Holográfico HUD',
       description: 'Tecnología futurista con visera HUD neón para monitorear cada centavo.',
-      imageAsset: 'assets/images/sami_3d_front.png',
+      imageAsset: 'assets/images/sami_outfit_armadura.png',
       accessoryEmoji: '🥽',
       primaryColor: Color(0xFF0891B2),
       secondaryColor: Color(0xFF164E63),
@@ -641,7 +660,7 @@ class SamiOutfit {
       name: 'SAMI Bufanda Nórdica',
       subtitle: 'Abrigado de Invierno',
       description: 'Con su bufanda tejida azul protegiéndose del frío de la inflación.',
-      imageAsset: 'assets/images/sami_3d_front.png',
+      imageAsset: 'assets/images/sami_3d_front_open.png',
       accessoryEmoji: '🧣',
       primaryColor: Color(0xFF0284C7),
       secondaryColor: Color(0xFF075985),
@@ -699,7 +718,7 @@ class SamiOutfit {
           ? primaryAcc.subtitle
           : primaryClothing.subtitle,
       description: primaryClothing.description,
-      imageAsset: 'assets/images/sami_3d_front.png',
+      imageAsset: getAssetForEquipment(equipment),
       accessoryEmoji: primaryAcc.id != 'acc_ninguno'
           ? primaryAcc.emoji
           : primaryClothing.emoji,

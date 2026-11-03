@@ -8,6 +8,7 @@ import '../../presentation/providers/auth_provider.dart';
 import '../../presentation/widgets/quick_actions_menu.dart';
 import '../../presentation/widgets/modals/add_expense_modal.dart';
 import '../../presentation/widgets/modals/add_income_modal.dart';
+import '../../presentation/widgets/modals/add_saving_goal_modal.dart';
 import '../../presentation/widgets/modals/avatar_selector_modal.dart';
 import '../../presentation/widgets/modals/ai_chat_modal.dart';
 import '../../presentation/widgets/modals/notifications_modal.dart';
@@ -242,6 +243,8 @@ class _AppShellState extends ConsumerState<AppShell>
                               await AddExpenseModal.show(context);
                             } else if (action == 'income') {
                               await AddIncomeModal.show(context);
+                            } else if (action == 'saving-goal' || action == 'saving') {
+                              await AddSavingGoalModal.show(context);
                             } else if (action == 'armario-sami' || action == 'rewards-shop') {
                               final authUser = ref.read(authProvider).user;
                               await AvatarSelectorModal.show(

@@ -421,69 +421,13 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
               ),
 
               // =================================================================
-              // ESCENARIO 3D CENTRAL CON PEDESTAL ESCULPIDO
+              // ESCENARIO 3D CENTRAL (SAMI FLOTANDO LIBRE Y LIMPIO)
               // =================================================================
               Expanded(
                 flex: 6,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Pedestal elíptico con anillo concéntrico de luz
-                    Positioned(
-                      bottom: 18,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          // Sombra difusa exterior
-                          Container(
-                            width: 220,
-                            height: 38,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(100),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: _selectedItem.primaryColor.withValues(alpha: 0.45),
-                                  blurRadius: 36,
-                                  spreadRadius: 2,
-                                ),
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.90),
-                                  blurRadius: 24,
-                                  spreadRadius: 4,
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Anillo exterior de vidrio esmerilado
-                          Container(
-                            width: 190,
-                            height: 28,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF131D2A).withValues(alpha: 0.85),
-                              borderRadius: BorderRadius.circular(100),
-                              border: Border.all(
-                                color: _selectedItem.primaryColor.withValues(alpha: 0.55),
-                                width: 1.5,
-                              ),
-                            ),
-                          ),
-                          // Anillo interior con brillo
-                          Container(
-                            width: 140,
-                            height: 18,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(100),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.20),
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
                     // Globo de diálogo flotante al tocar a SAMI
                     if (_speechMessage != null)
                       Positioned(
@@ -537,8 +481,8 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                             child: Transform.scale(
                               scale: bounceScale,
                               child: SizedBox(
-                                width: 230,
-                                height: 230,
+                                width: 240,
+                                height: 240,
                                 child: AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 220),
                                   child: Image.asset(

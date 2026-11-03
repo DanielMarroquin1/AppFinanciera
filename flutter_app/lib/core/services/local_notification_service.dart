@@ -187,7 +187,7 @@ class LocalNotificationService {
         importance: Importance.max,
         priority: Priority.high,
         icon: 'ic_notification',
-        largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+        largeIcon: const DrawableResourceAndroidBitmap('ic_launcher'),
         color: const Color(0xFF06B6D4), // Cyan brillante de QUIVO
         enableLights: true,
         ledColor: const Color(0xFF06B6D4),
@@ -414,7 +414,7 @@ class LocalNotificationService {
         importance: Importance.max,
         priority: Priority.high,
         icon: 'ic_notification',
-        largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+        largeIcon: const DrawableResourceAndroidBitmap('ic_launcher'),
         color: const Color(0xFF06B6D4),
         enableVibration: true,
         vibrationPattern: vibrationPattern,

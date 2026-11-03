@@ -532,7 +532,7 @@ class SamiOutfit {
       case 'ropa_armadura':
         return 'assets/images/sami_outfit_armadura.png';
       default:
-        return 'assets/images/sami_3d_front_open.png';
+        return 'assets/images/sami_3d_waving.png';
     }
   }
 
@@ -543,7 +543,7 @@ class SamiOutfit {
       name: 'SAMI Clásico',
       subtitle: 'Plumaje Original',
       description: 'El estilo original de SAMI con su plumaje azul marino, vientre blanco y el emblema Q.',
-      imageAsset: 'assets/images/sami_3d_front_open.png',
+      imageAsset: 'assets/images/sami_3d_waving.png',
       accessoryEmoji: '👕',
       primaryColor: Color(0xFF0284C7),
       secondaryColor: Color(0xFF0369A1),
@@ -637,7 +637,7 @@ class SamiOutfit {
       name: 'SAMI Clásico',
       subtitle: 'Semilla Original',
       description: 'El personaje oficial de QUIVO con su suave plumaje azul marino y vientre blanco.',
-      imageAsset: 'assets/images/sami_3d_front_open.png',
+      imageAsset: 'assets/images/sami_3d_waving.png',
       accessoryEmoji: '🌱',
       primaryColor: Color(0xFF0284C7),
       secondaryColor: Color(0xFF0369A1),
@@ -651,7 +651,7 @@ class SamiOutfit {
       name: 'SAMI Urbano',
       subtitle: 'Gorra Snapback QUIVO',
       description: 'Estilo fresco y juvenil con gorra deportiva azul y cyan para el día a día.',
-      imageAsset: 'assets/images/sami_3d_front_open.png',
+      imageAsset: 'assets/images/sami_3d_waving.png',
       accessoryEmoji: '🧢',
       primaryColor: Color(0xFF06B6D4),
       secondaryColor: Color(0xFF2563EB),
@@ -755,7 +755,7 @@ class SamiOutfit {
       name: 'SAMI Bufanda Nórdica',
       subtitle: 'Abrigado de Invierno',
       description: 'Con su bufanda tejida azul protegiéndose del frío de la inflación.',
-      imageAsset: 'assets/images/sami_3d_front_open.png',
+      imageAsset: 'assets/images/sami_3d_waving.png',
       accessoryEmoji: '🧣',
       primaryColor: Color(0xFF0284C7),
       secondaryColor: Color(0xFF075985),

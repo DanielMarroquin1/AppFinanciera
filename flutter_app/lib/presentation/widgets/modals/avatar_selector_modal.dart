@@ -6,12 +6,12 @@ import '../../../domain/entities/sami_outfit.dart';
 import '../../providers/auth_provider.dart';
 import '../../../core/utils/app_haptics.dart';
 
-/// ARMARIO DE SAMI (REDISEÑADO TOTALMENTE DESDE CERO - SOLO ATUENDOS)
-/// Experiencia boutique inmersiva enfocada 100% en la ropa de SAMI:
-/// - Sin pestañas innecesarias de zapatos ni accesorios
-/// - SAMI en 3D acoplado en gran formato como protagonista central
-/// - Tarjetas amplias sin textos cortados
-/// - Guardado persistente que se refleja en Settings y Dashboard de inmediato
+/// ARMARIO DE SAMI (REDISEÑO TOTAL BOUTIQUE - 100% PRENDAS 3D)
+/// Interfaz de estudio de personalización minimalista, moderna y de lujo:
+/// - Sin textos innecesarios ni probador en vivo flotante
+/// - Pedestal de estudio 3D iluminado con reflejo y aura reactiva
+/// - Miniaturas 3D reales de cada prenda en el carrusel
+/// - Homogeneidad total de render y resolución 3D para SAMI
 class AvatarSelectorModal extends ConsumerStatefulWidget {
   final String currentAvatarId;
   final List<String> unlockedItems;
@@ -53,7 +53,6 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
   late AnimationController _tapBounceController;
   late AnimationController _waveController;
 
-  bool _isWaving = false;
   String? _speechMessage;
 
   late String _equippedId;
@@ -62,24 +61,23 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
   bool _isProcessing = false;
 
   final List<String> _motivationalPhrases = [
-    '¡Hola! 👋 ¡Este estilo me queda increíble!',
+    '¡Hola! 👋 ¡Este atuendo me sienta increíble!',
     '¡Ahorrar con estilo es otro nivel! ✨',
-    '¡Listo para vencer cualquier gasto impulsivo! 🛡️',
-    '¡Cada peso que ahorras te acerca a tus sueños! 📈',
-    '¡Pruébame lo que quieras del armario! 🪙',
+    '¡Listo para vencer cualquier gasto hormiga! 🛡️',
+    '¡Cada centavo que ahorras te acerca a tus sueños! 📈',
+    '¡Elige tu estilo favorito para el día! 🪙',
   ];
 
-  // Lista exclusiva de atuendos de ropa de SAMI
   late final List<WardrobeItem> _outfitList;
 
   @override
   void initState() {
     super.initState();
+    // Exclusivo para prendas de vestir
     _outfitList = WardrobeItem.allItems
         .where((i) => i.category == WardrobeCategory.clothing)
         .toList();
 
-    // Normalizar ID equipado inicial
     final rawId = widget.currentAvatarId;
     final cleanId = rawId.contains('|') ? rawId.split('|')[0] : rawId;
     _equippedId = cleanId.isEmpty ? 'ropa_clasica' : cleanId;
@@ -89,27 +87,20 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
       orElse: () => _outfitList.first,
     );
 
-    // Flotación suave y natural
     _idleController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2400),
     )..repeat(reverse: true);
 
-    // Rebote elástico al tocar a SAMI
     _tapBounceController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 380),
     );
 
-    // Saludo
     _waveController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1400),
-    )..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          if (mounted) setState(() => _isWaving = false);
-        }
-      });
+    );
   }
 
   @override
@@ -125,7 +116,6 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
     _tapBounceController.forward(from: 0.0);
     _waveController.forward(from: 0.0);
     setState(() {
-      _isWaving = true;
       final rand = math.Random().nextInt(_motivationalPhrases.length);
       _speechMessage = _motivationalPhrases[rand];
     });
@@ -138,7 +128,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
   }
 
   void _selectOutfit(WardrobeItem item) {
-    AppHaptics.lightImpact();
+    AppHaptics.selection();
     setState(() {
       _selectedItem = item;
     });
@@ -249,10 +239,10 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF131E27),
+        backgroundColor: const Color(0xFF111827),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(22),
-          side: const BorderSide(color: Color(0xFF243645), width: 1.2),
+          side: const BorderSide(color: Color(0xFF1F2937), width: 1.2),
         ),
         title: const Row(
           children: [
@@ -271,7 +261,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
         content: Text(
           'Para desbloquear "${item.name}" necesitas ${item.cost} puntos.\n\nActualmente tienes $currentPoints puntos. ¡Sigue registrando tus movimientos diarios y manteniendo tu racha con SAMI para acumular más puntos!',
           style: const TextStyle(
-            color: Color(0xFF94A3B8),
+            color: Color(0xFF9CA3AF),
             fontSize: 13.5,
             height: 1.4,
           ),
@@ -293,10 +283,9 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
   }
 
   String _getSamiHeroAsset() {
-    if (_isWaving && _selectedItem.id == 'ropa_clasica') {
-      return 'assets/images/sami_3d_waving.png';
-    }
-    return SamiOutfit.getAssetForEquipment(SamiEquipment(clothingId: _selectedItem.id));
+    return SamiOutfit.getAssetForEquipment(
+      SamiEquipment(clothingId: _selectedItem.id),
+    );
   }
 
   @override
@@ -308,7 +297,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
     final isSelectedUnlocked = _isItemUnlocked(_selectedItem, unlockedList);
     final isSelectedEquipped = _isItemEquipped(_selectedItem);
 
-    final floatY = math.sin(_idleController.value * math.pi) * 3.8;
+    final floatY = math.sin(_idleController.value * math.pi) * 4.0;
     final bounceScale = _tapBounceController.isAnimating
         ? 1.0 + (math.sin(_tapBounceController.value * math.pi) * 0.08)
         : 1.0;
@@ -316,28 +305,29 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
     final samiHeroAsset = _getSamiHeroAsset();
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.95,
+      height: MediaQuery.of(context).size.height * 0.94,
       decoration: const BoxDecoration(
-        color: Color(0xFF070B10),
+        color: Color(0xFF070B11),
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: Stack(
         children: [
-          // Halo ambiental en el fondo que reacciona a la ropa
+          // 1. Aura ambiental de iluminación de estudio reactiva al color de la prenda
           Positioned(
-            top: 70,
+            top: 50,
             left: 0,
             right: 0,
-            height: 290,
+            height: 320,
             child: Center(
-              child: Container(
-                width: 270,
-                height: 270,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 350),
+                width: 280,
+                height: 280,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      _selectedItem.primaryColor.withValues(alpha: 0.28),
+                      _selectedItem.primaryColor.withValues(alpha: 0.30),
                       _selectedItem.primaryColor.withValues(alpha: 0.08),
                       Colors.transparent,
                     ],
@@ -347,24 +337,24 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
             ),
           ),
 
-          // Contenido Principal
+          // 2. Contenido principal
           Column(
             children: [
-              // Barra superior de navegación boutique
+              // Barra superior minimalista y elegante
               Padding(
-                padding: const EdgeInsets.fromLTRB(18, 14, 18, 4),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                 child: Row(
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.of(context).pop(),
                       child: Container(
-                        width: 36,
-                        height: 36,
+                        width: 38,
+                        height: 38,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF131D26),
+                          color: const Color(0xFF111822),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.10),
+                            color: Colors.white.withValues(alpha: 0.12),
                             width: 1,
                           ),
                         ),
@@ -375,7 +365,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 14),
                     const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -389,38 +379,38 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                           ),
                         ),
                         Text(
-                          'Colección de Atuendos 3D',
+                          'Estilo & Personalización',
                           style: TextStyle(
-                            color: Color(0xFF06B6D4),
-                            fontSize: 11.5,
+                            color: Color(0xFF64748B),
+                            fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
                     const Spacer(),
-                    // Chip de Monedas
+                    // Badge pulido de Monedas / Puntos
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF131D26),
+                        color: const Color(0xFF161E2E),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.50),
+                          color: const Color(0xFFF59E0B).withValues(alpha: 0.40),
                           width: 1,
                         ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text('🪙', style: TextStyle(fontSize: 14)),
+                          const Text('🪙', style: TextStyle(fontSize: 13)),
                           const SizedBox(width: 6),
                           Text(
                             '$userCoins pts',
                             style: const TextStyle(
                               color: Color(0xFFFFD54F),
                               fontWeight: FontWeight.w800,
-                              fontSize: 13,
+                              fontSize: 12.5,
                             ),
                           ),
                         ],
@@ -431,85 +421,90 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
               ),
 
               // =================================================================
-              // 1. ESCENARIO CENTRAL DE PROBADOR (STUDIO HERO STAGE)
+              // ESCENARIO 3D CENTRAL CON PEDESTAL ESCULPIDO
               // =================================================================
               Expanded(
                 flex: 6,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Podio circular de luz bajo SAMI
+                    // Pedestal elíptico con anillo concéntrico de luz
                     Positioned(
-                      bottom: 22,
-                      child: Container(
-                        width: 190,
-                        height: 22,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(100),
-                          boxShadow: [
-                            BoxShadow(
-                              color: _selectedItem.primaryColor.withValues(alpha: 0.50),
-                              blurRadius: 30,
-                              spreadRadius: 3,
+                      bottom: 18,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Sombra difusa exterior
+                          Container(
+                            width: 220,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(100),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: _selectedItem.primaryColor.withValues(alpha: 0.45),
+                                  blurRadius: 36,
+                                  spreadRadius: 2,
+                                ),
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.90),
+                                  blurRadius: 24,
+                                  spreadRadius: 4,
+                                ),
+                              ],
                             ),
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.85),
-                              blurRadius: 22,
-                              spreadRadius: 3,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Chip de Probador en Vivo
-                    Positioned(
-                      top: 4,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF101923).withValues(alpha: 0.90),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: const Color(0xFF06B6D4).withValues(alpha: 0.45),
-                            width: 1,
                           ),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(LucideIcons.sparkles, color: Color(0xFF06B6D4), size: 12),
-                            SizedBox(width: 6),
-                            Text(
-                              'Probador en Vivo',
-                              style: TextStyle(
-                                color: Color(0xFF06B6D4),
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.bold,
+                          // Anillo exterior de vidrio esmerilado
+                          Container(
+                            width: 190,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF131D2A).withValues(alpha: 0.85),
+                              borderRadius: BorderRadius.circular(100),
+                              border: Border.all(
+                                color: _selectedItem.primaryColor.withValues(alpha: 0.55),
+                                width: 1.5,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                          // Anillo interior con brillo
+                          Container(
+                            width: 140,
+                            height: 18,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(100),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.20),
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
 
-                    // Globo de diálogo al tocar a SAMI
+                    // Globo de diálogo flotante al tocar a SAMI
                     if (_speechMessage != null)
                       Positioned(
-                        top: 36,
+                        top: 14,
                         child: AnimatedOpacity(
                           opacity: 1.0,
                           duration: const Duration(milliseconds: 200),
                           child: Container(
-                            constraints: const BoxConstraints(maxWidth: 250),
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            constraints: const BoxConstraints(maxWidth: 260),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: const Color(0xFF0F172A),
                               borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: const Color(0xFF06B6D4).withValues(alpha: 0.40),
+                                width: 1.2,
+                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.40),
-                                  blurRadius: 16,
+                                  color: Colors.black.withValues(alpha: 0.60),
+                                  blurRadius: 18,
                                   offset: const Offset(0, 4),
                                 ),
                               ],
@@ -518,8 +513,8 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                               _speechMessage!,
                               textAlign: TextAlign.center,
                               style: const TextStyle(
-                                color: Color(0xFF0F172A),
-                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
                                 fontSize: 12.5,
                               ),
                             ),
@@ -542,7 +537,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                             child: Transform.scale(
                               scale: bounceScale,
                               child: SizedBox(
-                                width: 240,
+                                width: 230,
                                 height: 230,
                                 child: AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 220),
@@ -559,28 +554,15 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                         },
                       ),
                     ),
-
-                    // Indicador inferior
-                    Positioned(
-                      bottom: 0,
-                      child: Text(
-                        'Toca a SAMI para interactuar 👋',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.40),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
 
               // =================================================================
-              // 2. DETALLE DEL ATUENDO SELECCIONADO
+              // INFORMACIÓN DEL ATUENDO ACTIVO
               // =================================================================
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -591,19 +573,19 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                           _selectedItem.name,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 20,
+                            fontSize: 19,
                             fontWeight: FontWeight.bold,
                             letterSpacing: -0.3,
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: _selectedItem.rarityColor.withValues(alpha: 0.18),
-                            borderRadius: BorderRadius.circular(10),
+                            color: _selectedItem.rarityColor.withValues(alpha: 0.16),
+                            borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: _selectedItem.rarityColor.withValues(alpha: 0.50),
+                              color: _selectedItem.rarityColor.withValues(alpha: 0.45),
                               width: 0.8,
                             ),
                           ),
@@ -611,7 +593,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                             _selectedItem.rarity,
                             style: TextStyle(
                               color: _selectedItem.rarityColor,
-                              fontSize: 11,
+                              fontSize: 10.5,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -625,8 +607,8 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.65),
-                        fontSize: 12.5,
+                        color: Colors.white.withValues(alpha: 0.60),
+                        fontSize: 12,
                         height: 1.3,
                       ),
                     ),
@@ -634,18 +616,18 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                 ),
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
 
               // =================================================================
-              // 3. CARRUSEL BOUTIQUE DE ATUENDOS (TARJETAS AMPLIAS SIN RECORTES)
+              // CARRUSEL BOUTIQUE DE ATUENDOS CON MINIATURAS 3D REALES
               // =================================================================
               SizedBox(
-                height: 125,
+                height: 138,
                 child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
                   scrollDirection: Axis.horizontal,
                   itemCount: _outfitList.length,
-                  separatorBuilder: (context, index) => const SizedBox(width: 14),
+                  separatorBuilder: (context, index) => const SizedBox(width: 12),
                   itemBuilder: (context, index) {
                     final item = _outfitList[index];
                     final isSelected = _selectedItem.id == item.id;
@@ -666,7 +648,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
               const SizedBox(height: 14),
 
               // =================================================================
-              // 4. BOTÓN DE ACCIÓN PRINCIPAL (EQUIPAR / DESBLOQUEAR)
+              // BOTÓN PRINCIPAL DE ACCIÓN
               // =================================================================
               Padding(
                 padding: EdgeInsets.fromLTRB(
@@ -674,7 +656,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                   0,
                   20,
                   MediaQuery.of(context).padding.bottom > 0
-                      ? MediaQuery.of(context).padding.bottom + 6
+                      ? MediaQuery.of(context).padding.bottom + 8
                       : 18,
                 ),
                 child: GestureDetector(
@@ -685,10 +667,10 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                     width: double.infinity,
                     height: 52,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       gradient: isSelectedEquipped
                           ? const LinearGradient(
-                              colors: [Color(0xFF1E2D3B), Color(0xFF1E2D3B)],
+                              colors: [Color(0xFF1E293B), Color(0xFF1E293B)],
                             )
                           : (isSelectedUnlocked
                               ? const LinearGradient(
@@ -731,7 +713,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                                   ),
                                   const SizedBox(width: 8),
                                   const Text(
-                                    'Estilo Equipado en Perfil',
+                                    'Atuendo en uso',
                                     style: TextStyle(
                                       color: Color(0xFF94A3B8),
                                       fontWeight: FontWeight.bold,
@@ -746,7 +728,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                                   ),
                                   const SizedBox(width: 8),
                                   const Text(
-                                    'Equipar en tu Perfil',
+                                    'Equipar Estilo',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
@@ -754,7 +736,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                                     ),
                                   ),
                                 ] else ...[
-                                  const Text('🪙', style: TextStyle(fontSize: 16)),
+                                  const Text('🪙', style: TextStyle(fontSize: 15)),
                                   const SizedBox(width: 8),
                                   Text(
                                     'Desbloquear por ${_selectedItem.cost} pts',
@@ -780,7 +762,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
 }
 
 // =============================================================================
-// OUTFIT RACK CARD (Tarjetas amplias que nunca cortan los nombres)
+// OUTFIT RACK CARD (Con Miniatura Real en 3D de cada Atuendo)
 // =============================================================================
 class _OutfitRackCard extends StatelessWidget {
   final WardrobeItem item;
@@ -799,26 +781,30 @@ class _OutfitRackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final assetPath = SamiOutfit.getAssetForEquipment(
+      SamiEquipment(clothingId: item.id),
+    );
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        width: 130,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        width: 128,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF13202C) : const Color(0xFF0E161F),
-          borderRadius: BorderRadius.circular(22),
+          color: isSelected ? const Color(0xFF131D28) : const Color(0xFF0C131B),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
                 ? const Color(0xFF06B6D4)
                 : const Color(0xFF1A2633),
-            width: isSelected ? 2.2 : 1.0,
+            width: isSelected ? 2.0 : 1.0,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
                     color: const Color(0xFF06B6D4).withValues(alpha: 0.35),
-                    blurRadius: 14,
+                    blurRadius: 12,
                     spreadRadius: 1,
                   ),
                 ]
@@ -827,32 +813,38 @@ class _OutfitRackCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Icono / Emoji con aura
+            // Miniatura 3D Real del Atuendo
             Container(
-              width: 44,
-              height: 44,
+              width: 54,
+              height: 54,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    item.primaryColor.withValues(alpha: 0.32),
+                    item.primaryColor.withValues(alpha: 0.35),
                     item.secondaryColor.withValues(alpha: 0.10),
                   ],
                 ),
                 border: Border.all(
-                  color: item.rarityColor.withValues(alpha: 0.40),
+                  color: isSelected
+                      ? const Color(0xFF06B6D4).withValues(alpha: 0.6)
+                      : Colors.white.withValues(alpha: 0.12),
                   width: 1,
                 ),
               ),
-              child: Center(
-                child: Text(
-                  item.emoji,
-                  style: const TextStyle(fontSize: 22),
+              child: ClipOval(
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Image.asset(
+                    assetPath,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
+                  ),
                 ),
               ),
             ),
 
-            const SizedBox(height: 7),
+            const SizedBox(height: 6),
 
             // Nombre completo del atuendo
             Text(
@@ -862,14 +854,14 @@ class _OutfitRackCard extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: isSelected ? Colors.white : const Color(0xFFCBD5E1),
-                fontSize: 12,
+                fontSize: 11.5,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
               ),
             ),
 
             const SizedBox(height: 4),
 
-            // Estado (En uso / Listo / Costo en pts)
+            // Badge de Estado
             if (isEquipped)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
@@ -878,10 +870,10 @@ class _OutfitRackCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text(
-                  'En uso',
+                  '✓ En uso',
                   style: TextStyle(
                     color: Color(0xFF34D399),
-                    fontSize: 10,
+                    fontSize: 9.5,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -897,7 +889,7 @@ class _OutfitRackCard extends StatelessWidget {
                   'Listo',
                   style: TextStyle(
                     color: Color(0xFF38BDF8),
-                    fontSize: 10,
+                    fontSize: 9.5,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -906,13 +898,13 @@ class _OutfitRackCard extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('🪙', style: TextStyle(fontSize: 10.5)),
+                  const Text('🪙', style: TextStyle(fontSize: 10)),
                   const SizedBox(width: 3),
                   Text(
                     '${item.cost} pts',
                     style: const TextStyle(
                       color: Color(0xFFFFD54F),
-                      fontSize: 10.5,
+                      fontSize: 10,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

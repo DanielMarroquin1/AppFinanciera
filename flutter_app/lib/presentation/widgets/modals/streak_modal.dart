@@ -569,7 +569,7 @@ class _StreakModalState extends ConsumerState<StreakModal>
                         ),
                         child: ClipOval(
                           child: Image.asset(
-                            'assets/images/sami_3d_front_open.png',
+                            'assets/images/sami_3d_waving.png',
                             fit: BoxFit.cover,
                             filterQuality: FilterQuality.high,
                           ),

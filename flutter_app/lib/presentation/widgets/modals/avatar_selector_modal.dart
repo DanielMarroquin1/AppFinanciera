@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../domain/entities/sami_outfit.dart';
@@ -14,8 +13,8 @@ enum _ArmarioCategory {
 }
 
 /// ARMARIO DE SAMI (REDISEÑADO DESDE CERO)
-/// Probador boutique interactivo en tiempo real con prendas acopladas en 3D de alta definición,
-/// simulación de compra, gestos táctiles, saludos animados y experiencia de lujo.
+/// Estudio boutique interactivo en tiempo real con prendas acopladas en 3D de alta definición,
+/// simulación de compra instantánea, gestos táctiles, saludos animados y experiencia de lujo.
 class AvatarSelectorModal extends ConsumerStatefulWidget {
   final String currentAvatarId;
   final List<String> unlockedItems;
@@ -97,7 +96,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
       duration: const Duration(milliseconds: 2400),
     )..repeat(reverse: true);
 
-    // Rebote táctil al tocar
+    // Rebote elástico al tocar
     _tapBounceController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 380),
@@ -358,7 +357,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
     return Container(
       height: MediaQuery.of(context).size.height * 0.94,
       decoration: const BoxDecoration(
-        color: Color(0xFF091016),
+        color: Color(0xFF0A0F15),
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
         border: Border(
           top: BorderSide(color: Color(0xFF1E2D3B), width: 1.2),
@@ -384,6 +383,27 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
             child: Row(
               children: [
+                GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF15222E),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        width: 1,
+                      ),
+                    ),
+                    child: const Icon(
+                      LucideIcons.arrowLeft,
+                      color: Color(0xFF94A3B8),
+                      size: 18,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -391,14 +411,14 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                       'Armario de SAMI',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 20,
+                        fontSize: 19,
                         fontWeight: FontWeight.bold,
                         letterSpacing: -0.4,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Prueba y equipa estilos únicos para tu compañero',
+                      'Estudio de personalización en vivo',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.55),
                         fontSize: 12,
@@ -414,7 +434,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                     color: const Color(0xFF15222E),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.45),
                       width: 1,
                     ),
                   ),
@@ -434,28 +454,11 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                     ],
                   ),
                 ),
-                const SizedBox(width: 10),
-                GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF15222E),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      LucideIcons.x,
-                      color: Color(0xFF94A3B8),
-                      size: 16,
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
 
           // =================================================================
           // 1. ESCENARIO CENTRAL DE PROBADOR (STUDIO MASCOT HERO STAGE)
@@ -469,9 +472,9 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                   center: const Alignment(0, -0.2),
                   radius: 0.95,
                   colors: [
-                    _selectedItem.primaryColor.withValues(alpha: 0.18),
+                    _selectedItem.primaryColor.withValues(alpha: 0.20),
                     const Color(0xFF101B24),
-                    const Color(0xFF091016),
+                    const Color(0xFF0A0F15),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(26),
@@ -492,8 +495,8 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                           borderRadius: BorderRadius.circular(100),
                           boxShadow: [
                             BoxShadow(
-                              color: _selectedItem.primaryColor.withValues(alpha: 0.35),
-                              blurRadius: 24,
+                              color: _selectedItem.primaryColor.withValues(alpha: 0.40),
+                              blurRadius: 26,
                               spreadRadius: 2,
                             ),
                             BoxShadow(
@@ -513,10 +516,10 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF091016).withValues(alpha: 0.85),
+                          color: const Color(0xFF0A0F15).withValues(alpha: 0.85),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: const Color(0xFF06B6D4).withValues(alpha: 0.4),
+                            color: const Color(0xFF06B6D4).withValues(alpha: 0.45),
                             width: 1,
                           ),
                         ),
@@ -541,7 +544,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                     // Speech Bubble when Tapped
                     if (_speechMessage != null)
                       Positioned(
-                        top: 22,
+                        top: 20,
                         child: AnimatedOpacity(
                           opacity: 1.0,
                           duration: const Duration(milliseconds: 250),
@@ -595,10 +598,14 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                                   clipBehavior: Clip.none,
                                   children: [
                                     // 1. Real 3D Sculpted Mascot Outfit
-                                    Image.asset(
-                                      samiHeroAsset,
-                                      fit: BoxFit.contain,
-                                      filterQuality: FilterQuality.high,
+                                    AnimatedSwitcher(
+                                      duration: const Duration(milliseconds: 220),
+                                      child: Image.asset(
+                                        samiHeroAsset,
+                                        key: ValueKey(samiHeroAsset),
+                                        fit: BoxFit.contain,
+                                        filterQuality: FilterQuality.high,
+                                      ),
                                     ),
 
                                     // 2. Seamless Tailored Accessories Overlay
@@ -1205,7 +1212,6 @@ class _TailoredAccessoryPainter extends CustomPainter {
   }
 
   void _drawAstronautHelmet(Canvas canvas, double w, double h) {
-    // Esfera exterior del casco
     final helmetPaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.88)
       ..style = PaintingStyle.stroke
@@ -1216,7 +1222,6 @@ class _TailoredAccessoryPainter extends CustomPainter {
       helmetPaint,
     );
 
-    // Visera dorada galáctica
     final visorPaint = Paint()
       ..shader = const LinearGradient(
         begin: Alignment.topLeft,
@@ -1255,7 +1260,6 @@ class _TailoredAccessoryPainter extends CustomPainter {
         colors: [primary, secondary],
       ).createShader(Rect.fromLTWH(w * 0.28, h * 0.57, w * 0.44, h * 0.12));
 
-    // Nudo y vuelta alrededor del cuello debajo de la barbilla
     final scarfPath = Path();
     scarfPath.moveTo(w * 0.30, h * 0.60);
     scarfPath.quadraticBezierTo(w * 0.50, h * 0.66, w * 0.70, h * 0.60);
@@ -1265,7 +1269,6 @@ class _TailoredAccessoryPainter extends CustomPainter {
 
     canvas.drawPath(scarfPath, scarfPaint);
 
-    // Flecos colgando
     final tailPath = Path();
     tailPath.moveTo(w * 0.54, h * 0.70);
     tailPath.lineTo(w * 0.60, h * 0.84);
@@ -1280,7 +1283,6 @@ class _TailoredAccessoryPainter extends CustomPainter {
       ..color = const Color(0xFF0F172A)
       ..style = PaintingStyle.fill;
 
-    // Lente izquierdo
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromCenter(center: Offset(w * 0.41, h * 0.46), width: w * 0.13, height: h * 0.08),
@@ -1289,7 +1291,6 @@ class _TailoredAccessoryPainter extends CustomPainter {
       glassesPaint,
     );
 
-    // Lente derecho
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromCenter(center: Offset(w * 0.59, h * 0.46), width: w * 0.13, height: h * 0.08),
@@ -1298,7 +1299,6 @@ class _TailoredAccessoryPainter extends CustomPainter {
       glassesPaint,
     );
 
-    // Puente central
     final bridgePaint = Paint()
       ..color = const Color(0xFFFFD54F)
       ..strokeWidth = 2.5
@@ -1312,7 +1312,6 @@ class _TailoredAccessoryPainter extends CustomPainter {
         colors: [Color(0xFF06B6D4), Color(0xFF0284C7)],
       ).createShader(Rect.fromLTWH(0, h * 0.85, w, h * 0.10));
 
-    // Pie izquierdo
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromCenter(center: Offset(w * 0.36, h * 0.89), width: w * 0.16, height: h * 0.06),
@@ -1321,7 +1320,6 @@ class _TailoredAccessoryPainter extends CustomPainter {
       shoePaint,
     );
 
-    // Pie derecho
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromCenter(center: Offset(w * 0.64, h * 0.89), width: w * 0.16, height: h * 0.06),

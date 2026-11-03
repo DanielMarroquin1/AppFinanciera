@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-/// Speed Dial nativo, limpio y minimalista para el botón central (+)
-/// Inspirado en interacciones fluidas de fintech de clase mundial (Revolut / Apple).
-/// Sin plantillas de IA, sin tarjetas saturadas: acceso directo a las 3 acciones clave.
+/// Speed Dial flotante nativo, limpio y minimalista para el botón central (+)
+/// Mantiene las 5 funciones completas del sistema:
+/// 1. Gasto
+/// 2. Ingreso
+/// 3. SAMI IA
+/// 4. Simulador What-If
+/// 5. Descarga PDF
 class QuickActionsMenu extends StatefulWidget {
   const QuickActionsMenu({super.key});
 
@@ -27,13 +31,13 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 280),
+      duration: const Duration(milliseconds: 300),
     );
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _animController,
-        curve: const Interval(0.0, 0.7, curve: Curves.easeOut),
+        curve: const Interval(0.0, 0.65, curve: Curves.easeOut),
       ),
     );
 
@@ -91,9 +95,9 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
         return Opacity(
           opacity: progress.clamp(0.0, 1.0),
           child: Transform.translate(
-            offset: Offset(0, (1.0 - progress) * 24),
+            offset: Offset(0, (1.0 - progress) * 20),
             child: Transform.scale(
-              scale: (0.7 + (progress * 0.3)).clamp(0.0, 1.1),
+              scale: (0.75 + (progress * 0.25)).clamp(0.0, 1.08),
               child: child,
             ),
           ),
@@ -110,15 +114,15 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 7.0),
+            padding: const EdgeInsets.symmetric(vertical: 4.5),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Frosted Pill Label
+                // Frosted Glass Pill Label
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF131D26).withValues(alpha: 0.92),
+                    color: const Color(0xFF131D26).withValues(alpha: 0.94),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.12),
@@ -127,8 +131,8 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.35),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
                       ),
                     ],
                   ),
@@ -136,17 +140,17 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
                     title,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
+                      fontSize: 13.5,
                       fontWeight: FontWeight.w600,
                       letterSpacing: -0.2,
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 11),
                 // Glowing Circular Action Button
                 Container(
-                  width: 50,
-                  height: 50,
+                  width: 46,
+                  height: 46,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
@@ -156,17 +160,17 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: shadowColor.withValues(alpha: 0.45),
-                        blurRadius: 16,
+                        color: shadowColor.withValues(alpha: 0.40),
+                        blurRadius: 12,
                         spreadRadius: 1,
-                        offset: const Offset(0, 4),
+                        offset: const Offset(0, 3),
                       ),
                     ],
                   ),
                   child: Icon(
                     icon,
                     color: Colors.white,
-                    size: 22,
+                    size: 20,
                   ),
                 ),
               ],
@@ -207,53 +211,75 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
             ),
           ),
 
-          // Speed Dial Floating Menu (Positioned cleanly at bottom center above nav bar)
+          // Speed Dial Floating Menu
           Align(
             alignment: Alignment.bottomCenter,
             child: SafeArea(
               top: false,
               child: Padding(
                 padding: EdgeInsets.only(
-                  bottom: bottomPadding > 0 ? 18 : 28,
+                  bottom: bottomPadding > 0 ? 14 : 24,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    // 🎯 Item 3: Nueva Meta
+                    // 5. 📄 Descarga Reporte PDF
                     _buildSpeedDialItem(
-                      title: 'Nueva Meta',
-                      icon: LucideIcons.target,
-                      gradientColors: const [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
-                      shadowColor: const Color(0xFF8B5CF6),
-                      startInterval: 0.25,
-                      endInterval: 0.95,
-                      onTap: () => Navigator.of(context).pop('saving-goal'),
+                      title: 'Descargar PDF',
+                      icon: LucideIcons.fileText,
+                      gradientColors: const [Color(0xFFF59E0B), Color(0xFFD97706)],
+                      shadowColor: const Color(0xFFF59E0B),
+                      startInterval: 0.32,
+                      endInterval: 0.98,
+                      onTap: () => Navigator.of(context).pop('pdf-report'),
                     ),
 
-                    // 🟢 Item 2: Nuevo Ingreso
+                    // 4. 🔮 Simulador What-If
+                    _buildSpeedDialItem(
+                      title: 'Simulador What-If',
+                      icon: LucideIcons.sparkles,
+                      gradientColors: const [Color(0xFF06B6D4), Color(0xFF0284C7)],
+                      shadowColor: const Color(0xFF06B6D4),
+                      startInterval: 0.24,
+                      endInterval: 0.90,
+                      onTap: () => Navigator.of(context).pop('what-if'),
+                    ),
+
+                    // 3. 🤖 SAMI IA (Chat Asistente)
+                    _buildSpeedDialItem(
+                      title: 'SAMI IA',
+                      icon: LucideIcons.bot,
+                      gradientColors: const [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                      shadowColor: const Color(0xFF8B5CF6),
+                      startInterval: 0.16,
+                      endInterval: 0.82,
+                      onTap: () => Navigator.of(context).pop('ai-chat'),
+                    ),
+
+                    // 2. 🟢 Nuevo Ingreso
                     _buildSpeedDialItem(
                       title: 'Nuevo Ingreso',
                       icon: LucideIcons.arrowUpRight,
                       gradientColors: const [Color(0xFF10B981), Color(0xFF059669)],
                       shadowColor: const Color(0xFF10B981),
-                      startInterval: 0.12,
-                      endInterval: 0.85,
+                      startInterval: 0.08,
+                      endInterval: 0.74,
                       onTap: () => Navigator.of(context).pop('income'),
                     ),
 
-                    // 🔴 Item 1: Nuevo Gasto
+                    // 1. 🔴 Nuevo Gasto
                     _buildSpeedDialItem(
                       title: 'Nuevo Gasto',
                       icon: LucideIcons.arrowDownLeft,
                       gradientColors: const [Color(0xFFEF4444), Color(0xFFDC2626)],
                       shadowColor: const Color(0xFFEF4444),
                       startInterval: 0.0,
-                      endInterval: 0.75,
+                      endInterval: 0.66,
                       onTap: () => Navigator.of(context).pop('expense'),
                     ),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
 
                     // Center Dismiss FAB (Transforms smoothly from + to ✕)
                     Center(

@@ -537,6 +537,101 @@ class SamiOutfit {
   }
 
   static const List<SamiOutfit> allOutfits = [
+    // IDs de prendas directas del Armario de SAMI
+    SamiOutfit(
+      id: 'ropa_clasica',
+      name: 'SAMI Clásico',
+      subtitle: 'Plumaje Original',
+      description: 'El estilo original de SAMI con su plumaje azul marino, vientre blanco y el emblema Q.',
+      imageAsset: 'assets/images/sami_3d_front_open.png',
+      accessoryEmoji: '👕',
+      primaryColor: Color(0xFF0284C7),
+      secondaryColor: Color(0xFF0369A1),
+      cost: 0,
+      isFree: true,
+      rarity: 'Inicial',
+      rarityColor: Color(0xFF10B981),
+    ),
+    SamiOutfit(
+      id: 'ropa_ejecutivo',
+      name: 'Traje Ejecutivo',
+      subtitle: 'Finanzas & Inversión',
+      description: 'Saco formal azul marino y corbata de seda para cerrar grandes negocios.',
+      imageAsset: 'assets/images/sami_outfit_ejecutivo.png',
+      accessoryEmoji: '👔',
+      primaryColor: Color(0xFF1E3A8A),
+      secondaryColor: Color(0xFF0F172A),
+      cost: 75,
+      rarity: 'Especial',
+      rarityColor: Color(0xFF60A5FA),
+    ),
+    SamiOutfit(
+      id: 'ropa_sudadera',
+      name: 'Sudadera Streetwear',
+      subtitle: 'Estilo Urbano Cyan',
+      description: 'Hoodie holgado y moderno con detalles en color cyan eléctrico QUIVO.',
+      imageAsset: 'assets/images/sami_outfit_streetwear.png',
+      accessoryEmoji: '🧥',
+      primaryColor: Color(0xFF0284C7),
+      secondaryColor: Color(0xFF0369A1),
+      cost: 60,
+      rarity: 'Común',
+      rarityColor: Color(0xFF38BDF8),
+    ),
+    SamiOutfit(
+      id: 'ropa_superheroe',
+      name: 'Traje de Superhéroe',
+      subtitle: 'Defensor del Presupuesto',
+      description: 'Capa escarlata ondeante y traje reforzado para combatir las deudas.',
+      imageAsset: 'assets/images/sami_outfit_superheroe.png',
+      accessoryEmoji: '🦸',
+      primaryColor: Color(0xFFDC2626),
+      secondaryColor: Color(0xFF991B1B),
+      cost: 120,
+      rarity: 'Épico',
+      rarityColor: Color(0xFFA855F7),
+    ),
+    SamiOutfit(
+      id: 'ropa_deportiva',
+      name: 'Conjunto Atlético Tech',
+      subtitle: 'Rendimiento Fit',
+      description: 'Jersey transpirable para mantener el ritmo y la disciplina en tus metas.',
+      imageAsset: 'assets/images/sami_outfit_deportiva.png',
+      accessoryEmoji: '🎽',
+      primaryColor: Color(0xFF0D9488),
+      secondaryColor: Color(0xFF115E59),
+      cost: 50,
+      rarity: 'Común',
+      rarityColor: Color(0xFF38BDF8),
+    ),
+    SamiOutfit(
+      id: 'ropa_chef',
+      name: 'Filipina de Chef',
+      subtitle: 'Maestro Culinario',
+      description: 'Chaqueta de alta cocina con botones dorados para cocinar grandes ahorros.',
+      imageAsset: 'assets/images/sami_outfit_chef.png',
+      accessoryEmoji: '👨‍🍳',
+      primaryColor: Color(0xFFD97706),
+      secondaryColor: Color(0xFF78350F),
+      cost: 70,
+      rarity: 'Especial',
+      rarityColor: Color(0xFFF59E0B),
+    ),
+    SamiOutfit(
+      id: 'ropa_armadura',
+      name: 'Armadura Galáctica',
+      subtitle: 'Titanio Blindado',
+      description: 'Coraza de nanotecnología impenetrable contra compras impulsivas.',
+      imageAsset: 'assets/images/sami_outfit_armadura.png',
+      accessoryEmoji: '🛡️',
+      primaryColor: Color(0xFF475569),
+      secondaryColor: Color(0xFF0F172A),
+      cost: 160,
+      rarity: 'Legendario',
+      rarityColor: Color(0xFFF43F5E),
+    ),
+
+    // IDs retrocompatibles
     SamiOutfit(
       id: 'sami_default',
       name: 'SAMI Clásico',
@@ -699,14 +794,16 @@ class SamiOutfit {
   static SamiOutfit getOutfit(String? id) {
     if (id == null || id.isEmpty) return allOutfits.first;
 
+    final cleanId = id.contains('|') ? id.split('|')[0] : id;
+
+    // Buscar si coincide por ID directo o limpio
+    final directMatch = allOutfits.where((o) => o.id == cleanId || o.id == id);
+    if (directMatch.isNotEmpty) return directMatch.first;
+
     // Mapeo retrocompatible
     final equipment = SamiEquipment.fromStorage(id);
     final primaryClothing = WardrobeItem.getItem(equipment.clothingId);
     final primaryAcc = WardrobeItem.getItem(equipment.accessoryId);
-
-    // Buscar si coincide por ID directo
-    final directMatch = allOutfits.where((o) => o.id == id);
-    if (directMatch.isNotEmpty) return directMatch.first;
 
     // Crear atuendo dinámico basado en equipamiento
     return SamiOutfit(

@@ -296,9 +296,19 @@ class AuthNotifier extends Notifier<AuthState> {
     final user = state.user;
     if (user == null) return;
 
-    if (user.unlockedItems.contains(avatarId) || avatarId == 'default') {
+    final cleanId = avatarId.contains('|') ? avatarId.split('|')[0] : avatarId;
+    final isFree = cleanId == 'default' ||
+        cleanId == 'sami_default' ||
+        cleanId == 'ropa_clasica' ||
+        cleanId.isEmpty;
+
+    final isUnlocked = isFree ||
+        user.unlockedItems.contains(cleanId) ||
+        user.unlockedItems.contains(avatarId);
+
+    if (isUnlocked) {
       final updatedUser = user.copyWith(
-        currentAvatar: avatarId == 'default' ? null : avatarId,
+        currentAvatar: isFree ? 'ropa_clasica' : cleanId,
       );
       await _repository.saveUser(updatedUser);
       state = state.copyWith(user: updatedUser);

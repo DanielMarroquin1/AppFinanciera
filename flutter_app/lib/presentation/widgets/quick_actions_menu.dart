@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-/// Speed Dial flotante nativo, limpio y minimalista para el botón central (+)
+/// Speed Dial flotante nativo pegado a la ESQUINA INFERIOR DERECHA
 /// Mantiene las 5 funciones completas del sistema:
 /// 1. 🔴 Gasto
 /// 2. 🟢 Ingreso
@@ -99,7 +99,7 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
         return Opacity(
           opacity: progress.clamp(0.0, 1.0),
           child: Transform.translate(
-            offset: Offset(0, (1.0 - progress) * 18),
+            offset: Offset((1.0 - progress) * 20, (1.0 - progress) * 16),
             child: Transform.scale(
               scale: (0.75 + (progress * 0.25)).clamp(0.0, 1.08),
               child: child,
@@ -111,50 +111,46 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
         behavior: HitTestBehavior.opaque,
         onTap: () => _selectAction(actionId),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          padding: const EdgeInsets.symmetric(vertical: 4.5),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              // Lado izquierdo: Pastilla con etiqueta
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 7.5,
+              // Pastilla esmerilada con texto
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 7.5,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF131D26).withValues(alpha: 0.94),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
                     ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF131D26).withValues(alpha: 0.94),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.12),
-                        width: 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.35),
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.2,
-                      ),
-                    ),
+                  ],
+                ),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
                   ),
                 ),
               ),
 
               const SizedBox(width: 12),
 
-              // Centro: Botón circular con ícono (alineado exactamente con el botón FAB)
+              // Botón circular con ícono
               Container(
                 width: 48,
                 height: 48,
@@ -179,11 +175,6 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
                   color: Colors.white,
                   size: 20,
                 ),
-              ),
-
-              // Lado derecho: Espaciador del mismo tamaño para mantener el botón centrado
-              const Expanded(
-                child: SizedBox(),
               ),
             ],
           ),
@@ -222,120 +213,118 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
             ),
           ),
 
-          // Speed Dial Floating Menu
-          Align(
-            alignment: Alignment.bottomCenter,
+          // Speed Dial flotante PEGADO A LA ESQUINA INFERIOR DERECHA
+          Positioned(
+            right: 20,
+            bottom: bottomPadding > 0 ? bottomPadding + 16 : 24,
             child: SafeArea(
               top: false,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  bottom: bottomPadding > 0 ? 14 : 24,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // 5. 📄 Descarga Reporte PDF
-                    _buildSpeedDialItem(
-                      title: 'Descargar PDF',
-                      icon: LucideIcons.fileText,
-                      gradientColors: const [Color(0xFFF59E0B), Color(0xFFD97706)],
-                      shadowColor: const Color(0xFFF59E0B),
-                      actionId: 'pdf-report',
-                      startInterval: 0.32,
-                      endInterval: 0.98,
-                    ),
+              left: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // 5. 📄 Descarga Reporte PDF
+                  _buildSpeedDialItem(
+                    title: 'Descargar PDF',
+                    icon: LucideIcons.fileText,
+                    gradientColors: const [Color(0xFFF59E0B), Color(0xFFD97706)],
+                    shadowColor: const Color(0xFFF59E0B),
+                    actionId: 'pdf-report',
+                    startInterval: 0.32,
+                    endInterval: 0.98,
+                  ),
 
-                    // 4. 🔮 Simulador What-If
-                    _buildSpeedDialItem(
-                      title: 'Simulador What-If',
-                      icon: LucideIcons.sparkles,
-                      gradientColors: const [Color(0xFF06B6D4), Color(0xFF0284C7)],
-                      shadowColor: const Color(0xFF06B6D4),
-                      actionId: 'what-if',
-                      startInterval: 0.24,
-                      endInterval: 0.90,
-                    ),
+                  // 4. 🔮 Simulador What-If
+                  _buildSpeedDialItem(
+                    title: 'Simulador What-If',
+                    icon: LucideIcons.sparkles,
+                    gradientColors: const [Color(0xFF06B6D4), Color(0xFF0284C7)],
+                    shadowColor: const Color(0xFF06B6D4),
+                    actionId: 'what-if',
+                    startInterval: 0.24,
+                    endInterval: 0.90,
+                  ),
 
-                    // 3. 🤖 SAMI IA (Chat Asistente)
-                    _buildSpeedDialItem(
-                      title: 'SAMI IA',
-                      icon: LucideIcons.bot,
-                      gradientColors: const [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
-                      shadowColor: const Color(0xFF8B5CF6),
-                      actionId: 'ai-chat',
-                      startInterval: 0.16,
-                      endInterval: 0.82,
-                    ),
+                  // 3. 🤖 SAMI IA (Chat Asistente)
+                  _buildSpeedDialItem(
+                    title: 'SAMI IA',
+                    icon: LucideIcons.bot,
+                    gradientColors: const [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                    shadowColor: const Color(0xFF8B5CF6),
+                    actionId: 'ai-chat',
+                    startInterval: 0.16,
+                    endInterval: 0.82,
+                  ),
 
-                    // 2. 🟢 Nuevo Ingreso
-                    _buildSpeedDialItem(
-                      title: 'Nuevo Ingreso',
-                      icon: LucideIcons.arrowUpRight,
-                      gradientColors: const [Color(0xFF10B981), Color(0xFF059669)],
-                      shadowColor: const Color(0xFF10B981),
-                      actionId: 'income',
-                      startInterval: 0.08,
-                      endInterval: 0.74,
-                    ),
+                  // 2. 🟢 Nuevo Ingreso
+                  _buildSpeedDialItem(
+                    title: 'Nuevo Ingreso',
+                    icon: LucideIcons.arrowUpRight,
+                    gradientColors: const [Color(0xFF10B981), Color(0xFF059669)],
+                    shadowColor: const Color(0xFF10B981),
+                    actionId: 'income',
+                    startInterval: 0.08,
+                    endInterval: 0.74,
+                  ),
 
-                    // 1. 🔴 Nuevo Gasto
-                    _buildSpeedDialItem(
-                      title: 'Nuevo Gasto',
-                      icon: LucideIcons.arrowDownLeft,
-                      gradientColors: const [Color(0xFFEF4444), Color(0xFFDC2626)],
-                      shadowColor: const Color(0xFFEF4444),
-                      actionId: 'expense',
-                      startInterval: 0.0,
-                      endInterval: 0.66,
-                    ),
+                  // 1. 🔴 Nuevo Gasto
+                  _buildSpeedDialItem(
+                    title: 'Nuevo Gasto',
+                    icon: LucideIcons.arrowDownLeft,
+                    gradientColors: const [Color(0xFFEF4444), Color(0xFFDC2626)],
+                    shadowColor: const Color(0xFFEF4444),
+                    actionId: 'expense',
+                    startInterval: 0.0,
+                    endInterval: 0.66,
+                  ),
 
-                    const SizedBox(height: 14),
+                  const SizedBox(height: 14),
 
-                    // Botón Central FAB de Cierre (Rota suavemente de + a ✕)
-                    GestureDetector(
-                      onTap: _dismiss,
-                      child: AnimatedBuilder(
-                        animation: _animController,
-                        builder: (context, child) {
-                          return RotationTransition(
-                            turns: _rotationAnimation,
-                            child: ScaleTransition(
-                              scale: _scaleAnimation,
-                              child: Container(
-                                width: 56,
-                                height: 56,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: const LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      Color(0xFF06B6D4),
-                                      Color(0xFF0891B2),
-                                    ],
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF06B6D4).withValues(alpha: 0.45),
-                                      blurRadius: 18,
-                                      spreadRadius: 2,
-                                      offset: const Offset(0, 4),
-                                    ),
+                  // Botón FAB de Cierre (esquina derecha, rota suavemente a ✕)
+                  GestureDetector(
+                    onTap: _dismiss,
+                    child: AnimatedBuilder(
+                      animation: _animController,
+                      builder: (context, child) {
+                        return RotationTransition(
+                          turns: _rotationAnimation,
+                          child: ScaleTransition(
+                            scale: _scaleAnimation,
+                            child: Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFF06B6D4),
+                                    Color(0xFF0891B2),
                                   ],
                                 ),
-                                child: const Icon(
-                                  LucideIcons.plus,
-                                  color: Colors.white,
-                                  size: 26,
-                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF06B6D4).withValues(alpha: 0.45),
+                                    blurRadius: 18,
+                                    spreadRadius: 2,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                LucideIcons.plus,
+                                color: Colors.white,
+                                size: 26,
                               ),
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

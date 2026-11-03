@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../domain/entities/sami_outfit.dart';
@@ -12,9 +13,13 @@ enum _ArmarioCategory {
   accesorios,
 }
 
-/// ARMARIO DE SAMI (REDISEÑADO DESDE CERO)
-/// Estudio boutique interactivo en tiempo real con prendas acopladas en 3D de alta definición,
-/// simulación de compra instantánea, gestos táctiles, saludos animados y experiencia de lujo.
+/// ARMARIO DE SAMI (REDISEÑADO TOTALMENTE DESDE CERO)
+/// Experiencia de estudio boutique inmersiva a pantalla completa:
+/// - Escenario libre sin cajas divisorias pesadas
+/// - SAMI como protagonista central en 3D acoplado
+/// - Probador en vivo e interactivo al tacto
+/// - Swatches boutique horizontales de lujo
+/// - Barra de acción ergonómica
 class AvatarSelectorModal extends ConsumerStatefulWidget {
   final String currentAvatarId;
   final List<String> unlockedItems;
@@ -69,7 +74,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
   final List<String> _motivationalPhrases = [
     '¡Hola! 👋 ¡Este estilo me queda increíble!',
     '¡Ahorrar con estilo es otro nivel! ✨',
-    '¡Listo para vencer cualquier gasto hormiga! 🛡️',
+    '¡Listo para vencer cualquier gasto impulsivo! 🛡️',
     '¡Cada peso que ahorras te acerca a tus sueños! 📈',
     '¡Pruébame lo que quieras del armario! 🪙',
   ];
@@ -90,13 +95,13 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
     _previewEquipment = _equippedEquipment;
     _selectedItem = WardrobeItem.getItem(_previewEquipment.clothingId);
 
-    // Flotación sutil y natural
+    // Flotación suave y orgánica
     _idleController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2400),
     )..repeat(reverse: true);
 
-    // Rebote elástico al tocar
+    // Rebote elástico al tocar a SAMI
     _tapBounceController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 380),
@@ -347,7 +352,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
     final isSelectedUnlocked = _isItemUnlocked(_selectedItem, unlockedList);
     final isSelectedEquipped = _isItemEquipped(_selectedItem);
 
-    final floatY = math.sin(_idleController.value * math.pi) * 3.2;
+    final floatY = math.sin(_idleController.value * math.pi) * 3.6;
     final bounceScale = _tapBounceController.isAnimating
         ? 1.0 + (math.sin(_tapBounceController.value * math.pi) * 0.08)
         : 1.0;
@@ -355,171 +360,161 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
     final samiHeroAsset = _getSamiHeroAsset();
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.94,
+      height: MediaQuery.of(context).size.height * 0.95,
       decoration: const BoxDecoration(
-        color: Color(0xFF0A0F15),
+        color: Color(0xFF070B10),
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-        border: Border(
-          top: BorderSide(color: Color(0xFF1E2D3B), width: 1.2),
-        ),
       ),
-      child: Column(
+      child: Stack(
         children: [
-          // Drag handle
-          Center(
-            child: Container(
-              margin: const EdgeInsets.only(top: 10, bottom: 6),
-              width: 38,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFF263747),
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-
-          // Header de Lujo Boutique
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF15222E),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.08),
-                        width: 1,
-                      ),
-                    ),
-                    child: const Icon(
-                      LucideIcons.arrowLeft,
-                      color: Color(0xFF94A3B8),
-                      size: 18,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Armario de SAMI',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 19,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.4,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Estudio de personalización en vivo',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.55),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                // Coins Pill
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF15222E),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFFF59E0B).withValues(alpha: 0.45),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('🪙', style: TextStyle(fontSize: 14)),
-                      const SizedBox(width: 6),
-                      Text(
-                        '$userCoins pts',
-                        style: const TextStyle(
-                          color: Color(0xFFFFD54F),
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13,
-                        ),
-                      ),
+          // Luz ambiental de fondo basada en la prenda activa
+          Positioned(
+            top: 60,
+            left: 0,
+            right: 0,
+            height: 280,
+            child: Center(
+              child: Container(
+                width: 260,
+                height: 260,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      _selectedItem.primaryColor.withValues(alpha: 0.25),
+                      _selectedItem.primaryColor.withValues(alpha: 0.08),
+                      Colors.transparent,
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
 
-          const SizedBox(height: 6),
-
-          // =================================================================
-          // 1. ESCENARIO CENTRAL DE PROBADOR (STUDIO MASCOT HERO STAGE)
-          // =================================================================
-          Expanded(
-            flex: 5,
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 18),
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: const Alignment(0, -0.2),
-                  radius: 0.95,
-                  colors: [
-                    _selectedItem.primaryColor.withValues(alpha: 0.20),
-                    const Color(0xFF101B24),
-                    const Color(0xFF0A0F15),
+          // Contenido principal
+          Column(
+            children: [
+              // Barra superior de navegación boutique
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 14, 18, 4),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF131D26),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.10),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Icon(
+                          LucideIcons.arrowLeft,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Armario de SAMI',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        Text(
+                          'Estudio de personalización 3D',
+                          style: TextStyle(
+                            color: Color(0xFF64748B),
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    // Chip de Monedas
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF131D26),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFFF59E0B).withValues(alpha: 0.50),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🪙', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 6),
+                          Text(
+                            '$userCoins pts',
+                            style: const TextStyle(
+                              color: Color(0xFFFFD54F),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(26),
-                border: Border.all(color: const Color(0xFF1B2C3A), width: 1),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(26),
+
+              // =================================================================
+              // 1. ESCENARIO CENTRAL DE PROBADOR (STUDIO HERO STAGE)
+              // =================================================================
+              Expanded(
+                flex: 6,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Spotlight Dais & Floor Reflection
+                    // Podio circular de luz bajo SAMI
                     Positioned(
-                      bottom: 18,
+                      bottom: 24,
                       child: Container(
-                        width: 170,
-                        height: 22,
+                        width: 180,
+                        height: 20,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(100),
                           boxShadow: [
                             BoxShadow(
-                              color: _selectedItem.primaryColor.withValues(alpha: 0.40),
-                              blurRadius: 26,
+                              color: _selectedItem.primaryColor.withValues(alpha: 0.45),
+                              blurRadius: 28,
                               spreadRadius: 2,
                             ),
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.70),
-                              blurRadius: 18,
-                              spreadRadius: 2,
+                              color: Colors.black.withValues(alpha: 0.85),
+                              blurRadius: 20,
+                              spreadRadius: 3,
                             ),
                           ],
                         ),
                       ),
                     ),
 
-                    // Live Simulation Badge
+                    // Chip de Probador en Vivo
                     Positioned(
-                      top: 14,
-                      left: 14,
+                      top: 6,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0A0F15).withValues(alpha: 0.85),
-                          borderRadius: BorderRadius.circular(14),
+                          color: const Color(0xFF101923).withValues(alpha: 0.90),
+                          borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: const Color(0xFF06B6D4).withValues(alpha: 0.45),
+                            color: const Color(0xFF06B6D4).withValues(alpha: 0.40),
                             width: 1,
                           ),
                         ),
@@ -527,12 +522,12 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(LucideIcons.sparkles, color: Color(0xFF06B6D4), size: 12),
-                            SizedBox(width: 5),
+                            SizedBox(width: 6),
                             Text(
                               'Probador en Vivo',
                               style: TextStyle(
                                 color: Color(0xFF06B6D4),
-                                fontSize: 11,
+                                fontSize: 11.5,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -541,23 +536,23 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                       ),
                     ),
 
-                    // Speech Bubble when Tapped
+                    // Globo de diálogo al tocar a SAMI
                     if (_speechMessage != null)
                       Positioned(
-                        top: 20,
+                        top: 36,
                         child: AnimatedOpacity(
                           opacity: 1.0,
-                          duration: const Duration(milliseconds: 250),
+                          duration: const Duration(milliseconds: 200),
                           child: Container(
-                            constraints: const BoxConstraints(maxWidth: 240),
+                            constraints: const BoxConstraints(maxWidth: 250),
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(18),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.4),
-                                  blurRadius: 14,
+                                  color: Colors.black.withValues(alpha: 0.40),
+                                  blurRadius: 16,
                                   offset: const Offset(0, 4),
                                 ),
                               ],
@@ -575,7 +570,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                         ),
                       ),
 
-                    // SAMI Mascot Interactive Stage
+                    // SAMI Interactivo en el Estudio
                     GestureDetector(
                       onTap: _onTapSami,
                       child: AnimatedBuilder(
@@ -597,7 +592,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                                   alignment: Alignment.center,
                                   clipBehavior: Clip.none,
                                   children: [
-                                    // 1. Real 3D Sculpted Mascot Outfit
+                                    // Prenda 3D moldeada
                                     AnimatedSwitcher(
                                       duration: const Duration(milliseconds: 220),
                                       child: Image.asset(
@@ -608,7 +603,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                                       ),
                                     ),
 
-                                    // 2. Seamless Tailored Accessories Overlay
+                                    // Capa de accesorios ajustados
                                     if (_previewEquipment.accessoryId != 'acc_ninguno' ||
                                         (_previewEquipment.clothingId == 'ropa_clasica' &&
                                             _previewEquipment.shoesId != 'zap_clasicos'))
@@ -628,9 +623,9 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                       ),
                     ),
 
-                    // Bottom hint to tap
+                    // Indicador inferior del personaje
                     Positioned(
-                      bottom: 8,
+                      bottom: 0,
                       child: Text(
                         'Toca a SAMI para interactuar 👋',
                         style: TextStyle(
@@ -643,163 +638,152 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                   ],
                 ),
               ),
-            ),
-          ),
 
-          const SizedBox(height: 12),
-
-          // =================================================================
-          // 2. SELECTOR DE CATEGORÍAS (PILL BAR)
-          // =================================================================
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Container(
-              height: 44,
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF131D26),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFF1E2D3B), width: 1),
-              ),
-              child: Row(
-                children: [
-                  _buildCategoryTab(
-                    title: 'Ropa',
-                    icon: LucideIcons.shirt,
-                    category: _ArmarioCategory.ropa,
-                  ),
-                  _buildCategoryTab(
-                    title: 'Zapatos',
-                    icon: LucideIcons.footprints,
-                    category: _ArmarioCategory.zapatos,
-                  ),
-                  _buildCategoryTab(
-                    title: 'Accesorios',
-                    icon: LucideIcons.sparkles,
-                    category: _ArmarioCategory.accesorios,
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          // =================================================================
-          // 3. RACK DE PRENDAS (HORIZONTAL BOUTIQUE CAROUSEL)
-          // =================================================================
-          Expanded(
-            flex: 4,
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-              scrollDirection: Axis.horizontal,
-              itemCount: activeItems.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                final item = activeItems[index];
-                final isSelected = _selectedItem.id == item.id;
-                final isEquipped = _isItemEquipped(item);
-                final isUnlocked = _isItemUnlocked(item, unlockedList);
-
-                return _BoutiqueItemCard(
-                  item: item,
-                  isSelected: isSelected,
-                  isEquipped: isEquipped,
-                  isUnlocked: isUnlocked,
-                  onTap: () => _selectItem(item),
-                );
-              },
-            ),
-          ),
-
-          // =================================================================
-          // 4. BARRA DE ACCIÓN Y DETALLE (LUXURY FITTING DOCK)
-          // =================================================================
-          Container(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              12,
-              20,
-              MediaQuery.of(context).padding.bottom > 0
-                  ? MediaQuery.of(context).padding.bottom + 4
-                  : 18,
-            ),
-            decoration: const BoxDecoration(
-              color: Color(0xFF0F1722),
-              border: Border(
-                top: BorderSide(color: Color(0xFF1D2B38), width: 1),
-              ),
-            ),
-            child: Row(
-              children: [
-                // Info del Item Seleccionado
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            _selectedItem.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.2,
-                            ),
+              // =================================================================
+              // 2. DETALLE DE LA PRENDA SELECCIONADA (TYPOGRAPHY)
+              // =================================================================
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _selectedItem.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -0.3,
                           ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 7,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _selectedItem.rarityColor.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: _selectedItem.rarityColor.withValues(alpha: 0.45),
-                                width: 0.8,
-                              ),
-                            ),
-                            child: Text(
-                              _selectedItem.rarity,
-                              style: TextStyle(
-                                color: _selectedItem.rarityColor,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        _selectedItem.description,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.60),
-                          fontSize: 12,
                         ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: _selectedItem.rarityColor.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: _selectedItem.rarityColor.withValues(alpha: 0.50),
+                              width: 0.8,
+                            ),
+                          ),
+                          child: Text(
+                            _selectedItem.rarity,
+                            style: TextStyle(
+                              color: _selectedItem.rarityColor,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      _selectedItem.description,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.60),
+                        fontSize: 12,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // =================================================================
+              // 3. SELECTOR DE CATEGORÍAS (PILL BAR)
+              // =================================================================
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  height: 42,
+                  padding: const EdgeInsets.all(3.5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF101923),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(color: const Color(0xFF1A2633), width: 1),
+                  ),
+                  child: Row(
+                    children: [
+                      _buildCategoryTab(
+                        title: 'Ropa',
+                        icon: LucideIcons.shirt,
+                        category: _ArmarioCategory.ropa,
+                      ),
+                      _buildCategoryTab(
+                        title: 'Zapatos',
+                        icon: LucideIcons.footprints,
+                        category: _ArmarioCategory.zapatos,
+                      ),
+                      _buildCategoryTab(
+                        title: 'Accesorios',
+                        icon: LucideIcons.sparkles,
+                        category: _ArmarioCategory.accesorios,
                       ),
                     ],
                   ),
                 ),
+              ),
 
-                const SizedBox(width: 14),
+              const SizedBox(height: 10),
 
-                // Botón Principal de Acción
-                GestureDetector(
+              // =================================================================
+              // 4. CARRUSEL BOUTIQUE DE PRENDAS (SWATCH RACK)
+              // =================================================================
+              SizedBox(
+                height: 110,
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: activeItems.length,
+                  separatorBuilder: (context, index) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    final item = activeItems[index];
+                    final isSelected = _selectedItem.id == item.id;
+                    final isEquipped = _isItemEquipped(item);
+                    final isUnlocked = _isItemUnlocked(item, unlockedList);
+
+                    return _BoutiqueSwatchCard(
+                      item: item,
+                      isSelected: isSelected,
+                      isEquipped: isEquipped,
+                      isUnlocked: isUnlocked,
+                      onTap: () => _selectItem(item),
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // =================================================================
+              // 5. BOTÓN DE ACCIÓN PRINCIPAL (PRIMARY ACTION DOCK)
+              // =================================================================
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  0,
+                  20,
+                  MediaQuery.of(context).padding.bottom > 0
+                      ? MediaQuery.of(context).padding.bottom + 6
+                      : 18,
+                ),
+                child: GestureDetector(
                   onTap: _isProcessing
                       ? null
                       : () => _handleEquipOrUnlock(_selectedItem),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
+                    width: double.infinity,
+                    height: 50,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
                       gradient: isSelectedEquipped
@@ -826,66 +810,68 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                               ),
                             ],
                     ),
-                    child: _isProcessing
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (isSelectedEquipped) ...[
-                                const Icon(
-                                  LucideIcons.check,
-                                  color: Color(0xFF34D399),
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 6),
-                                const Text(
-                                  'Equipado',
-                                  style: TextStyle(
-                                    color: Color(0xFF94A3B8),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13.5,
+                    child: Center(
+                      child: _isProcessing
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (isSelectedEquipped) ...[
+                                  const Icon(
+                                    LucideIcons.check,
+                                    color: Color(0xFF34D399),
+                                    size: 18,
                                   ),
-                                ),
-                              ] else if (isSelectedUnlocked) ...[
-                                const Icon(
-                                  LucideIcons.shirt,
-                                  color: Colors.white,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 6),
-                                const Text(
-                                  'Equipar',
-                                  style: TextStyle(
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Estilo Equipado en Perfil',
+                                    style: TextStyle(
+                                      color: Color(0xFF94A3B8),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14.5,
+                                    ),
+                                  ),
+                                ] else if (isSelectedUnlocked) ...[
+                                  const Icon(
+                                    LucideIcons.shirt,
                                     color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13.5,
+                                    size: 18,
                                   ),
-                                ),
-                              ] else ...[
-                                const Text('🪙', style: TextStyle(fontSize: 14)),
-                                const SizedBox(width: 6),
-                                Text(
-                                  '${_selectedItem.cost} pts',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13.5,
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Equipar Estilo',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14.5,
+                                    ),
                                   ),
-                                ),
+                                ] else ...[
+                                  const Text('🪙', style: TextStyle(fontSize: 16)),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Desbloquear por ${_selectedItem.cost} pts',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14.5,
+                                    ),
+                                  ),
+                                ],
                               ],
-                            ],
-                          ),
+                            ),
+                    ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -912,18 +898,18 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
           });
         },
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
           decoration: BoxDecoration(
             color: isActive ? const Color(0xFF06B6D4) : Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(18),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
-                size: 15,
+                size: 14,
                 color: isActive ? Colors.white : const Color(0xFF94A3B8),
               ),
               const SizedBox(width: 6),
@@ -931,7 +917,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                 title,
                 style: TextStyle(
                   color: isActive ? Colors.white : const Color(0xFF94A3B8),
-                  fontSize: 13,
+                  fontSize: 12.5,
                   fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
                 ),
               ),
@@ -944,16 +930,16 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
 }
 
 // =============================================================================
-// BOUTIQUE ITEM CARD (Tarjetas de lujo en el rack del armario)
+// BOUTIQUE SWATCH CARD (Tarjetas de lujo en el rack del armario)
 // =============================================================================
-class _BoutiqueItemCard extends StatelessWidget {
+class _BoutiqueSwatchCard extends StatelessWidget {
   final WardrobeItem item;
   final bool isSelected;
   final bool isEquipped;
   final bool isUnlocked;
   final VoidCallback onTap;
 
-  const _BoutiqueItemCard({
+  const _BoutiqueSwatchCard({
     required this.item,
     required this.isSelected,
     required this.isEquipped,
@@ -966,23 +952,23 @@ class _BoutiqueItemCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 120,
-        padding: const EdgeInsets.all(10),
+        duration: const Duration(milliseconds: 180),
+        width: 92,
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF142433) : const Color(0xFF0F1821),
+          color: isSelected ? const Color(0xFF13202C) : const Color(0xFF0E161F),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
                 ? const Color(0xFF06B6D4)
-                : const Color(0xFF1E2D3B),
+                : const Color(0xFF1A2633),
             width: isSelected ? 2.0 : 1.0,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
                     color: const Color(0xFF06B6D4).withValues(alpha: 0.35),
-                    blurRadius: 14,
+                    blurRadius: 12,
                     spreadRadius: 1,
                   ),
                 ]
@@ -991,34 +977,34 @@ class _BoutiqueItemCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Emoji / Icon Avatar Container
+            // Icono / Emoji con aura
             Container(
-              width: 52,
-              height: 52,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    item.primaryColor.withValues(alpha: 0.28),
-                    item.secondaryColor.withValues(alpha: 0.10),
+                    item.primaryColor.withValues(alpha: 0.30),
+                    item.secondaryColor.withValues(alpha: 0.08),
                   ],
                 ),
                 border: Border.all(
-                  color: item.rarityColor.withValues(alpha: 0.35),
+                  color: item.rarityColor.withValues(alpha: 0.40),
                   width: 1,
                 ),
               ),
               child: Center(
                 child: Text(
                   item.emoji,
-                  style: const TextStyle(fontSize: 26),
+                  style: const TextStyle(fontSize: 22),
                 ),
               ),
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
 
-            // Item Name
+            // Nombre
             Text(
               item.name,
               maxLines: 1,
@@ -1026,17 +1012,17 @@ class _BoutiqueItemCard extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: isSelected ? Colors.white : const Color(0xFFCBD5E1),
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
               ),
             ),
 
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
 
-            // Badge (Equipado / Desbloqueado / Costo)
+            // Estado (En uso / Listo / Costo)
             if (isEquipped)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                 decoration: BoxDecoration(
                   color: const Color(0xFF10B981).withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(6),
@@ -1045,14 +1031,14 @@ class _BoutiqueItemCard extends StatelessWidget {
                   'En uso',
                   style: TextStyle(
                     color: Color(0xFF34D399),
-                    fontSize: 9.5,
+                    fontSize: 9,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               )
             else if (isUnlocked)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                 decoration: BoxDecoration(
                   color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(6),
@@ -1061,7 +1047,7 @@ class _BoutiqueItemCard extends StatelessWidget {
                   'Listo',
                   style: TextStyle(
                     color: Color(0xFF38BDF8),
-                    fontSize: 9.5,
+                    fontSize: 9,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -1070,13 +1056,13 @@ class _BoutiqueItemCard extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('🪙', style: TextStyle(fontSize: 10)),
-                  const SizedBox(width: 3),
+                  const Text('🪙', style: TextStyle(fontSize: 9.5)),
+                  const SizedBox(width: 2.5),
                   Text(
                     '${item.cost}',
                     style: const TextStyle(
                       color: Color(0xFFFFD54F),
-                      fontSize: 10,
+                      fontSize: 9.5,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -1090,7 +1076,7 @@ class _BoutiqueItemCard extends StatelessWidget {
 }
 
 // =============================================================================
-// TAILORED ACCESSORY PAINTER (Para accesorios colocados con precisión sobre SAMI)
+// TAILORED ACCESSORY PAINTER
 // =============================================================================
 class _TailoredAccessoryPainter extends CustomPainter {
   final SamiEquipment equipment;
@@ -1110,7 +1096,7 @@ class _TailoredAccessoryPainter extends CustomPainter {
       _coverHeadSprout(canvas, w, h);
     }
 
-    // Dibujar accesorios de cabeza y cuello
+    // Dibujar accesorios
     _paintAccessory(canvas, w, h);
 
     // Si SAMI está en plumaje clásico y tiene calzado equipado, dibujar calzado ajustado
@@ -1170,13 +1156,11 @@ class _TailoredAccessoryPainter extends CustomPainter {
         colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
       ).createShader(Rect.fromLTWH(w * 0.32, h * 0.12, w * 0.36, h * 0.14));
 
-    // Cúpula de la gorra
     canvas.drawOval(
       Rect.fromCenter(center: Offset(w * 0.50, h * 0.19), width: w * 0.38, height: h * 0.15),
       capPaint,
     );
 
-    // Visera plana urbana
     final visorPath = Path();
     visorPath.moveTo(w * 0.30, h * 0.22);
     visorPath.quadraticBezierTo(w * 0.50, h * 0.19, w * 0.70, h * 0.22);
@@ -1206,7 +1190,6 @@ class _TailoredAccessoryPainter extends CustomPainter {
 
     canvas.drawPath(crownPath, crownPaint);
 
-    // Gemas de rubí
     final rubyPaint = Paint()..color = const Color(0xFFEF4444);
     canvas.drawCircle(Offset(w * 0.50, y - h * 0.07), w * 0.018, rubyPaint);
   }

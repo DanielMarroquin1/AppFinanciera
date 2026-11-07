@@ -814,11 +814,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                               ),
                                               const SizedBox(height: 8),
                                               Text(
-                                                expense.description.isNotEmpty
-                                                    ? expense.description
-                                                    : loc.translateCategory(
-                                                        expense.category,
-                                                      ),
+                                                loc.formatTransactionTitle(expense),
                                                 style: TextStyle(
                                                   color: isDark
                                                       ? Colors.white
@@ -1203,11 +1199,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              expense.description.isNotEmpty
-                                                  ? expense.description
-                                                  : loc.translateCategory(
-                                                      expense.category,
-                                                    ),
+                                                loc.formatTransactionTitle(expense),
                                               style: TextStyle(
                                                 color: isDark
                                                     ? Colors.white
@@ -1459,11 +1451,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          expense.description.isNotEmpty
-                                              ? expense.description
-                                              : loc.translateCategory(
-                                                  expense.category,
-                                                ),
+                                                loc.formatTransactionTitle(expense),
                                           style: TextStyle(
                                             color: isDark
                                                 ? Colors.white
@@ -1474,7 +1462,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '${loc.translateCategory(expense.category)} • ${DateFormat('d MMM, HH:mm').format(expense.date)}${expense.isFixed ? ' • Fijo' : ''}',
+                                          '${loc.translateCategory(expense.category)} • ${DateFormat('d MMM, HH:mm', loc.intlLocale).format(expense.date)}${expense.isFixed ? ' • ${loc.get("fixed")}' : ''}',
                                           style: const TextStyle(
                                             color: Colors.grey,
                                             fontSize: 12,

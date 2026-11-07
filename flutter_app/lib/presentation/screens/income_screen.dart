@@ -783,11 +783,7 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                                               ),
                                               const SizedBox(height: 8),
                                               Text(
-                                                income.description.isNotEmpty
-                                                    ? income.description
-                                                    : loc.translateCategory(
-                                                        income.category,
-                                                      ),
+                                                loc.formatTransactionTitle(income),
                                                 style: TextStyle(
                                                   color: isDark
                                                       ? Colors.white
@@ -1264,11 +1260,7 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              income.description.isNotEmpty
-                                                  ? income.description
-                                                  : loc.translateCategory(
-                                                      income.category,
-                                                    ),
+                                                loc.formatTransactionTitle(income),
                                               style: TextStyle(
                                                 color: isDark
                                                     ? Colors.white
@@ -1517,11 +1509,7 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          income.description.isNotEmpty
-                                              ? income.description
-                                              : loc.translateCategory(
-                                                  income.category,
-                                                ),
+                                                loc.formatTransactionTitle(income),
                                           style: TextStyle(
                                             color: isDark
                                                 ? Colors.white
@@ -1532,7 +1520,7 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '${loc.translateCategory(income.category)} • ${DateFormat('d MMM, HH:mm').format(income.date)}${income.isFixed ? ' • Fijo' : ''}',
+                                          '${loc.translateCategory(income.category)} • ${DateFormat('d MMM, HH:mm', loc.intlLocale).format(income.date)}${income.isFixed ? ' • ${loc.get("fixed")}' : ''}',
                                           style: const TextStyle(
                                             color: Colors.grey,
                                             fontSize: 12,

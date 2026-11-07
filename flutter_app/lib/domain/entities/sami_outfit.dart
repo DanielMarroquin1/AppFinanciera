@@ -531,6 +531,8 @@ class SamiOutfit {
         return 'assets/images/sami_outfit_chef.png';
       case 'ropa_armadura':
         return 'assets/images/sami_outfit_armadura.png';
+      case 'ropa_toga':
+        return 'assets/images/sami_outfit_toga.png';
       default:
         return 'assets/images/sami_3d_waving.png';
     }
@@ -629,6 +631,19 @@ class SamiOutfit {
       cost: 160,
       rarity: 'Legendario',
       rarityColor: Color(0xFFF43F5E),
+    ),
+    SamiOutfit(
+      id: 'ropa_toga',
+      name: 'Toga Imperial de Oro',
+      subtitle: 'Realeza Financiera',
+      description: 'Toga bordada con hilos de oro de 24k para el soberano absoluto de su presupuesto.',
+      imageAsset: 'assets/images/sami_outfit_toga.png',
+      accessoryEmoji: '✨',
+      primaryColor: Color(0xFFD97706),
+      secondaryColor: Color(0xFF78350F),
+      cost: 220,
+      rarity: 'Legendario',
+      rarityColor: Color(0xFFF59E0B),
     ),
 
     // IDs retrocompatibles

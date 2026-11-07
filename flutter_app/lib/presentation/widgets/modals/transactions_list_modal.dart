@@ -268,9 +268,7 @@ class _TransactionsListModalInternalState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  tx.description.isNotEmpty
-                                      ? tx.description
-                                      : loc.translateCategory(tx.category),
+                                  loc.formatTransactionTitle(tx),
                                   style: TextStyle(
                                     color: isDark ? Colors.white : Colors.black,
                                     fontSize: 16,

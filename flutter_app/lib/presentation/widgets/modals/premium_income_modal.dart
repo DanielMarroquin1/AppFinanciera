@@ -599,9 +599,7 @@ class _PremiumIncomeModalState extends ConsumerState<PremiumIncomeModal> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      tx.description.isNotEmpty
-                                          ? tx.description
-                                          : loc.translateCategory(tx.category),
+                                      loc.formatTransactionTitle(tx),
                                       style: TextStyle(
                                         color: isDark
                                             ? Colors.white

@@ -456,11 +456,7 @@ class _QuickActionManagerModalInternal extends ConsumerWidget {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            expense.description.isNotEmpty
-                                                ? expense.description
-                                                : loc.translateCategory(
-                                                    expense.category,
-                                                  ),
+                                            loc.formatTransactionTitle(expense),
                                             style: TextStyle(
                                               color: isDark
                                                   ? Colors.white

@@ -94,11 +94,7 @@ class SwipeableTransaction extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  transaction.description.isNotEmpty
-                                      ? transaction.description
-                                      : loc.translateCategory(
-                                          transaction.category,
-                                        ),
+                                  loc.formatTransactionTitle(transaction),
                                   style: TextStyle(
                                     color: isDark ? Colors.white : Colors.black,
                                     fontSize: 18,

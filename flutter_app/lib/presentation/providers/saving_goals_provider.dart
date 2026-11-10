@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/saving_goal.dart';
 import '../../domain/repositories/saving_goal_repository.dart';
@@ -10,29 +11,44 @@ final savingGoalRepositoryProvider = Provider<SavingGoalRepository>((ref) {
 
 class SavingGoalsNotifier extends AsyncNotifier<List<SavingGoal>> {
   late SavingGoalRepository _repository;
+  StreamSubscription<List<SavingGoal>>? _subscription;
 
   @override
   Future<List<SavingGoal>> build() async {
     _repository = ref.read(savingGoalRepositoryProvider);
-    final user = ref.watch(authProvider).user;
-    if (user == null) {
+    final userEmail = ref.watch(authProvider.select((s) => s.user?.email));
+
+    ref.onDispose(() {
+      _subscription?.cancel();
+      _subscription = null;
+    });
+
+    if (userEmail == null || userEmail.isEmpty) {
       return [];
     }
 
-    // Subscribe to the stream and update the state
-    _repository
-        .getUserGoals(user.email)
+    final completer = Completer<List<SavingGoal>>();
+    _subscription?.cancel();
+    _subscription = _repository
+        .getUserGoals(userEmail)
         .listen(
           (goals) {
-            state = AsyncValue.data(goals);
+            if (!completer.isCompleted) {
+              completer.complete(goals);
+            } else {
+              state = AsyncValue.data(goals);
+            }
           },
           onError: (e, st) {
-            state = AsyncValue.error(e, st);
+            if (!completer.isCompleted) {
+              completer.completeError(e, st);
+            } else {
+              state = AsyncValue.error(e, st);
+            }
           },
         );
 
-    // Return empty list initially while stream fetches data
-    return [];
+    return completer.future;
   }
 
   Future<void> addGoal(SavingGoal goal) async {
@@ -44,6 +60,8 @@ class SavingGoalsNotifier extends AsyncNotifier<List<SavingGoal>> {
   }
 
   Future<void> updateGoal(SavingGoal goal) async {
+    final user = ref.read(authProvider).user;
+    if (user == null || goal.userId != user.email) return;
     await _repository.updateGoal(goal);
   }
 

@@ -30,7 +30,7 @@ echo "Versión actualizada de $BASE_VER a $NEW_BASE_VER"
 echo "Generando APK..."
 echo "=========================================="
 
-flutter build apk
+flutter build apk --release --dart-define=ENV=prod
 
 echo "=========================================="
 echo "APK generado con éxito. Versión actual: $NEW_BASE_VER"

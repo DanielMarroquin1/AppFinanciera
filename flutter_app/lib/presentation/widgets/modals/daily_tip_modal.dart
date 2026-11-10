@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:math' as math;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/services/ad_service.dart';
+import '../../providers/auth_provider.dart';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 class FinancialTip {
@@ -658,13 +661,14 @@ class DailyTipModal {
 }
 
 // ─── Dialog widget ────────────────────────────────────────────────────────────
-class _DailyTipDialog extends StatelessWidget {
+class _DailyTipDialog extends ConsumerWidget {
   final FinancialTip tip;
   const _DailyTipDialog({required this.tip});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isPremium = ref.watch(authProvider).user?.isPremium ?? false;
     final meta = _catMeta(isDark)[tip.categoria]!;
     final today = DateTime.now();
     final dayLabel = _dayLabel(today);
@@ -926,7 +930,12 @@ class _DailyTipDialog extends StatelessWidget {
                       ],
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
+
+                    // Banner / Anuncio Nativo (oculto automáticamente para usuarios Premium)
+                    AdBannerWidget(isPremium: isPremium),
+
+                    const SizedBox(height: 8),
 
                     // CTA Button
                     SizedBox(

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import '../../core/config/database_config.dart';
 import '../../domain/entities/credit_card.dart';
 import 'transaction_provider.dart';
 import 'auth_provider.dart';
@@ -11,8 +11,7 @@ final creditCardsProvider = StreamProvider<List<CreditCard>>((ref) {
   if (authState.user != null) {
     final uid = firebase_auth.FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
-      return FirebaseFirestore.instance
-          .collection('users')
+      return DatabaseConfig.usersCollection
           .doc(uid)
           .collection('credit_cards')
           .snapshots()
@@ -76,8 +75,7 @@ class CreditCardNotifier extends Notifier<AsyncValue<void>> {
       final user = firebase_auth.FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('No user logged in');
 
-      await FirebaseFirestore.instance
-          .collection('users')
+      await DatabaseConfig.usersCollection
           .doc(user.uid)
           .collection('credit_cards')
           .add(card.toFirestore());
@@ -96,8 +94,7 @@ class CreditCardNotifier extends Notifier<AsyncValue<void>> {
 
       // We only update the visual and configuration fields.
       // We NEVER update currentBalance during edit to avoid overwriting the computed initialBalance.
-      await FirebaseFirestore.instance
-          .collection('users')
+      await DatabaseConfig.usersCollection
           .doc(user.uid)
           .collection('credit_cards')
           .doc(card.id)
@@ -122,8 +119,7 @@ class CreditCardNotifier extends Notifier<AsyncValue<void>> {
       final user = firebase_auth.FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('No user logged in');
 
-      await FirebaseFirestore.instance
-          .collection('users')
+      await DatabaseConfig.usersCollection
           .doc(user.uid)
           .collection('credit_cards')
           .doc(id)

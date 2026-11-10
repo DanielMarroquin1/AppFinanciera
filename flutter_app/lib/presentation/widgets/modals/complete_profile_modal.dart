@@ -4,8 +4,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/color_palette_provider.dart';
+import '../../../core/config/database_config.dart';
 import '../../../core/utils/localization.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/utils/currency_formatter.dart';
 
 class CompleteProfileModal extends ConsumerStatefulWidget {
@@ -81,7 +81,7 @@ class _CompleteProfileModalState extends ConsumerState<CompleteProfileModal> {
 
       final salary = double.tryParse(salaryController.text) ?? 0.0;
 
-      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+      await DatabaseConfig.usersCollection.doc(uid).update({
         'country': countryController.text,
         'currency': selectedCurrency,
         'salary': salary,

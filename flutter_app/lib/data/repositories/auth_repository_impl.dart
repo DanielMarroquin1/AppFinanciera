@@ -6,15 +6,14 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'google_sign_in_factory.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '../../firebase_options.dart';
+import '../../core/config/database_config.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final SharedPreferences prefs;
   final firebase_auth.FirebaseAuth _firebaseAuth =
       firebase_auth.FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  CollectionReference<Map<String, dynamic>> get _users =>
+      DatabaseConfig.usersCollection;
   static bool _isGoogleSignInInitialized = false;
 
   AuthRepositoryImpl(this.prefs);
@@ -28,8 +27,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       if (updatedUser != null && updatedUser.emailVerified) {
         try {
-          final doc = await _firestore
-              .collection('users')
+          final doc = await _users
               .doc(updatedUser.uid)
               .get();
           if (doc.exists) {
@@ -68,7 +66,7 @@ class AuthRepositoryImpl implements AuthRepository {
             );
           }
         } catch (e) {
-          print("Error fetching user from Firestore: $e");
+          debugPrint("Error fetching user from Firestore: $e");
         }
       }
     }
@@ -105,9 +103,9 @@ class AuthRepositoryImpl implements AuthRepository {
         'autoLockMinutes': user.autoLockMinutes,
       };
       try {
-        await _firestore.collection('users').doc(firebaseUser.uid).update(map);
+        await _users.doc(firebaseUser.uid).update(map);
       } catch (e) {
-        await _firestore.collection('users').doc(firebaseUser.uid).set(map);
+        await _users.doc(firebaseUser.uid).set(map);
       }
     }
   }
@@ -230,12 +228,11 @@ class AuthRepositoryImpl implements AuthRepository {
       final firebaseUser = userCredential.user!;
 
       // Verifica si existe en Firestore
-      final docSnapshot = await _firestore
-          .collection('users')
+      final docSnapshot = await _users
           .doc(firebaseUser.uid)
           .get();
       if (!docSnapshot.exists) {
-        await _firestore.collection('users').doc(firebaseUser.uid).set({
+        await _users.doc(firebaseUser.uid).set({
           'email': firebaseUser.email,
           'name': firebaseUser.displayName ?? '',
           'purpose': '',
@@ -350,10 +347,8 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       if (e is firebase_auth.FirebaseAuthException) {
         if (e.code == 'user-not-found') {
-          throw firebase_auth.FirebaseAuthException(
-            code: 'user-not-found',
-            message: 'No hay ninguna cuenta registrada con este correo.',
-          );
+          // Evitar enumeración de cuentas: retornar silenciosamente
+          return;
         } else if (e.code == 'invalid-email') {
           throw firebase_auth.FirebaseAuthException(
             code: 'invalid-email',
@@ -366,10 +361,8 @@ class AuthRepositoryImpl implements AuthRepository {
       // Manejo de errores de Cloud Functions
       if (e is FirebaseFunctionsException) {
         if (e.code == 'not-found' || e.message == 'user-not-found') {
-          throw firebase_auth.FirebaseAuthException(
-            code: 'user-not-found',
-            message: 'No hay ninguna cuenta registrada con este correo.',
-          );
+          // Evitar enumeración de cuentas: retornar silenciosamente
+          return;
         }
         throw firebase_auth.FirebaseAuthException(
           code: 'unknown',

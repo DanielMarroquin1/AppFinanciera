@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../config/database_config.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/entities/transaction.dart';
 import 'local_notification_service.dart';
 import '../../domain/entities/credit_card.dart';
 
 class RecurrenceService {
-  static final _firestore = FirebaseFirestore.instance;
   static bool _isProcessing = false;
   static bool _hasProcessedThisSession = false;
 
@@ -16,8 +16,7 @@ class RecurrenceService {
 
     // 1. Process Debts
     try {
-      final debtsQuery = await _firestore
-          .collection('debts')
+      final debtsQuery = await DatabaseConfig.debtsCollection
           .where('userId', isEqualTo: userId)
           .where('isAutoPay', isEqualTo: true)
           .get();
@@ -41,13 +40,13 @@ class RecurrenceService {
           final newPaid = debt.paidInstallments + 1;
 
           // Update debt
-          await _firestore.collection('debts').doc(debt.id).update({
+          await DatabaseConfig.debtsCollection.doc(debt.id).update({
             'paidInstallments': newPaid,
             'lastProcessedDate': Timestamp.fromDate(now),
           });
 
           // Add transaction
-          final newTxRef = _firestore.collection('transactions').doc();
+          final newTxRef = DatabaseConfig.transactionsCollection.doc();
           final tx = TransactionModel(
             id: newTxRef.id,
             userId: userId,
@@ -79,8 +78,7 @@ class RecurrenceService {
 
     // 2. Process Fixed Transactions (Incomes and Expenses)
     try {
-      final fixedTxQuery = await _firestore
-          .collection('transactions')
+      final fixedTxQuery = await DatabaseConfig.transactionsCollection
           .where('userId', isEqualTo: userId)
           .where('isFixed', isEqualTo: true)
           .get();
@@ -113,12 +111,12 @@ class RecurrenceService {
 
         if (shouldProcess) {
           // Update template transaction
-          await _firestore.collection('transactions').doc(txTemplate.id).update(
+          await DatabaseConfig.transactionsCollection.doc(txTemplate.id).update(
             {'lastProcessedDate': Timestamp.fromDate(now)},
           );
 
           // Generate new transaction
-          final newTxRef = _firestore.collection('transactions').doc();
+          final newTxRef = DatabaseConfig.transactionsCollection.doc();
           final newTx = TransactionModel(
             id: newTxRef.id,
             userId: userId,
@@ -140,8 +138,7 @@ class RecurrenceService {
 
     // 3. Process Credit Cards Notifications
     try {
-      final cardsQuery = await _firestore
-          .collection('users')
+      final cardsQuery = await DatabaseConfig.usersCollection
           .doc(userId)
           .collection('credit_cards')
           .get();

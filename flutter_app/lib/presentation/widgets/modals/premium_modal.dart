@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:confetti/confetti.dart';
+import '../../../core/services/revenuecat_service.dart';
 import '../../providers/auth_provider.dart';
 
 class PremiumModal extends ConsumerStatefulWidget {
@@ -52,27 +53,28 @@ class _PremiumModalState extends ConsumerState<PremiumModal>
 
   double _unlockProgress = 0.0;
   bool _isSuccess = false;
+  bool _isProcessing = false;
 
   final features = [
     {
       'icon': LucideIcons.bot,
       'title': 'Amigo Financiero SAMI',
-      'desc': 'Asistente IA personalizado',
+      'desc': 'Asistente IA personalizado y SimLab',
+    },
+    {
+      'icon': LucideIcons.shieldCheck,
+      'title': '100% Libre de Anuncios',
+      'desc': 'Navega sin publicidad ni interrupciones',
     },
     {
       'icon': LucideIcons.sparkles,
       'title': 'Personalización Total',
-      'desc': 'Temas y colores exclusivos',
+      'desc': 'Temas y colores exclusivos desbloqueados',
     },
     {
       'icon': LucideIcons.pieChart,
-      'title': 'Reportes Detallados',
-      'desc': 'Análisis profundo de gastos',
-    },
-    {
-      'icon': LucideIcons.lineChart,
-      'title': 'Proyecciones Mensuales',
-      'desc': 'Predicciones inteligentes a fin de mes',
+      'title': 'Reportes y Proyecciones',
+      'desc': 'Análisis profundo y predicción a fin de mes',
     },
   ];
 
@@ -106,15 +108,69 @@ class _PremiumModalState extends ConsumerState<PremiumModal>
   }
 
   void _onUnlockComplete() async {
-    await ref.read(authProvider.notifier).upgradeToPremium();
-    if (mounted) {
-      setState(() => _isSuccess = true);
-      _confettiController.play();
-      Future.delayed(const Duration(seconds: 3), () {
-        if (mounted && Navigator.canPop(context)) {
-          Navigator.pop(context);
-        }
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+    HapticFeedback.mediumImpact();
+
+    final outcome = await RevenueCatService().purchasePremium();
+    if (!mounted) return;
+
+    if (outcome.success) {
+      await ref.read(authProvider.notifier).upgradeToPremium();
+      if (mounted) {
+        HapticFeedback.heavyImpact();
+        setState(() {
+          _isProcessing = false;
+          _isSuccess = true;
+        });
+        _confettiController.play();
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted && Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+        });
+      }
+    } else {
+      setState(() {
+        _isProcessing = false;
+        _unlockProgress = 0.0;
       });
+      if (!outcome.cancelled && outcome.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(outcome.errorMessage!),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _onRestorePurchases() async {
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+    final restored = await RevenueCatService().restorePurchases();
+    if (!mounted) return;
+    if (restored) {
+      await ref.read(authProvider.notifier).upgradeToPremium();
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+          _isSuccess = true;
+        });
+        _confettiController.play();
+      }
+    } else {
+      setState(() => _isProcessing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'No se encontraron compras activas para restaurar en esta cuenta.',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
@@ -373,43 +429,55 @@ class _PremiumModalState extends ConsumerState<PremiumModal>
           const SizedBox(height: 32),
 
           if (!isPremium) ...[
-            // Fake Button (Does nothing when tapped, just visual)
-            AnimatedBuilder(
-              animation: _glowCtrl,
-              builder: (context, child) {
-                return Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                    ),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(
-                          0xFFF59E0B,
-                        ).withOpacity(0.3 + (_glowCtrl.value * 0.2)),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
+            // Botón interactivo de suscripción (conecta a RevenueCat / Pasarela)
+            GestureDetector(
+              onTap: _isProcessing ? null : _onUnlockComplete,
+              child: AnimatedBuilder(
+                animation: _glowCtrl,
+                builder: (context, child) {
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
                       ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'SUSCRIBIRSE AHORA',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.0,
-                      ),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(
+                            0xFFF59E0B,
+                          ).withOpacity(0.3 + (_glowCtrl.value * 0.2)),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
-                  ),
-                );
-              },
+                    child: Center(
+                      child: _isProcessing
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'SUSCRIBIRSE AHORA',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                    ),
+                  );
+                },
+              ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             _buildSwipeToUnlock(isDark),
           ] else ...[
             Container(
@@ -441,16 +509,44 @@ class _PremiumModalState extends ConsumerState<PremiumModal>
             ),
           ],
           const SizedBox(height: 16),
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Text(
-              isPremium ? 'Cerrar' : 'Quizás más tarde',
-              style: TextStyle(
-                color: isDark ? Colors.grey[500] : Colors.grey[400],
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Text(
+                  isPremium ? 'Cerrar' : 'Quizás más tarde',
+                  style: TextStyle(
+                    color: isDark ? Colors.grey[500] : Colors.grey[400],
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-            ),
+              if (!isPremium && RevenueCatService().hasConfiguredNativeStore) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    '•',
+                    style: TextStyle(
+                      color: isDark ? Colors.grey[600] : Colors.grey[400],
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: _onRestorePurchases,
+                  child: Text(
+                    'Restaurar compras',
+                    style: TextStyle(
+                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ],
       ),

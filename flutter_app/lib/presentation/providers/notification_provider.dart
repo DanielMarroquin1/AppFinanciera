@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../core/config/database_config.dart';
 import '../../domain/entities/notification.dart';
 import 'auth_provider.dart';
 
@@ -19,8 +20,7 @@ final notificationsProvider = StreamProvider<List<NotificationModel>>((ref) {
     return Stream.value([]);
   }
 
-  return FirebaseFirestore.instance
-      .collection('notifications')
+  return DatabaseConfig.notificationsCollection
       .where('userId', isEqualTo: firebaseUser.uid)
       .limit(50) // Limit to the most recent 50 notifications
       .snapshots()
@@ -69,11 +69,12 @@ final notificationNotifierProvider = Provider<NotificationNotifier>((ref) {
 });
 
 class NotificationNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  CollectionReference<Map<String, dynamic>> get _notifications =>
+      DatabaseConfig.notificationsCollection;
 
   Future<void> markAsRead(String notificationId) async {
     try {
-      await _firestore.collection('notifications').doc(notificationId).update({
+      await _notifications.doc(notificationId).update({
         'isRead': true,
       });
     } catch (e) {
@@ -83,13 +84,12 @@ class NotificationNotifier {
 
   Future<void> markAllAsRead(String userId) async {
     try {
-      final snapshot = await _firestore
-          .collection('notifications')
+      final snapshot = await _notifications
           .where('userId', isEqualTo: userId)
           .where('isRead', isEqualTo: false)
           .get();
 
-      final batch = _firestore.batch();
+      final batch = DatabaseConfig.firestore.batch();
       for (var doc in snapshot.docs) {
         batch.update(doc.reference, {'isRead': true});
       }
@@ -104,7 +104,7 @@ class NotificationNotifier {
 
   Future<void> deleteNotification(String notificationId) async {
     try {
-      await _firestore.collection('notifications').doc(notificationId).delete();
+      await _notifications.doc(notificationId).delete();
     } catch (e) {
       print('Error deleting notification: $e');
     }

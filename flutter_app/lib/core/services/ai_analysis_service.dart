@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../config/ai_config.dart';
 import '../../domain/entities/transaction.dart';
@@ -10,12 +11,22 @@ import '../../domain/models/micro_insight.dart';
 /// categorización semántica automática.
 class AIAnalysisService {
   static GenerativeModel? _model;
+  static String? _cachedApiKey;
 
   static GenerativeModel _getModel() {
-    _model ??= GenerativeModel(
-      model: AIConfig.modelName,
-      apiKey: AIConfig.apiKey,
-    );
+    final currentKey = AIConfig.apiKey;
+    if (_model == null || _cachedApiKey != currentKey) {
+      _cachedApiKey = currentKey;
+      _model = GenerativeModel(
+        model: AIConfig.modelName,
+        apiKey: currentKey,
+        generationConfig: GenerationConfig(
+          maxOutputTokens: 120,
+          temperature: 0.1,
+          responseMimeType: 'application/json',
+        ),
+      );
+    }
     return _model!;
   }
 
@@ -23,11 +34,22 @@ class AIAnalysisService {
     String text,
     String userId,
   ) async {
+    final sanitizedText = text
+        .replaceAll(RegExp(r'[\r\n`"\\]'), ' ')
+        .trim();
+    if (sanitizedText.isEmpty || sanitizedText.length > 300) return null;
+
+    // 1. Intento Heurístico Local Instantáneo (0 ms, 0 costos, inmune a Rate Limits)
+    final localMatch = _fastLocalVoiceParse(sanitizedText, userId);
+    if (localMatch != null) {
+      return localMatch;
+    }
+
     if (AIConfig.apiKey.isEmpty) return null;
 
     final prompt =
         '''
-Analyze this voice command for an expense or income: "$text"
+Analyze this voice command for an expense or income: <user_voice_input>$sanitizedText</user_voice_input>
 User ID: $userId
 
 Output STRICT JSON:
@@ -40,31 +62,78 @@ Output STRICT JSON:
 }
 ''';
 
-    try {
-      final model = _getModel();
-      final response = await model
-          .generateContent([Content.text(prompt)])
-          .timeout(const Duration(seconds: 10));
-      final respText = response.text?.trim() ?? '{}';
-      final cleaned = respText.replaceAll(RegExp(r'```json|```'), '').trim();
-      final map = jsonDecode(cleaned);
+    // 2. Llamada a Gemini con reintentos y Exponential Backoff ante HTTP 429 (Rate Limit)
+    int attempts = 0;
+    while (attempts < 3) {
+      try {
+        final model = _getModel();
+        final response = await model
+            .generateContent([Content.text(prompt)])
+            .timeout(const Duration(seconds: 8));
+        final respText = response.text?.trim() ?? '{}';
+        final cleaned = respText.replaceAll(RegExp(r'```json|```'), '').trim();
+        final map = jsonDecode(cleaned);
 
-      if (map['amount'] == null) return null;
+        if (map['amount'] == null) return null;
 
-      return TransactionModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        amount: double.parse(map['amount'].toString()),
-        type: map['type'] == 'income' ? 'income' : 'expense',
-        category: map['category'] ?? 'other',
-        description: map['description'] ?? 'Transacción por Voz',
-        date: DateTime.now(),
-        userId: userId,
-        isFixed: false,
-      );
-    } catch (e) {
-      print('Error parsing Siri voice intent: $e');
-      return null;
+        return TransactionModel(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          amount: double.parse(map['amount'].toString()),
+          type: map['type'] == 'income' ? 'income' : 'expense',
+          category: map['category'] ?? 'other',
+          description: map['description'] ?? 'Transacción por Voz',
+          date: DateTime.now(),
+          userId: userId,
+          isFixed: false,
+        );
+      } catch (e) {
+        attempts++;
+        if (e.toString().contains('429') && attempts < 3) {
+          // Espera con backoff antes de reintentar
+          await Future.delayed(Duration(milliseconds: 400 * attempts));
+          continue;
+        }
+        return null;
+      }
     }
+    return null;
+  }
+
+  /// Parser heurístico local rápido: resuelve montos y categorías estándar en 0 ms
+  static TransactionModel? _fastLocalVoiceParse(String text, String userId) {
+    final lower = text.toLowerCase().trim();
+    
+    // Detectar si es ingreso o gasto
+    final isIncome = lower.contains('ingreso') ||
+        lower.contains('salario') ||
+        lower.contains('sueldo') ||
+        lower.contains('ganancia') ||
+        lower.contains('cobré') ||
+        lower.contains('cobre') ||
+        lower.contains('me pagaron');
+
+    // Extraer monto numérico
+    final numMatch = RegExp(r'[$Q€£]?\s*(\d+(?:[.,]\d+)?)\s*(?:quetzales|quetzal|dolares|dólares|pesos|gtq)?')
+        .firstMatch(lower);
+    if (numMatch == null) return null;
+
+    final rawNum = numMatch.group(1)?.replaceAll(',', '.');
+    final amount = double.tryParse(rawNum ?? '');
+    if (amount == null || amount <= 0) return null;
+
+    // Categorización instantánea
+    final category = _localCategorize(lower) ?? 'other';
+
+    return TransactionModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      amount: amount,
+      type: isIncome ? 'income' : 'expense',
+      category: category,
+      description: text.trim(),
+      date: DateTime.now(),
+      userId: userId,
+      isFixed: false,
+    );
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -117,7 +186,7 @@ Output STRICT JSON:
             .map((a) => (a - average) * (a - average))
             .reduce((a, b) => a + b) /
         amounts.length;
-    final stdDev = variance > 0 ? variance : 1.0;
+    final stdDev = variance > 0 ? math.sqrt(variance) : 1.0;
 
     final deviationFactor = average > 0 ? newTransaction.amount / average : 1.0;
     final zScore = stdDev > 0

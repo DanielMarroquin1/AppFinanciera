@@ -6,6 +6,7 @@ class MarketDataService {
   // API Key se pasa por variable de entorno al compilar:
   // flutter run --dart-define=MASSIVE_API_KEY=tu_clave_aqui
   static const String _envApiKey = String.fromEnvironment('MASSIVE_API_KEY');
+  static final RegExp _validTickerRegex = RegExp(r'^[A-Z0-9.\-]{1,10}$');
   static String get _apiKey => _envApiKey.trim().isEmpty
       ? 'TWKMI7RFpjlcuPpUM1nOplhKrByQ0swf'
       : _envApiKey.trim();
@@ -14,26 +15,31 @@ class MarketDataService {
   static Future<Map<String, dynamic>> getStockData(String ticker) async {
     final uppercaseTicker = ticker.toUpperCase().trim();
 
+    if (!_validTickerRegex.hasMatch(uppercaseTicker)) {
+      return {
+        'status': 'error',
+        'message':
+            'El código bursátil proporcionado no tiene un formato válido.',
+      };
+    }
+
     try {
-      // La URL base del API de Massive
-      final baseUrl =
-          'https://api.massive.com/v2/aggs/ticker/$uppercaseTicker/prev?adjusted=true&apiKey=$_apiKey';
-
-      // En Flutter Web, el navegador bloquea llamadas directas a APIs externas
-      // por política CORS. Usamos un proxy CORS para evitar esto.
-      final url = kIsWeb
-          ? 'https://corsproxy.io/?${Uri.encodeComponent(baseUrl)}'
-          : baseUrl;
-
-      print('[MarketDataService] Fetching data for $uppercaseTicker...');
-      print('[MarketDataService] URL: $url');
-
-      final response = await http.get(Uri.parse(url));
-
-      print('[MarketDataService] Status: ${response.statusCode}');
-      print(
-        '[MarketDataService] Body: ${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}',
+      // Construir URI segura sin interpolación directa de ruta
+      final baseUri = Uri.https(
+        'api.massive.com',
+        '/v2/aggs/ticker/$uppercaseTicker/prev',
+        {'adjusted': 'true', 'apiKey': _apiKey},
       );
+
+      final uri = kIsWeb
+          ? Uri.parse(
+              'https://corsproxy.io/?${Uri.encodeComponent(baseUri.toString())}',
+            )
+          : baseUri;
+
+      final response = await http
+          .get(uri)
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -65,7 +71,6 @@ class MarketDataService {
         };
       }
     } catch (e) {
-      print('[MarketDataService] Exception: $e');
       return {
         'status': 'error',
         'message': 'Error de conexión al obtener datos de $uppercaseTicker: $e',

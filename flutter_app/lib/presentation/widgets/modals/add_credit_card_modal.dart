@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../domain/entities/credit_card.dart';
 import '../../providers/credit_card_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../../core/services/ad_service.dart';
 import '../../../core/utils/currency_formatter.dart';
 
 class AddCreditCardModal extends ConsumerStatefulWidget {
@@ -183,6 +184,13 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
         await ref
             .read(creditCardControllerProvider.notifier)
             .addCreditCard(card);
+        if (mounted) {
+          final isPremium = ref.read(authProvider).user?.isPremium ?? false;
+          await AdService().registerActionAndShowInterstitial(
+            context,
+            isPremium,
+          );
+        }
       }
       if (mounted) {
         Navigator.pop(context);

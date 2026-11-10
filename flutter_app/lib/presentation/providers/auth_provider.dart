@@ -5,6 +5,7 @@ import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../core/services/recurrence_service.dart';
 import '../../core/services/recurring_transaction_service.dart';
+import '../../core/services/revenuecat_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 
 // Provider for SharedPreferences to be injected
@@ -55,8 +56,12 @@ class AuthNotifier extends Notifier<AuthState> {
       FirebaseAuth.instance
           .authStateChanges()
           .firstWhere((u) => u != null)
-          .then((fbUser) {
+          .then((fbUser) async {
             if (fbUser != null) {
+              final hasActiveSub = await RevenueCatService().logIn(fbUser.uid);
+              if (hasActiveSub && !user.isPremium) {
+                await upgradeToPremium();
+              }
               RecurrenceService.processRecurrences(fbUser.uid);
               RecurringTransactionService.evaluateRecurringTransactions();
             }
@@ -98,9 +103,26 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<bool> verifyMfaCode(String userId, String code) async {
-    // Dummy implementation for MFA code verification
-    await Future.delayed(const Duration(seconds: 1));
-    return code == '123456';
+    final sanitizedCode = code.trim();
+    if (userId.isEmpty || !RegExp(r'^\d{6}$').hasMatch(sanitizedCode)) {
+      return false;
+    }
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null || currentUser.uid != userId) {
+      return false;
+    }
+    final prefs = ref.read(sharedPreferencesProvider);
+    final storedOtp = prefs.getString('pending_mfa_otp_$userId');
+    final expiryMs = prefs.getInt('pending_mfa_exp_$userId') ?? 0;
+    if (storedOtp == null || DateTime.now().millisecondsSinceEpoch > expiryMs) {
+      return false;
+    }
+    final isValid = storedOtp == sanitizedCode;
+    if (isValid) {
+      await prefs.remove('pending_mfa_otp_$userId');
+      await prefs.remove('pending_mfa_exp_$userId');
+    }
+    return isValid;
   }
 
   Future<void> register(String email, String password, String purpose) async {

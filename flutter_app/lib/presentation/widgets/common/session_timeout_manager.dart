@@ -19,6 +19,7 @@ class _SessionTimeoutManagerState extends ConsumerState<SessionTimeoutManager>
     with WidgetsBindingObserver {
   Timer? _inactivityTimer;
   DateTime? _pausedTime;
+  bool _isBackgrounded = false;
 
   @override
   void initState() {
@@ -36,9 +37,20 @@ class _SessionTimeoutManagerState extends ConsumerState<SessionTimeoutManager>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
-      _pausedTime = DateTime.now();
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      if (!_isBackgrounded && mounted) {
+        setState(() => _isBackgrounded = true);
+      }
+      if (state == AppLifecycleState.paused ||
+          state == AppLifecycleState.hidden) {
+        _pausedTime ??= DateTime.now();
+      }
     } else if (state == AppLifecycleState.resumed) {
+      if (_isBackgrounded && mounted) {
+        setState(() => _isBackgrounded = false);
+      }
       if (_pausedTime != null) {
         final elapsed = DateTime.now().difference(_pausedTime!);
         _pausedTime = null;
@@ -144,7 +156,24 @@ class _SessionTimeoutManagerState extends ConsumerState<SessionTimeoutManager>
       onPointerMove: (_) => _resetTimer(),
       onPointerUp: (_) => _resetTimer(),
       behavior: HitTestBehavior.translucent,
-      child: widget.child,
+      child: Stack(
+        children: [
+          widget.child,
+          if (_isBackgrounded && ref.watch(authProvider.select((s) => s.isAuthenticated)))
+            const Positioned.fill(
+              child: ColoredBox(
+                color: Color(0xFF004457),
+                child: Center(
+                  child: Icon(
+                    LucideIcons.shield,
+                    color: Colors.white,
+                    size: 64,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

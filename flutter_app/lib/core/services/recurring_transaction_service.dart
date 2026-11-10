@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/database_config.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/entities/notification.dart';
@@ -16,8 +17,7 @@ class RecurringTransactionService {
 
     await cleanDuplicates(user.uid);
 
-    final existingSnapshot = await FirebaseFirestore.instance
-        .collection('transactions')
+    final existingSnapshot = await DatabaseConfig.transactionsCollection
         .where('userId', isEqualTo: user.uid)
         .get();
     final existingNormal = existingSnapshot.docs
@@ -46,8 +46,7 @@ class RecurringTransactionService {
     }
 
     // Get all fixed transactions (templates)
-    final snapshot = await FirebaseFirestore.instance
-        .collection('transactions')
+    final snapshot = await DatabaseConfig.transactionsCollection
         .where('userId', isEqualTo: user.uid)
         .where('isFixed', isEqualTo: true)
         .get();
@@ -55,7 +54,7 @@ class RecurringTransactionService {
     final templates = snapshot.docs
         .map((doc) => TransactionModel.fromFirestore(doc))
         .toList();
-    final batch = FirebaseFirestore.instance.batch();
+    final batch = DatabaseConfig.firestore.batch();
     int addedCount = 0;
 
     for (var template in templates) {
@@ -122,15 +121,11 @@ class RecurringTransactionService {
             isFixed: false, // It's an instantiated transaction, not a template
           );
 
-          final docRef = FirebaseFirestore.instance
-              .collection('transactions')
-              .doc();
+          final docRef = DatabaseConfig.transactionsCollection.doc();
           batch.set(docRef, newTx.toFirestore());
 
           // Generate notification
-          final notifRef = FirebaseFirestore.instance
-              .collection('notifications')
-              .doc();
+          final notifRef = DatabaseConfig.notificationsCollection.doc();
           final notif = NotificationModel(
             id: notifRef.id,
             userId: user.uid,
@@ -153,7 +148,7 @@ class RecurringTransactionService {
           );
 
           if (user.email != null) {
-            final mailRef = FirebaseFirestore.instance.collection('mail').doc();
+            final mailRef = DatabaseConfig.mailCollection.doc();
             batch.set(mailRef, {
               'to': user.email,
               'message': {
@@ -177,8 +172,7 @@ class RecurringTransactionService {
     }
 
     // Now evaluate Debts with isAutoPay == true
-    final debtSnapshot = await FirebaseFirestore.instance
-        .collection('debts')
+    final debtSnapshot = await DatabaseConfig.debtsCollection
         .where('userId', isEqualTo: user.uid)
         .where('isAutoPay', isEqualTo: true)
         .get();
@@ -246,15 +240,11 @@ class RecurringTransactionService {
             isFixed: false,
           );
 
-          final docRef = FirebaseFirestore.instance
-              .collection('transactions')
-              .doc();
+          final docRef = DatabaseConfig.transactionsCollection.doc();
           batch.set(docRef, newTx.toFirestore());
 
           // Generate notification
-          final notifRef = FirebaseFirestore.instance
-              .collection('notifications')
-              .doc();
+          final notifRef = DatabaseConfig.notificationsCollection.doc();
           final notif = NotificationModel(
             id: notifRef.id,
             userId: user.uid,
@@ -275,7 +265,7 @@ class RecurringTransactionService {
           );
 
           if (user.email != null) {
-            final mailRef = FirebaseFirestore.instance.collection('mail').doc();
+            final mailRef = DatabaseConfig.mailCollection.doc();
             batch.set(mailRef, {
               'to': user.email,
               'message': {
@@ -301,9 +291,7 @@ class RecurringTransactionService {
         final newDebt = debt.copyWith(
           paidInstallments: debt.paidInstallments + addedInstallments,
         );
-        final debtRef = FirebaseFirestore.instance
-            .collection('debts')
-            .doc(debt.id);
+        final debtRef = DatabaseConfig.debtsCollection.doc(debt.id);
         batch.update(debtRef, {'paidInstallments': newDebt.paidInstallments});
       }
     }
@@ -312,8 +300,7 @@ class RecurringTransactionService {
     List<DocumentSnapshot> goalDocs = [];
     if (user.email != null && user.email!.isNotEmpty) {
       try {
-        final emailGoalsSnap = await FirebaseFirestore.instance
-            .collection('users')
+        final emailGoalsSnap = await DatabaseConfig.usersCollection
             .doc(user.email)
             .collection('saving_goals')
             .where('isAutoDeduct', isEqualTo: true)
@@ -322,8 +309,7 @@ class RecurringTransactionService {
       } catch (_) {}
     }
     try {
-      final uidGoalsSnap = await FirebaseFirestore.instance
-          .collection('users')
+      final uidGoalsSnap = await DatabaseConfig.usersCollection
           .doc(user.uid)
           .collection('saving_goals')
           .where('isAutoDeduct', isEqualTo: true)
@@ -400,15 +386,11 @@ class RecurringTransactionService {
             isFixed: false,
           );
 
-          final docRef = FirebaseFirestore.instance
-              .collection('transactions')
-              .doc();
+          final docRef = DatabaseConfig.transactionsCollection.doc();
           batch.set(docRef, newTx.toFirestore());
 
           // In-app notification
-          final notifRef = FirebaseFirestore.instance
-              .collection('notifications')
-              .doc();
+          final notifRef = DatabaseConfig.notificationsCollection.doc();
           final notif = NotificationModel(
             id: notifRef.id,
             userId: user.uid,
@@ -429,7 +411,7 @@ class RecurringTransactionService {
           );
 
           if (user.email != null) {
-            final mailRef = FirebaseFirestore.instance.collection('mail').doc();
+            final mailRef = DatabaseConfig.mailCollection.doc();
             batch.set(mailRef, {
               'to': user.email,
               'message': {
@@ -474,8 +456,7 @@ class RecurringTransactionService {
   }
 
   static Future<void> cleanDuplicates(String uid) async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('transactions')
+    final snapshot = await DatabaseConfig.transactionsCollection
         .where('userId', isEqualTo: uid)
         .get();
 
@@ -494,16 +475,14 @@ class RecurringTransactionService {
       groups[key]!.add(t);
     }
 
-    final batch = FirebaseFirestore.instance.batch();
+    final batch = DatabaseConfig.firestore.batch();
     int deletedCount = 0;
 
     for (var group in groups.values) {
       if (group.length > 1) {
         // keep the first one, delete the rest
         for (int i = 1; i < group.length; i++) {
-          final docRef = FirebaseFirestore.instance
-              .collection('transactions')
-              .doc(group[i].id);
+          final docRef = DatabaseConfig.transactionsCollection.doc(group[i].id);
           batch.delete(docRef);
           deletedCount++;
         }
@@ -511,8 +490,7 @@ class RecurringTransactionService {
     }
 
     // Clean duplicate notifications
-    final notifSnapshot = await FirebaseFirestore.instance
-        .collection('notifications')
+    final notifSnapshot = await DatabaseConfig.notificationsCollection
         .where('userId', isEqualTo: uid)
         .get();
     final allNotifs = notifSnapshot.docs
@@ -529,7 +507,7 @@ class RecurringTransactionService {
       if (g.length > 1) {
         for (int i = 1; i < g.length; i++) {
           batch.delete(
-            FirebaseFirestore.instance.collection('notifications').doc(g[i].id),
+            DatabaseConfig.notificationsCollection.doc(g[i].id),
           );
           deletedCount++;
         }
@@ -546,14 +524,12 @@ class RecurringTransactionService {
     if (user == null) return;
 
     try {
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
+      final userDoc = await DatabaseConfig.usersCollection
           .doc(user.uid)
           .get();
       final currencyCode = (userDoc.data()?['currency'] as String?) ?? 'USD';
 
-      final cardsSnap = await FirebaseFirestore.instance
-          .collection('users')
+      final cardsSnap = await DatabaseConfig.usersCollection
           .doc(user.uid)
           .collection('credit_cards')
           .get();
@@ -563,13 +539,11 @@ class RecurringTransactionService {
           .map((d) => CreditCard.fromFirestore(d))
           .toList();
 
-      final txSnap = await FirebaseFirestore.instance
-          .collection('transactions')
+      final txSnap = await DatabaseConfig.transactionsCollection
           .where('userId', isEqualTo: user.uid)
           .get();
 
-      final notifSnap = await FirebaseFirestore.instance
-          .collection('notifications')
+      final notifSnap = await DatabaseConfig.notificationsCollection
           .where('userId', isEqualTo: user.uid)
           .get();
 
@@ -592,7 +566,7 @@ class RecurringTransactionService {
         }
       }
 
-      final batch = FirebaseFirestore.instance.batch();
+      final batch = DatabaseConfig.firestore.batch();
       int addedAlerts = 0;
 
       void addAlertIfNeeded(
@@ -604,9 +578,7 @@ class RecurringTransactionService {
         final key = '${card.id}_$title';
         if (!existingTodayKeys.contains(key)) {
           existingTodayKeys.add(key);
-          final notifRef = FirebaseFirestore.instance
-              .collection('notifications')
-              .doc();
+          final notifRef = DatabaseConfig.notificationsCollection.doc();
           final notif = NotificationModel(
             id: notifRef.id,
             userId: user.uid,
@@ -626,7 +598,7 @@ class RecurringTransactionService {
           );
 
           if (user.email != null) {
-            final mailRef = FirebaseFirestore.instance.collection('mail').doc();
+            final mailRef = DatabaseConfig.mailCollection.doc();
             batch.set(mailRef, {
               'to': user.email,
               'message': {

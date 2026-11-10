@@ -14,11 +14,6 @@ class AIRepositoryImpl implements AIRepository {
     List<ChatMessage> history, {
     String? context,
   }) async* {
-    if (prompt.trim() == 'testkey') {
-      yield 'API Key loaded in app is length: ${AIConfig.apiKey.length}, value starts with: ${AIConfig.apiKey.substring(0, 5)}';
-      return;
-    }
-
     String systemMessage = AIConfig.systemPrompt;
     if (context != null) {
       systemMessage += '\n\nContexto financiero actual del usuario:\n$context';
@@ -171,9 +166,6 @@ class AIRepositoryImpl implements AIRepository {
       ],
     );
 
-    print(
-      '[AIRepo] Initializing Gemini Model with API Key: "${AIConfig.apiKey}"',
-    );
     final model = GenerativeModel(
       model: AIConfig.modelName,
       apiKey: AIConfig.apiKey,
@@ -195,7 +187,6 @@ class AIRepositoryImpl implements AIRepository {
     final chat = model.startChat(history: chatHistory);
 
     try {
-      print('[AIRepo] Sending message to Gemini...');
       final response = await chat
           .sendMessage(Content.text(prompt))
           .timeout(
@@ -205,20 +196,15 @@ class AIRepositoryImpl implements AIRepository {
             ),
           );
 
-      // Bucle para manejar llamadas a funciones
+      // Bucle acotado para manejar llamadas a funciones
       var functionCalls = response.functionCalls;
       var currentResponse = response;
+      int toolIterations = 0;
+      const int maxToolIterations = 3;
 
-      final initialText = currentResponse.text ?? '(function call, no text)';
-      print(
-        '[AIRepo] Initial response - functionCalls: ${functionCalls.length}, text: ${initialText.substring(0, initialText.length > 100 ? 100 : initialText.length)}',
-      );
-
-      while (functionCalls.isNotEmpty) {
+      while (functionCalls.isNotEmpty && toolIterations < maxToolIterations) {
+        toolIterations++;
         final call = functionCalls.first;
-        print(
-          '[AIRepo] Function call detected: ${call.name} with args: ${call.args}',
-        );
 
         if (call.name == 'propose_savings_plan') {
           // Devolver el payload codificado para que el Provider lo identifique
@@ -251,39 +237,33 @@ class AIRepositoryImpl implements AIRepository {
           yield jsonEncode(payload);
           return;
         } else if (call.name == 'get_stock_data') {
-          // Ejecutamos la consulta real
+          // Ejecutamos la consulta real con timeout
           final ticker = call.args['ticker'] as String? ?? 'SPY';
-          print(
-            '[AIRepo] Calling MarketDataService.getStockData("$ticker")...',
-          );
           final apiResult = await MarketDataService.getStockData(ticker);
-          print('[AIRepo] MarketDataService returned: $apiResult');
 
-          // Enviamos el resultado de la función de vuelta a Gemini
-          currentResponse = await chat.sendMessage(
-            Content.functionResponse('get_stock_data', apiResult),
-          );
+          // Enviamos el resultado de la función de vuelta a Gemini con timeout
+          currentResponse = await chat
+              .sendMessage(
+                Content.functionResponse('get_stock_data', apiResult),
+              )
+              .timeout(
+                Duration(seconds: AIConfig.apiTimeoutSeconds),
+                onTimeout: () => throw TimeoutException(
+                  'La consulta bursátil tardó demasiado.',
+                ),
+              );
           functionCalls = currentResponse.functionCalls;
-          final afterText = currentResponse.text ?? '(function call, no text)';
-          print(
-            '[AIRepo] After functionResponse - more calls: ${functionCalls.length}, text: ${afterText.substring(0, afterText.length > 100 ? 100 : afterText.length)}',
-          );
         } else {
           break; // Función no soportada
         }
       }
 
       if (currentResponse.text != null && currentResponse.text!.isNotEmpty) {
-        print(
-          '[AIRepo] Final text response length: ${currentResponse.text!.length}',
-        );
         yield currentResponse.text!;
       } else {
         yield 'No pude generar una respuesta. Por favor, intenta de nuevo.';
       }
-    } catch (e, stack) {
-      print('[AIRepo] ERROR: $e');
-      print('[AIRepo] Stack: $stack');
+    } catch (e) {
       if (e is TimeoutException) {
         yield '⏱️ La respuesta tardó demasiado. Verifica tu conexión e intenta de nuevo.';
       } else {
@@ -297,8 +277,6 @@ class AIRepositoryImpl implements AIRepository {
     required String prompt,
     String? systemInstruction,
   }) async* {
-    print('[AIRepo] analyzeScenario invoked with model: ${AIConfig.modelName}');
-
     final model = GenerativeModel(
       model: AIConfig.modelName,
       apiKey: AIConfig.apiKey,
@@ -326,9 +304,7 @@ class AIRepositoryImpl implements AIRepository {
           yield chunk.text!;
         }
       }
-    } catch (e, stack) {
-      print('[AIRepo] analyzeScenario error: $e');
-      print('[AIRepo] Stack: $stack');
+    } catch (e) {
       if (e is TimeoutException) {
         yield '⏱️ La simulación tardó demasiado tiempo. Verifica tu conexión e intenta de nuevo.';
       } else {

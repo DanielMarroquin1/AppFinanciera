@@ -49,6 +49,8 @@ class AIInsightsState {
 class AIInsightsNotifier extends Notifier<AIInsightsState> {
   @override
   AIInsightsState build() {
+    // Destruye de memoria los insights y pronósticos al cerrar sesión o cambiar de cuenta
+    ref.watch(authProvider.select((s) => s.user?.email));
     return const AIInsightsState();
   }
 
@@ -70,19 +72,22 @@ class AIInsightsNotifier extends Notifier<AIInsightsState> {
         salary: user?.salary,
       );
 
-      // Generar micro-insights (IA + local)
-      final insights = await AIAnalysisService.generateMicroInsights(
-        transactions: transactions,
-        language: user?.language ?? 'Español',
-        currency: user?.currency ?? 'USD',
-      );
+      // Ejecutar generación de micro-insights y análisis de metas en paralelo
+      final results = await Future.wait([
+        AIAnalysisService.generateMicroInsights(
+          transactions: transactions,
+          language: user?.language ?? 'Español',
+          currency: user?.currency ?? 'USD',
+        ),
+        AIAnalysisService.analyzeSavingsGoalProgress(
+          goals: goals,
+          monthlySavingsCapacity: forecast.savingsCapacity,
+          currency: user?.currency ?? 'USD',
+        ),
+      ]);
 
-      // Análisis de metas
-      final goalRecs = await AIAnalysisService.analyzeSavingsGoalProgress(
-        goals: goals,
-        monthlySavingsCapacity: forecast.savingsCapacity,
-        currency: user?.currency ?? 'USD',
-      );
+      final insights = results[0] as List<MicroInsight>;
+      final goalRecs = results[1] as List<Map<String, dynamic>>;
 
       state = state.copyWith(
         insights: insights,

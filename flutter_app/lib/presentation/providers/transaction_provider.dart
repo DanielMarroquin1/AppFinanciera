@@ -6,7 +6,7 @@ import '../../domain/entities/notification.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../../data/repositories/transaction_repository_impl.dart';
 import 'auth_provider.dart';
-import 'notification_provider.dart';
+import '../../core/config/database_config.dart';
 import '../../core/utils/localization.dart';
 import '../../core/services/local_notification_service.dart';
 
@@ -16,10 +16,10 @@ final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
 
 // Stream de transacciones del usuario actual
 final transactionsProvider = StreamProvider<List<TransactionModel>>((ref) {
-  final authState = ref.watch(authProvider);
+  final userEmail = ref.watch(authProvider.select((s) => s.user?.email));
   final repository = ref.watch(transactionRepositoryProvider);
 
-  if (authState.user != null) {
+  if (userEmail != null) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
       return repository.watchTransactions(uid);
@@ -131,9 +131,7 @@ class TransactionNotifier extends Notifier<void> {
     final translatedCategory = loc.translateCategory(categoryName);
 
     if (percentage >= 100) {
-      final notifRef = FirebaseFirestore.instance
-          .collection('notifications')
-          .doc();
+      final notifRef = DatabaseConfig.notificationsCollection.doc();
       final notif = NotificationModel(
         id: notifRef.id,
         userId: uid,
@@ -148,8 +146,7 @@ class TransactionNotifier extends Notifier<void> {
         relatedId: transaction.id,
         category: mainCategory,
       );
-      await FirebaseFirestore.instance
-          .collection('notifications')
+      await DatabaseConfig.notificationsCollection
           .doc(notifRef.id)
           .set(notif.toFirestore());
       LocalNotificationService.showNotification(
@@ -159,7 +156,7 @@ class TransactionNotifier extends Notifier<void> {
       );
 
       if (user.email.isNotEmpty) {
-        await FirebaseFirestore.instance.collection('mail').add({
+        await DatabaseConfig.mailCollection.add({
           'to': user.email,
           'message': {
             'subject': loc.get('notif_budget_exceeded_title'),
@@ -183,9 +180,7 @@ class TransactionNotifier extends Notifier<void> {
         percentage: percentage,
       );
     } else if (percentage >= 80) {
-      final notifRef = FirebaseFirestore.instance
-          .collection('notifications')
-          .doc();
+      final notifRef = DatabaseConfig.notificationsCollection.doc();
       final notif = NotificationModel(
         id: notifRef.id,
         userId: uid,
@@ -200,8 +195,7 @@ class TransactionNotifier extends Notifier<void> {
         relatedId: transaction.id,
         category: mainCategory,
       );
-      await FirebaseFirestore.instance
-          .collection('notifications')
+      await DatabaseConfig.notificationsCollection
           .doc(notifRef.id)
           .set(notif.toFirestore());
       LocalNotificationService.showNotification(
@@ -211,7 +205,7 @@ class TransactionNotifier extends Notifier<void> {
       );
 
       if (user.email.isNotEmpty) {
-        await FirebaseFirestore.instance.collection('mail').add({
+        await DatabaseConfig.mailCollection.add({
           'to': user.email,
           'message': {
             'subject': loc.get('notif_budget_warning_title'),

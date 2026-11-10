@@ -1,0 +1,75 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Compatible con documentos indexados por UID o por email verificado del titular
+    function isOwner(userId) {
+      return isAuthenticated() && (
+        request.auth.uid == userId ||
+        (request.auth.token.email != null && request.auth.token.email == userId)
+      );
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        (request.auth.token.email != null && resource.data.userId == request.auth.token.email)
+      );
+    }
+
+    function isValidNewDoc() {
+      return isAuthenticated()
+        && (
+          request.resource.data.userId == request.auth.uid ||
+          (request.auth.token.email != null && request.resource.data.userId == request.auth.token.email)
+        )
+        && (
+          !('amount' in request.resource.data) ||
+          (request.resource.data.amount is number &&
+           request.resource.data.amount >= 0 &&
+           request.resource.data.amount < 1000000000)
+        );
+    }
+
+    // 1. Perfiles de usuario y subcolecciones (saving_goals, credit_cards) en DEV y PROD
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      match /{allSubcollections=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    match /prod_users/{userId} {
+      allow read, write: if isOwner(userId);
+      match /{allSubcollections=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // 2. Colecciones raíz (Transacciones, Deudas, Notificaciones) en DEV y PROD
+    match /{colName}/{docId} {
+      allow read, delete: if colName in [
+        'transactions', 'prod_transactions',
+        'debts', 'prod_debts',
+        'notifications', 'prod_notifications'
+      ] && isDocOwner();
+
+      allow create: if colName in [
+        'transactions', 'prod_transactions',
+        'debts', 'prod_debts',
+        'notifications', 'prod_notifications'
+      ] && isValidNewDoc();
+
+      allow update: if colName in [
+        'transactions', 'prod_transactions',
+        'debts', 'prod_debts',
+        'notifications', 'prod_notifications'
+      ] && isDocOwner() && isValidNewDoc();
+    }
+  }
+}
+

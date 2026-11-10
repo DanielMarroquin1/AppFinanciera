@@ -7,6 +7,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'firebase_options.dart';
 import 'core/routing/app_router.dart';
 import 'core/services/ad_service.dart';
+import 'core/services/revenuecat_service.dart';
 import 'core/services/local_notification_service.dart';
 import 'core/services/bank_notification_listener_service.dart';
 import 'core/theme/app_theme.dart';
@@ -18,22 +19,21 @@ import 'presentation/widgets/common/session_timeout_manager.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final prefs = await SharedPreferences.getInstance();
-  AIConfig.dynamicApiKey = prefs.getString('gemini_api_key');
+  final sharedPreferences = await SharedPreferences.getInstance();
+  AIConfig.dynamicApiKey = sharedPreferences.getString('gemini_api_key');
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await initializeDateFormatting('es');
+  await RevenueCatService().initialize();
   AdService().initialize();
   await LocalNotificationService.init();
-
-  final sharedPreferences = await SharedPreferences.getInstance();
 
   runApp(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
       ],
-      child: MyApp(),
+      child: const MyApp(),
     ),
   );
 }

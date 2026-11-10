@@ -1,15 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../core/config/database_config.dart';
 import '../../domain/entities/debt.dart';
 import '../../domain/repositories/debt_repository.dart';
 
 class DebtRepositoryImpl implements DebtRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  CollectionReference<Map<String, dynamic>> get _debts =>
+      DatabaseConfig.debtsCollection;
 
   @override
   Stream<List<DebtModel>> watchDebts(String userId) {
-    return _firestore
-        .collection('debts')
+    return _debts
         .where('userId', isEqualTo: userId)
+        .limit(200)
         .snapshots()
         .map((snapshot) {
           final list = snapshot.docs
@@ -22,19 +25,33 @@ class DebtRepositoryImpl implements DebtRepository {
 
   @override
   Future<void> addDebt(DebtModel debt) async {
-    await _firestore.collection('debts').add(debt.toFirestore());
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUid != null &&
+        debt.userId.isNotEmpty &&
+        debt.userId != currentUid) {
+      throw StateError('Operación no autorizada: UID de deuda inválido.');
+    }
+    await _debts.add(debt.toFirestore());
   }
 
   @override
   Future<void> updateDebt(DebtModel debt) async {
-    await _firestore
-        .collection('debts')
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUid != null &&
+        debt.userId.isNotEmpty &&
+        debt.userId != currentUid) {
+      throw StateError('Operación no autorizada: UID de deuda inválido.');
+    }
+    await _debts
         .doc(debt.id)
         .update(debt.toFirestore());
   }
 
   @override
   Future<void> deleteDebt(String debtId) async {
-    await _firestore.collection('debts').doc(debtId).delete();
+    if (FirebaseAuth.instance.currentUser == null) {
+      throw StateError('Operación no autorizada: sesión no activa.');
+    }
+    await _debts.doc(debtId).delete();
   }
 }

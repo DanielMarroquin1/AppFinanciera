@@ -9,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../domain/entities/transaction.dart';
 import '../../providers/transaction_provider.dart';
 import '../common/recurrence_selector_widget.dart';
+import '../../../core/services/ad_service.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../providers/auth_provider.dart';
 
@@ -1273,6 +1274,14 @@ class _AddIncomeModalState extends ConsumerState<AddIncomeModal> {
                           await ref
                               .read(transactionNotifierProvider.notifier)
                               .addTransaction(transaction);
+                          if (context.mounted) {
+                            final isPremium =
+                                ref.read(authProvider).user?.isPremium ?? false;
+                            await AdService().registerActionAndShowInterstitial(
+                              context,
+                              isPremium,
+                            );
+                          }
                         }
 
                         if (context.mounted) {

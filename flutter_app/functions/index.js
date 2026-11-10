@@ -105,6 +105,10 @@ exports.addTransactionViaSiri = functions.https.onRequest(async (req, res) => {
   let amount = parseFloat(amountStr);
   const concept = req.query.concept || req.body.concept || "Siri / Voz";
   let type = req.query.type || req.body.type || "expense";
+  const env = (req.query.env || req.body.env || process.env.QUIVO_ENV || "dev").toLowerCase();
+  const isProd = env === "prod" || env === "production";
+  const usersCol = isProd ? "prod_users" : "users";
+  const txCol = isProd ? "prod_transactions" : "transactions";
 
   // Intentar deducir si es ingreso o gasto basado en el concepto o type
   const lowerConcept = concept.toLowerCase();
@@ -117,17 +121,24 @@ exports.addTransactionViaSiri = functions.https.onRequest(async (req, res) => {
   }
 
   try {
-    // 1. Verificamos que el usuario sea Premium
-    const userDoc = await admin.firestore().collection('users').doc(uid).get();
+    // 1. Verificamos que el usuario sea Premium (revisa primero la colección del entorno, con fallback a prod_users/users)
+    let userDoc = await admin.firestore().collection(usersCol).doc(uid).get();
+    let targetTxCol = txCol;
     if (!userDoc.exists) {
-      return res.status(403).send("Usuario no encontrado.");
+      const altUsersCol = isProd ? "users" : "prod_users";
+      const altDoc = await admin.firestore().collection(altUsersCol).doc(uid).get();
+      if (altDoc.exists) {
+        userDoc = altDoc;
+        targetTxCol = isProd ? "transactions" : "prod_transactions";
+      } else {
+        return res.status(403).send("Usuario no encontrado.");
+      }
     }
     const userData = userDoc.data();
-    if (userData.plan !== 'premium' && userData.plan !== 'PRO') {
-      // Allow if we just check isPremium boolean
-      if (userData.isPremium !== true) {
-         return res.status(403).send("Esta función es exclusiva para usuarios del plan Premium.");
-      }
+    const unlockedItems = Array.isArray(userData.unlockedItems) ? userData.unlockedItems : [];
+    const hasPremiumItem = unlockedItems.includes('premium') || unlockedItems.includes('spec1') || unlockedItems.includes('vip');
+    if (userData.plan !== 'premium' && userData.plan !== 'PRO' && userData.isPremium !== true && !hasPremiumItem) {
+      return res.status(403).send("Esta función es exclusiva para usuarios del plan Premium.");
     }
 
     // 2. Agregar a Firestore
@@ -143,7 +154,7 @@ exports.addTransactionViaSiri = functions.https.onRequest(async (req, res) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
-    await admin.firestore().collection('transactions').doc(newTx.id).set(newTx);
+    await admin.firestore().collection(targetTxCol).doc(newTx.id).set(newTx);
     return res.status(200).send(`Transacción de ${amount} agregada a QUIVO exitosamente.`);
   } catch (error) {
     console.error("Siri Error:", error);
@@ -153,66 +164,72 @@ exports.addTransactionViaSiri = functions.https.onRequest(async (req, res) => {
 
 exports.processFixedTransactions = functions.pubsub.schedule('1 0 * * *').timeZone('America/Guatemala').onRun(async (context) => {
   const db = admin.firestore();
+  const environments = [
+    { txCol: 'transactions', notifCol: 'notifications' },
+    { txCol: 'prod_transactions', notifCol: 'prod_notifications' },
+  ];
   
   try {
-    const snapshot = await db.collection('transactions').where('isFixed', '==', true).get();
-    
     // Obtener el día actual en zona horaria de Guatemala
     const formatter = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Guatemala', day: 'numeric' });
     const currentDay = parseInt(formatter.format(new Date()));
 
-    const batch = db.batch();
-    let count = 0;
+    let totalCount = 0;
 
-    for (const doc of snapshot.docs) {
-      const data = doc.data();
-      if (!data.date) continue;
+    for (const { txCol, notifCol } of environments) {
+      const snapshot = await db.collection(txCol).where('isFixed', '==', true).get();
+      if (snapshot.empty) continue;
 
-      // Asumimos que data.date es formato ISO string: 2026-08-15T...
-      const originalDate = new Date(data.date);
-      // Extraemos el día en que se creó este gasto fijo (en UTC o local, tomamos UTC por simplicidad o getUTCDate si está guardado en UTC)
-      // Para evitar problemas de zonas, es mejor parsear la fecha como string y agarrar el día
-      const dayStr = data.date.substring(8, 10);
-      const originalDay = parseInt(dayStr);
+      const batch = db.batch();
+      let count = 0;
 
-      if (currentDay === originalDay) {
-        // Generar una nueva transacción, que NO sea isFixed
-        const newTxId = Date.now().toString() + Math.floor(Math.random() * 1000).toString();
-        const newTxRef = db.collection('transactions').doc(newTxId);
-        
-        const newTx = {
-          ...data,
-          id: newTxId,
-          isFixed: false,
-          date: new Date().toISOString(),
-          description: `${data.description} (Automático)`,
-          createdAt: admin.firestore.FieldValue.serverTimestamp()
-        };
-        
-        batch.set(newTxRef, newTx);
+      for (const doc of snapshot.docs) {
+        const data = doc.data();
+        if (!data.date) continue;
 
-        // Generar una notificación para el usuario en su historial
-        const notifRef = db.collection('notifications').doc();
-        const notif = {
-          id: notifRef.id,
-          userId: data.userId,
-          title: data.type === 'expense' ? 'Gasto Fijo Procesado' : 'Ingreso Fijo Procesado',
-          body: `Se ha registrado automáticamente: ${data.description} por $${data.amount}`,
-          date: new Date().toISOString(),
-          isRead: false,
-          type: 'system',
-          data: JSON.stringify({ transactionId: newTxId })
-        };
-        
-        batch.set(notifRef, notif);
-        count++;
+        const dayStr = data.date.substring(8, 10);
+        const originalDay = parseInt(dayStr);
+
+        if (currentDay === originalDay) {
+          // Generar una nueva transacción, que NO sea isFixed
+          const newTxId = Date.now().toString() + Math.floor(Math.random() * 1000).toString();
+          const newTxRef = db.collection(txCol).doc(newTxId);
+          
+          const newTx = {
+            ...data,
+            id: newTxId,
+            isFixed: false,
+            date: new Date().toISOString(),
+            description: `${data.description} (Automático)`,
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+          };
+          
+          batch.set(newTxRef, newTx);
+
+          // Generar una notificación para el usuario en su historial
+          const notifRef = db.collection(notifCol).doc();
+          const notif = {
+            id: notifRef.id,
+            userId: data.userId,
+            title: data.type === 'expense' ? 'Gasto Fijo Procesado' : 'Ingreso Fijo Procesado',
+            body: `Se ha registrado automáticamente: ${data.description} por $${data.amount}`,
+            date: new Date().toISOString(),
+            isRead: false,
+            type: 'system',
+            data: JSON.stringify({ transactionId: newTxId })
+          };
+          
+          batch.set(notifRef, notif);
+          count++;
+        }
+      }
+
+      if (count > 0) {
+        await batch.commit();
+        totalCount += count;
       }
     }
-
-    if (count > 0) {
-      await batch.commit();
-    }
-    console.log(`Job 12:01 AM ejecutado exitosamente. Se procesaron ${count} movimientos fijos.`);
+    console.log(`Job 12:01 AM ejecutado exitosamente. Se procesaron ${totalCount} movimientos fijos.`);
     return null;
 
   } catch (error) {

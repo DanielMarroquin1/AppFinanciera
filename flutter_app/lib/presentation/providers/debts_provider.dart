@@ -11,10 +11,10 @@ final debtRepositoryProvider = Provider<DebtRepository>((ref) {
 
 // Stream de deudas del usuario actual
 final debtsProvider = StreamProvider<List<DebtModel>>((ref) {
-  final authState = ref.watch(authProvider);
+  final userEmail = ref.watch(authProvider.select((s) => s.user?.email));
   final repository = ref.watch(debtRepositoryProvider);
 
-  if (authState.user != null) {
+  if (userEmail != null) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
       return repository.watchDebts(uid);

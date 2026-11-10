@@ -34,6 +34,8 @@ class ChatNotifier extends Notifier<ChatState> {
 
   @override
   ChatState build() {
+    // Al cerrar sesión o cambiar de usuario, se destruye automáticamente el historial en RAM
+    ref.watch(authProvider.select((s) => s.user?.email));
     _repository = ref.read(aiRepositoryProvider);
     return ChatState();
   }
@@ -359,8 +361,8 @@ $aiInstruction
         isFixed: false,
       );
       await ref.read(transactionNotifierProvider.notifier).addTransaction(tx);
-    } catch (e) {
-      print('Error executing add_transaction from SAMI: $e');
+    } catch (_) {
+      // Error manejado de forma segura sin exponer trazas en consola de producción
     }
   }
 
@@ -378,8 +380,8 @@ $aiInstruction
         icon: decoded['icon'] ?? '🎯',
       );
       await ref.read(savingGoalsProvider.notifier).addGoal(goal);
-    } catch (e) {
-      print('Error executing create_savings_goal from SAMI: $e');
+    } catch (_) {
+      // Error manejado de forma segura sin exponer trazas en consola de producción
     }
   }
 }

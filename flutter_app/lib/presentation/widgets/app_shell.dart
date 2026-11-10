@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -7,10 +6,13 @@ import 'dart:ui';
 import '../../core/theme/app_colors.dart';
 import '../../presentation/providers/auth_provider.dart';
 import '../../presentation/widgets/quick_actions_menu.dart';
-import '../../presentation/widgets/modals/ai_chat_modal.dart';
+import '../../presentation/widgets/modals/add_expense_modal.dart';
+import '../../presentation/widgets/modals/add_income_modal.dart';
 import '../../presentation/widgets/modals/add_saving_goal_modal.dart';
-import '../../presentation/widgets/rewards_shop_modal.dart';
+import '../../presentation/widgets/modals/avatar_selector_modal.dart';
+import '../../presentation/widgets/modals/ai_chat_modal.dart';
 import '../../presentation/widgets/modals/notifications_modal.dart';
+import '../../core/utils/app_haptics.dart';
 import '../../presentation/widgets/modals/category_budget_modal.dart';
 import '../../presentation/widgets/modals/premium_paywall_dialog.dart';
 import '../../presentation/widgets/modals/pdf_report_modal.dart';
@@ -76,7 +78,6 @@ class _AppShellState extends ConsumerState<AppShell>
     if (location == '/settings') currentIndex = 4;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final palette = ref.watch(colorPaletteProvider);
     final paletteGradient = ref
         .read(colorPaletteProvider.notifier)
         .getGradient(isDark);
@@ -128,29 +129,35 @@ class _AppShellState extends ConsumerState<AppShell>
           ? const SizedBox.shrink()
           : SafeArea(
               child: Container(
-                height: 70,
-                margin: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
+                height: 72,
+                margin: const EdgeInsets.only(left: 18, right: 18, bottom: 14),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(35),
+                  borderRadius: BorderRadius.circular(36),
                   boxShadow: [
                     BoxShadow(
-                      color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.08),
+                      color: isDark
+                          ? Colors.black.withValues(alpha: 0.40)
+                          : Colors.black.withValues(alpha: 0.08),
                       blurRadius: 20,
-                      offset: const Offset(0, 10),
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(35),
+                  borderRadius: BorderRadius.circular(36),
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                    filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.white.withOpacity(0.08) : Colors.white.withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(35),
+                        color: isDark
+                            ? const Color(0xFF0F172A).withValues(alpha: 0.85)
+                            : Colors.white.withValues(alpha: 0.88),
+                        borderRadius: BorderRadius.circular(36),
                         border: Border.all(
-                          color: isDark ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.5),
-                          width: 1,
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.12)
+                              : Colors.white.withValues(alpha: 0.80),
+                          width: 1.2,
                         ),
                       ),
                       child: Row(
@@ -158,7 +165,7 @@ class _AppShellState extends ConsumerState<AppShell>
                     children: [
                       _buildAnimatedNavItem(
                         context,
-                        loc.get('home') ?? 'Inicio',
+                        loc.get('home'),
                         LucideIcons.home,
                         currentIndex == 0,
                         '/dashboard',
@@ -166,7 +173,7 @@ class _AppShellState extends ConsumerState<AppShell>
                       ),
                       _buildAnimatedNavItem(
                         context,
-                        loc.get('expenses') ?? 'Gastos',
+                        loc.get('expenses'),
                         LucideIcons.trendingUp,
                         currentIndex == 1,
                         '/expenses',
@@ -174,10 +181,11 @@ class _AppShellState extends ConsumerState<AppShell>
                       ),
 
                       // Center FAB
-                      GestureDetector(
+                      BounceTap(
                         key: TutorialKeys.centerFabKey,
+                        scaleDown: 0.90,
+                        hapticType: HapticType.medium,
                         onTap: () async {
-                          HapticFeedback.mediumImpact();
                           _fabController.forward();
                           bool keepMenuOpen = true;
                           while (keepMenuOpen && context.mounted) {
@@ -231,7 +239,23 @@ class _AppShellState extends ConsumerState<AppShell>
 
                             keepMenuOpen = false;
 
-                            if (action == 'what-if') {
+                            if (action == 'expense') {
+                              await AddExpenseModal.show(context);
+                            } else if (action == 'income') {
+                              await AddIncomeModal.show(context);
+                            } else if (action == 'saving-goal' || action == 'saving') {
+                              await AddSavingGoalModal.show(context);
+                            } else if (action == 'armario-sami' || action == 'rewards-shop') {
+                              final authUser = ref.read(authProvider).user;
+                              await AvatarSelectorModal.show(
+                                context,
+                                currentAvatarId: authUser?.currentAvatar ??
+                                    authUser?.avatarEmoji ??
+                                    'sami_default',
+                                unlockedItems: authUser?.unlockedItems ?? [],
+                                onAvatarSelected: (id) {},
+                              );
+                            } else if (action == 'what-if') {
                               final isPremium =
                                   ref.read(authProvider).user?.isPremium ??
                                   false;
@@ -244,8 +268,6 @@ class _AppShellState extends ConsumerState<AppShell>
                               } else {
                                 context.push('/what-if');
                               }
-                            } else if (action == 'rewards-shop') {
-                              await RewardsShopModal.show(context);
                             } else if (action == 'ai-chat') {
                               await AIChatModal.show(context);
                             } else if (action == 'notifications') {
@@ -272,37 +294,34 @@ class _AppShellState extends ConsumerState<AppShell>
                             CurvedAnimation(parent: _fabController, curve: Curves.easeInOutCubic),
                           ),
                           child: Container(
-                            width: 58,
-                            height: 58,
+                            width: 52,
+                            height: 52,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: const LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
-                                colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
+                                colors: [Color(0xFF0891B2), Color(0xFF06B6D4)],
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF06B6D4).withValues(alpha: 0.45),
-                                  blurRadius: 16,
+                                  color: Colors.black.withValues(
+                                    alpha: isDark ? 0.40 : 0.16,
+                                  ),
+                                  blurRadius: 12,
                                   offset: const Offset(0, 4),
-                                ),
-                                BoxShadow(
-                                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
                                 ),
                               ],
                               border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.4),
-                                width: 2,
+                                color: Colors.white.withValues(alpha: 0.25),
+                                width: 1.2,
                               ),
                             ),
-                            child: Center(
+                            child: const Center(
                               child: Icon(
                                 LucideIcons.plus,
                                 color: Colors.white,
-                                size: 28,
+                                size: 24,
                               ),
                             ),
                           ),
@@ -311,7 +330,7 @@ class _AppShellState extends ConsumerState<AppShell>
 
                       _buildAnimatedNavItem(
                         context,
-                        loc.get('savings') ?? 'Metas',
+                        loc.get('savings'),
                         LucideIcons.piggyBank,
                         currentIndex == 3,
                         '/savings',
@@ -320,7 +339,7 @@ class _AppShellState extends ConsumerState<AppShell>
                       ),
                       _buildAnimatedNavItem(
                         context,
-                        loc.get('nav_settings') ?? 'Ajustes',
+                        loc.get('nav_settings'),
                         LucideIcons.settings,
                         currentIndex == 4,
                         '/settings',
@@ -347,11 +366,11 @@ class _AppShellState extends ConsumerState<AppShell>
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    return GestureDetector(
+    return BounceTap(
       key: key,
-      behavior: HitTestBehavior.opaque,
+      scaleDown: 0.88,
+      hapticType: HapticType.selection,
       onTap: () {
-        if (!isSelected) HapticFeedback.lightImpact();
         context.go(route);
       },
       child: SizedBox(
@@ -375,7 +394,7 @@ class _AppShellState extends ConsumerState<AppShell>
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: activeColor.withOpacity(0.5),
+                        color: activeColor.withValues(alpha: 0.5),
                         blurRadius: 6,
                         spreadRadius: 2,
                       )

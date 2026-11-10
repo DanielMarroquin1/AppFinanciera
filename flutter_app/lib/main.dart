@@ -10,6 +10,7 @@ import 'core/services/ad_service.dart';
 import 'core/services/revenuecat_service.dart';
 import 'core/services/local_notification_service.dart';
 import 'core/services/bank_notification_listener_service.dart';
+import 'core/services/streak_session_service.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/theme_provider.dart';
@@ -51,7 +52,14 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => BankNotificationListenerService.startListening(ref));
+    Future.microtask(() {
+      BankNotificationListenerService.startListening(ref);
+      StreakSessionService.start(ref);
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await LocalNotificationService.requestPermissions();
+      await LocalNotificationService.scheduleDailyTransactionReminders();
+    });
   }
 
   @override
@@ -74,6 +82,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
+          enableFeedback: true,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -82,6 +91,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
+        enableFeedback: true,
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: primaryColor,
@@ -111,6 +121,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
+          enableFeedback: true,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -119,6 +130,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
+        enableFeedback: true,
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: primaryColor,

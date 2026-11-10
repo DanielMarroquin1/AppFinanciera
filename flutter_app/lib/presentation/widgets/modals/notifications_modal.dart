@@ -10,6 +10,7 @@ import 'streak_modal.dart';
 import 'transactions_list_modal.dart';
 import 'ai_chat_modal.dart';
 import '../../../core/services/local_notification_service.dart';
+import '../../../core/utils/app_haptics.dart';
 
 class NotificationsModal extends ConsumerWidget {
   const NotificationsModal({super.key});
@@ -299,7 +300,119 @@ class _NotificationsModalInternalState
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          // Test Native Phone Notification Action Button
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+            child: BounceTap(
+              scaleDown: 0.96,
+              hapticType: HapticType.medium,
+              onTap: () async {
+                final success =
+                    await LocalNotificationService.sendTestNotification();
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Icon(
+                          success
+                              ? LucideIcons.bellRing
+                              : LucideIcons.alertCircle,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            success
+                                ? '¡Notificación nativa enviada! Revisa la barra superior de tu teléfono 📲🔔'
+                                : '⚠️ Permiso de notificaciones desactivado en el sistema.',
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: success
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFEF4444),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? [
+                            const Color(0xFF0EA5E9).withValues(alpha: 0.16),
+                            const Color(0xFF3B82F6).withValues(alpha: 0.16),
+                          ]
+                        : [const Color(0xFFE0F2FE), const Color(0xFFEFF6FF)],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0284C7).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        LucideIcons.bellPlus,
+                        size: 16,
+                        color: Color(0xFF0284C7),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Probar Notificación Nativa',
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF0F172A),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                          Text(
+                            'Envía una alerta con vibración a tu teléfono',
+                            style: TextStyle(
+                              color: isDark
+                                  ? const Color(0xFF94A3B8)
+                                  : const Color(0xFF64748B),
+                              fontSize: 10.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      LucideIcons.chevronRight,
+                      size: 15,
+                      color: Color(0xFF0284C7),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
           Divider(
             color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
             height: 1,
@@ -806,9 +919,10 @@ class _NotificationsModalInternalState
 
   Widget _buildFilterTab(bool isDark, int index, String label, IconData icon) {
     final isSelected = _selectedFilter == index;
-    return InkWell(
+    return BounceTap(
+      scaleDown: 0.92,
+      hapticType: HapticType.selection,
       onTap: () => setState(() => _selectedFilter = index),
-      borderRadius: BorderRadius.circular(14),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 9),

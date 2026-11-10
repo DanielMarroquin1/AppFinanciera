@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../providers/auth_provider.dart';
 import '../../core/utils/localization.dart';
 
 class SplashLoadingScreen extends ConsumerStatefulWidget {
@@ -176,77 +175,86 @@ class _SplashLoadingScreenState extends ConsumerState<SplashLoadingScreen>
               children: [
                 const Spacer(flex: 3),
 
-                // SAMI Mascot with active hand-waving and floating animation
+                // SAMI Mascot with authentic 3D waving greeting animation
                 AnimatedBuilder(
                   animation: Listenable.merge([_controller, _waveController]),
                   builder: (context, child) {
-                    // Floating vertical movement
-                    final floatY = math.sin(_controller.value * 5 * math.pi) * 8.0;
-                    // Rhythmic hand wave rotation: pivots around the lower center to swing the raised hand back and forth!
-                    final waveAngle = (math.sin(_waveController.value * math.pi) - 0.5) * 0.18;
-                    // Subtle hand bounce
-                    final handPulse = 1.0 + 0.04 * math.sin(_waveController.value * math.pi);
+                    // Organic grounded breathing cycle (subtle chest rise, no jumping!)
+                    final breathY = 1.0 + 0.012 * math.sin(_controller.value * 8 * math.pi);
+                    final breathX = 1.0 - 0.006 * math.sin(_controller.value * 8 * math.pi);
 
-                    return Transform.translate(
-                      offset: Offset(0, floatY),
+                    // Gentle, natural greeting wave motion (subtle rotation around body center)
+                    final waveTilt = math.sin(_waveController.value * 2 * math.pi) * 0.05;
+
+                    return Opacity(
+                      opacity: _samiFadeAnimation.value.clamp(0.0, 1.0),
                       child: Transform.scale(
-                        scale: _samiScaleAnimation.value * handPulse,
-                        child: Transform.rotate(
-                          angle: waveAngle,
-                          alignment: const Alignment(-0.2, 0.7), // Pivots near SAMI's waist/shoulder
-                          child: Opacity(
-                            opacity: _samiFadeAnimation.value.clamp(0.0, 1.0),
-                            child: child,
+                        scale: _samiScaleAnimation.value,
+                        child: Center(
+                          child: SizedBox(
+                            width: 250,
+                            height: 230,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              clipBehavior: Clip.none,
+                              children: [
+                                // 1. SAMI 3D Official Render saludando con la mano de forma natural
+                                Transform.scale(
+                                  scaleY: breathY,
+                                  scaleX: breathX,
+                                  alignment: Alignment.bottomCenter,
+                                  child: Transform.rotate(
+                                    angle: waveTilt,
+                                    alignment: const Alignment(0.0, 0.4),
+                                    child: Image.asset(
+                                      'assets/images/sami_3d_waving.png',
+                                      width: 235,
+                                      height: 220,
+                                      fit: BoxFit.contain,
+                                      filterQuality: FilterQuality.high,
+                                    ),
+                                  ),
+                                ),
+
+                                // 2. Welcoming sparkle stars popping from waving hand
+                                Positioned(
+                                  top: 18,
+                                  left: 6,
+                                  child: AnimatedBuilder(
+                                    animation: _waveController,
+                                    builder: (context, _) {
+                                      final sparkScale = 0.85 + 0.30 * math.sin(_waveController.value * math.pi);
+                                      return Transform.scale(
+                                        scale: sparkScale,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(5),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: const Color(0xFF00E5FF).withValues(alpha: 0.35),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: const Color(0xFF00E5FF).withValues(alpha: 0.4),
+                                                blurRadius: 8,
+                                              ),
+                                            ],
+                                          ),
+                                          child: const Icon(
+                                            Icons.auto_awesome,
+                                            size: 18,
+                                            color: Color(0xFF00E5FF),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     );
                   },
-                  child: Center(
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      alignment: Alignment.center,
-                      children: [
-                        Container(
-                          constraints: const BoxConstraints(
-                            maxWidth: 245,
-                            maxHeight: 185,
-                          ),
-                          child: Image.asset(
-                            'assets/images/sami_bienvenida.png',
-                            fit: BoxFit.contain,
-                            filterQuality: FilterQuality.high,
-                          ),
-                        ),
-                        // Animated waving stars / sparkles near waving hand
-                        Positioned(
-                          top: 10,
-                          left: 12,
-                          child: AnimatedBuilder(
-                            animation: _waveController,
-                            builder: (context, _) {
-                              final sparkScale = 0.8 + 0.35 * _waveController.value;
-                              return Transform.scale(
-                                scale: sparkScale,
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
-                                  ),
-                                  child: const Icon(
-                                    Icons.auto_awesome,
-                                    size: 16,
-                                    color: Color(0xFF38BDF8),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
 
                 const SizedBox(height: 28),

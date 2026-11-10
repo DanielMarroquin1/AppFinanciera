@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/user.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
-import '../../core/services/recurrence_service.dart';
 import '../../core/services/recurring_transaction_service.dart';
 import '../../core/services/revenuecat_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
@@ -62,7 +61,6 @@ class AuthNotifier extends Notifier<AuthState> {
               if (hasActiveSub && !user.isPremium) {
                 await upgradeToPremium();
               }
-              RecurrenceService.processRecurrences(fbUser.uid);
               RecurringTransactionService.evaluateRecurringTransactions();
             }
           })
@@ -76,10 +74,6 @@ class AuthNotifier extends Notifier<AuthState> {
       final user = await _repository.login(email, password);
       state = AuthState(user: user, isLoading: false);
       RecurringTransactionService.evaluateRecurringTransactions();
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid != null) {
-        RecurrenceService.processRecurrences(uid);
-      }
     } catch (e) {
       state = state.copyWith(isLoading: false);
       rethrow;
@@ -92,10 +86,6 @@ class AuthNotifier extends Notifier<AuthState> {
       final user = await _repository.loginWithGoogle();
       state = AuthState(user: user, isLoading: false);
       RecurringTransactionService.evaluateRecurringTransactions();
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid != null) {
-        RecurrenceService.processRecurrences(uid);
-      }
     } catch (e) {
       state = state.copyWith(isLoading: false);
       rethrow;
@@ -328,9 +318,19 @@ class AuthNotifier extends Notifier<AuthState> {
     final user = state.user;
     if (user == null) return;
 
-    if (user.unlockedItems.contains(avatarId) || avatarId == 'default') {
+    final cleanId = avatarId.contains('|') ? avatarId.split('|')[0] : avatarId;
+    final isFree = cleanId == 'default' ||
+        cleanId == 'sami_default' ||
+        cleanId == 'ropa_clasica' ||
+        cleanId.isEmpty;
+
+    final isUnlocked = isFree ||
+        user.unlockedItems.contains(cleanId) ||
+        user.unlockedItems.contains(avatarId);
+
+    if (isUnlocked) {
       final updatedUser = user.copyWith(
-        currentAvatar: avatarId == 'default' ? null : avatarId,
+        currentAvatar: isFree ? 'ropa_clasica' : cleanId,
       );
       await _repository.saveUser(updatedUser);
       state = state.copyWith(user: updatedUser);

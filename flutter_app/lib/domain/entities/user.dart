@@ -106,22 +106,39 @@ class User {
       unlockedItems.contains('vip');
 
   String get avatarEmoji {
-    if (currentAvatar == null) return '👤';
+    if (currentAvatar == null) return '🌱';
     switch (currentAvatar) {
+      case 'sami_default':
+        return '🌱';
+      case 'sami_cap':
+        return '🧢';
+      case 'sami_executive':
+        return '👔';
+      case 'sami_detective':
+        return '🔍';
+      case 'sami_party':
+        return '🥳';
+      case 'sami_superhero':
       case 'avatar1':
         return '🦸';
+      case 'sami_wizard':
       case 'avatar2':
         return '🧙';
+      case 'sami_king':
       case 'avatar3':
         return '👑';
+      case 'sami_ninja':
       case 'avatar4':
         return '🥷';
+      case 'sami_astronaut':
       case 'avatar5':
         return '🧑‍🚀';
+      case 'sami_wallstreet':
       case 'avatar6':
         return '💎';
+      case 'sami_chef':
       case 'avatar7':
-        return '🐳';
+        return '👨‍🍳';
       case 'avatar8':
         return '⚔️';
       case 'avatar9':
@@ -133,7 +150,7 @@ class User {
             currentAvatar!.runes.first > 127) {
           return currentAvatar!;
         }
-        return '👤';
+        return '🌱';
     }
   }
 }

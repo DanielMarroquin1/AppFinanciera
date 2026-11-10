@@ -51,6 +51,29 @@ class AppTheme {
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
       ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          enableFeedback: true,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          enableFeedback: true,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          enableFeedback: true,
+        ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          enableFeedback: true,
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        enableFeedback: true,
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: const Color(0xFFFFFFFF),
@@ -96,6 +119,29 @@ class AppTheme {
         backgroundColor: AppColors.backgroundDark,
         elevation: 0,
         iconTheme: IconThemeData(color: AppColors.foregroundDark),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          enableFeedback: true,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          enableFeedback: true,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          enableFeedback: true,
+        ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          enableFeedback: true,
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        enableFeedback: true,
       ),
     );
   }

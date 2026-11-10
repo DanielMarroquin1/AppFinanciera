@@ -31,6 +31,8 @@ class MarketDataService {
         {'adjusted': 'true', 'apiKey': _apiKey},
       );
 
+      // En Flutter Web, el navegador bloquea llamadas directas a APIs externas
+      // por política CORS. Usamos un proxy CORS para evitar esto.
       final uri = kIsWeb
           ? Uri.parse(
               'https://corsproxy.io/?${Uri.encodeComponent(baseUri.toString())}',

@@ -46,28 +46,6 @@ class AvatarSelectorModal extends ConsumerStatefulWidget {
       ),
     );
   }
-}
-
-class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
-    with TickerProviderStateMixin {
-  late AnimationController _idleController;
-  late AnimationController _tapBounceController;
-  late AnimationController _waveController;
-
-  String? _speechMessage;
-
-  late String _equippedId;
-  late WardrobeItem _selectedItem;
-
-  bool _isProcessing = false;
-
-  List<String> _getMotivationalPhrases(AppLocalizations loc) => [
-    loc.get('wardrobe_sami_phrase_1'),
-    loc.get('wardrobe_sami_phrase_2'),
-    loc.get('wardrobe_sami_phrase_3'),
-    loc.get('wardrobe_sami_phrase_4'),
-    loc.get('wardrobe_sami_phrase_5'),
-  ];
 
   static String localizedOutfitName(WardrobeItem item, AppLocalizations loc) {
     final key = 'outfit_${item.id.replaceFirst('ropa_', '')}_name';
@@ -99,6 +77,37 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
         return rarity;
     }
   }
+}
+
+class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
+    with TickerProviderStateMixin {
+  late AnimationController _idleController;
+  late AnimationController _tapBounceController;
+  late AnimationController _waveController;
+
+  String? _speechMessage;
+
+  late String _equippedId;
+  late WardrobeItem _selectedItem;
+
+  bool _isProcessing = false;
+
+  List<String> _getMotivationalPhrases(AppLocalizations loc) => [
+    loc.get('wardrobe_sami_phrase_1'),
+    loc.get('wardrobe_sami_phrase_2'),
+    loc.get('wardrobe_sami_phrase_3'),
+    loc.get('wardrobe_sami_phrase_4'),
+    loc.get('wardrobe_sami_phrase_5'),
+  ];
+
+  static String localizedOutfitName(WardrobeItem item, AppLocalizations loc) =>
+      AvatarSelectorModal.localizedOutfitName(item, loc);
+
+  static String localizedOutfitDesc(WardrobeItem item, AppLocalizations loc) =>
+      AvatarSelectorModal.localizedOutfitDesc(item, loc);
+
+  static String localizedRarity(String rarity, AppLocalizations loc) =>
+      AvatarSelectorModal.localizedRarity(rarity, loc);
 
   late final List<WardrobeItem> _outfitList;
 

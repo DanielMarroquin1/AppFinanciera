@@ -8,6 +8,7 @@ import '../../core/services/ad_service.dart';
 import '../../core/utils/app_haptics.dart';
 import '../../domain/entities/sami_outfit.dart';
 import 'common/sami_avatar_widget.dart';
+import 'modals/avatar_selector_modal.dart';
 
 class RewardsShopModal extends ConsumerStatefulWidget {
   const RewardsShopModal({super.key, this.points});
@@ -43,16 +44,18 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
     return [
       {
         'id': 'avatars',
-        'title': 'Atuendos de SAMI',
-        'subtitle': 'Ropa, gorras y accesorios exclusivos para tu avatar',
+        'title': loc.get('shop_cat_avatars_title'),
+        'subtitle': loc.get('shop_cat_avatars_sub'),
         'color': [const Color(0xFF10B981), const Color(0xFF06B6D4)],
-        'items': SamiOutfit.allOutfits.where((o) => !o.isFree).map((outfit) => {
-          'id': outfit.id,
-          'name': outfit.name,
-          'desc': '${outfit.subtitle} • ${outfit.description}',
-          'icon': outfit.accessoryEmoji,
-          'cost': outfit.cost,
-        }).toList(),
+        'items': WardrobeItem.allItems
+            .where((i) => i.category == WardrobeCategory.clothing && !i.isFree)
+            .map((item) => {
+              'id': item.id,
+              'name': AvatarSelectorModal.localizedOutfitName(item, loc),
+              'desc': '${item.subtitle} • ${AvatarSelectorModal.localizedOutfitDesc(item, loc)}',
+              'icon': item.emoji,
+              'cost': item.cost,
+            }).toList(),
       },
       {
         'id': 'themes',
@@ -747,7 +750,9 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                           );
                           final isUnlocked = unlockedItems.contains(itemId);
                           final isEquipped = isAvatar
-                              ? user?.currentAvatar == itemId
+                              ? (user?.currentAvatar == itemId ||
+                                  (user?.currentAvatar?.startsWith('$itemId|') == true) ||
+                                  (user?.currentAvatar == null && itemId == 'ropa_clasica'))
                               : (isTheme ? currentPalette.id == itemId : false);
                           final canAfford = userPoints >= (item['cost'] as int);
 

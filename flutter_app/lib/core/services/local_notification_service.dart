@@ -225,7 +225,7 @@ class LocalNotificationService {
     }
   }
 
-  /// Programa notificaciones diarias múltiples (ej. 9:00 am, 2:00 pm, 8:00 pm)
+  /// Programa notificaciones diarias múltiples (9:00 am, 2:00 pm y 7:00 pm)
   static Future<void> scheduleDailyTransactionReminders() async {
     if (kIsWeb) return;
     if (!_initialized) await init();
@@ -248,16 +248,16 @@ class LocalNotificationService {
         body:
             '¿Almorzaste fuera? ¡Anota tus consumos para tener tu presupuesto bajo control!',
       );
-      // 8:00 PM - Cierre del día y racha
+      // 7:00 PM (19:00) - Cierre de la tarde y racha con SAMI
       await _scheduleDailyTime(
         id: 1003,
-        hour: 20,
+        hour: 19,
         minute: 0,
-        title: 'Cierre del día 🌙🔥',
+        title: 'Cierre del día y racha 🌙🔥',
         body:
-            'No pierdas tu racha con SAMI. Revisa tus gastos antes de dormir y mantén tu disciplina.',
+            'No pierdas tu racha con SAMI. Revisa tus gastos antes de descansar y mantén tu disciplina.',
       );
-      debugPrint('QUIVO Notificaciones: Recordatorios diarios programados con éxito.');
+      debugPrint('QUIVO Notificaciones: Recordatorios diarios programados con éxito (9:00 AM, 2:00 PM, 7:00 PM).');
     } catch (e) {
       debugPrint('QUIVO Notificaciones: Error programando recordatorios diarios: $e');
     }

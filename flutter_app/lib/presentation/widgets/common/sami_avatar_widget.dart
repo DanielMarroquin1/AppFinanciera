@@ -19,7 +19,7 @@ class SamiAvatarWidget extends StatelessWidget {
     required this.isDark,
     this.isLocked = false,
     this.isSelected = false,
-    this.showAccessoryBadge = true,
+    this.showAccessoryBadge = false,
     this.onTap,
   });
 
@@ -83,7 +83,7 @@ class SamiAvatarWidget extends StatelessWidget {
 
             // Personaje SAMI
             Padding(
-              padding: EdgeInsets.all(size * 0.08),
+              padding: EdgeInsets.all(size * 0.05),
               child: Image.asset(
                 outfit.imageAsset,
                 fit: BoxFit.contain,

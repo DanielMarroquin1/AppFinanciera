@@ -7,6 +7,7 @@ class Animated3DAvatar extends StatefulWidget {
   final double size;
   final VoidCallback? onTap;
   final bool isDark;
+  final bool showAccessoryBadge;
 
   const Animated3DAvatar({
     super.key,
@@ -14,6 +15,7 @@ class Animated3DAvatar extends StatefulWidget {
     this.emoji,
     required this.size,
     required this.isDark,
+    this.showAccessoryBadge = false,
     this.onTap,
   });
 
@@ -69,7 +71,7 @@ class _Animated3DAvatarState extends State<Animated3DAvatar>
                 avatarId: effectiveId,
                 size: widget.size,
                 isDark: widget.isDark,
-                showAccessoryBadge: true,
+                showAccessoryBadge: widget.showAccessoryBadge,
               ),
             ),
           );

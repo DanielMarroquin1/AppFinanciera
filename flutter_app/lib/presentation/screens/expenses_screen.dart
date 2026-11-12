@@ -500,7 +500,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Text(
-                  'Error al cargar gastos: $e',
+                  loc.get('err_loading_data'),
                   style: const TextStyle(color: Colors.white, fontSize: 14),
                 ),
               ),
@@ -673,6 +673,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                     context: context,
                                     backgroundColor: Colors.transparent,
                                     isScrollControlled: true,
+                                    useSafeArea: true,
                                     builder: (context) {
                                       return SingleChildScrollView(
                                         child: Container(
@@ -681,6 +682,9 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                                 MediaQuery.of(
                                                   context,
                                                 ).viewInsets.bottom +
+                                                MediaQuery.of(
+                                                  context,
+                                                ).padding.bottom +
                                                 24,
                                             left: 24,
                                             right: 24,
@@ -1538,7 +1542,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                 ),
               ),
               error: (e, _) => Text(
-                'Error al cargar deudas: $e',
+                loc.get('err_loading_data'),
                 style: const TextStyle(color: Colors.red),
               ),
               data: (debtsList) {
@@ -1621,6 +1625,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
+                          useSafeArea: true,
                           backgroundColor: Colors.transparent,
                           builder: (context) {
                             final nextInstallmentNum =
@@ -1635,6 +1640,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                 top: 24,
                                 bottom:
                                     MediaQuery.of(context).viewInsets.bottom +
+                                    MediaQuery.of(context).padding.bottom +
                                     24,
                               ),
                               decoration: BoxDecoration(

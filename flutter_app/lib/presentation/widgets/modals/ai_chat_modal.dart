@@ -24,6 +24,7 @@ class AIChatModal extends ConsumerStatefulWidget {
       await showModalBottomSheet(
         context: context,
         isScrollControlled: true,
+        useSafeArea: true,
         backgroundColor: Colors.transparent,
         builder: (context) {
           return AIChatModal(initialMessage: initialMessage);
@@ -33,9 +34,9 @@ class AIChatModal extends ConsumerStatefulWidget {
       debugPrint('Error showing AIChatModal: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             dismissDirection: DismissDirection.horizontal,
-            content: Text('Error al abrir el chat: $e'),
+            content: Text('No fue posible abrir el chat en este momento. Por favor, intenta de nuevo.'),
             backgroundColor: Colors.red,
           ),
         );

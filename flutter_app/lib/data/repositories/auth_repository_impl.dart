@@ -222,7 +222,7 @@ class AuthRepositoryImpl implements AuthRepository {
           }
           throw firebase_auth.FirebaseAuthException(
             code: 'sign-in-failed',
-            message: 'Error al iniciar sesión con Google en este dispositivo: $e',
+            message: 'No se pudo iniciar sesión con Google. Por favor, intenta de nuevo.',
           );
         }
       }

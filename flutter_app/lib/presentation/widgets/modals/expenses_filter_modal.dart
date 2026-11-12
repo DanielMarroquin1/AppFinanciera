@@ -36,6 +36,7 @@ class ExpensesFilterModal extends StatefulWidget {
     return showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => ExpensesFilterModal(
         initialMonth: initialMonth,
@@ -859,7 +860,12 @@ class _ExpensesFilterModalState extends State<ExpensesFilterModal> {
 
           // Footer Actions
           Container(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            padding: EdgeInsets.fromLTRB(
+              24,
+              16,
+              24,
+              24 + MediaQuery.of(context).padding.bottom,
+            ),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF111827) : Colors.white,
               border: Border(

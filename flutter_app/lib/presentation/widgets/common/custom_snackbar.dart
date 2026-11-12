@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../../core/utils/error_handler.dart';
 
 class _UndoSnackBarContent extends StatefulWidget {
   final String message;
@@ -212,14 +213,16 @@ class _UndoSnackBarContentState extends State<_UndoSnackBarContent>
 
 class CustomSnackBar {
   static void showError(BuildContext context, String message) {
+    final cleanMessage = AppErrorHandler.sanitize(message);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bottomInset = MediaQuery.of(context).padding.bottom;
     ScaffoldMessenger.of(context).removeCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+        margin: EdgeInsets.only(bottom: 24 + bottomInset, left: 16, right: 16),
         duration: const Duration(seconds: 3),
         content: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -260,7 +263,7 @@ class CustomSnackBar {
               const SizedBox(width: 14),
               Expanded(
                 child: Text(
-                  message,
+                  cleanMessage,
                   style: TextStyle(
                     color: isDark ? Colors.white : const Color(0xFF0F172A),
                     fontWeight: FontWeight.w600,
@@ -278,13 +281,14 @@ class CustomSnackBar {
 
   static void showSuccess(BuildContext context, String message) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bottomInset = MediaQuery.of(context).padding.bottom;
     ScaffoldMessenger.of(context).removeCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+        margin: EdgeInsets.only(bottom: 24 + bottomInset, left: 16, right: 16),
         duration: const Duration(seconds: 3),
         content: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -338,13 +342,14 @@ class CustomSnackBar {
 
   static void showWarning(BuildContext context, String message) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bottomInset = MediaQuery.of(context).padding.bottom;
     ScaffoldMessenger.of(context).removeCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+        margin: EdgeInsets.only(bottom: 24 + bottomInset, left: 16, right: 16),
         duration: const Duration(seconds: 4),
         content: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -402,6 +407,7 @@ class CustomSnackBar {
     VoidCallback onUndo,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bottomInset = MediaQuery.of(context).padding.bottom;
     const duration = Duration(seconds: 5);
     ScaffoldMessenger.of(context).removeCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -409,7 +415,7 @@ class CustomSnackBar {
         elevation: 0,
         backgroundColor: Colors.transparent,
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+        margin: EdgeInsets.only(bottom: 24 + bottomInset, left: 16, right: 16),
         duration: duration,
         content: _UndoSnackBarContent(
           message: message,

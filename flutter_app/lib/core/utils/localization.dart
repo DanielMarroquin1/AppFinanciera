@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../presentation/providers/auth_provider.dart';
 
@@ -28,6 +29,15 @@ class AppLocalizations {
 
   AppLocalizations(this.langCode);
 
+  static AppLocalizations of(BuildContext context) {
+    try {
+      final container = ProviderScope.containerOf(context, listen: false);
+      return container.read(localizationProvider);
+    } catch (_) {
+      return AppLocalizations('es');
+    }
+  }
+
   String get intlLocale {
     final lower = langCode.toLowerCase();
     if (lower == 'español' || lower == 'es') return 'es';
@@ -40,6 +50,23 @@ class AppLocalizations {
 
   static const Map<String, Map<String, String>> _localizedValues = {
     'es': {
+      'err_generic_server': 'Ha ocurrido un inconveniente inesperado. Por favor, intenta de nuevo.',
+      'err_invalid_credentials': 'Correo o contraseña incorrectos. Verifica tus datos.',
+      'err_email_in_use': 'Este correo electrónico ya está registrado. Inicia sesión.',
+      'err_invalid_email': 'El formato del correo electrónico no es válido.',
+      'err_weak_password': 'La contraseña debe tener al menos 6 caracteres.',
+      'err_network': 'Problema de conexión. Verifica tu internet e inténtalo de nuevo.',
+      'err_too_many_requests': 'Demasiados intentos. Espera unos momentos antes de reintentar.',
+      'err_user_disabled': 'Esta cuenta ha sido inhabilitada. Contacta a soporte.',
+      'err_loading_data': 'No se pudieron cargar los datos en este momento.',
+      'err_saving_data': 'No se pudo guardar la información. Intenta de nuevo.',
+      'err_pdf_generation': 'No se pudo generar el reporte PDF. Intenta de nuevo.',
+      'err_password_reset': 'No se pudo enviar el correo de recuperación. Intenta de nuevo.',
+      'speed_dial_pdf': 'Descargar PDF',
+      'speed_dial_what_if': 'Simulador What-If',
+      'speed_dial_ai': 'SAMI IA',
+      'speed_dial_income': 'Nuevo Ingreso',
+      'speed_dial_expense': 'Nuevo Gasto',
       'pdf_report_general': 'REPORTE FINANCIERO GENERAL',
       'pdf_report_income': 'REPORTE DE INGRESOS',
       'pdf_report_expense': 'REPORTE DE GASTOS',
@@ -691,6 +718,23 @@ class AppLocalizations {
       'wardrobe_sami_phrase_5': '¡Elige tu estilo favorito para el día! 🪙',
     },
     'en': {
+      'err_generic_server': 'An unexpected error occurred. Please try again.',
+      'err_invalid_credentials': 'Incorrect email or password. Please verify your details.',
+      'err_email_in_use': 'This email address is already registered. Please log in.',
+      'err_invalid_email': 'The email format is invalid.',
+      'err_weak_password': 'Password must be at least 6 characters.',
+      'err_network': 'Connection error. Please check your internet and try again.',
+      'err_too_many_requests': 'Too many attempts. Please wait a few moments before trying again.',
+      'err_user_disabled': 'This account has been disabled. Please contact support.',
+      'err_loading_data': 'Could not load data at this time.',
+      'err_saving_data': 'Could not save data. Please try again.',
+      'err_pdf_generation': 'Could not generate PDF report. Please try again.',
+      'err_password_reset': 'Could not send reset email. Please try again.',
+      'speed_dial_pdf': 'Download PDF',
+      'speed_dial_what_if': 'What-If Simulator',
+      'speed_dial_ai': 'SAMI AI',
+      'speed_dial_income': 'New Income',
+      'speed_dial_expense': 'New Expense',
       'pdf_report_general': 'GENERAL FINANCIAL REPORT',
       'pdf_report_income': 'INCOME REPORT',
       'pdf_report_expense': 'EXPENSE REPORT',
@@ -1341,6 +1385,23 @@ class AppLocalizations {
       'wardrobe_sami_phrase_5': 'Pick your favorite style for today! 🪙',
     },
     'pt': {
+      'err_generic_server': 'Ocorreu um erro inesperado. Por favor, tente novamente.',
+      'err_invalid_credentials': 'E-mail ou senha incorretos. Verifique seus dados.',
+      'err_email_in_use': 'Este e-mail já está cadastrado. Faça login.',
+      'err_invalid_email': 'O formato do e-mail é inválido.',
+      'err_weak_password': 'A senha deve ter pelo menos 6 caracteres.',
+      'err_network': 'Problema de conexão. Verifique sua internet e tente novamente.',
+      'err_too_many_requests': 'Muitas tentativas. Aguarde um momento antes de tentar novamente.',
+      'err_user_disabled': 'Esta conta foi desativada. Entre em contato com o suporte.',
+      'err_loading_data': 'Não foi possível carregar os dados no momento.',
+      'err_saving_data': 'Não foi possível salvar as informações. Tente novamente.',
+      'err_pdf_generation': 'Não foi possível gerar o relatório em PDF. Tente novamente.',
+      'err_password_reset': 'Não foi possível enviar o e-mail de recuperação. Tente novamente.',
+      'speed_dial_pdf': 'Baixar PDF',
+      'speed_dial_what_if': 'Simulador What-If',
+      'speed_dial_ai': 'SAMI IA',
+      'speed_dial_income': 'Nova Renda',
+      'speed_dial_expense': 'Nova Despesa',
       'pdf_report_general': 'RELATÓRIO FINANCEIRO GERAL',
       'pdf_report_income': 'RELATÓRIO DE RECEITAS',
       'pdf_report_expense': 'RELATÓRIO DE DESPESAS',
@@ -1994,6 +2055,23 @@ class AppLocalizations {
       'wardrobe_sami_phrase_5': 'Escolha seu estilo favorito para o dia! 🪙',
     },
     'fr': {
+      'err_generic_server': 'Une erreur inattendue est survenue. Veuillez réessayer.',
+      'err_invalid_credentials': 'Email ou mot de passe incorrect. Vérifiez vos identifiants.',
+      'err_email_in_use': 'Cet e-mail est déjà enregistré. Connectez-vous.',
+      'err_invalid_email': 'Le format de l\'e-mail n\'est pas valide.',
+      'err_weak_password': 'Le mot de passe doit comporter au moins 6 caractères.',
+      'err_network': 'Problème de connexion. Vérifiez votre connexion Internet et réessayez.',
+      'err_too_many_requests': 'Trop de tentatives. Veuillez patienter avant de réessayer.',
+      'err_user_disabled': 'Ce compte a été désactivé. Veuillez contacter le support.',
+      'err_loading_data': 'Impossible de charger les données pour le moment.',
+      'err_saving_data': 'Impossible d\'enregistrer les informations. Veuillez réessayer.',
+      'err_pdf_generation': 'Impossible de générer le rapport PDF. Veuillez réessayer.',
+      'err_password_reset': 'Impossible d\'envoyer l\'e-mail de réinitialisation. Veuillez réessayer.',
+      'speed_dial_pdf': 'Télécharger PDF',
+      'speed_dial_what_if': 'Simulateur What-If',
+      'speed_dial_ai': 'SAMI IA',
+      'speed_dial_income': 'Nouveau Revenu',
+      'speed_dial_expense': 'Nouvelle Dépense',
       'pdf_report_general': 'RAPPORT FINANCIER GÉNÉRAL',
       'pdf_report_income': 'RAPPORT DE REVENUS',
       'pdf_report_expense': 'RAPPORT DE DÉPENSES',
@@ -2653,6 +2731,23 @@ class AppLocalizations {
       'wardrobe_sami_phrase_5': 'Choisissez votre style préféré pour la journée ! 🪙',
     },
     'it': {
+      'err_generic_server': 'Si è verificato un errore imprevisto. Per favore riprova.',
+      'err_invalid_credentials': 'Email o password errati. Verifica i tuoi dati.',
+      'err_email_in_use': 'Questa email è già registrata. Effettua l\'accesso.',
+      'err_invalid_email': 'Il formato dell\'email non è valido.',
+      'err_weak_password': 'La password deve contenere almeno 6 caratteri.',
+      'err_network': 'Problema di connessione. Verifica la connessione internet e riprova.',
+      'err_too_many_requests': 'Troppi tentativi. Attendi qualche istante prima di riprovare.',
+      'err_user_disabled': 'Questo account è stato disabilitato. Contatta l\'assistenza.',
+      'err_loading_data': 'Impossibile caricare i dati in questo momento.',
+      'err_saving_data': 'Impossibile salvare le informazioni. Per favore riprova.',
+      'err_pdf_generation': 'Impossibile generare il report PDF. Per favore riprova.',
+      'err_password_reset': 'Impossibile inviare l\'email di reimpostazione. Per favore riprova.',
+      'speed_dial_pdf': 'Scarica PDF',
+      'speed_dial_what_if': 'Simulatore What-If',
+      'speed_dial_ai': 'SAMI IA',
+      'speed_dial_income': 'Nuova Entrata',
+      'speed_dial_expense': 'Nuova Spesa',
       'pdf_report_general': 'RAPPORTO FINANZIARIO GENERALE',
       'pdf_report_income': 'RAPPORTO SUI REDDITI',
       'pdf_report_expense': 'RAPPORTO SULLE SPESE',

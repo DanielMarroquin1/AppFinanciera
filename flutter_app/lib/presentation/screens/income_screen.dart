@@ -497,7 +497,7 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Text(
-                  'Error al cargar ingresos: $e',
+                  loc.get('err_loading_data'),
                   style: const TextStyle(color: Colors.white, fontSize: 14),
                 ),
               ),
@@ -642,6 +642,7 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                                     context: context,
                                     backgroundColor: Colors.transparent,
                                     isScrollControlled: true,
+                                    useSafeArea: true,
                                     builder: (context) {
                                       return SingleChildScrollView(
                                         child: Container(
@@ -650,6 +651,9 @@ class _IncomeScreenState extends ConsumerState<IncomeScreen> {
                                                 MediaQuery.of(
                                                   context,
                                                 ).viewInsets.bottom +
+                                                MediaQuery.of(
+                                                  context,
+                                                ).padding.bottom +
                                                 24,
                                             left: 24,
                                             right: 24,

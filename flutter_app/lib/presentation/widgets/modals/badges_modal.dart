@@ -15,6 +15,7 @@ class BadgesModal extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const BadgesModal(),
     );
@@ -351,7 +352,12 @@ class _BadgesModalState extends ConsumerState<BadgesModal> {
             // Grid of Badges
             Expanded(
               child: GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: EdgeInsets.fromLTRB(
+                  24,
+                  8,
+                  24,
+                  8 + MediaQuery.of(context).padding.bottom,
+                ),
                 physics: const BouncingScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,

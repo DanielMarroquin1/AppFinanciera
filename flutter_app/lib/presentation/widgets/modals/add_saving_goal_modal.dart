@@ -35,6 +35,7 @@ class AddSavingGoalModal extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => AddSavingGoalModal(
         initialName: initialName ?? goalToEdit?.name,
@@ -196,7 +197,9 @@ class _AddSavingGoalModalState extends ConsumerState<AddSavingGoalModal> {
                 padding: EdgeInsets.only(
                   left: 24,
                   right: 24,
-                  bottom: MediaQuery.of(context).viewInsets.bottom + 40,
+                  bottom: MediaQuery.of(context).viewInsets.bottom +
+                      MediaQuery.of(context).padding.bottom +
+                      40,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,

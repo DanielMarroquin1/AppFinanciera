@@ -15,6 +15,7 @@ class CompleteProfileModal extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const CompleteProfileModal(),
     );
@@ -123,14 +124,19 @@ class _CompleteProfileModalState extends ConsumerState<CompleteProfileModal> {
       }
     } catch (e) {
       if (mounted) {
+        final loc = ref.read(localizationProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             dismissDirection: DismissDirection.horizontal,
             content: Text(
-              'Error: $e',
+              loc.get('err_saving_data'),
               style: const TextStyle(color: Colors.white),
             ),
             backgroundColor: Colors.red[600],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
           ),
         );
       }
@@ -221,7 +227,9 @@ class _CompleteProfileModalState extends ConsumerState<CompleteProfileModal> {
                 left: 24,
                 right: 24,
                 top: 24,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom +
+                    MediaQuery.of(context).padding.bottom +
+                    24,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,

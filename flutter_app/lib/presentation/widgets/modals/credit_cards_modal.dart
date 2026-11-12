@@ -24,6 +24,7 @@ class CreditCardsModal extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const CreditCardsModal(),
     );
@@ -254,6 +255,7 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final currencyCode = ref.watch(authProvider).user?.currency;
     final cardsAsync = ref.watch(computedCreditCardsProvider);
+    final loc = ref.watch(localizationProvider);
 
     return BackdropFilter(
       filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -343,7 +345,14 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
             Expanded(
               child: cardsAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, s) => Center(child: Text('Error: $e')),
+                error: (e, s) => Center(
+                  child: Text(
+                    loc.get('err_loading_data'),
+                    style: TextStyle(
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
+                  ),
+                ),
                 data: (cards) {
                   if (cards.isEmpty) {
                     return Center(
@@ -1134,7 +1143,7 @@ class _CreditCardsModalState extends ConsumerState<CreditCardsModal> {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 40),
+                                  SizedBox(height: 40 + MediaQuery.of(context).padding.bottom),
                                 ],
                               ),
                             ),

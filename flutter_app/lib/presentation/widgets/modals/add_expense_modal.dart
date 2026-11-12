@@ -36,6 +36,7 @@ class AddExpenseModal extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => AddExpenseModal(
         isFixed: isFixed,
@@ -227,6 +228,7 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
+      useSafeArea: true,
       builder: (ctx) => Container(
         height: MediaQuery.of(context).size.height * 0.82,
         decoration: BoxDecoration(
@@ -392,7 +394,12 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
               child: ShakeWidget(
                 key: _categoryShakeKey,
                 child: ListView.separated(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    20,
+                    20,
+                    20 + MediaQuery.of(context).padding.bottom,
+                  ),
                   itemCount: _getAllCategories().length,
                   separatorBuilder: (ctx, i) => const SizedBox(height: 16),
                   itemBuilder: (ctx, i) {
@@ -693,7 +700,9 @@ class _AddExpenseModalState extends ConsumerState<AddExpenseModal> {
                 left: 24,
                 right: 24,
                 top: 24,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom +
+                    MediaQuery.of(context).padding.bottom +
+                    24,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,

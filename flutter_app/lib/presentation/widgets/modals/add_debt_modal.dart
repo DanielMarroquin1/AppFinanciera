@@ -26,6 +26,7 @@ class AddDebtModal extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) =>
           AddDebtModal(currencyCode: currencyCode, existingDebt: existingDebt),
@@ -130,7 +131,9 @@ class _AddDebtModalState extends ConsumerState<AddDebtModal> {
                 left: 24,
                 right: 24,
                 top: 24,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+                bottom: MediaQuery.of(context).viewInsets.bottom +
+                    MediaQuery.of(context).padding.bottom +
+                    32,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

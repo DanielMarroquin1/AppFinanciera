@@ -12,6 +12,7 @@ class EditProfileModal extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const EditProfileModal(),
     );
@@ -161,7 +162,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'Error al guardar: $e';
+          _errorMessage = 'No se pudo guardar el perfil. Por favor, intenta de nuevo.';
           isSaving = false;
         });
       }
@@ -175,6 +176,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => AvatarSelectorModal(
         currentAvatarId: selectedAvatarId,
@@ -385,7 +387,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24 + MediaQuery.of(context).padding.bottom),
                     ],
 
                     // Form Fields
@@ -396,7 +398,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                       hint: 'Ej. Juan Pérez',
                       icon: LucideIcons.user,
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24 + MediaQuery.of(context).padding.bottom),
 
                     _buildLabel(isDark, 'Correo Electrónico (No Editable)'),
                     _buildTextField(
@@ -442,7 +444,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                               ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24 + MediaQuery.of(context).padding.bottom),
                   ],
                 ),
               ),

@@ -19,6 +19,7 @@ class NotificationsModal extends ConsumerWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.85,
@@ -530,9 +531,11 @@ class _NotificationsModalInternalState
 
                 return ListView.builder(
                   controller: widget.scrollController,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    16,
+                    20,
+                    16 + MediaQuery.of(context).padding.bottom,
                   ),
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
@@ -909,7 +912,14 @@ class _NotificationsModalInternalState
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Error: $err')),
+              error: (err, _) => Center(
+                child: Text(
+                  loc.get('err_loading_data'),
+                  style: TextStyle(
+                    color: isDark ? Colors.white70 : Colors.black87,
+                  ),
+                ),
+              ),
             ),
           ),
         ],

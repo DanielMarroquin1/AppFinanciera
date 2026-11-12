@@ -14,6 +14,7 @@ class TransactionsListModal extends ConsumerWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.9,
@@ -213,7 +214,12 @@ class _TransactionsListModalInternalState
 
                 return ListView.builder(
                   controller: widget.scrollController,
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.fromLTRB(
+                    24,
+                    24,
+                    24,
+                    24 + MediaQuery.of(context).padding.bottom,
+                  ),
                   itemCount: sorted.length,
                   itemBuilder: (context, index) {
                     final tx = sorted[index];

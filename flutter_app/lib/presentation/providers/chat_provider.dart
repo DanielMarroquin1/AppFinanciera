@@ -153,7 +153,7 @@ class ChatNotifier extends Notifier<ChatState> {
       }
     } catch (e) {
       final errorMessage = ChatMessage(
-        text: 'Lo siento, hubo un error al procesar tu solicitud: $e',
+        text: 'Lo siento, hubo un inconveniente al procesar tu solicitud. Por favor, intenta de nuevo.',
         role: MessageRole.assistant,
       );
       state = state.copyWith(messages: [...state.messages, errorMessage]);

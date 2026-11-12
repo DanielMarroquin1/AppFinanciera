@@ -17,6 +17,7 @@ class CategoryDetailModal extends StatelessWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.9,
@@ -123,11 +124,21 @@ class _CategoryDetailModalInternal extends ConsumerWidget {
           Expanded(
             child: ListView(
               controller: scrollController,
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.fromLTRB(
+                24,
+                24,
+                24,
+                24 + MediaQuery.of(context).padding.bottom,
+              ),
               children: [
                 // Info Card
                 Container(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.fromLTRB(
+                24,
+                24,
+                24,
+                24 + MediaQuery.of(context).padding.bottom,
+              ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [color.withOpacity(0.8), color],

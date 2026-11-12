@@ -26,6 +26,7 @@ class CategoryBudgetModal extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const CategoryBudgetModal(),
     );
@@ -121,6 +122,7 @@ class _CategoryBudgetModalState extends ConsumerState<CategoryBudgetModal> {
   ) {
     showModalBottomSheet(
       context: context,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         return BackdropFilter(

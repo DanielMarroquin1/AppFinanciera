@@ -17,6 +17,7 @@ class AddCreditCardModal extends ConsumerStatefulWidget {
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.90,
@@ -201,9 +202,9 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al guardar tarjeta: $e'),
-            backgroundColor: const Color(0xFFDC2626),
+          const SnackBar(
+            content: Text('No fue posible guardar la tarjeta. Por favor, intenta de nuevo.'),
+            backgroundColor: Color(0xFFDC2626),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -806,7 +807,7 @@ class _AddCreditCardModalState extends ConsumerState<AddCreditCardModal> {
                           ),
                   ),
                 ),
-                const SizedBox(height: 30),
+                SizedBox(height: 30 + MediaQuery.of(context).padding.bottom),
               ],
             ),
           ),

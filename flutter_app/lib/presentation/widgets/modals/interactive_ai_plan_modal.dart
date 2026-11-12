@@ -12,6 +12,7 @@ class InteractiveAiPlanModal extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const InteractiveAiPlanModal(),
     );
@@ -188,7 +189,12 @@ Debes ahorrar aproximadamente un monto especifico cada mes. Ajusta tus gastos in
 
           // Footer
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.fromLTRB(
+              24,
+              24,
+              24,
+              24 + MediaQuery.of(context).padding.bottom,
+            ),
             child: Row(
               children: [
                 if (_currentStep > 0 && !_isGenerating)

@@ -668,7 +668,12 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
               // BODY LIST
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    20,
+                    20,
+                    20 + MediaQuery.of(context).padding.bottom,
+                  ),
                   itemCount: filteredCategories.length,
                   itemBuilder: (context, catIdx) {
                     final category = filteredCategories[catIdx];

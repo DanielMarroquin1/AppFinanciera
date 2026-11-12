@@ -1537,9 +1537,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                                       0xFF7F1D1D,
                                     ).withValues(alpha: 0.3)
                                   : const Color(0xFFFEF2F2)),
-                        title: t.description.isNotEmpty
-                            ? t.description
-                            : loc.translateCategory(t.category),
+                        title: loc.formatTransactionTitle(t),
                         subtitle:
                             '$formattedDate • $paymentIcon $paymentMethod',
                         amount:

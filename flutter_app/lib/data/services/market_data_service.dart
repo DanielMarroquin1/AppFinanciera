@@ -75,7 +75,7 @@ class MarketDataService {
     } catch (e) {
       return {
         'status': 'error',
-        'message': 'Error de conexión al obtener datos de $uppercaseTicker: $e',
+        'message': 'No se pudo conectar para obtener los datos de $uppercaseTicker. Intenta de nuevo.',
       };
     }
   }

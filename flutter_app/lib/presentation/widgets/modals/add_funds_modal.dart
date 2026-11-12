@@ -19,6 +19,7 @@ class AddFundsModal extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => AddFundsModal(goal: goal),
     );
@@ -44,13 +45,14 @@ class _AddFundsModalState extends ConsumerState<AddFundsModal> {
     final currency = ref.watch(authProvider).user?.currency ?? 'USD';
     final sym = CurrencyFormatter.getSymbol(currency);
     final amount = double.tryParse(_amountController.text) ?? 0.0;
+    final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1F2937) : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -167,9 +169,9 @@ class _AddFundsModalState extends ConsumerState<AddFundsModal> {
                       } catch (e) {
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
+                            const SnackBar(
                               dismissDirection: DismissDirection.horizontal,
-                              content: Text('Error al guardar: $e'),
+                              content: Text('No fue posible guardar los fondos. Por favor, intenta de nuevo.'),
                               backgroundColor: Colors.red,
                             ),
                           );

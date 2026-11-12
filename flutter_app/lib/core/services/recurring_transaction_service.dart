@@ -111,17 +111,38 @@ class RecurringTransactionService {
 
           if (shouldAdd) {
             final targetDesc = '$cleanDesc (Automático)';
-            final alreadyExists = existingNormal.any(
-              (t) =>
-                  (t.description == targetDesc ||
-                      t.description == cleanDesc ||
-                      t.description.contains(cleanDesc)) &&
+            final normClean = cleanDesc
+                .toLowerCase()
+                .replaceAll(
+                  RegExp(r'\s*\((automático|automatic|automatique|automatico)\)'),
+                  '',
+                )
+                .replaceFirst(RegExp(r'^bills_'), '')
+                .trim();
+            final alreadyExists = existingNormal.any((t) {
+              final tDesc = t.description
+                  .toLowerCase()
+                  .replaceAll(
+                    RegExp(r'\s*\((automático|automatic|automatique|automatico)\)'),
+                    '',
+                  )
+                  .replaceFirst(RegExp(r'^bills_'), '')
+                  .trim();
+              final tCat = t.category
+                  .toLowerCase()
+                  .replaceFirst(RegExp(r'^bills_'), '')
+                  .trim();
+              final matchesConcept = tDesc == normClean ||
+                  tDesc.contains(normClean) ||
+                  normClean.contains(tDesc) ||
+                  tCat == normClean;
+              return matchesConcept &&
                   t.type == template.type &&
                   (t.amount - template.getAmountForDay(current.day)).abs() < 0.01 &&
                   t.date.year == current.year &&
                   t.date.month == current.month &&
-                  t.date.day == current.day,
-            );
+                  t.date.day == current.day;
+            });
             if (alreadyExists) {
               shouldAdd = false;
             }
@@ -506,10 +527,20 @@ class RecurringTransactionService {
     final Map<String, List<TransactionModel>> groups = {};
 
     for (var t in allNormal) {
-      // Normalizar descripción quitando sufijos automáticos para encontrar duplicados exactos
-      String cleanDesc = t.description.replaceAll(' (Automático)', '').trim().toLowerCase();
+      // Normalizar descripción quitando sufijos automáticos multilingües y prefijos bills_ para encontrar duplicados exactos
+      String cleanDesc = t.description
+          .toLowerCase()
+          .replaceAll(
+            RegExp(r'\s*\((automático|automatic|automatique|automatico)\)'),
+            '',
+          )
+          .replaceFirst(RegExp(r'^bills_'), '')
+          .trim();
       if (cleanDesc.isEmpty) {
-        cleanDesc = t.category.trim().toLowerCase();
+        cleanDesc = t.category
+            .toLowerCase()
+            .replaceFirst(RegExp(r'^bills_'), '')
+            .trim();
       }
       final key =
           '${t.type}_${t.amount.toStringAsFixed(2)}_${t.date.year}_${t.date.month}_${t.date.day}_$cleanDesc';

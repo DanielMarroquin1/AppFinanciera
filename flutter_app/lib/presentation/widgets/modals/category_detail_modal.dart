@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/utils/localization.dart';
 
 class CategoryDetailModal extends StatelessWidget {
   final Map<String, dynamic> categoryData;
@@ -15,6 +17,7 @@ class CategoryDetailModal extends StatelessWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.9,
@@ -34,7 +37,7 @@ class CategoryDetailModal extends StatelessWidget {
   }
 }
 
-class _CategoryDetailModalInternal extends StatelessWidget {
+class _CategoryDetailModalInternal extends ConsumerWidget {
   final Map<String, dynamic> categoryData;
   final ScrollController scrollController;
 
@@ -44,8 +47,9 @@ class _CategoryDetailModalInternal extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final loc = ref.watch(localizationProvider);
     final color = categoryData['color'] as Color? ?? const Color(0xFF4F46E5);
     final categoryName = categoryData['category'] as String? ?? 'Categoría';
     final amount = categoryData['amount'] as double? ?? 0.0;
@@ -120,11 +124,21 @@ class _CategoryDetailModalInternal extends StatelessWidget {
           Expanded(
             child: ListView(
               controller: scrollController,
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.fromLTRB(
+                24,
+                24,
+                24,
+                24 + MediaQuery.of(context).padding.bottom,
+              ),
               children: [
                 // Info Card
                 Container(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.fromLTRB(
+                24,
+                24,
+                24,
+                24 + MediaQuery.of(context).padding.bottom,
+              ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [color.withOpacity(0.8), color],
@@ -191,9 +205,7 @@ class _CategoryDetailModalInternal extends StatelessWidget {
                       'dd MMM, yyyy',
                       'es',
                     ).format(t.date);
-                    final title = t.description.isNotEmpty
-                        ? t.description
-                        : t.category;
+                    final title = loc.formatTransactionTitle(t);
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),

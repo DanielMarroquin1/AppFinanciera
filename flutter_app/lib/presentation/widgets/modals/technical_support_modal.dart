@@ -9,6 +9,7 @@ class TechnicalSupportModal extends StatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Padding(
         padding: EdgeInsets.only(
@@ -260,7 +261,7 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
                     keyboardType: TextInputType.emailAddress,
                   ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20 + MediaQuery.of(context).padding.bottom),
                   _buildInputLabel(isDark, 'Asunto del ticket'),
                   const SizedBox(height: 8),
                   _buildTextField(
@@ -270,7 +271,7 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
                     prefixIcon: LucideIcons.tag,
                   ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20 + MediaQuery.of(context).padding.bottom),
                   _buildInputLabel(isDark, 'Descripción del problema'),
                   const SizedBox(height: 8),
                   _buildTextField(
@@ -421,7 +422,7 @@ class _TechnicalSupportModalState extends State<TechnicalSupportModal> {
                             ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20 + MediaQuery.of(context).padding.bottom),
                 ],
               ),
             ),

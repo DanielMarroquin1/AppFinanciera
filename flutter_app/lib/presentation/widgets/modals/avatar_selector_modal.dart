@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../domain/entities/sami_outfit.dart';
 import '../../providers/auth_provider.dart';
 import '../../../core/utils/app_haptics.dart';
+import '../../../core/utils/localization.dart';
 
 /// ARMARIO DE SAMI (REDISEÑO TOTAL BOUTIQUE - 100% PRENDAS 3D)
 /// Interfaz de estudio de personalización minimalista, moderna y de lujo:
@@ -37,6 +38,7 @@ class AvatarSelectorModal extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => AvatarSelectorModal(
         currentAvatarId: currentAvatarId,
@@ -44,6 +46,37 @@ class AvatarSelectorModal extends ConsumerStatefulWidget {
         onAvatarSelected: onAvatarSelected,
       ),
     );
+  }
+
+  static String localizedOutfitName(WardrobeItem item, AppLocalizations loc) {
+    final key = 'outfit_${item.id.replaceFirst('ropa_', '')}_name';
+    final val = loc.get(key);
+    return val == key ? item.name : val;
+  }
+
+  static String localizedOutfitDesc(WardrobeItem item, AppLocalizations loc) {
+    final key = 'outfit_${item.id.replaceFirst('ropa_', '')}_desc';
+    final val = loc.get(key);
+    return val == key ? item.description : val;
+  }
+
+  static String localizedRarity(String rarity, AppLocalizations loc) {
+    switch (rarity.toLowerCase()) {
+      case 'inicial':
+        return loc.get('rarity_initial');
+      case 'común':
+      case 'comun':
+        return loc.get('rarity_common');
+      case 'especial':
+        return loc.get('rarity_special');
+      case 'épico':
+      case 'epico':
+        return loc.get('rarity_epic');
+      case 'legendario':
+        return loc.get('rarity_legendary');
+      default:
+        return rarity;
+    }
   }
 }
 
@@ -60,19 +93,30 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
 
   bool _isProcessing = false;
 
-  final List<String> _motivationalPhrases = [
-    '¡Hola! 👋 ¡Este atuendo me sienta increíble!',
-    '¡Ahorrar con estilo es otro nivel! ✨',
-    '¡Listo para vencer cualquier gasto hormiga! 🛡️',
-    '¡Cada centavo que ahorras te acerca a tus sueños! 📈',
-    '¡Elige tu estilo favorito para el día! 🪙',
+  List<String> _getMotivationalPhrases(AppLocalizations loc) => [
+    loc.get('wardrobe_sami_phrase_1'),
+    loc.get('wardrobe_sami_phrase_2'),
+    loc.get('wardrobe_sami_phrase_3'),
+    loc.get('wardrobe_sami_phrase_4'),
+    loc.get('wardrobe_sami_phrase_5'),
   ];
+
+  static String localizedOutfitName(WardrobeItem item, AppLocalizations loc) =>
+      AvatarSelectorModal.localizedOutfitName(item, loc);
+
+  static String localizedOutfitDesc(WardrobeItem item, AppLocalizations loc) =>
+      AvatarSelectorModal.localizedOutfitDesc(item, loc);
+
+  static String localizedRarity(String rarity, AppLocalizations loc) =>
+      AvatarSelectorModal.localizedRarity(rarity, loc);
 
   late final List<WardrobeItem> _outfitList;
 
   @override
   void initState() {
     super.initState();
+    PaintingBinding.instance.imageCache.clear();
+    PaintingBinding.instance.imageCache.clearLiveImages();
     // Exclusivo para prendas de vestir
     _outfitList = WardrobeItem.allItems
         .where((i) => i.category == WardrobeCategory.clothing)
@@ -111,13 +155,14 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
     super.dispose();
   }
 
-  void _onTapSami() {
+  void _onTapSami(AppLocalizations loc) {
     AppHaptics.mediumImpact();
     _tapBounceController.forward(from: 0.0);
     _waveController.forward(from: 0.0);
+    final phrases = _getMotivationalPhrases(loc);
     setState(() {
-      final rand = math.Random().nextInt(_motivationalPhrases.length);
-      _speechMessage = _motivationalPhrases[rand];
+      final rand = math.Random().nextInt(phrases.length);
+      _speechMessage = phrases[rand];
     });
 
     Future.delayed(const Duration(milliseconds: 3200), () {
@@ -143,7 +188,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
     return _equippedId == item.id;
   }
 
-  Future<void> _handleEquipOrUnlock(WardrobeItem item) async {
+  Future<void> _handleEquipOrUnlock(WardrobeItem item, AppLocalizations loc) async {
     final user = ref.read(authProvider).user;
     if (user == null) return;
 
@@ -169,7 +214,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    '¡"${item.name}" equipado en tu perfil!',
+                    loc.get('wardrobe_equipped_snack').replaceAll('{name}', localizedOutfitName(item, loc)),
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -184,7 +229,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
 
     if (user.points < item.cost) {
       AppHaptics.error();
-      _showNotEnoughCoinsDialog(item, user.points);
+      _showNotEnoughCoinsDialog(item, user.points, loc);
       return;
     }
 
@@ -218,7 +263,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      '¡Desbloqueaste y equipaste "${item.name}"!',
+                      loc.get('wardrobe_unlocked_snack').replaceAll('{name}', localizedOutfitName(item, loc)),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -235,7 +280,8 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
     }
   }
 
-  void _showNotEnoughCoinsDialog(WardrobeItem item, int currentPoints) {
+  void _showNotEnoughCoinsDialog(WardrobeItem item, int currentPoints, AppLocalizations loc) {
+    final itemName = localizedOutfitName(item, loc);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -244,13 +290,13 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
           borderRadius: BorderRadius.circular(22),
           side: const BorderSide(color: Color(0xFF1F2937), width: 1.2),
         ),
-        title: const Row(
+        title: Row(
           children: [
-            Text('🪙', style: TextStyle(fontSize: 22)),
-            SizedBox(width: 10),
+            const Text('🪙', style: TextStyle(fontSize: 22)),
+            const SizedBox(width: 10),
             Text(
-              'Puntos Insuficientes',
-              style: TextStyle(
+              loc.get('wardrobe_not_enough_points_title'),
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 17,
@@ -259,7 +305,10 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
           ],
         ),
         content: Text(
-          'Para desbloquear "${item.name}" necesitas ${item.cost} puntos.\n\nActualmente tienes $currentPoints puntos. ¡Sigue registrando tus movimientos diarios y manteniendo tu racha con SAMI para acumular más puntos!',
+          loc.get('wardrobe_not_enough_points_desc')
+              .replaceAll('{name}', itemName)
+              .replaceAll('{cost}', '${item.cost}')
+              .replaceAll('{current}', '$currentPoints'),
           style: const TextStyle(
             color: Color(0xFF9CA3AF),
             fontSize: 13.5,
@@ -269,9 +318,9 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(
-              'Entendido',
-              style: TextStyle(
+            child: Text(
+              loc.get('understood'),
+              style: const TextStyle(
                 color: Color(0xFF06B6D4),
                 fontWeight: FontWeight.bold,
               ),
@@ -290,6 +339,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
 
   @override
   Widget build(BuildContext context) {
+    final loc = ref.watch(localizationProvider);
     final user = ref.watch(authProvider).user;
     final userCoins = user?.points ?? 0;
     final unlockedList = user?.unlockedItems ?? [];
@@ -366,11 +416,11 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                       ),
                     ),
                     const SizedBox(width: 14),
-                    const Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Armario de SAMI',
+                          loc.get('wardrobe_title'),
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,
@@ -379,7 +429,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                           ),
                         ),
                         Text(
-                          'Estilo & Personalización',
+                          loc.get('wardrobe_subtitle'),
                           style: TextStyle(
                             color: Color(0xFF64748B),
                             fontSize: 12,
@@ -406,7 +456,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                           const Text('🪙', style: TextStyle(fontSize: 13)),
                           const SizedBox(width: 6),
                           Text(
-                            '$userCoins pts',
+                            '$userCoins ${loc.get("wardrobe_pts")}',
                             style: const TextStyle(
                               color: Color(0xFFFFD54F),
                               fontWeight: FontWeight.w800,
@@ -468,7 +518,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
 
                     // SAMI Modelando en 3D
                     GestureDetector(
-                      onTap: _onTapSami,
+                      onTap: () => _onTapSami(loc),
                       child: AnimatedBuilder(
                         animation: Listenable.merge([
                           _idleController,
@@ -514,7 +564,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          _selectedItem.name,
+                          localizedOutfitName(_selectedItem, loc),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 19,
@@ -534,7 +584,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                             ),
                           ),
                           child: Text(
-                            _selectedItem.rarity,
+                            localizedRarity(_selectedItem.rarity, loc),
                             style: TextStyle(
                               color: _selectedItem.rarityColor,
                               fontSize: 10.5,
@@ -546,7 +596,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _selectedItem.description,
+                      localizedOutfitDesc(_selectedItem, loc),
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -580,6 +630,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
 
                     return _OutfitRackCard(
                       item: item,
+                      loc: loc,
                       isSelected: isSelected,
                       isEquipped: isEquipped,
                       isUnlocked: isUnlocked,
@@ -606,7 +657,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                 child: GestureDetector(
                   onTap: _isProcessing
                       ? null
-                      : () => _handleEquipOrUnlock(_selectedItem),
+                      : () => _handleEquipOrUnlock(_selectedItem, loc),
                   child: Container(
                     width: double.infinity,
                     height: 52,
@@ -656,8 +707,8 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                                     size: 18,
                                   ),
                                   const SizedBox(width: 8),
-                                  const Text(
-                                    'Atuendo en uso',
+                                  Text(
+                                    loc.get('wardrobe_equipped'),
                                     style: TextStyle(
                                       color: Color(0xFF94A3B8),
                                       fontWeight: FontWeight.bold,
@@ -671,8 +722,8 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                                     size: 18,
                                   ),
                                   const SizedBox(width: 8),
-                                  const Text(
-                                    'Equipar Estilo',
+                                  Text(
+                                    loc.get('wardrobe_equip_action'),
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
@@ -683,7 +734,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
                                   const Text('🪙', style: TextStyle(fontSize: 15)),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Desbloquear por ${_selectedItem.cost} pts',
+                                    loc.get('wardrobe_unlock_for').replaceAll('{cost}', '${_selectedItem.cost}'),
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
@@ -710,6 +761,7 @@ class _AvatarSelectorModalState extends ConsumerState<AvatarSelectorModal>
 // =============================================================================
 class _OutfitRackCard extends StatelessWidget {
   final WardrobeItem item;
+  final AppLocalizations loc;
   final bool isSelected;
   final bool isEquipped;
   final bool isUnlocked;
@@ -717,6 +769,7 @@ class _OutfitRackCard extends StatelessWidget {
 
   const _OutfitRackCard({
     required this.item,
+    required this.loc,
     required this.isSelected,
     required this.isEquipped,
     required this.isUnlocked,
@@ -778,7 +831,7 @@ class _OutfitRackCard extends StatelessWidget {
               ),
               child: ClipOval(
                 child: Padding(
-                  padding: const EdgeInsets.all(4.0),
+                  padding: const EdgeInsets.all(7.0),
                   child: Image.asset(
                     assetPath,
                     fit: BoxFit.contain,
@@ -792,7 +845,7 @@ class _OutfitRackCard extends StatelessWidget {
 
             // Nombre completo del atuendo
             Text(
-              item.name,
+              _AvatarSelectorModalState.localizedOutfitName(item, loc),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
@@ -813,8 +866,8 @@ class _OutfitRackCard extends StatelessWidget {
                   color: const Color(0xFF10B981).withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
-                  '✓ En uso',
+                child: Text(
+                  loc.get('wardrobe_in_use'),
                   style: TextStyle(
                     color: Color(0xFF34D399),
                     fontSize: 9.5,
@@ -829,8 +882,8 @@ class _OutfitRackCard extends StatelessWidget {
                   color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
-                  'Listo',
+                child: Text(
+                  loc.get('wardrobe_ready'),
                   style: TextStyle(
                     color: Color(0xFF38BDF8),
                     fontSize: 9.5,
@@ -845,7 +898,7 @@ class _OutfitRackCard extends StatelessWidget {
                   const Text('🪙', style: TextStyle(fontSize: 10)),
                   const SizedBox(width: 3),
                   Text(
-                    '${item.cost} pts',
+                    '${item.cost} ${loc.get("wardrobe_pts")}',
                     style: const TextStyle(
                       color: Color(0xFFFFD54F),
                       fontSize: 10,

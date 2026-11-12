@@ -12,6 +12,7 @@ class EditProfileModal extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const EditProfileModal(),
     );
@@ -161,7 +162,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'Error al guardar: $e';
+          _errorMessage = 'No se pudo guardar el perfil. Por favor, intenta de nuevo.';
           isSaving = false;
         });
       }
@@ -175,6 +176,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => AvatarSelectorModal(
         currentAvatarId: selectedAvatarId,
@@ -309,45 +311,152 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    // Avatar Section
+                    // Avatar Section - Rediseñado
                     Center(
-                      child: Stack(
-                        clipBehavior: Clip.none,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Animated3DAvatar(
-                            avatarId: selectedAvatarId,
-                            size: 120,
-                            isDark: isDark,
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: GestureDetector(
-                              onTap: _showAvatarSelector,
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF10B981),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: isDark
-                                        ? const Color(0xFF0F172A)
-                                        : Colors.white,
-                                    width: 4,
+                          GestureDetector(
+                            onTap: _showAvatarSelector,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              clipBehavior: Clip.none,
+                              children: [
+                                // Halo de luz ambiental
+                                Container(
+                                  width: 144,
+                                  height: 144,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: RadialGradient(
+                                      colors: [
+                                        const Color(0xFF38BDF8).withValues(
+                                          alpha: isDark ? 0.22 : 0.15,
+                                        ),
+                                        Colors.transparent,
+                                      ],
+                                      stops: const [0.55, 1.0],
+                                    ),
                                   ),
                                 ),
-                                child: const Icon(
-                                  LucideIcons.pencil,
-                                  color: Colors.white,
-                                  size: 20,
+
+                                // Avatar SAMI 3D
+                                Animated3DAvatar(
+                                  avatarId: selectedAvatarId,
+                                  size: 124,
+                                  isDark: isDark,
+                                  showAccessoryBadge: false,
                                 ),
+
+                                // Botón flotante de edición (Pencil) rediseñado
+                                Positioned(
+                                  bottom: 2,
+                                  right: 2,
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          Color(0xFF10B981),
+                                          Color(0xFF06B6D4),
+                                        ],
+                                      ),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: isDark
+                                            ? const Color(0xFF0F172A)
+                                            : const Color(0xFFF8FAFC),
+                                        width: 3.5,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(
+                                            0xFF10B981,
+                                          ).withValues(alpha: 0.45),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Icon(
+                                      LucideIcons.pencil,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Chip interactivo para abrir el Armario de SAMI
+                          GestureDetector(
+                            onTap: _showAvatarSelector,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? const Color(0xFF1E293B).withValues(
+                                        alpha: 0.85,
+                                      )
+                                    : const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isDark
+                                      ? const Color(0xFF334155)
+                                      : const Color(0xFFE2E8F0),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.08),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    LucideIcons.sparkles,
+                                    size: 15,
+                                    color: Color(0xFF38BDF8),
+                                  ),
+                                  const SizedBox(width: 7),
+                                  Text(
+                                    'Armario de SAMI',
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? Colors.white
+                                          : const Color(0xFF0F172A),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: -0.2,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Icon(
+                                    LucideIcons.chevronRight,
+                                    size: 15,
+                                    color: isDark
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                                  ),
+                                ],
                               ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
 
                     if (_errorMessage != null) ...[
                       Container(
@@ -385,7 +494,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24 + MediaQuery.of(context).padding.bottom),
                     ],
 
                     // Form Fields
@@ -396,7 +505,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                       hint: 'Ej. Juan Pérez',
                       icon: LucideIcons.user,
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24 + MediaQuery.of(context).padding.bottom),
 
                     _buildLabel(isDark, 'Correo Electrónico (No Editable)'),
                     _buildTextField(
@@ -442,7 +551,7 @@ class _EditProfileModalState extends ConsumerState<EditProfileModal> {
                               ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24 + MediaQuery.of(context).padding.bottom),
                   ],
                 ),
               ),

@@ -21,6 +21,7 @@ class QuickActionManagerModal extends ConsumerWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.85,
@@ -456,11 +457,7 @@ class _QuickActionManagerModalInternal extends ConsumerWidget {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            expense.description.isNotEmpty
-                                                ? expense.description
-                                                : loc.translateCategory(
-                                                    expense.category,
-                                                  ),
+                                            loc.formatTransactionTitle(expense),
                                             style: TextStyle(
                                               color: isDark
                                                   ? Colors.white
@@ -635,9 +632,9 @@ class _QuickActionManagerModalInternal extends ConsumerWidget {
                   },
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
-                  error: (_, __) => const Text('Error al cargar datos.'),
+                  error: (_, __) => Text(loc.get('err_loading_data')),
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: 32 + MediaQuery.of(context).padding.bottom),
               ],
             ),
           ),

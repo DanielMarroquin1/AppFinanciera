@@ -15,6 +15,7 @@ import '../providers/auth_provider.dart';
 import '../providers/color_palette_provider.dart';
 import '../widgets/common/quivo_logo.dart';
 import '../../core/utils/localization.dart';
+import '../../core/utils/error_handler.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -170,11 +171,92 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         'new_to_quivo': 'New to QUIVO?',
         'already_have_account': 'Already have an account?',
       },
+      'fr': {
+        'tab_login': 'Connexion',
+        'tab_register': 'Inscription',
+        'welcome': 'Bonjour ! Ravi de vous revoir',
+        'welcome_sub': 'Votre bien-être financier commence ici',
+        'start_journey': 'Commencez votre voyage',
+        'start_journey_sub': 'Créez votre compte et prenez le contrôle',
+        'email': 'Adresse e-mail',
+        'password': 'Mot de passe',
+        'forgot_pass': 'Mot de passe oublié ?',
+        'purpose_title': 'Que souhaitez-vous accomplir ?',
+        'purpose_save': 'Apprendre à économiser',
+        'purpose_finance': 'En savoir plus sur les finances',
+        'purpose_expenses': 'Suivre mes dépenses',
+        'purpose_invest': 'Apprendre à investir',
+        'purpose_debts': 'Sortir des dettes',
+        'purpose_goals': 'Atteindre mes objectifs',
+        'read_accept': 'J\'ai lu et j\'accepte les ',
+        'terms': 'Conditions Générales',
+        'and': ' et la ',
+        'privacy': 'Politique de Confidentialité',
+        'biometric_login': 'Connexion biométrique',
+        'biometric_enable': 'Activer Face ID / Empreinte',
+        'btn_login': 'Me connecter',
+        'btn_register': 'Créer mon compte',
+        'err_missing': 'Informations manquantes',
+        'err_missing_desc': 'Veuillez remplir tous les champs',
+        'err_policies': 'Conditions et Politiques',
+        'err_policies_desc': 'Vous devez accepter les conditions pour continuer',
+        'err_purpose': 'Objectif d\'utilisation',
+        'err_purpose_desc': 'Sélectionnez ce que vous souhaitez accomplir',
+        'err_cred': 'Identifiants introuvables',
+        'err_cred_desc': 'Aucun identifiant enregistré trouvé',
+        'succ_login': 'Bienvenue !',
+        'succ_login_desc': 'Ravi de vous revoir parmi nous',
+        'succ_reg': 'Compte créé avec succès !',
+        'succ_reg_desc': 'Votre parcours financier commence maintenant',
+        'new_to_quivo': 'Nouveau sur QUIVO ?',
+        'already_have_account': 'Vous avez déjà un compte ?',
+      },
+      'it': {
+        'tab_login': 'Accedi',
+        'tab_register': 'Registrati',
+        'welcome': 'Ciao! Bello rivederti',
+        'welcome_sub': 'Il tuo benessere finanziario inizia qui',
+        'start_journey': 'Inizia il tuo viaggio',
+        'start_journey_sub': 'Crea il tuo account e prendi il controllo',
+        'email': 'Indirizzo email',
+        'password': 'Password',
+        'forgot_pass': 'Password dimenticata?',
+        'purpose_title': 'Cosa vuoi ottenere?',
+        'purpose_save': 'Imparare a risparmiare',
+        'purpose_finance': 'Sapere di più sulla finanza',
+        'purpose_expenses': 'Tracciare le spese',
+        'purpose_invest': 'Imparare a investire',
+        'purpose_debts': 'Uscire dai debiti',
+        'purpose_goals': 'Raggiungere obiettivi',
+        'read_accept': 'Ho letto e accetto i ',
+        'terms': 'Termini e Condizioni',
+        'and': ' e la ',
+        'privacy': 'Informativa sulla Privacy',
+        'biometric_login': 'Accedi con Biometria',
+        'biometric_enable': 'Abilita Biometria per la prossima volta',
+        'btn_login': 'Accedi al mio account',
+        'btn_register': 'Crea il mio account',
+        'err_missing': 'Dati mancanti',
+        'err_missing_desc': 'Si prega di compilare tutti i campi',
+        'err_policies': 'Termini e Condizioni',
+        'err_policies_desc': 'Devi accettare i termini per continuare',
+        'err_purpose': 'Scopo di utilizzo',
+        'err_purpose_desc': 'Seleziona cosa vuoi raggiungere con l\'app',
+        'err_cred': 'Credenziali non trovate',
+        'err_cred_desc': 'Nessuna credenziale salvata trovata',
+        'succ_login': 'Bentornato!',
+        'succ_login_desc': 'Siamo felici di rivederti',
+        'succ_reg': 'Account creato con successo!',
+        'succ_reg_desc': 'Il tuo benessere finanziario inizia ora',
+        'new_to_quivo': 'Nuovo su QUIVO?',
+        'already_have_account': 'Hai già un account?',
+      },
     };
     return translations[code]?[key] ?? translations['en']![key] ?? key;
   }
 
   void _showWelcomeMessage(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).padding.bottom;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         dismissDirection: DismissDirection.horizontal,
@@ -212,7 +294,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         behavior: SnackBarBehavior.floating,
         backgroundColor: const Color(0xFF059669),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        margin: const EdgeInsets.only(bottom: 24, left: 24, right: 24),
+        margin: EdgeInsets.only(bottom: 24 + bottomInset, left: 24, right: 24),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         duration: const Duration(seconds: 4),
         elevation: 10,
@@ -221,7 +303,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _showErrorSnackBar(BuildContext context, String title, String message) {
+    // Filtrar y sanitizar: si es una cancelación de ventana (popup-closed-by-user), no mostrar error
+    final friendly = AppErrorHandler.getFriendlyMessage(
+      message,
+      ref.read(localizationProvider),
+    );
+    if (friendly == null) return;
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+    ScaffoldMessenger.of(context).removeCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         dismissDirection: DismissDirection.horizontal,
@@ -244,7 +335,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    message,
+                    friendly,
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.white.withValues(alpha: 0.9),
@@ -261,7 +352,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ? const Color(0xFF991B1B)
             : const Color(0xFFDC2626),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        margin: const EdgeInsets.only(bottom: 24, left: 24, right: 24),
+        margin: EdgeInsets.only(bottom: 24 + bottomInset, left: 24, right: 24),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         duration: const Duration(seconds: 4),
         elevation: 10,

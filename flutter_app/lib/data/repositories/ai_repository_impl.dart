@@ -308,7 +308,7 @@ class AIRepositoryImpl implements AIRepository {
       if (e is TimeoutException) {
         yield '⏱️ La simulación tardó demasiado tiempo. Verifica tu conexión e intenta de nuevo.';
       } else {
-        yield '❌ Error al generar la simulación en SimLab: $e';
+        yield '❌ No fue posible generar la simulación en este momento. Por favor, intenta de nuevo.';
       }
     }
   }

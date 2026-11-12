@@ -23,6 +23,7 @@ class PremiumIncomeModal extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) =>
           PremiumIncomeModal(initialMonth: month, initialYear: year),
@@ -599,9 +600,7 @@ class _PremiumIncomeModalState extends ConsumerState<PremiumIncomeModal> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      tx.description.isNotEmpty
-                                          ? tx.description
-                                          : loc.translateCategory(tx.category),
+                                      loc.formatTransactionTitle(tx),
                                       style: TextStyle(
                                         color: isDark
                                             ? Colors.white
@@ -670,7 +669,9 @@ class _PremiumIncomeModalState extends ConsumerState<PremiumIncomeModal> {
               ),
             ),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 32)),
+          SliverToBoxAdapter(
+            child: SizedBox(height: 32 + MediaQuery.of(context).padding.bottom),
+          ),
         ],
       ),
     );

@@ -48,6 +48,7 @@ class ExpenseReportModal extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => ExpenseReportModal(
         categoryList: categoryList,
@@ -174,9 +175,11 @@ class _ExpenseReportModalState extends ConsumerState<ExpenseReportModal> {
                     ),
                   )
                 : SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 8,
+                    padding: EdgeInsets.fromLTRB(
+                      24,
+                      8,
+                      24,
+                      8 + MediaQuery.of(context).padding.bottom,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,

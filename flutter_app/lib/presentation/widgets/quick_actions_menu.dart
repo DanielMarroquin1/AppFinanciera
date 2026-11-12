@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../core/utils/localization.dart';
 
 /// Speed Dial flotante nativo pegado a la ESQUINA INFERIOR DERECHA
 /// Mantiene las 5 funciones completas del sistema:
@@ -186,6 +187,7 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final loc = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -226,7 +228,7 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
                 children: [
                   // 5. 📄 Descarga Reporte PDF
                   _buildSpeedDialItem(
-                    title: 'Descargar PDF',
+                    title: loc.get('speed_dial_pdf'),
                     icon: LucideIcons.fileText,
                     gradientColors: const [Color(0xFFF59E0B), Color(0xFFD97706)],
                     shadowColor: const Color(0xFFF59E0B),
@@ -237,7 +239,7 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
 
                   // 4. 🔮 Simulador What-If
                   _buildSpeedDialItem(
-                    title: 'Simulador What-If',
+                    title: loc.get('speed_dial_what_if'),
                     icon: LucideIcons.sparkles,
                     gradientColors: const [Color(0xFF06B6D4), Color(0xFF0284C7)],
                     shadowColor: const Color(0xFF06B6D4),
@@ -248,7 +250,7 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
 
                   // 3. 🤖 SAMI IA (Chat Asistente)
                   _buildSpeedDialItem(
-                    title: 'SAMI IA',
+                    title: loc.get('speed_dial_ai'),
                     icon: LucideIcons.bot,
                     gradientColors: const [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
                     shadowColor: const Color(0xFF8B5CF6),
@@ -259,7 +261,7 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
 
                   // 2. 🟢 Nuevo Ingreso
                   _buildSpeedDialItem(
-                    title: 'Nuevo Ingreso',
+                    title: loc.get('speed_dial_income'),
                     icon: LucideIcons.arrowUpRight,
                     gradientColors: const [Color(0xFF10B981), Color(0xFF059669)],
                     shadowColor: const Color(0xFF10B981),
@@ -270,7 +272,7 @@ class _QuickActionsMenuState extends State<QuickActionsMenu>
 
                   // 1. 🔴 Nuevo Gasto
                   _buildSpeedDialItem(
-                    title: 'Nuevo Gasto',
+                    title: loc.get('speed_dial_expense'),
                     icon: LucideIcons.arrowDownLeft,
                     gradientColors: const [Color(0xFFEF4444), Color(0xFFDC2626)],
                     shadowColor: const Color(0xFFEF4444),

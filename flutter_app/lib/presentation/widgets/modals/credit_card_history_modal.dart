@@ -30,6 +30,7 @@ class CreditCardHistoryModal extends ConsumerStatefulWidget {
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.92,
@@ -450,7 +451,7 @@ class _CreditCardHistoryModalState
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (err, _) => Center(
                 child: Text(
-                  'Error: $err',
+                  loc.get('err_loading_data'),
                   style: TextStyle(color: isDark ? Colors.white : Colors.black),
                 ),
               ),
@@ -518,7 +519,7 @@ class _CreditCardHistoryModalState
 
                 return ListView.builder(
                   controller: widget.scrollController,
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
                   itemCount: cardTransactions.length,
                   itemBuilder: (context, index) {
                     final t = cardTransactions[index];

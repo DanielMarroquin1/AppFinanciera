@@ -11,6 +11,7 @@ class LanguageModal extends ConsumerWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const LanguageModal(),
     );

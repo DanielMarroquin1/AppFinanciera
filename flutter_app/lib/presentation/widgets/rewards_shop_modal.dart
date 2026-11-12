@@ -8,6 +8,7 @@ import '../../core/services/ad_service.dart';
 import '../../core/utils/app_haptics.dart';
 import '../../domain/entities/sami_outfit.dart';
 import 'common/sami_avatar_widget.dart';
+import 'modals/avatar_selector_modal.dart';
 
 class RewardsShopModal extends ConsumerStatefulWidget {
   const RewardsShopModal({super.key, this.points});
@@ -43,16 +44,18 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
     return [
       {
         'id': 'avatars',
-        'title': 'Atuendos de SAMI',
-        'subtitle': 'Ropa, gorras y accesorios exclusivos para tu avatar',
+        'title': loc.get('shop_cat_avatars_title'),
+        'subtitle': loc.get('shop_cat_avatars_sub'),
         'color': [const Color(0xFF10B981), const Color(0xFF06B6D4)],
-        'items': SamiOutfit.allOutfits.where((o) => !o.isFree).map((outfit) => {
-          'id': outfit.id,
-          'name': outfit.name,
-          'desc': '${outfit.subtitle} • ${outfit.description}',
-          'icon': outfit.accessoryEmoji,
-          'cost': outfit.cost,
-        }).toList(),
+        'items': WardrobeItem.allItems
+            .where((i) => i.category == WardrobeCategory.clothing && !i.isFree)
+            .map((item) => {
+              'id': item.id,
+              'name': AvatarSelectorModal.localizedOutfitName(item, loc),
+              'desc': '${item.subtitle} • ${AvatarSelectorModal.localizedOutfitDesc(item, loc)}',
+              'icon': item.emoji,
+              'cost': item.cost,
+            }).toList(),
       },
       {
         'id': 'themes',
@@ -273,30 +276,29 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
     final filteredCategories = _getFilteredCategories(loc);
     final tabs = _getTabs(loc);
 
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.88,
-          maxWidth: 650,
-        ),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(32),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 24,
-              offset: const Offset(0, 12),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(32),
-          child: Column(
-            children: [
-              // HEADER LOUNGE VIP
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.92,
+        maxWidth: 650,
+      ),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 24,
+            offset: const Offset(0, -8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        child: Column(
+          children: [
+            // HEADER LOUNGE VIP
               Container(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
                 decoration: BoxDecoration(
@@ -665,7 +667,12 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
               // BODY LIST
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    16,
+                    20,
+                    60 + bottomInset,
+                  ),
                   itemCount: filteredCategories.length,
                   itemBuilder: (context, catIdx) {
                     final category = filteredCategories[catIdx];
@@ -677,30 +684,42 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Category Header Banner
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                gradientColors[0].withValues(alpha: 0.15),
-                                gradientColors[1].withValues(alpha: 0.05),
-                              ],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
+                        GestureDetector(
+                          onTap: () {
+                            if (category['id'] == 'avatars') {
+                              Navigator.pop(context);
+                              AvatarSelectorModal.show(
+                                context,
+                                currentAvatarId: user?.currentAvatar ?? 'ropa_clasica',
+                                unlockedItems: unlockedItems,
+                                onAvatarSelected: (id) {},
+                              );
+                            }
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
                             ),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border(
-                              left: BorderSide(
-                                color: gradientColors[0],
-                                width: 4,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  gradientColors[0].withValues(alpha: 0.15),
+                                  gradientColors[1].withValues(alpha: 0.05),
+                                ],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border(
+                                left: BorderSide(
+                                  color: gradientColors[0],
+                                  width: 4,
+                                ),
                               ),
                             ),
-                          ),
-                          child: Row(
+                            child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Column(
@@ -736,6 +755,7 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                             ],
                           ),
                         ),
+                      ),
 
                         // Items
                         ...items.map((item) {
@@ -747,7 +767,9 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
                           );
                           final isUnlocked = unlockedItems.contains(itemId);
                           final isEquipped = isAvatar
-                              ? user?.currentAvatar == itemId
+                              ? (user?.currentAvatar == itemId ||
+                                  (user?.currentAvatar?.startsWith('$itemId|') == true) ||
+                                  (user?.currentAvatar == null && itemId == 'ropa_clasica'))
                               : (isTheme ? currentPalette.id == itemId : false);
                           final canAfford = userPoints >= (item['cost'] as int);
 
@@ -1276,8 +1298,7 @@ class _RewardsShopModalState extends ConsumerState<RewardsShopModal> {
             ],
           ), // closes Column
         ), // closes ClipRRect
-      ), // closes Container
-    ); // closes Dialog
+      ); // closes Container
   }
 
   Widget _buildBadge(String text, Color color) {

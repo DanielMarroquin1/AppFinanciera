@@ -170,9 +170,14 @@ exports.processFixedTransactions = functions.pubsub.schedule('1 0 * * *').timeZo
   ];
   
   try {
-    // Obtener el día actual en zona horaria de Guatemala
+    // Obtener fecha actual en zona horaria de Guatemala
     const formatter = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Guatemala', day: 'numeric' });
     const currentDay = parseInt(formatter.format(new Date()));
+    const nowGuat = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Guatemala" }));
+    const year = nowGuat.getFullYear();
+    const month = String(nowGuat.getMonth() + 1).padStart(2, '0');
+    const day = String(nowGuat.getDate()).padStart(2, '0');
+    const dateKey = `${year}_${month}_${day}`;
 
     let totalCount = 0;
 
@@ -191,35 +196,43 @@ exports.processFixedTransactions = functions.pubsub.schedule('1 0 * * *').timeZo
         const originalDay = parseInt(dayStr);
 
         if (currentDay === originalDay) {
-          // Generar una nueva transacción, que NO sea isFixed
-          const newTxId = Date.now().toString() + Math.floor(Math.random() * 1000).toString();
+          // ID determinista para evitar cualquier duplicación con la app o ejecuciones previas
+          const newTxId = `auto_tx_${data.userId}_${doc.id}_${dateKey}`;
           const newTxRef = db.collection(txCol).doc(newTxId);
           
+          // Verificar si ya fue generado hoy
+          const existingTx = await newTxRef.get();
+          if (existingTx.exists) {
+            continue;
+          }
+
+          const cleanDesc = (data.description || data.category || 'Movimiento').trim();
           const newTx = {
             ...data,
             id: newTxId,
             isFixed: false,
             date: new Date().toISOString(),
-            description: `${data.description} (Automático)`,
+            description: `${cleanDesc} (Automático)`,
             createdAt: admin.firestore.FieldValue.serverTimestamp()
           };
           
-          batch.set(newTxRef, newTx);
+          batch.set(newTxRef, newTx, { merge: true });
 
-          // Generar una notificación para el usuario en su historial
-          const notifRef = db.collection(notifCol).doc();
+          // Notificación con ID determinista antiduplicados
+          const notifId = `auto_notif_${data.userId}_${doc.id}_${dateKey}`;
+          const notifRef = db.collection(notifCol).doc(notifId);
           const notif = {
-            id: notifRef.id,
+            id: notifId,
             userId: data.userId,
             title: data.type === 'expense' ? 'Gasto Fijo Procesado' : 'Ingreso Fijo Procesado',
-            body: `Se ha registrado automáticamente: ${data.description} por $${data.amount}`,
+            body: `Se ha registrado automáticamente: ${cleanDesc} por Q${data.amount}`,
             date: new Date().toISOString(),
             isRead: false,
             type: 'system',
             data: JSON.stringify({ transactionId: newTxId })
           };
           
-          batch.set(notifRef, notif);
+          batch.set(notifRef, notif, { merge: true });
           count++;
         }
       }
@@ -227,6 +240,8 @@ exports.processFixedTransactions = functions.pubsub.schedule('1 0 * * *').timeZo
       if (count > 0) {
         await batch.commit();
         totalCount += count;
+      }
+    }
       }
     }
     console.log(`Job 12:01 AM ejecutado exitosamente. Se procesaron ${totalCount} movimientos fijos.`);

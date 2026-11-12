@@ -2319,7 +2319,7 @@ Genera un diagnóstico estructurado y conciso (3-4 párrafos) con:
     } catch (e) {
       if (mounted) {
         setState(
-          () => aiResponse = '${loc.get('error_obtaining_diagnosis')}: $e',
+          () => aiResponse = loc.get('error_obtaining_diagnosis'),
         );
       }
     } finally {
@@ -2411,8 +2411,7 @@ Estructura tu respuesta exactamente con estas 4 secciones claras usando Markdown
     } catch (e) {
       if (mounted) {
         setState(
-          () =>
-              _customAiResponse = '${loc.get('error_analyzing_scenario')}: $e',
+          () => _customAiResponse = loc.get('error_analyzing_scenario'),
         );
       }
     } finally {

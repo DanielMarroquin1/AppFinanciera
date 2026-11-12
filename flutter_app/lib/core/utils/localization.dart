@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../presentation/providers/auth_provider.dart';
 
@@ -28,6 +29,15 @@ class AppLocalizations {
 
   AppLocalizations(this.langCode);
 
+  static AppLocalizations of(BuildContext context) {
+    try {
+      final container = ProviderScope.containerOf(context, listen: false);
+      return container.read(localizationProvider);
+    } catch (_) {
+      return AppLocalizations('es');
+    }
+  }
+
   String get intlLocale {
     final lower = langCode.toLowerCase();
     if (lower == 'español' || lower == 'es') return 'es';
@@ -40,6 +50,23 @@ class AppLocalizations {
 
   static const Map<String, Map<String, String>> _localizedValues = {
     'es': {
+      'err_generic_server': 'Ha ocurrido un inconveniente inesperado. Por favor, intenta de nuevo.',
+      'err_invalid_credentials': 'Correo o contraseña incorrectos. Verifica tus datos.',
+      'err_email_in_use': 'Este correo electrónico ya está registrado. Inicia sesión.',
+      'err_invalid_email': 'El formato del correo electrónico no es válido.',
+      'err_weak_password': 'La contraseña debe tener al menos 6 caracteres.',
+      'err_network': 'Problema de conexión. Verifica tu internet e inténtalo de nuevo.',
+      'err_too_many_requests': 'Demasiados intentos. Espera unos momentos antes de reintentar.',
+      'err_user_disabled': 'Esta cuenta ha sido inhabilitada. Contacta a soporte.',
+      'err_loading_data': 'No se pudieron cargar los datos en este momento.',
+      'err_saving_data': 'No se pudo guardar la información. Intenta de nuevo.',
+      'err_pdf_generation': 'No se pudo generar el reporte PDF. Intenta de nuevo.',
+      'err_password_reset': 'No se pudo enviar el correo de recuperación. Intenta de nuevo.',
+      'speed_dial_pdf': 'Descargar PDF',
+      'speed_dial_what_if': 'Simulador What-If',
+      'speed_dial_ai': 'SAMI IA',
+      'speed_dial_income': 'Nuevo Ingreso',
+      'speed_dial_expense': 'Nuevo Gasto',
       'pdf_report_general': 'REPORTE FINANCIERO GENERAL',
       'pdf_report_income': 'REPORTE DE INGRESOS',
       'pdf_report_expense': 'REPORTE DE GASTOS',
@@ -459,11 +486,11 @@ class AppLocalizations {
       'shop_points_avail': 'Tus Puntos Disponibles',
       'shop_pts': 'PTS',
       'shop_tab_all': '🔥 Todo',
-      'shop_tab_avatars': '🦸‍♂️ Avatares VIP',
+      'shop_tab_avatars': '👕 Armario de SAMI',
       'shop_tab_themes': '🎨 Paletas de Estilo',
       'shop_tab_specials': '⚡ Especiales',
-      'shop_cat_avatars_title': 'Avatares Exclusivos 🦸‍♂️',
-      'shop_cat_avatars_sub': 'Personaliza tu identidad en la plataforma',
+      'shop_cat_avatars_title': 'Armario de SAMI 👕',
+      'shop_cat_avatars_sub': 'Personaliza los atuendos y estilo 3D de SAMI',
       'shop_cat_themes_title': '🎨 Paletas de Colores VIP',
       'shop_cat_themes_sub': 'Transilumina y ambienta tu interfaz financiera',
       'shop_cat_specials_title': '⚡ Ventajas y Especiales',
@@ -650,8 +677,64 @@ class AppLocalizations {
       'auto_lock_2min': '2 minutos (Equilibrio de seguridad y comodidad)',
       'auto_lock_5min': '5 minutos (Mayor comodidad durante uso activo)',
       'auto_lock_updated_snack': 'Cierre automático actualizado a ',
+      'automatic_tag': 'Automático',
+      'wardrobe_title': 'Armario de SAMI',
+      'wardrobe_subtitle': 'Estilo & Personalización',
+      'wardrobe_pts': 'pts',
+      'rarity_initial': 'Inicial',
+      'rarity_common': 'Común',
+      'rarity_special': 'Especial',
+      'rarity_epic': 'Épico',
+      'rarity_legendary': 'Legendario',
+      'wardrobe_in_use': '✓ En uso',
+      'wardrobe_ready': 'Listo',
+      'wardrobe_equipped': 'Atuendo en uso',
+      'wardrobe_equip_action': 'Equipar Estilo',
+      'wardrobe_unlock_for': 'Desbloquear por {cost} pts',
+      'wardrobe_equipped_snack': '¡"{name}" equipado en tu perfil!',
+      'wardrobe_unlocked_snack': '¡Desbloqueaste y equipaste "{name}"!',
+      'wardrobe_not_enough_points_title': 'Puntos Insuficientes',
+      'wardrobe_not_enough_points_desc': 'Para desbloquear "{name}" necesitas {cost} puntos.\n\nActualmente tienes {current} puntos. ¡Sigue registrando tus movimientos diarios y manteniendo tu racha con SAMI para acumular más puntos!',
+      'outfit_clasica_name': 'SAMI Clásico',
+      'outfit_clasica_desc': 'El estilo original de SAMI con su plumaje azul marino, vientre blanco y el emblema Q.',
+      'outfit_ejecutivo_name': 'Traje Ejecutivo',
+      'outfit_ejecutivo_desc': 'Saco formal azul marino y corbata de seda para cerrar grandes negocios financieros.',
+      'outfit_sudadera_name': 'Sudadera Streetwear',
+      'outfit_sudadera_desc': 'Hoodie holgado y moderno con detalles en color cyan eléctrico QUIVO.',
+      'outfit_superheroe_name': 'Traje de Superhéroe',
+      'outfit_superheroe_desc': 'Capa escarlata ondeante y traje reforzado para combatir las deudas.',
+      'outfit_deportiva_name': 'Conjunto Atlético Tech',
+      'outfit_deportiva_desc': 'Jersey transpirable para mantener el ritmo y la disciplina en tus metas.',
+      'outfit_chef_name': 'Filipina de Chef',
+      'outfit_chef_desc': 'Chaqueta de alta cocina con botones dorados para cocinar grandes ahorros.',
+      'outfit_armadura_name': 'Armadura Galáctica',
+      'outfit_armadura_desc': 'Coraza de nanotecnología impenetrable contra compras impulsivas.',
+      'outfit_toga_name': 'Toga Imperial de Oro',
+      'outfit_toga_desc': 'Toga bordada con hilos de oro de 24k para el soberano absoluto de su presupuesto.',
+      'wardrobe_sami_phrase_1': '¡Hola! 👋 ¡Este atuendo me sienta increíble!',
+      'wardrobe_sami_phrase_2': '¡Ahorrar con estilo es otro nivel! ✨',
+      'wardrobe_sami_phrase_3': '¡Listo para vencer cualquier gasto hormiga! 🛡️',
+      'wardrobe_sami_phrase_4': '¡Cada centavo que ahorras te acerca a tus sueños! 📈',
+      'wardrobe_sami_phrase_5': '¡Elige tu estilo favorito para el día! 🪙',
     },
     'en': {
+      'err_generic_server': 'An unexpected error occurred. Please try again.',
+      'err_invalid_credentials': 'Incorrect email or password. Please verify your details.',
+      'err_email_in_use': 'This email address is already registered. Please log in.',
+      'err_invalid_email': 'The email format is invalid.',
+      'err_weak_password': 'Password must be at least 6 characters.',
+      'err_network': 'Connection error. Please check your internet and try again.',
+      'err_too_many_requests': 'Too many attempts. Please wait a few moments before trying again.',
+      'err_user_disabled': 'This account has been disabled. Please contact support.',
+      'err_loading_data': 'Could not load data at this time.',
+      'err_saving_data': 'Could not save data. Please try again.',
+      'err_pdf_generation': 'Could not generate PDF report. Please try again.',
+      'err_password_reset': 'Could not send reset email. Please try again.',
+      'speed_dial_pdf': 'Download PDF',
+      'speed_dial_what_if': 'What-If Simulator',
+      'speed_dial_ai': 'SAMI AI',
+      'speed_dial_income': 'New Income',
+      'speed_dial_expense': 'New Expense',
       'pdf_report_general': 'GENERAL FINANCIAL REPORT',
       'pdf_report_income': 'INCOME REPORT',
       'pdf_report_expense': 'EXPENSE REPORT',
@@ -1069,11 +1152,11 @@ class AppLocalizations {
       'shop_points_avail': 'Your Available Points',
       'shop_pts': 'PTS',
       'shop_tab_all': '🔥 All',
-      'shop_tab_avatars': '🦸‍♂️ VIP Avatars',
+      'shop_tab_avatars': '👕 SAMI\'s Wardrobe',
       'shop_tab_themes': '🎨 Style Palettes',
       'shop_tab_specials': '⚡ Specials',
-      'shop_cat_avatars_title': 'Exclusive Avatars 🦸‍♂️',
-      'shop_cat_avatars_sub': 'Customize your identity on the platform',
+      'shop_cat_avatars_title': 'SAMI\'s Wardrobe 👕',
+      'shop_cat_avatars_sub': 'Customize SAMI\'s 3D outfits and style',
       'shop_cat_themes_title': '🎨 VIP Color Palettes',
       'shop_cat_themes_sub': 'Illuminate and style your financial interface',
       'shop_cat_specials_title': '⚡ Perks and Specials',
@@ -1261,8 +1344,64 @@ class AppLocalizations {
       'auto_lock_2min': '2 minutes (Balance of security and comfort)',
       'auto_lock_5min': '5 minutes (Greater comfort during active use)',
       'auto_lock_updated_snack': 'Auto-lock updated to ',
+      'automatic_tag': 'Automatic',
+      'wardrobe_title': "SAMI's Wardrobe",
+      'wardrobe_subtitle': 'Style & Customization',
+      'wardrobe_pts': 'pts',
+      'rarity_initial': 'Starter',
+      'rarity_common': 'Common',
+      'rarity_special': 'Special',
+      'rarity_epic': 'Epic',
+      'rarity_legendary': 'Legendary',
+      'wardrobe_in_use': '✓ In use',
+      'wardrobe_ready': 'Ready',
+      'wardrobe_equipped': 'Outfit in use',
+      'wardrobe_equip_action': 'Equip Style',
+      'wardrobe_unlock_for': 'Unlock for {cost} pts',
+      'wardrobe_equipped_snack': '"{name}" equipped in your profile!',
+      'wardrobe_unlocked_snack': 'You unlocked and equipped "{name}"!',
+      'wardrobe_not_enough_points_title': 'Not Enough Points',
+      'wardrobe_not_enough_points_desc': 'To unlock "{name}" you need {cost} points.\n\nYou currently have {current} points. Keep logging your daily transactions and streak with SAMI to earn more points!',
+      'outfit_clasica_name': 'Classic SAMI',
+      'outfit_clasica_desc': "SAMI's original look with navy plumage, white belly and the Q emblem.",
+      'outfit_ejecutivo_name': 'Executive Suit',
+      'outfit_ejecutivo_desc': 'Navy formal jacket and silk tie for closing big financial deals.',
+      'outfit_sudadera_name': 'Streetwear Hoodie',
+      'outfit_sudadera_desc': 'Loose, modern hoodie with vibrant QUIVO electric cyan accents.',
+      'outfit_superheroe_name': 'Superhero Suit',
+      'outfit_superheroe_desc': 'Flowing scarlet cape and reinforced suit to fight off debts.',
+      'outfit_deportiva_name': 'Tech Athletic Outfit',
+      'outfit_deportiva_desc': 'Breathable jersey to keep the pace and discipline toward your goals.',
+      'outfit_chef_name': 'Chef Jacket',
+      'outfit_chef_desc': 'Haute cuisine jacket with golden buttons to cook up big savings.',
+      'outfit_armadura_name': 'Galactic Armor',
+      'outfit_armadura_desc': 'Impenetrable nanotechnology breastplate against impulse purchases.',
+      'outfit_toga_name': 'Imperial Gold Toga',
+      'outfit_toga_desc': 'Toga embroidered with 24k gold threads for the sovereign of their budget.',
+      'wardrobe_sami_phrase_1': 'Hello! 👋 This outfit looks amazing on me!',
+      'wardrobe_sami_phrase_2': 'Saving with style is next level! ✨',
+      'wardrobe_sami_phrase_3': 'Ready to defeat any sneaky spending! 🛡️',
+      'wardrobe_sami_phrase_4': 'Every cent you save brings you closer to your dreams! 📈',
+      'wardrobe_sami_phrase_5': 'Pick your favorite style for today! 🪙',
     },
     'pt': {
+      'err_generic_server': 'Ocorreu um erro inesperado. Por favor, tente novamente.',
+      'err_invalid_credentials': 'E-mail ou senha incorretos. Verifique seus dados.',
+      'err_email_in_use': 'Este e-mail já está cadastrado. Faça login.',
+      'err_invalid_email': 'O formato do e-mail é inválido.',
+      'err_weak_password': 'A senha deve ter pelo menos 6 caracteres.',
+      'err_network': 'Problema de conexão. Verifique sua internet e tente novamente.',
+      'err_too_many_requests': 'Muitas tentativas. Aguarde um momento antes de tentar novamente.',
+      'err_user_disabled': 'Esta conta foi desativada. Entre em contato com o suporte.',
+      'err_loading_data': 'Não foi possível carregar os dados no momento.',
+      'err_saving_data': 'Não foi possível salvar as informações. Tente novamente.',
+      'err_pdf_generation': 'Não foi possível gerar o relatório em PDF. Tente novamente.',
+      'err_password_reset': 'Não foi possível enviar o e-mail de recuperação. Tente novamente.',
+      'speed_dial_pdf': 'Baixar PDF',
+      'speed_dial_what_if': 'Simulador What-If',
+      'speed_dial_ai': 'SAMI IA',
+      'speed_dial_income': 'Nova Renda',
+      'speed_dial_expense': 'Nova Despesa',
       'pdf_report_general': 'RELATÓRIO FINANCEIRO GERAL',
       'pdf_report_income': 'RELATÓRIO DE RECEITAS',
       'pdf_report_expense': 'RELATÓRIO DE DESPESAS',
@@ -1680,11 +1819,11 @@ class AppLocalizations {
       'shop_points_avail': 'Seus Pontos Disponíveis',
       'shop_pts': 'PTS',
       'shop_tab_all': '🔥 Tudo',
-      'shop_tab_avatars': '🦸‍♂️ Avatares VIP',
+      'shop_tab_avatars': '👕 Armário do SAMI',
       'shop_tab_themes': '🎨 Paletas de Estilo',
       'shop_tab_specials': '⚡ Especiais',
-      'shop_cat_avatars_title': 'Avatares Exclusivos 🦸‍♂️',
-      'shop_cat_avatars_sub': 'Personalize sua identidade na plataforma',
+      'shop_cat_avatars_title': 'Armário do SAMI 👕',
+      'shop_cat_avatars_sub': 'Personalize os trajes e estilo 3D do SAMI',
       'shop_cat_themes_title': '🎨 Paletas de Cores VIP',
       'shop_cat_themes_sub': 'Ilumine e decore sua interface financeira',
       'shop_cat_specials_title': '⚡ Vantagens e Especiais',
@@ -1875,8 +2014,64 @@ class AppLocalizations {
       'auto_lock_2min': '2 minutos (Equilíbrio entre segurança e conveniência)',
       'auto_lock_5min': '5 minutos (Maior conveniência durante uso ativo)',
       'auto_lock_updated_snack': 'Bloqueio automático atualizado para ',
+      'automatic_tag': 'Automático',
+      'wardrobe_title': 'Guarda-roupa do SAMI',
+      'wardrobe_subtitle': 'Estilo & Personalização',
+      'wardrobe_pts': 'pts',
+      'rarity_initial': 'Inicial',
+      'rarity_common': 'Comum',
+      'rarity_special': 'Especial',
+      'rarity_epic': 'Épico',
+      'rarity_legendary': 'Lendário',
+      'wardrobe_in_use': '✓ Em uso',
+      'wardrobe_ready': 'Pronto',
+      'wardrobe_equipped': 'Traje em uso',
+      'wardrobe_equip_action': 'Equipar Estilo',
+      'wardrobe_unlock_for': 'Desbloquear por {cost} pts',
+      'wardrobe_equipped_snack': '"{name}" equipado no seu perfil!',
+      'wardrobe_unlocked_snack': 'Você desbloqueou e equipou "{name}"!',
+      'wardrobe_not_enough_points_title': 'Pontos Insuficientes',
+      'wardrobe_not_enough_points_desc': 'Para desbloquear "{name}" você precisa de {cost} pontos.\n\nAtualmente você tem {current} pontos. Continue registrando seus movimentos diários e mantendo sua sequência com o SAMI para acumular mais pontos!',
+      'outfit_clasica_name': 'SAMI Clássico',
+      'outfit_clasica_desc': 'O estilo original do SAMI com plumagem azul-marinho, barriga branca e o emblema Q.',
+      'outfit_ejecutivo_name': 'Traje Executivo',
+      'outfit_ejecutivo_desc': 'Paletó formal azul-marinho e gravata de seda para fechar grandes negócios financeiros.',
+      'outfit_sudadera_name': 'Moletom Streetwear',
+      'outfit_sudadera_desc': 'Moletom folgado e moderno com detalhes em ciano elétrico QUIVO.',
+      'outfit_superheroe_name': 'Traje de Super-herói',
+      'outfit_superheroe_desc': 'Capa escarlate ondulante e traje reforçado para combater dívidas.',
+      'outfit_deportiva_name': 'Conjunto Atlético Tech',
+      'outfit_deportiva_desc': 'Jersey respirável para manter o ritmo e a disciplina nas suas metas.',
+      'outfit_chef_name': 'Dólmã de Chef',
+      'outfit_chef_desc': 'Dólmã de alta gastronomia com botões dourados para cozinhar grandes economias.',
+      'outfit_armadura_name': 'Armadura Galáctica',
+      'outfit_armadura_desc': 'Armadura de nanotecnologia impenetrável contra compras por impulso.',
+      'outfit_toga_name': 'Toga Imperial de Ouro',
+      'outfit_toga_desc': 'Toga bordada com fios de ouro 24k para o soberano absoluto do seu orçamento.',
+      'wardrobe_sami_phrase_1': 'Olá! 👋 Este traje fica incrível em mim!',
+      'wardrobe_sami_phrase_2': 'Economizar com estilo é outro nível! ✨',
+      'wardrobe_sami_phrase_3': 'Pronto para vencer qualquer gasto fantasma! 🛡️',
+      'wardrobe_sami_phrase_4': 'Cada centavo que você economiza te aproxima dos seus sonhos! 📈',
+      'wardrobe_sami_phrase_5': 'Escolha seu estilo favorito para o dia! 🪙',
     },
     'fr': {
+      'err_generic_server': 'Une erreur inattendue est survenue. Veuillez réessayer.',
+      'err_invalid_credentials': 'Email ou mot de passe incorrect. Vérifiez vos identifiants.',
+      'err_email_in_use': 'Cet e-mail est déjà enregistré. Connectez-vous.',
+      'err_invalid_email': 'Le format de l\'e-mail n\'est pas valide.',
+      'err_weak_password': 'Le mot de passe doit comporter au moins 6 caractères.',
+      'err_network': 'Problème de connexion. Vérifiez votre connexion Internet et réessayez.',
+      'err_too_many_requests': 'Trop de tentatives. Veuillez patienter avant de réessayer.',
+      'err_user_disabled': 'Ce compte a été désactivé. Veuillez contacter le support.',
+      'err_loading_data': 'Impossible de charger les données pour le moment.',
+      'err_saving_data': 'Impossible d\'enregistrer les informations. Veuillez réessayer.',
+      'err_pdf_generation': 'Impossible de générer le rapport PDF. Veuillez réessayer.',
+      'err_password_reset': 'Impossible d\'envoyer l\'e-mail de réinitialisation. Veuillez réessayer.',
+      'speed_dial_pdf': 'Télécharger PDF',
+      'speed_dial_what_if': 'Simulateur What-If',
+      'speed_dial_ai': 'SAMI IA',
+      'speed_dial_income': 'Nouveau Revenu',
+      'speed_dial_expense': 'Nouvelle Dépense',
       'pdf_report_general': 'RAPPORT FINANCIER GÉNÉRAL',
       'pdf_report_income': 'RAPPORT DE REVENUS',
       'pdf_report_expense': 'RAPPORT DE DÉPENSES',
@@ -2306,11 +2501,11 @@ class AppLocalizations {
       'shop_points_avail': 'Vos points disponibles',
       'shop_pts': 'PTS',
       'shop_tab_all': '🔥 Tout',
-      'shop_tab_avatars': '🦸‍♂️ Avatars VIP',
+      'shop_tab_avatars': '👕 Garde-robe de SAMI',
       'shop_tab_themes': '🎨 Palettes de style',
       'shop_tab_specials': '⚡ Spéciaux',
-      'shop_cat_avatars_title': 'Avatars exclusifs 🦸‍♂️',
-      'shop_cat_avatars_sub': 'Personnalisez votre identité sur la plateforme',
+      'shop_cat_avatars_title': 'Garde-robe de SAMI 👕',
+      'shop_cat_avatars_sub': 'Personnalisez les tenues et le style 3D de SAMI',
       'shop_cat_themes_title': '🎨 Palettes de couleurs VIP',
       'shop_cat_themes_sub':
           'Illuminez et personnalisez votre interface financière',
@@ -2495,8 +2690,64 @@ class AppLocalizations {
       'auto_lock_5min':
           '5 minutes (Plus grand confort lors d\'une utilisation active)',
       'auto_lock_updated_snack': 'Verrouillage auto mis à jour à ',
+      'automatic_tag': 'Automatique',
+      'wardrobe_title': 'Garde-robe de SAMI',
+      'wardrobe_subtitle': 'Style & Personnalisation',
+      'wardrobe_pts': 'pts',
+      'rarity_initial': 'Initial',
+      'rarity_common': 'Commun',
+      'rarity_special': 'Spécial',
+      'rarity_epic': 'Épique',
+      'rarity_legendary': 'Légendaire',
+      'wardrobe_in_use': '✓ En cours',
+      'wardrobe_ready': 'Prêt',
+      'wardrobe_equipped': 'Tenue en cours',
+      'wardrobe_equip_action': 'Équiper le style',
+      'wardrobe_unlock_for': 'Débloquer pour {cost} pts',
+      'wardrobe_equipped_snack': '"{name}" équipé sur votre profil !',
+      'wardrobe_unlocked_snack': 'Vous avez débloqué et équipé "{name}" !',
+      'wardrobe_not_enough_points_title': 'Points Insuffisants',
+      'wardrobe_not_enough_points_desc': 'Pour débloquer "{name}", vous avez besoin de {cost} points.\n\nVous avez actuellement {current} points. Continuez à enregistrer vos transactions quotidiennes et votre série avec SAMI pour gagner plus de points !',
+      'outfit_clasica_name': 'SAMI Classique',
+      'outfit_clasica_desc': "Le style original de SAMI avec son plumage bleu marine, son ventre blanc et l'emblème Q.",
+      'outfit_ejecutivo_name': 'Costume Exécutif',
+      'outfit_ejecutivo_desc': 'Veste formelle bleu marine et cravate en soie pour conclure de grandes affaires financières.',
+      'outfit_sudadera_name': 'Sweat Streetwear',
+      'outfit_sudadera_desc': 'Sweat à capuche ample et moderne avec des détails cyan électrique QUIVO.',
+      'outfit_superheroe_name': 'Costume de Super-héros',
+      'outfit_superheroe_desc': 'Cape écarlate flottante et combinaison renforcée pour combattre les dettes.',
+      'outfit_deportiva_name': 'Tenue Athlétique Tech',
+      'outfit_deportiva_desc': 'Maillot respirant pour garder le rythme et la discipline vers vos objectifs.',
+      'outfit_chef_name': 'Veste de Chef',
+      'outfit_chef_desc': 'Veste de haute cuisine avec boutons dorés pour mijoter de grandes économies.',
+      'outfit_armadura_name': 'Armure Galactique',
+      'outfit_armadura_desc': 'Cuirasse en nanotechnologie impénétrable contre les achats impulsifs.',
+      'outfit_toga_name': "Toge Impériale d'Or",
+      'outfit_toga_desc': "Toge brodée de fils d'or 24k pour le souverain absolu de son budget.",
+      'wardrobe_sami_phrase_1': 'Salut ! 👋 Cette tenue me va à ravir !',
+      'wardrobe_sami_phrase_2': "Économiser avec style, c'est un autre niveau ! ✨",
+      'wardrobe_sami_phrase_3': 'Prêt à vaincre les dépenses inutiles ! 🛡️',
+      'wardrobe_sami_phrase_4': 'Chaque centime économisé vous rapproche de vos rêves ! 📈',
+      'wardrobe_sami_phrase_5': 'Choisissez votre style préféré pour la journée ! 🪙',
     },
     'it': {
+      'err_generic_server': 'Si è verificato un errore imprevisto. Per favore riprova.',
+      'err_invalid_credentials': 'Email o password errati. Verifica i tuoi dati.',
+      'err_email_in_use': 'Questa email è già registrata. Effettua l\'accesso.',
+      'err_invalid_email': 'Il formato dell\'email non è valido.',
+      'err_weak_password': 'La password deve contenere almeno 6 caratteri.',
+      'err_network': 'Problema di connessione. Verifica la connessione internet e riprova.',
+      'err_too_many_requests': 'Troppi tentativi. Attendi qualche istante prima di riprovare.',
+      'err_user_disabled': 'Questo account è stato disabilitato. Contatta l\'assistenza.',
+      'err_loading_data': 'Impossibile caricare i dati in questo momento.',
+      'err_saving_data': 'Impossibile salvare le informazioni. Per favore riprova.',
+      'err_pdf_generation': 'Impossibile generare il report PDF. Per favore riprova.',
+      'err_password_reset': 'Impossibile inviare l\'email di reimpostazione. Per favore riprova.',
+      'speed_dial_pdf': 'Scarica PDF',
+      'speed_dial_what_if': 'Simulatore What-If',
+      'speed_dial_ai': 'SAMI IA',
+      'speed_dial_income': 'Nuova Entrata',
+      'speed_dial_expense': 'Nuova Spesa',
       'pdf_report_general': 'RAPPORTO FINANZIARIO GENERALE',
       'pdf_report_income': 'RAPPORTO SUI REDDITI',
       'pdf_report_expense': 'RAPPORTO SULLE SPESE',
@@ -2918,11 +3169,11 @@ class AppLocalizations {
       'shop_points_avail': 'I tuoi punti disponibili',
       'shop_pts': 'PT',
       'shop_tab_all': '🔥 Tutto',
-      'shop_tab_avatars': '🦸‍♂️ Avatar VIP',
+      'shop_tab_avatars': '👕 Guardaroba di SAMI',
       'shop_tab_themes': '🎨 Tavolozze Stile',
       'shop_tab_specials': '⚡ Speciali',
-      'shop_cat_avatars_title': 'Avatar Esclusivi 🦸‍♂️',
-      'shop_cat_avatars_sub': 'Personalizza la tua identità sulla piattaforma',
+      'shop_cat_avatars_title': 'Guardaroba di SAMI 👕',
+      'shop_cat_avatars_sub': 'Personalizza gli abiti e lo stile 3D di SAMI',
       'shop_cat_themes_title': '🎨 Tavolozze Colori VIP',
       'shop_cat_themes_sub':
           'Illumina e personalizza la tua interfaccia finanziaria',
@@ -3101,8 +3352,143 @@ class AppLocalizations {
       'auto_lock_2min': '2 minuti (Equilibrio tra sicurezza e comodità)',
       'auto_lock_5min': '5 minuti (Maggiore comodità durante l\'uso attivo)',
       'auto_lock_updated_snack': 'Blocco automatico aggiornato a ',
+      'automatic_tag': 'Automatico',
+      'wardrobe_title': 'Armadio di SAMI',
+      'wardrobe_subtitle': 'Stile & Personalizzazione',
+      'wardrobe_pts': 'pts',
+      'rarity_initial': 'Iniziale',
+      'rarity_common': 'Comune',
+      'rarity_special': 'Speciale',
+      'rarity_epic': 'Epico',
+      'rarity_legendary': 'Leggendario',
+      'wardrobe_in_use': '✓ In uso',
+      'wardrobe_ready': 'Pronto',
+      'wardrobe_equipped': 'Abito in uso',
+      'wardrobe_equip_action': 'Equipaggia Stile',
+      'wardrobe_unlock_for': 'Sblocca per {cost} pts',
+      'wardrobe_equipped_snack': '"{name}" equipaggiato sul tuo profilo!',
+      'wardrobe_unlocked_snack': 'Hai sbloccato ed equipaggiato "{name}"!',
+      'wardrobe_not_enough_points_title': 'Punti Insufficienti',
+      'wardrobe_not_enough_points_desc': 'Per sbloccare "{name}" hai bisogno di {cost} punti.\n\nAttualmente hai {current} punti. Continua a registrare i tuoi movimenti giornalieri e la serie con SAMI per guadagnare più punti!',
+      'outfit_clasica_name': 'SAMI Classico',
+      'outfit_clasica_desc': "Lo stile originale di SAMI con piumaggio blu marino, pancia bianca e l'emblema Q.",
+      'outfit_ejecutivo_name': 'Abito Esecutivo',
+      'outfit_ejecutivo_desc': 'Giacca formale blu marino e cravatta di seta per chiudere grandi affari finanziari.',
+      'outfit_sudadera_name': 'Felpa Streetwear',
+      'outfit_sudadera_desc': 'Felpa con cappuccio ampia e moderna con dettagli ciano elettrico QUIVO.',
+      'outfit_superheroe_name': 'Costume da Supereroe',
+      'outfit_superheroe_desc': 'Mantello scarlatto fluttuante e tuta rinforzata per combattere i debiti.',
+      'outfit_deportiva_name': 'Completo Atletico Tech',
+      'outfit_deportiva_desc': 'Maglia traspirante per mantenere il ritmo e la disciplina verso i tuoi obiettivi.',
+      'outfit_chef_name': 'Giacca da Chef',
+      'outfit_chef_desc': 'Giacca di alta cucina con bottoni dorati per cucinare grandi risparmi.',
+      'outfit_armadura_name': 'Armatura Galattica',
+      'outfit_armadura_desc': 'Corazza di nanotecnologia impenetrabile contro gli acquisti impulsivi.',
+      'outfit_toga_name': "Toga Imperiale d'Oro",
+      'outfit_toga_desc': "Toga ricamata con fili d'oro 24k per il sovrano assoluto del proprio budget.",
+      'wardrobe_sami_phrase_1': 'Ciao! 👋 Questo vestito mi sta benissimo!',
+      'wardrobe_sami_phrase_2': 'Risparmiare con stile è un altro livello! ✨',
+      'wardrobe_sami_phrase_3': 'Pronto a sconfiggere ogni spesa superflua! 🛡️',
+      'wardrobe_sami_phrase_4': 'Ogni centesimo risparmiato ti avvicina ai tuoi sogni! 📈',
+      'wardrobe_sami_phrase_5': 'Scegli il tuo stile preferito per oggi! 🪙',
     },
   };
+
+  String formatTransactionTitle(dynamic transaction) {
+    if (transaction == null) return '';
+    if (transaction is Map) {
+      return formatTransactionDescription(
+        description: transaction['description']?.toString() ?? '',
+        category: transaction['category']?.toString() ?? '',
+        id: transaction['id']?.toString() ?? '',
+        isAutomatic: transaction['isAutomatic'] as bool?,
+      );
+    }
+    try {
+      final desc = transaction.description?.toString() ?? '';
+      final cat = transaction.category?.toString() ?? '';
+      final id = transaction.id?.toString() ?? '';
+      final isFixed = transaction.isFixed as bool?;
+      return formatTransactionDescription(
+        description: desc,
+        category: cat,
+        id: id,
+        isAutomatic: isFixed == false && (id.startsWith('auto_') || desc.contains('(Automático)') || desc.contains('(Automatic)')),
+      );
+    } catch (_) {
+      return '';
+    }
+  }
+
+  String formatTransactionDescription({
+    required String description,
+    required String category,
+    String id = '',
+    bool? isAutomatic,
+  }) {
+    final bool auto = isAutomatic ??
+        (id.startsWith('auto_') ||
+            id.startsWith('auto_tx_') ||
+            RegExp(
+              r'\((?:Automático|Automatic|Automatique|Automatico)\)',
+              caseSensitive: false,
+            ).hasMatch(description));
+
+    // Strip out (Automático) or any localized equivalent
+    String clean = description
+        .replaceAll(
+          RegExp(
+            r'\s*\((?:Automático|Automatic|Automatique|Automatico)\)',
+            caseSensitive: false,
+          ),
+          '',
+        )
+        .trim();
+
+    final lowerClean = clean.toLowerCase();
+    final lowerCat = category.toLowerCase().trim();
+
+    final bool isCode = clean.isEmpty ||
+        lowerClean == lowerCat ||
+        lowerClean.startsWith('bills') ||
+        lowerClean.startsWith('food') ||
+        lowerClean.startsWith('transport') ||
+        lowerClean.startsWith('shopping') ||
+        lowerClean.startsWith('entertainment') ||
+        lowerClean.startsWith('health') ||
+        lowerClean.startsWith('home') ||
+        lowerClean.startsWith('education');
+
+    String title;
+    if (isCode) {
+      String codeToUse = category;
+      if (clean.contains('_') || category.isEmpty || category == 'bills' || category == 'other') {
+        if (clean.isNotEmpty && clean != 'bills') {
+          codeToUse = clean;
+        }
+      }
+      if (codeToUse.isEmpty) codeToUse = clean;
+      title = translateCategory(codeToUse);
+    } else {
+      final translated = translateCategory(clean);
+      if (translated != clean && translated.isNotEmpty) {
+        title = translated;
+      } else {
+        title = clean;
+      }
+    }
+
+    if (title.toLowerCase() == 'bills') {
+      title = translateCategory('bills');
+    }
+
+    if (auto) {
+      final tag = get('automatic_tag');
+      return '$title ($tag)';
+    }
+
+    return title;
+  }
 
   String get(String key) {
     String mappedCode = intlLocale;
@@ -3360,6 +3746,11 @@ class AppLocalizations {
       'car': 'Carro / Vehículo',
       'rent': 'Alquiler de casa',
       'alquiler de casa': 'Alquiler de casa',
+      'alquiler / hipoteca': 'Alquiler / Hipoteca',
+      'gas': 'Gas',
+      'agua': 'Agua',
+      'luz': 'Luz',
+      'internet': 'Internet / TV',
       'credit_card': 'Tarjeta de Crédito',
       'subscription': 'Suscripción',
       'loan': 'Préstamo',
@@ -3421,6 +3812,11 @@ class AppLocalizations {
       'car': 'Car / Vehicle',
       'rent': 'House Rent',
       'alquiler de casa': 'House Rent',
+      'alquiler / hipoteca': 'Rent / Mortgage',
+      'gas': 'Gas',
+      'agua': 'Water',
+      'luz': 'Electricity',
+      'internet': 'Internet / TV',
       'credit_card': 'Credit Card',
       'subscription': 'Subscription',
       'loan': 'Loan',
@@ -3482,6 +3878,11 @@ class AppLocalizations {
       'car': 'Carro / Veículo',
       'rent': 'Aluguel de casa',
       'alquiler de casa': 'Aluguel de casa',
+      'alquiler / hipoteca': 'Aluguel / Hipoteca',
+      'gas': 'Gás',
+      'agua': 'Água',
+      'luz': 'Luz',
+      'internet': 'Internet / TV',
       'credit_card': 'Cartão de Crédito',
       'subscription': 'Assinatura',
       'loan': 'Empréstimo',
@@ -3543,6 +3944,11 @@ class AppLocalizations {
       'car': 'Voiture',
       'rent': 'Loyer',
       'alquiler de casa': 'Loyer',
+      'alquiler / hipoteca': 'Loyer / Hypothèque',
+      'gas': 'Gaz',
+      'agua': 'Eau',
+      'luz': 'Électricité',
+      'internet': 'Internet / TV',
       'credit_card': 'Carte de Crédit',
       'subscription': 'Abonnement',
       'loan': 'Prêt',
@@ -3604,6 +4010,11 @@ class AppLocalizations {
       'car': 'Auto / Veicolo',
       'rent': 'Affitto casa',
       'alquiler de casa': 'Affitto casa',
+      'alquiler / hipoteca': 'Affitto / Mutuo',
+      'gas': 'Gas',
+      'agua': 'Acqua',
+      'luz': 'Luce',
+      'internet': 'Internet / TV',
       'credit_card': 'Carta di Credito',
       'subscription': 'Abbonamento',
       'loan': 'Prestito',

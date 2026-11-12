@@ -29,6 +29,7 @@ class MonthlyReportModal extends ConsumerStatefulWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       useRootNavigator: true,
       builder: (context) => DraggableScrollableSheet(
@@ -346,7 +347,12 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
       ),
       child: transactionsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (err, stack) => Center(
+          child: Text(
+            loc.get('err_loading_data'),
+            style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
+          ),
+        ),
         data: (transactions) {
           double totalIncome = 0;
           double totalExpense = 0;
@@ -610,7 +616,9 @@ class _MonthlyReportContentState extends ConsumerState<MonthlyReportContent> {
                   }, childCount: sortedCategories.length),
                 ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 40)),
+              SliverToBoxAdapter(
+                child: SizedBox(height: 40 + MediaQuery.of(context).padding.bottom),
+              ),
             ],
           );
         },

@@ -221,6 +221,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                 // Show simple selection
                 showModalBottomSheet(
                   context: context,
+                  useSafeArea: true,
                   backgroundColor: isDark
                       ? const Color(0xFF1F2937)
                       : Colors.white,
@@ -271,7 +272,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                           Navigator.pop(context);
                         },
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24 + MediaQuery.of(context).padding.bottom),
                     ],
                   ),
                 );

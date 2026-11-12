@@ -500,7 +500,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Text(
-                  'Error al cargar gastos: $e',
+                  loc.get('err_loading_data'),
                   style: const TextStyle(color: Colors.white, fontSize: 14),
                 ),
               ),
@@ -673,6 +673,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                     context: context,
                                     backgroundColor: Colors.transparent,
                                     isScrollControlled: true,
+                                    useSafeArea: true,
                                     builder: (context) {
                                       return SingleChildScrollView(
                                         child: Container(
@@ -681,6 +682,9 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                                 MediaQuery.of(
                                                   context,
                                                 ).viewInsets.bottom +
+                                                MediaQuery.of(
+                                                  context,
+                                                ).padding.bottom +
                                                 24,
                                             left: 24,
                                             right: 24,
@@ -814,11 +818,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                               ),
                                               const SizedBox(height: 8),
                                               Text(
-                                                expense.description.isNotEmpty
-                                                    ? expense.description
-                                                    : loc.translateCategory(
-                                                        expense.category,
-                                                      ),
+                                                loc.formatTransactionTitle(expense),
                                                 style: TextStyle(
                                                   color: isDark
                                                       ? Colors.white
@@ -1203,11 +1203,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              expense.description.isNotEmpty
-                                                  ? expense.description
-                                                  : loc.translateCategory(
-                                                      expense.category,
-                                                    ),
+                                                loc.formatTransactionTitle(expense),
                                               style: TextStyle(
                                                 color: isDark
                                                     ? Colors.white
@@ -1459,11 +1455,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          expense.description.isNotEmpty
-                                              ? expense.description
-                                              : loc.translateCategory(
-                                                  expense.category,
-                                                ),
+                                                loc.formatTransactionTitle(expense),
                                           style: TextStyle(
                                             color: isDark
                                                 ? Colors.white
@@ -1474,7 +1466,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          '${loc.translateCategory(expense.category)} • ${DateFormat('d MMM, HH:mm').format(expense.date)}${expense.isFixed ? ' • Fijo' : ''}',
+                                          '${loc.translateCategory(expense.category)} • ${DateFormat('d MMM, HH:mm', loc.intlLocale).format(expense.date)}${expense.isFixed ? ' • ${loc.get("fixed")}' : ''}',
                                           style: const TextStyle(
                                             color: Colors.grey,
                                             fontSize: 12,
@@ -1550,7 +1542,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                 ),
               ),
               error: (e, _) => Text(
-                'Error al cargar deudas: $e',
+                loc.get('err_loading_data'),
                 style: const TextStyle(color: Colors.red),
               ),
               data: (debtsList) {
@@ -1633,6 +1625,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
+                          useSafeArea: true,
                           backgroundColor: Colors.transparent,
                           builder: (context) {
                             final nextInstallmentNum =
@@ -1647,6 +1640,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
                                 top: 24,
                                 bottom:
                                     MediaQuery.of(context).viewInsets.bottom +
+                                    MediaQuery.of(context).padding.bottom +
                                     24,
                               ),
                               decoration: BoxDecoration(

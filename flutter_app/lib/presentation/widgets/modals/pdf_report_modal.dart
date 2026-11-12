@@ -14,6 +14,7 @@ class PDFReportModal extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const PDFReportModal(),
     );
@@ -114,11 +115,12 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
       }
     } catch (e) {
       if (mounted) {
+        final loc = AppLocalizations.of(context);
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Error'),
-            content: Text('Error al generar PDF: $e'),
+            title: Text(loc.get('error')),
+            content: Text(loc.get('err_pdf_generation')),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -145,8 +147,10 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
   }) {
     showModalBottomSheet(
       context: context,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
+        final bottomInset = MediaQuery.of(context).padding.bottom;
         return Container(
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
@@ -155,7 +159,7 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
               topRight: Radius.circular(32),
             ),
           ),
-          padding: const EdgeInsets.fromLTRB(0, 16, 0, 24),
+          padding: EdgeInsets.fromLTRB(0, 16, 0, 24 + bottomInset),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -250,6 +254,7 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
     final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF1F2937);
     final subtitleColor = isDark ? Colors.grey[400] : Colors.grey[600];
+    final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Container(
       decoration: BoxDecoration(
@@ -259,7 +264,7 @@ class _PDFReportModalState extends ConsumerState<PDFReportModal> {
           topRight: Radius.circular(32),
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 36),
+      padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomInset),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

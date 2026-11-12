@@ -21,6 +21,7 @@ class PremiumSyncHubModal extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const PremiumSyncHubModal(),
     );
@@ -1118,7 +1119,7 @@ class _PremiumSyncHubModalState extends ConsumerState<PremiumSyncHubModal> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24 + MediaQuery.of(context).padding.bottom),
                       ],
                     ),
                   ),

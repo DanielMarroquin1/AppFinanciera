@@ -225,7 +225,7 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(
           child: Text(
-            'Error: $err',
+            loc.get('err_loading_data'),
             style: TextStyle(color: isDark ? Colors.white : Colors.black),
           ),
         ),
@@ -543,6 +543,7 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen> {
                                 onPressed: () {
                                   showModalBottomSheet(
                                     context: context,
+                                    useSafeArea: true,
                                     backgroundColor: isDark
                                         ? const Color(0xFF1E293B)
                                         : Colors.white,

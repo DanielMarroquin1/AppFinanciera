@@ -3,6 +3,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import '../../../core/utils/error_handler.dart';
 
 class ForgotPasswordModal extends ConsumerStatefulWidget {
   const ForgotPasswordModal({super.key});
@@ -46,10 +47,12 @@ class _ForgotPasswordModalState extends ConsumerState<ForgotPasswordModal> {
       }
     } on firebase_auth.FirebaseAuthException catch (e) {
       if (!mounted) return;
+      final safeMessage = AppErrorHandler.getFriendlyMessage(e) ??
+          'Ocurrió un error al enviar el correo. Verifica tu dirección.';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           dismissDirection: DismissDirection.horizontal,
-          content: Text(e.message ?? 'Ocurrió un error al enviar el correo.'),
+          content: Text(safeMessage),
           backgroundColor: Colors.redAccent,
         ),
       );

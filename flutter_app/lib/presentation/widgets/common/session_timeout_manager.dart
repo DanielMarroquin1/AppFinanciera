@@ -159,15 +159,102 @@ class _SessionTimeoutManagerState extends ConsumerState<SessionTimeoutManager>
       child: Stack(
         children: [
           widget.child,
-          if (_isBackgrounded && ref.watch(authProvider.select((s) => s.isAuthenticated)))
-            const Positioned.fill(
-              child: ColoredBox(
-                color: Color(0xFF004457),
-                child: Center(
-                  child: Icon(
-                    LucideIcons.shield,
-                    color: Colors.white,
-                    size: 64,
+          if (_isBackgrounded &&
+              ref.watch(authProvider.select((s) => s.isAuthenticated)))
+            Positioned.fill(
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFF040812),
+                      Color(0xFF081326),
+                      Color(0xFF050B17),
+                    ],
+                  ),
+                ),
+                child: SafeArea(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Card luminosa que resalta el logo oficial de QUIVO con máxima nitidez
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 22,
+                          ),
+                          margin: const EdgeInsets.symmetric(horizontal: 40),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(28),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF10B981)
+                                    .withValues(alpha: 0.28),
+                                blurRadius: 36,
+                                spreadRadius: 4,
+                                offset: const Offset(0, 8),
+                              ),
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.40),
+                                blurRadius: 24,
+                                offset: const Offset(0, 12),
+                              ),
+                            ],
+                          ),
+                          child: Image.asset(
+                            'assets/images/quivo_logo_full.png',
+                            width: 210,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+                        // Badge elegante de seguridad
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 9,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              width: 1.2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.25),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                LucideIcons.lock,
+                                color: Color(0xFF34D399),
+                                size: 16,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Privacidad Protegida',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.95),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

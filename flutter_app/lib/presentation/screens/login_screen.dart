@@ -376,7 +376,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           _showWelcomeMessage(context);
           context.go('/dashboard');
         } catch (e) {
-          _showErrorSnackBar(context, 'Error', e.toString());
+          _showErrorSnackBar(context, 'Aviso', e.toString());
         } finally {
           if (mounted) setState(() => _isLoading = false);
         }
@@ -821,7 +821,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         context.go('/dashboard');
                                       }
                                     } catch (e) {
-                                      _showErrorSnackBar(context, 'Error', e.toString());
+                                      _showErrorSnackBar(context, 'Aviso', e.toString());
                                     } finally {
                                       if (mounted) setState(() => _isLoading = false);
                                     }
@@ -879,7 +879,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       _showWelcomeMessage(context);
                                       context.go('/dashboard');
                                     } catch (e) {
-                                      _showErrorSnackBar(context, 'Error', e.toString());
+                                      _showErrorSnackBar(context, 'Aviso', e.toString());
                                     } finally {
                                       if (mounted) setState(() => _isLoading = false);
                                     }
